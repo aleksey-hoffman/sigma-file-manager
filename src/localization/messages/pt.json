@@ -216,7 +216,7 @@
       "fileView": {
         "title": "Visualização de arquivos",
         "enableBoxSelection": "Ativar seleção por caixa",
-        "enableBoxSelectionDescription": "Arraste em um espaço vazio para selecionar vários itens com uma caixa de seleção.",
+        "enableBoxSelectionDescription": "Arraste em um espaço vazio para selecionar vários itens com uma caixa de seleção. Mantenha Ctrl ou Shift pressionado para adicionar à seleção; Alt para inverter.",
         "increaseFileViewGaps": "Aumentar espaços na visualização de arquivos",
         "increaseFileViewGapsDescription": "Adiciona preenchimento lateral na lista e aumenta os espaços na grade para facilitar a seleção."
       }

@@ -216,7 +216,7 @@
       "fileView": {
         "title": "Chế độ xem tệp",
         "enableBoxSelection": "Bật chọn bằng khung kéo",
-        "enableBoxSelectionDescription": "Kéo trên vùng trống để chọn nhiều mục bằng khung chọn.",
+        "enableBoxSelectionDescription": "Kéo trên vùng trống để chọn nhiều mục bằng khung chọn. Giữ Ctrl hoặc Shift để thêm vào vùng chọn; giữ Alt để đảo ngược.",
         "increaseFileViewGaps": "Tăng khoảng cách trong chế độ xem tệp",
         "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn."
       }

@@ -245,7 +245,7 @@
       "fileView": {
         "title": "فائل منظر",
         "enableBoxSelection": "باکس انتخاب فعال کریں",
-        "enableBoxSelectionDescription": "خالی جگہ پر گھسیٹ کر انتخاب باکس سے متعدد آئٹمز منتخب کریں۔",
+        "enableBoxSelectionDescription": "خالی جگہ پر گھسیٹ کر انتخاب باکس سے متعدد آئٹمز منتخب کریں۔ انتخاب میں شامل کرنے کے لیے Ctrl یا Shift دبائے رکھیں؛ الٹنے کے لیے Alt۔",
         "increaseFileViewGaps": "فائل منظر کے فاصلے بڑھائیں",
         "increaseFileViewGapsDescription": "فہرست لے آؤٹ میں سائیڈ padding شامل کرتا ہے اور گرڈ لے آؤٹ میں فاصلے بڑھا کر نشانہ لگانا آسان بناتا ہے۔"
       }

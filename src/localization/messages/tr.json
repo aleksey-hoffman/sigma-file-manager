@@ -216,7 +216,7 @@
       "fileView": {
         "title": "Dosya görünümü",
         "enableBoxSelection": "Kutu seçimini etkinleştir",
-        "enableBoxSelectionDescription": "Boş alanda sürükleyerek bir seçim kutusuyla birden fazla öğe seçin.",
+        "enableBoxSelectionDescription": "Boş alanda sürükleyerek bir seçim kutusuyla birden fazla öğe seçin. Seçime eklemek için Ctrl veya Shift'i basılı tutun; tersine çevirmek için Alt.",
         "increaseFileViewGaps": "Dosya görünümü boşluklarını artır",
         "increaseFileViewGapsDescription": "Liste düzeninde yan dolgu ekler ve ızgara düzenindeki boşlukları artırarak hedeflemeyi kolaylaştırır."
       }

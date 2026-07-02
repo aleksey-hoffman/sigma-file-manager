@@ -29,17 +29,24 @@ import {
 import type { FileBrowserVirtualRow } from '../utils/file-browser-virtual-rows';
 
 const BOX_SELECTION_OVERLAY_CLASS = 'file-browser-box-selection-overlay';
+const FILE_BROWSER_CONTENT_SELECTOR = '.file-browser__content';
+const EDGE_SCROLL_THRESHOLD = 24;
+const EDGE_SCROLL_STEP = 12;
 
-function buildPaneRelativeOverlayStyle(
+function resolveOverlayHostElement(paneElement: HTMLElement): HTMLElement {
+  return paneElement.querySelector<HTMLElement>(FILE_BROWSER_CONTENT_SELECTOR) ?? paneElement;
+}
+
+function buildHostRelativeOverlayStyle(
   selectionBox: FileBrowserBoxSelectionBox,
-  paneRect: DOMRect,
+  hostRect: DOMRect,
 ): {
   transform: string;
   width: string;
   height: string;
 } {
-  const left = Math.min(selectionBox.left, selectionBox.right) - paneRect.left;
-  const top = Math.min(selectionBox.top, selectionBox.bottom) - paneRect.top;
+  const left = Math.min(selectionBox.left, selectionBox.right) - hostRect.left;
+  const top = Math.min(selectionBox.top, selectionBox.bottom) - hostRect.top;
   const width = Math.abs(selectionBox.right - selectionBox.left);
   const height = Math.abs(selectionBox.bottom - selectionBox.top);
 
@@ -48,6 +55,29 @@ function buildPaneRelativeOverlayStyle(
     width: `${width}px`,
     height: `${height}px`,
   };
+}
+
+function applyEdgeAutoScroll(
+  viewport: HTMLElement,
+  pointer: BoxSelectionPointerPosition,
+) {
+  const viewportRect = viewport.getBoundingClientRect();
+  const maxScrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+  const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+
+  if (pointer.clientY < viewportRect.top + EDGE_SCROLL_THRESHOLD) {
+    viewport.scrollTop = Math.max(0, viewport.scrollTop - EDGE_SCROLL_STEP);
+  }
+  else if (pointer.clientY > viewportRect.bottom - EDGE_SCROLL_THRESHOLD) {
+    viewport.scrollTop = Math.min(maxScrollTop, viewport.scrollTop + EDGE_SCROLL_STEP);
+  }
+
+  if (pointer.clientX < viewportRect.left + EDGE_SCROLL_THRESHOLD) {
+    viewport.scrollLeft = Math.max(0, viewport.scrollLeft - EDGE_SCROLL_STEP);
+  }
+  else if (pointer.clientX > viewportRect.right - EDGE_SCROLL_THRESHOLD) {
+    viewport.scrollLeft = Math.min(maxScrollLeft, viewport.scrollLeft + EDGE_SCROLL_STEP);
+  }
 }
 
 export function useFileBrowserBoxSelection(options: {
@@ -85,11 +115,16 @@ export function useFileBrowserBoxSelection(options: {
       return null;
     }
 
+    const overlayHost = resolveOverlayHostElement(paneElement);
+
     if (!overlayElement) {
       overlayElement = document.createElement('div');
       overlayElement.className = BOX_SELECTION_OVERLAY_CLASS;
       overlayElement.style.display = 'none';
-      paneElement.appendChild(overlayElement);
+      overlayHost.appendChild(overlayElement);
+    }
+    else if (overlayElement.parentElement !== overlayHost) {
+      overlayHost.appendChild(overlayElement);
     }
 
     return overlayElement;
@@ -103,21 +138,21 @@ export function useFileBrowserBoxSelection(options: {
     overlayElement.style.display = 'none';
   }
 
-  function updateOverlay(selectionBox: FileBrowserBoxSelectionBox, paneRect: DOMRect) {
+  function updateOverlay(selectionBox: FileBrowserBoxSelectionBox, overlayHostRect: DOMRect) {
     const overlay = ensureOverlayElement();
 
     if (!overlay) {
       return;
     }
 
-    const style = buildPaneRelativeOverlayStyle(selectionBox, paneRect);
+    const style = buildHostRelativeOverlayStyle(selectionBox, overlayHostRect);
     overlay.style.display = 'block';
     overlay.style.transform = style.transform;
     overlay.style.width = style.width;
     overlay.style.height = style.height;
   }
 
-  function applyBoxSelection(selectionBox: FileBrowserBoxSelectionBox) {
+  function applyBoxSelection(selectionBox: FileBrowserBoxSelectionBox, scrollTop: number) {
     const viewport = options.scrollViewportRef.value;
     const entriesContainer = options.entriesContainerRef.value;
 
@@ -135,7 +170,7 @@ export function useFileBrowserBoxSelection(options: {
       viewportRect,
       contentWidth: options.viewportWidth.value,
       virtualContentOffset: options.virtualContentOffset.value,
-      scrollTop: options.scrollTop.value,
+      scrollTop,
       increaseFileViewGaps: options.increaseFileViewGaps.value,
     });
 
@@ -161,8 +196,9 @@ export function useFileBrowserBoxSelection(options: {
     }
 
     const paneRect = paneElement.getBoundingClientRect();
+    const overlayHostRect = resolveOverlayHostElement(paneElement).getBoundingClientRect();
+    const viewportRect = viewport.getBoundingClientRect();
     const contentRect = entriesContainer.getBoundingClientRect();
-    const scrollTop = options.scrollTop.value;
     const virtualContentOffset = options.virtualContentOffset.value;
     const deltaX = Math.abs(latestPointer.clientX - pointerOriginClient.clientX);
     const deltaY = Math.abs(latestPointer.clientY - pointerOriginClient.clientY);
@@ -176,18 +212,20 @@ export function useFileBrowserBoxSelection(options: {
     }
 
     activationThresholdReached = true;
+    applyEdgeAutoScroll(viewport, latestPointer);
+    const scrollTop = viewport.scrollTop;
     const selectionBox = buildBoxSelectionBox(
       pointerOriginContent,
       latestPointer,
-      viewport.getBoundingClientRect(),
+      viewportRect,
       contentRect,
       scrollTop,
       viewport.scrollLeft,
       virtualContentOffset,
       paneRect,
     );
-    updateOverlay(selectionBox, paneRect);
-    applyBoxSelection(selectionBox);
+    updateOverlay(selectionBox, overlayHostRect);
+    applyBoxSelection(selectionBox, scrollTop);
   }
 
   function scheduleTick() {
@@ -302,26 +340,28 @@ export function useFileBrowserBoxSelection(options: {
       return;
     }
 
-    if (event.target instanceof Element && event.target.closest('[data-entry-path]')) {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+
+    if (event.target.closest('[data-entry-path]')) {
+      return;
+    }
+
+    if (event.target.closest('.file-browser-loading, .file-browser__empty-state-container, .file-browser-error')) {
+      return;
+    }
+
+    const paneElement = options.paneElementRef.value;
+    const viewport = options.scrollViewportRef.value;
+    const entriesContainer = options.entriesContainerRef.value;
+
+    if (!paneElement || !viewport || !entriesContainer) {
       return;
     }
 
     event.preventDefault();
-
-    const paneElement = options.paneElementRef.value;
-
-    if (!paneElement) {
-      return;
-    }
-
     stopBoxSelection();
-
-    const viewport = options.scrollViewportRef.value;
-    const entriesContainer = options.entriesContainerRef.value;
-
-    if (!viewport || !entriesContainer) {
-      return;
-    }
 
     isActive = true;
     activationThresholdReached = false;
@@ -339,7 +379,7 @@ export function useFileBrowserBoxSelection(options: {
       pointerOriginClient,
       viewport.getBoundingClientRect(),
       entriesContainer.getBoundingClientRect(),
-      options.scrollTop.value,
+      viewport.scrollTop,
       viewport.scrollLeft,
       options.virtualContentOffset.value,
     );

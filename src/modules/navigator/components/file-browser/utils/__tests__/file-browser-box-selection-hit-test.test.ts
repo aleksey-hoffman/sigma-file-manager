@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import { createFileBrowserVirtualRows } from '../../composables/use-file-browser-virtual-layout';
 import { collectFileBrowserBoxSelectionEntries } from '../file-browser-box-selection-hit-test';
+import { findVirtualRowRangeOverlappingContentSpan } from '../file-browser-virtual-rows';
 
 function createEntry(path: string): DirEntry {
   return {
@@ -118,5 +119,44 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
     });
 
     expect(gapOnlySelection).toEqual([]);
+  });
+
+  it('narrows row scans to the selection vertical span', () => {
+    const entries = Array.from({ length: 200 }, (_, index) => createEntry(`/tmp/item-${index}`));
+    const rows = createFileBrowserVirtualRows({
+      entries,
+      layout: 'list',
+      viewportWidth: 800,
+    });
+    const contentRect = new DOMRect(100, 200, 800, 600);
+    const viewportRect = new DOMRect(100, 200, 800, 600);
+    const selectionBox = {
+      left: 100,
+      top: 242,
+      right: 900,
+      bottom: 270,
+    };
+    const { startIndex, endIndex } = findVirtualRowRangeOverlappingContentSpan(
+      rows,
+      selectionBox.top - viewportRect.top,
+      selectionBox.bottom - viewportRect.top,
+    );
+
+    expect(endIndex - startIndex).toBeLessThan(rows.length);
+
+    const selectedEntries = collectFileBrowserBoxSelectionEntries({
+      rows,
+      selectionBox,
+      layout: 'list',
+      contentRect,
+      viewportRect,
+      contentWidth: 800,
+      virtualContentOffset: 0,
+      scrollTop: 0,
+      increaseFileViewGaps: false,
+    });
+
+    expect(selectedEntries).toHaveLength(1);
+    expect(selectedEntries[0]?.path).toBe('/tmp/item-1');
   });
 });

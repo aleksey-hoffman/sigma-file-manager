@@ -5,6 +5,7 @@
 import type { DirEntry } from '@/types/dir-entry';
 import { getFileBrowserGridGap } from './file-browser-layout-gaps';
 import {
+  findVirtualRowRangeOverlappingContentSpan,
   getFileBrowserGridLayoutMetrics,
   type FileBrowserListVirtualRow,
   type FileBrowserVirtualRow,
@@ -94,13 +95,25 @@ export function collectFileBrowserBoxSelectionEntries(options: {
   const normalizedBox = normalizeSelectionBox(options.selectionBox);
   const matchedEntries: DirEntry[] = [];
   const matchedPaths = new Set<string>();
+  const selectionContentTop = normalizedBox.top - options.viewportRect.top
+    + options.scrollTop
+    - options.virtualContentOffset;
+  const selectionContentBottom = normalizedBox.bottom - options.viewportRect.top
+    + options.scrollTop
+    - options.virtualContentOffset;
+  const { startIndex, endIndex } = findVirtualRowRangeOverlappingContentSpan(
+    options.rows,
+    selectionContentTop,
+    selectionContentBottom,
+  );
+  const candidateRows = options.rows.slice(startIndex, endIndex);
 
   function getRowTop(rowStart: number): number {
     return options.viewportRect.top + rowStart + options.virtualContentOffset - options.scrollTop;
   }
 
-  if (options.layout === 'list') {
-    for (const row of options.rows) {
+  if (options.layout !== 'grid') {
+    for (const row of candidateRows) {
       if (row.type !== 'list-entry') {
         continue;
       }
@@ -134,14 +147,10 @@ export function collectFileBrowserBoxSelectionEntries(options: {
     return matchedEntries;
   }
 
-  if (options.layout !== 'grid') {
-    return matchedEntries;
-  }
-
   const gridGap = getFileBrowserGridGap(options.increaseFileViewGaps);
   const { columnWidth } = getFileBrowserGridLayoutMetrics(options.contentWidth, gridGap);
 
-  for (const row of options.rows) {
+  for (const row of candidateRows) {
     if (row.type !== 'grid-items') {
       continue;
     }

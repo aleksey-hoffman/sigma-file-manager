@@ -97,6 +97,8 @@ function handleAddressBarNavigate(path: string) {
 
 <style scoped>
 .file-browser-toolbar {
+  position: relative;
+  z-index: 10;
   border-bottom: 1px solid hsl(var(--border));
   container-type: inline-size;
 }

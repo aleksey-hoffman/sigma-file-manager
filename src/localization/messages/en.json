@@ -245,7 +245,7 @@
       "fileView": {
         "title": "File view",
         "enableBoxSelection": "Enable box selection",
-        "enableBoxSelectionDescription": "Drag on empty space to select multiple items with a selection box.",
+        "enableBoxSelectionDescription": "Drag on empty space to select multiple items with a selection box. Hold Ctrl or Shift to add to the selection; hold Alt to invert.",
         "increaseFileViewGaps": "Increase file view gaps",
         "increaseFileViewGapsDescription": "Adds side padding in list layout and increases gaps in grid layout for easier targeting."
       }

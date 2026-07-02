@@ -245,7 +245,7 @@
       "fileView": {
         "title": "फ़ाइल दृश्य",
         "enableBoxSelection": "बॉक्स चयन सक्षम करें",
-        "enableBoxSelectionDescription": "खाली जगह पर खींचकर चयन बॉक्स से कई आइटम चुनें।",
+        "enableBoxSelectionDescription": "खाली जगह पर खींचकर चयन बॉक्स से कई आइटम चुनें। चयन में जोड़ने के लिए Ctrl या Shift दबाए रखें; उलटने के लिए Alt।",
         "increaseFileViewGaps": "फ़ाइल दृश्य में अंतर बढ़ाएँ",
         "increaseFileViewGapsDescription": "सूची लेआउट में साइड padding जोड़ता है और ग्रिड लेआउट में अंतर बढ़ाकर चयन आसान बनाता है।"
       }

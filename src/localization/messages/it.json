@@ -216,7 +216,7 @@
       "fileView": {
         "title": "Vista file",
         "enableBoxSelection": "Abilita selezione con riquadro",
-        "enableBoxSelectionDescription": "Trascina su uno spazio vuoto per selezionare più elementi con un riquadro di selezione.",
+        "enableBoxSelectionDescription": "Trascina su uno spazio vuoto per selezionare più elementi con un riquadro di selezione. Tieni premuto Ctrl o Maiusc per aggiungere alla selezione; Alt per invertire.",
         "increaseFileViewGaps": "Aumenta gli spazi nella vista file",
         "increaseFileViewGapsDescription": "Aggiunge padding laterale nella vista elenco e aumenta le distanze nella vista griglia per una selezione più facile."
       }

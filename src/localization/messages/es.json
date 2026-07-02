@@ -216,7 +216,7 @@
       "fileView": {
         "title": "Vista de archivos",
         "enableBoxSelection": "Activar selección con cuadro",
-        "enableBoxSelectionDescription": "Arrastre en un espacio vacío para seleccionar varios elementos con un cuadro de selección.",
+        "enableBoxSelectionDescription": "Arrastre en un espacio vacío para seleccionar varios elementos con un cuadro de selección. Mantenga Ctrl o Mayús para añadir a la selección; Alt para invertir.",
         "increaseFileViewGaps": "Aumentar espacios en la vista de archivos",
         "increaseFileViewGapsDescription": "Añade relleno lateral en la vista de lista y aumenta los espacios en la vista de cuadrícula para facilitar la selección."
       }

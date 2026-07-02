@@ -245,7 +245,7 @@
       "fileView": {
         "title": "Pogled datotek",
         "enableBoxSelection": "Omogoči izbiro s kvadratom",
-        "enableBoxSelectionDescription": "Povlecite po praznem prostoru, da izberete več elementov s kvadratom izbire.",
+        "enableBoxSelectionDescription": "Povlecite po praznem prostoru, da izberete več elementov s kvadratom izbire. Za dodajanje k izbiri držite Ctrl ali Shift; za obrat izbiro Alt.",
         "increaseFileViewGaps": "Povečaj razmike v pogledu datotek",
         "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje."
       }

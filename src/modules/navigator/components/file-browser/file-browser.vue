@@ -370,19 +370,6 @@ defineExpose({
   transition: opacity 0.1s ease-in;
 }
 
-:deep(.file-browser-box-selection-overlay) {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  display: none;
-  box-sizing: border-box;
-  border: 1px solid hsl(var(--primary) / 55%);
-  background: hsl(var(--primary) / 18%);
-  pointer-events: none;
-  will-change: transform, width, height;
-}
-
 .cross-pane-drop-overlay-enter-from,
 .cross-pane-drop-overlay-leave-to {
   opacity: 0;

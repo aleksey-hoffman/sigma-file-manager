@@ -212,7 +212,7 @@
       "fileView": {
         "title": "نمای فایل",
         "enableBoxSelection": "فعال‌سازی انتخاب با کادر",
-        "enableBoxSelectionDescription": "روی فضای خالی بکشید تا چند مورد را با کادر انتخاب کنید.",
+        "enableBoxSelectionDescription": "روی فضای خالی بکشید تا چند مورد را با کادر انتخاب کنید. Ctrl یا Shift را نگه دارید تا به انتخاب اضافه شود؛ Alt برای معکوس کردن.",
         "increaseFileViewGaps": "افزایش فاصله‌ها در نمای فایل",
         "increaseFileViewGapsDescription": "padding کناری در نمای فهرست اضافه می‌کند و فاصله‌ها در نمای شبکه‌ای را برای هدف‌گیری آسان‌تر افزایش می‌دهد."
       }

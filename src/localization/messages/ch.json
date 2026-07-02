@@ -216,7 +216,7 @@
       "fileView": {
         "title": "文件视图",
         "enableBoxSelection": "启用框选",
-        "enableBoxSelectionDescription": "在空白区域拖动即可用选择框选中多个项目。",
+        "enableBoxSelectionDescription": "在空白区域拖动即可用选择框选中多个项目。按住 Ctrl 或 Shift 可添加到选择；按住 Alt 可反选。",
         "increaseFileViewGaps": "增大文件视图间距",
         "increaseFileViewGapsDescription": "增加列表布局的左右内边距以及网格布局的间距，便于选择。"
       }

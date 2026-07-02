@@ -245,7 +245,7 @@
       "fileView": {
         "title": "תצוגת קבצים",
         "enableBoxSelection": "הפעל בחירה עם תיבת סימון",
-        "enableBoxSelectionDescription": "גרור על שטח ריק כדי לבחור מספר פריטים עם תיבת בחירה.",
+        "enableBoxSelectionDescription": "גרור על שטח ריק כדי לבחור מספר פריטים עם תיבת בחירה. החזק Ctrl או Shift כדי להוסיף לבחירה; Alt כדי להפוך.",
         "increaseFileViewGaps": "הגדל רווחים בתצוגת קבצים",
         "increaseFileViewGapsDescription": "מוסיף ריווח צדדי בתצוגת רשימה ומגדיל רווחים בתצוגת רשת להקלה על הבחירה."
       }
