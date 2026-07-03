@@ -7,6 +7,12 @@ use base64::Engine;
 use std::path::Path;
 
 pub fn canonicalize_path(path: &Path) -> String {
+    #[cfg(windows)]
+    {
+        return prepare_shell_path(&path.to_string_lossy());
+    }
+
+    #[cfg(not(windows))]
     match path.canonicalize() {
         Ok(canonical) => {
             let path_str = canonical.to_string_lossy().to_string();
@@ -73,17 +79,34 @@ pub fn common_parent_directory_for_selections(
 }
 
 pub fn prepare_shell_path(file_path: &str) -> String {
-    let path = Path::new(file_path);
+    #[cfg(windows)]
+    let native_path = path_for_selection(file_path);
+    #[cfg(not(windows))]
+    let native_path = file_path.to_string();
+
+    let path = Path::new(&native_path);
     #[cfg(windows)]
     let resolved = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
     #[cfg(not(windows))]
     let resolved = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
 
-    resolved.to_string_lossy().replace('/', "\\")
+    #[cfg(windows)]
+    {
+        resolved.to_string_lossy().replace('/', "\\")
+    }
+    #[cfg(not(windows))]
+    {
+        resolved.to_string_lossy().into_owned()
+    }
 }
 
 pub fn shell_path_candidates(file_path: &str) -> Vec<String> {
-    let path = Path::new(file_path);
+    #[cfg(windows)]
+    let native_path = path_for_selection(file_path);
+    #[cfg(not(windows))]
+    let native_path = file_path.to_string();
+
+    let path = Path::new(&native_path);
     let mut candidates: Vec<String> = Vec::new();
 
     let mut push_candidate = |candidate: String| {
@@ -118,4 +141,33 @@ pub fn load_png_as_base64(path: &std::path::Path) -> Option<String> {
     }
 
     None
+}
+
+#[cfg(all(test, windows))]
+mod shell_path_tests {
+    use super::{path_for_selection, prepare_shell_path};
+
+    #[test]
+    fn path_for_selection_converts_unc_paths_to_backslashes() {
+        assert_eq!(
+            path_for_selection("//server.lan/share/file.png"),
+            r"\\server.lan\share\file.png",
+        );
+    }
+
+    #[test]
+    fn prepare_shell_path_converts_unc_paths_to_backslashes() {
+        assert_eq!(
+            prepare_shell_path("//server.lan/share/file.png"),
+            r"\\server.lan\share\file.png",
+        );
+    }
+
+    #[test]
+    fn prepare_shell_path_converts_local_windows_paths_to_backslashes() {
+        assert_eq!(
+            prepare_shell_path("C:/Users/aleks/Documents/file.txt"),
+            r"C:\Users\aleks\Documents\file.txt",
+        );
+    }
 }

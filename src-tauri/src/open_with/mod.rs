@@ -15,7 +15,10 @@ pub use types::{GetAssociatedProgramsResult, GetShellContextMenuResult, OpenWith
 
 use std::path::Path;
 use std::process::Command;
+#[cfg(not(windows))]
 use utils::canonicalize_path;
+#[cfg(windows)]
+use utils::{path_for_selection, prepare_shell_path};
 
 #[tauri::command]
 pub fn get_associated_programs(file_path: String) -> GetAssociatedProgramsResult {
@@ -49,7 +52,13 @@ pub fn open_with_program(
     program_path: String,
     arguments: Vec<String>,
 ) -> OpenWithResult {
+    #[cfg(windows)]
+    let native_file_path = path_for_selection(&file_path);
+    #[cfg(windows)]
+    let file = Path::new(&native_file_path);
+    #[cfg(not(windows))]
     let file = Path::new(&file_path);
+
     if !file.exists() {
         return OpenWithResult {
             success: false,
@@ -57,6 +66,9 @@ pub fn open_with_program(
         };
     }
 
+    #[cfg(windows)]
+    let absolute_file_path = prepare_shell_path(&file_path);
+    #[cfg(not(windows))]
     let absolute_file_path = canonicalize_path(file);
 
     #[cfg(target_os = "windows")]

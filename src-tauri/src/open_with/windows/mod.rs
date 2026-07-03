@@ -19,7 +19,7 @@ pub use open_path::open_path_default_impl;
 pub use shell_menu::open_native_properties_impl;
 
 use crate::open_with::types::OpenWithResult;
-use crate::open_with::utils::canonicalize_path;
+use crate::open_with::utils::{path_for_selection, prepare_shell_path};
 use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
 use std::process::Command;
@@ -28,7 +28,8 @@ use windows::Win32::UI::Shell::{ShellExecuteExW, SEE_MASK_INVOKEIDLIST, SHELLEXE
 use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
 pub fn open_native_open_with_dialog_impl(file_path: &str) -> OpenWithResult {
-    let file = Path::new(file_path);
+    let native_path = path_for_selection(file_path);
+    let file = Path::new(&native_path);
     if !file.exists() {
         return OpenWithResult {
             success: false,
@@ -36,7 +37,7 @@ pub fn open_native_open_with_dialog_impl(file_path: &str) -> OpenWithResult {
         };
     }
 
-    let absolute_path = canonicalize_path(file);
+    let absolute_path = prepare_shell_path(file_path);
 
     let verb_wide: Vec<u16> = std::ffi::OsStr::new("openas")
         .encode_wide()

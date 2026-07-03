@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::open_with::types::OpenWithResult;
-use crate::open_with::utils::{parent_directory_for_selection, prepare_shell_path};
+use crate::open_with::utils::{parent_directory_for_selection, path_for_selection, prepare_shell_path};
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
 use std::os::windows::process::CommandExt;
@@ -79,7 +79,8 @@ fn launch_with_cmd_start(absolute_path: &str, working_directory: Option<&str>) -
 }
 
 pub fn open_path_default_impl(file_path: &str) -> OpenWithResult {
-    let path = Path::new(file_path);
+    let native_path = path_for_selection(file_path);
+    let path = Path::new(&native_path);
 
     if !path.exists() {
         return OpenWithResult {
