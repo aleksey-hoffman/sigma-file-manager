@@ -31,6 +31,7 @@ mod terminal;
 mod url_drop;
 mod user_storage_files_config;
 pub mod utils;
+mod windows_installation;
 #[cfg(windows)]
 mod windows_print_view_webview;
 

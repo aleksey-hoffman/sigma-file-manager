@@ -1,0 +1,18 @@
+[package]
+name = "sigma-file-manager-launcher"
+description = "Shell launcher for Sigma File Manager default file manager integration"
+version = "2.1.1"
+license = "GPL-3.0-or-later"
+authors = ["Aleksey Hoffman"]
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "sigma-file-manager-launcher"
+path = "src/main.rs"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+] }

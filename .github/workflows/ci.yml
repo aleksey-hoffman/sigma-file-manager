@@ -58,3 +58,23 @@ jobs:
 
       - name: Cargo test (lib)
         run: cargo test --manifest-path src-tauri/Cargo.toml --lib
+
+  tauri-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-windows
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Cargo check release lib
+        run: cargo check --manifest-path src-tauri/Cargo.toml --release --lib

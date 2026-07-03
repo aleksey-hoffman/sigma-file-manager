@@ -3,6 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 #[cfg(windows)]
+mod external_registry;
+#[cfg(windows)]
+mod launcher;
+#[cfg(windows)]
 use std::fs;
 #[cfg(windows)]
 use std::io::ErrorKind;
@@ -11,6 +15,8 @@ use std::path::PathBuf;
 #[cfg(windows)]
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[cfg(windows)]
+use crate::windows_installation;
 #[cfg(windows)]
 use serde::{Deserialize, Serialize};
 #[cfg(windows)]
@@ -56,7 +62,23 @@ struct RegistryValueSnapshot {
 
 #[cfg(windows)]
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-struct RegistryKeySnapshot {
+#[serde(untagged)]
+enum RegistryKeySnapshot {
+    RegExport(RegistryKeyExportSnapshot),
+    Native(RegistryKeyTreeSnapshot),
+}
+
+#[cfg(windows)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+struct RegistryKeyExportSnapshot {
+    path: String,
+    existed: bool,
+    reg_export: String,
+}
+
+#[cfg(windows)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+struct RegistryKeyTreeSnapshot {
     path: String,
     existed: bool,
     values: Vec<RegistryValueSnapshot>,
@@ -74,10 +96,8 @@ struct DefaultFileManagerRegistrySnapshot {
 }
 
 #[cfg(windows)]
-fn current_executable_path() -> Result<String, String> {
-    std::env::current_exe()
-        .map(|path| path.to_string_lossy().into_owned())
-        .map_err(|error| format!("Failed to resolve executable path: {error}"))
+fn uses_external_registry_access() -> bool {
+    windows_installation::is_windows_store_installation()
 }
 
 #[cfg(windows)]
@@ -87,14 +107,14 @@ fn normalize_command(command: &str) -> String {
 
 #[cfg(windows)]
 fn expected_folder_command() -> Result<String, String> {
-    let executable_path = current_executable_path()?;
-    Ok(format!("\"{executable_path}\" \"%1\""))
+    let launcher_path = launcher::deployed_launcher_executable_path()?;
+    Ok(format!("\"{launcher_path}\" \"%1\""))
 }
 
 #[cfg(windows)]
 fn expected_open_new_window_command() -> Result<String, String> {
-    let executable_path = current_executable_path()?;
-    Ok(format!("\"{executable_path}\""))
+    let launcher_path = launcher::deployed_launcher_executable_path()?;
+    Ok(format!("\"{launcher_path}\""))
 }
 
 #[cfg(windows)]
@@ -187,6 +207,10 @@ fn remove_snapshot(app_handle: &tauri::AppHandle) -> Result<(), String> {
 
 #[cfg(windows)]
 fn read_string_value(path: &str, name: &str) -> Result<Option<String>, String> {
+    if uses_external_registry_access() {
+        return external_registry::read_string_value(path, name);
+    }
+
     let current_user = RegKey::predef(HKEY_CURRENT_USER);
     let key = match current_user.open_subkey(path) {
         Ok(key) => key,
@@ -256,17 +280,36 @@ fn snapshot_string_value(name: &str, data: &str) -> RegistryValueSnapshot {
 }
 
 #[cfg(windows)]
+fn native_key_snapshot(
+    path: String,
+    existed: bool,
+    values: Vec<RegistryValueSnapshot>,
+    subkeys: Vec<RegistryKeySnapshot>,
+) -> RegistryKeySnapshot {
+    RegistryKeySnapshot::Native(RegistryKeyTreeSnapshot {
+        path,
+        existed,
+        values,
+        subkeys,
+    })
+}
+
+#[cfg(windows)]
 fn snapshot_key(path: &str) -> Result<RegistryKeySnapshot, String> {
+    if uses_external_registry_access() {
+        return external_registry::snapshot_key(path);
+    }
+
     let current_user = RegKey::predef(HKEY_CURRENT_USER);
     let key = match current_user.open_subkey(path) {
         Ok(key) => key,
         Err(error) if error.kind() == ErrorKind::NotFound => {
-            return Ok(RegistryKeySnapshot {
-                path: path.to_string(),
-                existed: false,
-                values: Vec::new(),
-                subkeys: Vec::new(),
-            });
+            return Ok(native_key_snapshot(
+                path.to_string(),
+                false,
+                Vec::new(),
+                Vec::new(),
+            ));
         }
         Err(error) => return Err(format!("Failed to open registry key \"{path}\": {error}")),
     };
@@ -300,12 +343,7 @@ fn snapshot_key(path: &str) -> Result<RegistryKeySnapshot, String> {
         subkeys.push(snapshot_key(&format!("{path}\\{subkey_name}"))?);
     }
 
-    Ok(RegistryKeySnapshot {
-        path: path.to_string(),
-        existed: true,
-        values,
-        subkeys,
-    })
+    Ok(native_key_snapshot(path.to_string(), true, values, subkeys))
 }
 
 #[cfg(windows)]
@@ -318,6 +356,15 @@ fn snapshot_registry_roots() -> Result<Vec<RegistryKeySnapshot>, String> {
 
 #[cfg(windows)]
 fn delete_registry_key_tree_if_exists(path: &str) -> Result<(), String> {
+    if uses_external_registry_access() {
+        return external_registry::delete_key_tree(path);
+    }
+
+    delete_registry_key_tree_with_winreg(path)
+}
+
+#[cfg(windows)]
+fn delete_registry_key_tree_with_winreg(path: &str) -> Result<(), String> {
     let current_user = RegKey::predef(HKEY_CURRENT_USER);
 
     match current_user.delete_subkey_all(path) {
@@ -328,7 +375,7 @@ fn delete_registry_key_tree_if_exists(path: &str) -> Result<(), String> {
 }
 
 #[cfg(windows)]
-fn restore_existing_key(snapshot: &RegistryKeySnapshot) -> Result<(), String> {
+fn restore_existing_key(snapshot: &RegistryKeyTreeSnapshot) -> Result<(), String> {
     let current_user = RegKey::predef(HKEY_CURRENT_USER);
     let (key, _) = current_user
         .create_subkey(&snapshot.path)
@@ -355,8 +402,10 @@ fn restore_existing_key(snapshot: &RegistryKeySnapshot) -> Result<(), String> {
     }
 
     for subkey_snapshot in &snapshot.subkeys {
-        if subkey_snapshot.existed {
-            restore_existing_key(subkey_snapshot)?;
+        if let RegistryKeySnapshot::Native(subkey_snapshot) = subkey_snapshot {
+            if subkey_snapshot.existed {
+                restore_existing_key(subkey_snapshot)?;
+            }
         }
     }
 
@@ -366,10 +415,18 @@ fn restore_existing_key(snapshot: &RegistryKeySnapshot) -> Result<(), String> {
 #[cfg(windows)]
 fn restore_registry_roots(snapshots: &[RegistryKeySnapshot]) -> Result<(), String> {
     for snapshot in snapshots {
-        delete_registry_key_tree_if_exists(&snapshot.path)?;
+        match snapshot {
+            RegistryKeySnapshot::RegExport(snapshot) => {
+                external_registry::delete_key_tree(&snapshot.path)?;
+                external_registry::import_snapshot(&snapshot.reg_export)?;
+            }
+            RegistryKeySnapshot::Native(snapshot) => {
+                delete_registry_key_tree_with_winreg(&snapshot.path)?;
 
-        if snapshot.existed {
-            restore_existing_key(snapshot)?;
+                if snapshot.existed {
+                    restore_existing_key(snapshot)?;
+                }
+            }
         }
     }
 
@@ -378,6 +435,11 @@ fn restore_registry_roots(snapshots: &[RegistryKeySnapshot]) -> Result<(), Strin
 
 #[cfg(windows)]
 fn write_shell_command(command_key: &str, command_value: &str) -> Result<(), String> {
+    if uses_external_registry_access() {
+        external_registry::write_string_value(command_key, "", command_value)?;
+        return external_registry::write_string_value(command_key, "DelegateExecute", "");
+    }
+
     let current_user = RegKey::predef(HKEY_CURRENT_USER);
     let (key, _) = current_user
         .create_subkey(command_key)
@@ -421,59 +483,59 @@ fn expected_legacy_owned_registry_roots() -> Result<Vec<RegistryKeySnapshot>, St
     let open_new_window_command = expected_open_new_window_command()?;
 
     Ok(vec![
-        RegistryKeySnapshot {
-            path: r"SOFTWARE\Classes\Folder\shell\open".to_string(),
-            existed: true,
-            values: Vec::new(),
-            subkeys: vec![RegistryKeySnapshot {
-                path: FOLDER_OPEN_COMMAND_KEY.to_string(),
-                existed: true,
-                values: vec![
+        native_key_snapshot(
+            r"SOFTWARE\Classes\Folder\shell\open".to_string(),
+            true,
+            Vec::new(),
+            vec![native_key_snapshot(
+                FOLDER_OPEN_COMMAND_KEY.to_string(),
+                true,
+                vec![
                     snapshot_string_value("", &folder_command),
                     snapshot_string_value("DelegateExecute", ""),
                 ],
-                subkeys: Vec::new(),
-            }],
-        },
-        RegistryKeySnapshot {
-            path: r"SOFTWARE\Classes\Folder\shell\explore".to_string(),
-            existed: true,
-            values: Vec::new(),
-            subkeys: vec![RegistryKeySnapshot {
-                path: FOLDER_EXPLORE_COMMAND_KEY.to_string(),
-                existed: true,
-                values: vec![
+                Vec::new(),
+            )],
+        ),
+        native_key_snapshot(
+            r"SOFTWARE\Classes\Folder\shell\explore".to_string(),
+            true,
+            Vec::new(),
+            vec![native_key_snapshot(
+                FOLDER_EXPLORE_COMMAND_KEY.to_string(),
+                true,
+                vec![
                     snapshot_string_value("", &folder_command),
                     snapshot_string_value("DelegateExecute", ""),
                 ],
-                subkeys: Vec::new(),
-            }],
-        },
-        RegistryKeySnapshot {
-            path: r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}".to_string(),
-            existed: true,
-            values: Vec::new(),
-            subkeys: vec![RegistryKeySnapshot {
-                path: r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell"
+                Vec::new(),
+            )],
+        ),
+        native_key_snapshot(
+            r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}".to_string(),
+            true,
+            Vec::new(),
+            vec![native_key_snapshot(
+                r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell"
                     .to_string(),
-                existed: true,
-                values: Vec::new(),
-                subkeys: vec![RegistryKeySnapshot {
-                    path: r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell\opennewwindow".to_string(),
-                    existed: true,
-                    values: Vec::new(),
-                    subkeys: vec![RegistryKeySnapshot {
-                        path: OPEN_NEW_WINDOW_COMMAND_KEY.to_string(),
-                        existed: true,
-                        values: vec![
+                true,
+                Vec::new(),
+                vec![native_key_snapshot(
+                    r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell\opennewwindow".to_string(),
+                    true,
+                    Vec::new(),
+                    vec![native_key_snapshot(
+                        OPEN_NEW_WINDOW_COMMAND_KEY.to_string(),
+                        true,
+                        vec![
                             snapshot_string_value("", &open_new_window_command),
                             snapshot_string_value("DelegateExecute", ""),
                         ],
-                        subkeys: Vec::new(),
-                    }],
-                }],
-            }],
-        },
+                        Vec::new(),
+                    )],
+                )],
+            )],
+        ),
     ])
 }
 
@@ -507,10 +569,21 @@ pub fn is_current_default_file_manager() -> Result<bool, String> {
 
 #[cfg(windows)]
 fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, String> {
-    let existing_snapshot = read_snapshot(app_handle)?;
+    let existing_snapshot = match read_snapshot(app_handle) {
+        Ok(snapshot) => snapshot,
+        Err(error) if current_registry_is_owned_by_sfm()? => {
+            let application_launch_target = launcher::application_launch_target()?;
+            launcher::deploy(&application_launch_target)?;
+            eprintln!("Ignoring unreadable registry snapshot while Sigma File Manager already owns the default file manager registry keys: {error}");
+            return detect_default_file_manager(app_handle);
+        }
+        Err(error) => return Err(error),
+    };
 
     if existing_snapshot.is_none() && current_registry_is_owned_by_sfm()? {
-        return Ok(true);
+        let application_launch_target = launcher::application_launch_target()?;
+        launcher::deploy(&application_launch_target)?;
+        return detect_default_file_manager(app_handle);
     }
 
     let current_keys = snapshot_registry_roots()?;
@@ -518,6 +591,9 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
         Some(snapshot) if current_keys == snapshot.owned_keys => snapshot.original_keys,
         _ => current_keys.clone(),
     };
+
+    let application_launch_target = launcher::application_launch_target()?;
+    launcher::deploy(&application_launch_target)?;
 
     let folder_command = expected_folder_command()?;
     let open_new_window_command = expected_open_new_window_command()?;
@@ -530,6 +606,7 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
     })();
 
     if let Err(error) = apply_result {
+        let _ = launcher::remove_deployment();
         let rollback_result = restore_registry_roots(&original_keys);
         return match rollback_result {
             Ok(()) => Err(error),
@@ -540,6 +617,7 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
     let owned_keys = match snapshot_registry_roots() {
         Ok(keys) => keys,
         Err(error) => {
+            let _ = launcher::remove_deployment();
             let rollback_result = restore_registry_roots(&original_keys);
             return match rollback_result {
                 Ok(()) => Err(error),
@@ -551,12 +629,13 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
     let snapshot = DefaultFileManagerRegistrySnapshot {
         version: SNAPSHOT_VERSION,
         created_at_unix_seconds: current_unix_time_seconds(),
-        executable_path: current_executable_path()?,
+        executable_path: application_launch_target,
         original_keys,
         owned_keys,
     };
 
     if let Err(error) = write_snapshot(app_handle, &snapshot) {
+        let _ = launcher::remove_deployment();
         let rollback_result = restore_registry_roots(&snapshot.original_keys);
         return match rollback_result {
             Ok(()) => Err(error),
@@ -580,6 +659,7 @@ fn disable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, S
 
         restore_registry_roots(&snapshot.original_keys)?;
         remove_snapshot(app_handle)?;
+        launcher::remove_deployment()?;
 
         return detect_default_file_manager(app_handle);
     }
@@ -599,6 +679,8 @@ fn disable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, S
     for path in ROOT_REGISTRY_KEYS {
         delete_registry_key_tree_if_exists(path)?;
     }
+
+    launcher::remove_deployment()?;
 
     detect_default_file_manager(app_handle)
 }
@@ -660,7 +742,10 @@ mod tests {
         let owned_keys = expected_legacy_owned_registry_roots().unwrap();
         let mut changed_keys = owned_keys.clone();
 
-        changed_keys[0]
+        let RegistryKeySnapshot::Native(first_key) = &mut changed_keys[0] else {
+            panic!("expected native snapshot");
+        };
+        first_key
             .values
             .push(snapshot_string_value("ExternalValue", "external"));
 
@@ -668,13 +753,27 @@ mod tests {
     }
 
     #[test]
+    fn parse_reg_query_string_value_reads_default_value() {
+        let output = "\
+HKEY_CURRENT_USER\\SOFTWARE\\Classes\\Folder\\shell\\open\\command\r\n\
+    (Default)    REG_SZ    \"C:\\\\Users\\\\Example\\\\AppData\\\\Local\\\\Sigma File Manager\\\\sigma-file-manager-launcher.exe\" \"%1\"\r\n\
+";
+        let value = external_registry::parse_reg_query_string_value(output, "");
+
+        assert_eq!(
+            value,
+            Some(r#""C:\\Users\\Example\\AppData\\Local\\Sigma File Manager\\sigma-file-manager-launcher.exe" "%1""#.to_string())
+        );
+    }
+
+    #[test]
     fn registry_snapshot_json_preserves_raw_values() {
-        let key = RegistryKeySnapshot {
-            path: r"SOFTWARE\Classes\Folder\shell\open".to_string(),
-            existed: true,
-            values: vec![snapshot_string_value("", "explorer.exe \"%1\"")],
-            subkeys: Vec::new(),
-        };
+        let key = native_key_snapshot(
+            r"SOFTWARE\Classes\Folder\shell\open".to_string(),
+            true,
+            vec![snapshot_string_value("", "explorer.exe \"%1\"")],
+            Vec::new(),
+        );
         let snapshot = DefaultFileManagerRegistrySnapshot {
             version: SNAPSHOT_VERSION,
             created_at_unix_seconds: 123,

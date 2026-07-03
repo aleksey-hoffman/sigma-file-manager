@@ -7,11 +7,11 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use crate::utils::unique_path_with_index;
 use futures_util::StreamExt;
 use serde::Serialize;
 use serde_json::Value;
 use tauri::Emitter;
-use crate::utils::unique_path_with_index;
 
 const GITHUB_RELEASES_API_URL: &str =
     "https://api.github.com/repos/aleksey-hoffman/sigma-file-manager/releases?per_page=100";
@@ -91,10 +91,7 @@ fn parse_github_release(value: &Value) -> Option<GithubRelease> {
 
 fn parse_github_releases(body: &str) -> Vec<GithubRelease> {
     let releases: Vec<Value> = serde_json::from_str(body).unwrap_or_default();
-    releases
-        .iter()
-        .filter_map(parse_github_release)
-        .collect()
+    releases.iter().filter_map(parse_github_release).collect()
 }
 
 fn pick_best_installable_upgrade(
@@ -292,48 +289,10 @@ fn pick_release_installer_asset(_assets: &[Value]) -> Option<(String, String)> {
     None
 }
 
-fn executable_path_indicates_windows_store_install(executable_path: &str) -> bool {
-    let lower = executable_path.to_lowercase();
-    lower.contains("\\windowsapps\\") || lower.contains("\\program files\\windowsapps\\")
-}
-
-#[cfg(windows)]
-fn is_running_in_windows_msix_package() -> bool {
-    use windows::core::PWSTR;
-    use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS};
-    use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFamilyName;
-
-    let mut length = 0u32;
-    let result = unsafe { GetCurrentPackageFamilyName(&mut length, PWSTR::null()) };
-    result == ERROR_INSUFFICIENT_BUFFER || result == ERROR_SUCCESS
-}
-
-#[cfg(not(windows))]
-fn is_running_in_windows_msix_package() -> bool {
-    false
-}
-
-#[cfg(windows)]
-fn is_windows_store_installation() -> bool {
-    if is_running_in_windows_msix_package() {
-        return true;
-    }
-
-    std::env::current_exe()
-        .ok()
-        .map(|path| executable_path_indicates_windows_store_install(&path.to_string_lossy()))
-        .unwrap_or(false)
-}
-
-#[cfg(not(windows))]
-fn is_windows_store_installation() -> bool {
-    false
-}
-
 fn is_managed_by_external_package_manager() -> bool {
     std::env::var_os("SNAP").is_some()
         || std::env::var_os("FLATPAK_ID").is_some()
-        || is_windows_store_installation()
+        || crate::windows_installation::is_windows_store_installation()
 }
 
 #[tauri::command]
@@ -578,7 +537,10 @@ mod tests {
         .expect("expected upgrade");
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
         assert_eq!(upgrade.1, "https://example.com/beta2.exe");
-        assert_eq!(upgrade.2, "Sigma-File-Manager-2.0.0-beta.2-windows-setup.exe");
+        assert_eq!(
+            upgrade.2,
+            "Sigma-File-Manager-2.0.0-beta.2-windows-setup.exe"
+        );
     }
 
     #[test]
@@ -609,16 +571,6 @@ mod tests {
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
         assert_eq!(upgrade.1, "https://example.com/beta2.AppImage");
         assert_eq!(upgrade.2, "Sigma-File-Manager-2.0.0-beta.2-linux.AppImage");
-    }
-
-    #[test]
-    fn executable_path_indicates_windows_store_install_matches_windows_apps() {
-        assert!(executable_path_indicates_windows_store_install(
-            r"C:\Program Files\WindowsApps\6609AlekseyHoffman.SigmaFileManager_2.1.0.0_x64__abc123\sigma-file-manager.exe"
-        ));
-        assert!(!executable_path_indicates_windows_store_install(
-            r"C:\Program Files\Sigma File Manager\sigma-file-manager.exe"
-        ));
     }
 
     #[test]

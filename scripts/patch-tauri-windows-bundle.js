@@ -16,6 +16,10 @@ const replacements = [
     from: 'const exeName = `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
     to: 'const exeName = config.executable || `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
   },
+  {
+    from: 'const executable = `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
+    to: 'const executable = config.executable || `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
+  },
 ];
 
 for (const replacement of replacements) {

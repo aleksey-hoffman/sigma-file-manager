@@ -6,12 +6,20 @@
   "capabilities": {
     "general": [
       "internetClient"
+    ],
+    "restricted": [
+      "unvirtualizedResources"
     ]
   },
   "extensions": {
     "shareTarget": false,
     "fileAssociations": [],
-    "protocolHandlers": []
+    "protocolHandlers": [],
+    "appExecutionAliases": [
+      {
+        "alias": "sigma-file-manager.exe"
+      }
+    ]
   },
   "signing": {
     "pfx": null,

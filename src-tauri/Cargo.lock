@@ -5708,6 +5708,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "sigma-file-manager-launcher"
+version = "2.1.1"
+dependencies = [
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "signal-hook-registry"
 version = "1.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
