@@ -24,6 +24,7 @@ export function useFileBrowserExternalDrop(options: {
   onDrop: (sourcePaths: string[], targetPath: string, operation: DragOperationType) => void;
   onUrlDrop: (urls: string[], targetPath: string) => void;
   disableBackgroundDrop?: boolean;
+  enabled?: Ref<boolean>;
 }) {
   const dismissalLayerStore = useDismissalLayerStore();
   const dropOverlayStore = useDropOverlayStore();
@@ -270,6 +271,10 @@ export function useFileBrowserExternalDrop(options: {
     listen<UrlDropEventPayload>(
       'app://url-drop',
       (event) => {
+        if (options.enabled && !options.enabled.value) {
+          return;
+        }
+
         if (!isUrlDrop.value || !isExternalDragActive.value) {
           return;
         }
@@ -294,6 +299,11 @@ export function useFileBrowserExternalDrop(options: {
 
     getCurrentWebview()
       .onDragDropEvent((event) => {
+        if (options.enabled && !options.enabled.value) {
+          resetState();
+          return;
+        }
+
         if (isBackgroundManagerOpen.value) {
           return;
         }

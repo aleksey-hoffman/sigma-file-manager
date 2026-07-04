@@ -36,6 +36,7 @@ export function useFileBrowserDrag(options: {
   onDrop: FileBrowserDragDropHandler;
   fallbackDropHandler?: FileBrowserDragDropHandler | null;
   disableBackgroundDrop?: boolean;
+  enabled?: Ref<boolean>;
 }) {
   const dragSession = useFileBrowserDragSession();
   const crossPaneDropTargetPaneId = getCrossPaneDropTargetPaneId();
@@ -63,6 +64,7 @@ export function useFileBrowserDrag(options: {
 
   function handleDragMouseDown(entry: DirEntry, event: MouseEvent) {
     if (event.button !== 0) return;
+    if (options.enabled && !options.enabled.value) return;
 
     mouseDownEntry = entry;
     mouseDownX = event.clientX;
@@ -95,6 +97,10 @@ export function useFileBrowserDrag(options: {
   }
 
   function startDrag(entry: DirEntry, event: MouseEvent) {
+    if (options.enabled && !options.enabled.value) {
+      return;
+    }
+
     if (!options.isEntrySelected(entry)) {
       options.replaceSelection(entry);
     }

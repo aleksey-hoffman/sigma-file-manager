@@ -49,6 +49,7 @@ function createMouseEvent(overrides: Partial<MouseEvent> = {}): MouseEvent {
 
 function createClickSelectionHarness(options: {
   getCurrentTime?: () => number;
+  getDoubleClickDelayMs?: () => number;
 } = {}) {
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
@@ -113,6 +114,7 @@ function createClickSelectionHarness(options: {
     onOpenProperties,
     onMiddleClickOpenInNewTab,
     isWindows: false,
+    getDoubleClickDelayMs: options.getDoubleClickDelayMs,
     getCurrentTime: options.getCurrentTime,
   });
 
@@ -244,6 +246,26 @@ describe('useFileBrowserClickSelection', () => {
     harness.handleEntryMouseUp(entry, createMouseEvent());
 
     expect(harness.onOpen).not.toHaveBeenCalled();
+  });
+
+  it('respects a custom double click delay from settings', () => {
+    let currentTime = 1000;
+    const entry = createEntry();
+    const harness = createClickSelectionHarness({
+      getCurrentTime: () => currentTime,
+      getDoubleClickDelayMs: () => 600,
+    });
+
+    harness.handleEntryMouseDown(entry, createMouseEvent());
+    harness.handleEntryMouseUp(entry, createMouseEvent());
+
+    currentTime += 500;
+
+    harness.handleEntryMouseDown(entry, createMouseEvent());
+    harness.handleEntryMouseUp(entry, createMouseEvent());
+
+    expect(harness.onOpen).toHaveBeenCalledTimes(1);
+    expect(harness.onOpen).toHaveBeenCalledWith(entry);
   });
 
   it('clears pending double click state on reset', () => {

@@ -112,10 +112,13 @@ function createDropTarget(path: string): HTMLElement {
   return element;
 }
 
-async function mountExternalDrop() {
+async function mountExternalDrop(options: {
+  enabled?: boolean;
+} = {}) {
   const componentRef = ref<Element | null>(null);
   const currentPath = ref('/current');
   const entriesContainerRef = ref<Element | null>(null);
+  const enabled = ref(options.enabled ?? true);
   const onDrop = vi.fn<(sourcePaths: string[], targetPath: string, operation: DragOperationType) => void>();
   const onUrlDrop = vi.fn<(urls: string[], targetPath: string) => void>();
   let externalDrop = {} as ReturnType<typeof useFileBrowserExternalDrop>;
@@ -128,6 +131,7 @@ async function mountExternalDrop() {
         entriesContainerRef,
         onDrop,
         onUrlDrop,
+        enabled,
       });
 
       return {
@@ -235,5 +239,42 @@ describe('useFileBrowserExternalDrop', () => {
     });
 
     expect(mounted.onDrop).toHaveBeenCalledWith(['source.txt'], 'folder-b', 'move');
+  });
+
+  it('ignores external drops when drag and drop is disabled', async () => {
+    const mounted = await mountExternalDrop({ enabled: false });
+    mountedWrapper = mounted.wrapper;
+
+    setElementRect(mounted.componentRef.value, {
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 200,
+    });
+
+    const firstTarget = createDropTarget('folder-a');
+    mounted.entriesContainerRef.value.append(firstTarget);
+
+    dragDropHandler?.({
+      payload: {
+        type: 'enter',
+        paths: ['source.txt'],
+        position: {
+          x: 50,
+          y: 50,
+        },
+      },
+    });
+
+    dragDropHandler?.({
+      payload: {
+        type: 'drop',
+        paths: ['source.txt'],
+      },
+    });
+
+    expect(mounted.onDrop).not.toHaveBeenCalled();
+    expect(mounted.externalDrop.isExternalDragActive.value).toBe(false);
+    expect(firstTarget.hasAttribute('data-drag-over')).toBe(false);
   });
 });

@@ -31,6 +31,7 @@ import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file'
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
@@ -49,6 +50,7 @@ export function useFileBrowserSelection(
 ) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
+  const userSettingsStore = useUserSettingsStore();
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
@@ -260,6 +262,7 @@ export function useFileBrowserSelection(
       void openEntriesInNewTabs([entry]);
     },
     isWindows: platformStore.isWindows,
+    getDoubleClickDelayMs: () => userSettingsStore.userSettings.navigator.doubleClickDelayMs,
   });
 
   function handleEntryFocus(entry: DirEntry, event: FocusEvent) {

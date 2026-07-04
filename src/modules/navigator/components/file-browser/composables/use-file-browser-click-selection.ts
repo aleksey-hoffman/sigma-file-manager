@@ -51,9 +51,11 @@ export function useFileBrowserClickSelection(options: {
   onOpenProperties: (entries: DirEntry[]) => void;
   onMiddleClickOpenInNewTab: (entry: DirEntry) => void;
   isWindows: boolean;
+  getDoubleClickDelayMs?: () => number;
   getCurrentTime?: () => number;
 }) {
   const getCurrentTime = options.getCurrentTime ?? (() => Date.now());
+  const getDoubleClickDelayMs = options.getDoubleClickDelayMs ?? (() => UI_CONSTANTS.DOUBLE_CLICK_DELAY);
 
   const mouseDownState = ref<FileBrowserMouseDownState>({
     item: null,
@@ -113,7 +115,12 @@ export function useFileBrowserClickSelection(options: {
 
     const { wasSelected, pendingDoubleClick, ctrlKey, shiftKey } = mouseDownState.value;
     const currentTime = getCurrentTime();
-    const entryIsDoubleClick = isDoubleClick(pendingDoubleClick, entry.path, currentTime);
+    const entryIsDoubleClick = isDoubleClick(
+      pendingDoubleClick,
+      entry.path,
+      currentTime,
+      getDoubleClickDelayMs(),
+    );
 
     if (entryIsDoubleClick && !ctrlKey && !shiftKey) {
       clearPendingDoubleClick();

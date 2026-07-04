@@ -244,6 +244,10 @@
       },
       "fileView": {
         "title": "File view",
+        "doubleClickDelay": "Double-click delay: {n} ms",
+        "doubleClickDelayDescription": "Increase the window used to detect a double click before opening files or folders.",
+        "enableDragAndDrop": "Enable drag and drop",
+        "enableDragAndDropDescription": "Turn this off to prevent accidental move or copy operations by dragging files and folders.",
         "enableBoxSelection": "Enable box selection",
         "enableBoxSelectionDescription": "Drag on empty space to select multiple items with a selection box. Hold Ctrl or Shift to add to the selection; hold Alt to invert.",
         "increaseFileViewGaps": "Increase file view gaps",
@@ -502,7 +506,7 @@
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, startup, boot, login, launch, system, wake",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "file view, box selection, drag selection, list, grid, gaps, padding, spacing",
+    "fileView": "file view, double click, drag and drop, box selection, drag selection, list, grid, gaps, padding, spacing",
     "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "drag": {

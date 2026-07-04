@@ -139,6 +139,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       listSortDirection: 'asc',
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
+      doubleClickDelayMs: 300,
+      enableDragAndDrop: true,
       enableBoxSelection: false,
       increaseFileViewGaps: false,
     },

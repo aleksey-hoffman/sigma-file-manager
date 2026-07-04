@@ -107,10 +107,13 @@ const isActive = computed(() => (
 const canCloseAllDuplicateTabs = computed(() => workspacesStore.hasDuplicatePathTabs);
 const dropTargetTab = computed(() => props.tabGroup.find(tab => tab.type === 'directory'));
 const isFileBrowserDragActive = computed(() => activeFileBrowserDragState.value.isActive);
+const dragAndDropEnabled = computed(() => userSettingsStore.userSettings.navigator.enableDragAndDrop);
 const isTabPreviewDisabled = computed(() =>
   !(props.previewEnabled && showTabPreview) || isDropdownOpen.value || isFileBrowserDragActive.value,
 );
-const canDropOnTab = computed(() => isFileBrowserDragActive.value && !!dropTargetTab.value?.path);
+const canDropOnTab = computed(() =>
+  dragAndDropEnabled.value && isFileBrowserDragActive.value && !!dropTargetTab.value?.path,
+);
 
 const { start: startDragHoverOpenTimer, stop: stopDragHoverOpenTimer } = useTimeoutFn(() => {
   if (!isFileBrowserDragActive.value || isActive.value || props.tabGroup.length === 0) {

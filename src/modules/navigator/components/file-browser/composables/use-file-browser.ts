@@ -263,6 +263,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const enableBoxSelection = computed(
     () => userSettingsStore.userSettings.navigator.enableBoxSelection,
   );
+  const enableDragAndDrop = computed(
+    () => userSettingsStore.userSettings.navigator.enableDragAndDrop,
+  );
   const increaseFileViewGaps = computed(
     () => userSettingsStore.userSettings.navigator.increaseFileViewGaps,
   );
@@ -387,6 +390,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         operation,
       );
     },
+    enabled: enableDragAndDrop,
   });
 
   const boxSelection = useFileBrowserBoxSelection({
@@ -417,6 +421,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     onUrlDrop: (urls, targetPath) => {
       selection.handleExternalUrlDrop(urls, targetPath);
     },
+    enabled: enableDragAndDrop,
   });
 
   const actions = useFileBrowserActions({
