@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import {
-  computed, inject, ref, watch, onBeforeUnmount,
+  computed, inject, nextTick, ref, watch, onBeforeUnmount,
 } from 'vue';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import DirEntryContextMenu from './dir-entry-context-menu.vue';
@@ -51,6 +51,7 @@ const permanentDeleteIsOpen = permanentDeleteConfirm.isOpen;
 const permanentDeletePendingEntries = permanentDeleteConfirm.pendingEntries;
 
 const contextMenuOpenCount = inject(CONTEXT_MENU_OPEN_COUNT_KEY, null);
+const showContextMenuContent = ref(false);
 const isContextMenuOpenForThisInstance = ref(false);
 const renameDialogOpen = ref(false);
 const renameTarget = ref<DirEntry | null>(null);
@@ -114,12 +115,26 @@ function handleMiddleClick(event: MouseEvent) {
   openEntriesInNewTabs([dirEntry.value]);
 }
 
+function handleContextMenu() {
+  showContextMenuContent.value = true;
+}
+
 function handleContextMenuOpenChange(isOpen: boolean) {
   isContextMenuOpenForThisInstance.value = isOpen;
+
+  if (!isOpen) {
+    showContextMenuContent.value = false;
+  }
 
   if (!contextMenuOpenCount) return;
 
   contextMenuOpenCount.value += isOpen ? 1 : -1;
+}
+
+function closeContextMenu() {
+  void nextTick(() => {
+    showContextMenuContent.value = false;
+  });
 }
 
 function handleRename(entry: DirEntry) {
@@ -176,18 +191,21 @@ function handleNewItemCancel() {
         class="dir-entry-interactive"
         :data-drop-target="!isFile && !props.disableDropTarget || undefined"
         :data-entry-path="!isFile && !props.disableDropTarget ? path : undefined"
+        @contextmenu="handleContextMenu"
         @mousedown="handleMiddleClick"
       >
         <slot />
       </div>
     </ContextMenuTrigger>
     <DirEntryContextMenu
+      v-if="showContextMenuContent"
       :entries="[dirEntry]"
       :disable-destructive-actions="props.disableDestructiveActions"
       :is-current-directory-context="props.isCurrentDirectoryContext"
       @rename="handleRename"
       @paste="handlePaste"
       @create-new-item="handleCreateNewItem"
+      @action-handled="closeContextMenu"
     >
       <template
         v-if="$slots['quick-actions']"

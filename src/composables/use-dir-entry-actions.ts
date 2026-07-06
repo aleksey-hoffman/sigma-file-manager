@@ -53,6 +53,10 @@ export function useDirEntryActions() {
   } = useCopyMoveWithConflicts();
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
+    if (router.currentRoute.value.name !== 'navigator') {
+      void router.push({ name: 'navigator' });
+    }
+
     for (const entry of entries) {
       const navigableItemTarget = await resolveNavigableItemTarget(entry.path, entry.is_file);
 

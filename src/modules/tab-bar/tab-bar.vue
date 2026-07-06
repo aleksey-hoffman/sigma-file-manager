@@ -51,7 +51,7 @@ const { scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScro
 watch(tabGroupCount, (newCount, previousCount) => {
   nextTick(() => {
     if (previousCount !== undefined && newCount > previousCount) {
-      scrollSelectedTabGroupIntoView();
+      scrollTabBarToEnd();
       return;
     }
 
@@ -81,6 +81,20 @@ function handleWheel(event: WheelEvent) {
 function onScroll() {
   handleScrollActivity();
   updateScrollFade();
+}
+
+function scrollTabBarToEnd() {
+  nextTick(() => {
+    const container = scrollContainerRef.value;
+    if (!container) return;
+
+    container.scrollTo({
+      left: container.scrollWidth - container.clientWidth,
+      behavior: 'smooth',
+    });
+
+    updateScrollFade();
+  });
 }
 
 function scrollSelectedTabGroupIntoView() {

@@ -4,6 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { nextTick } from 'vue';
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -30,13 +31,21 @@ const emit = defineEmits<{
   rename: [entry: DirEntry];
   createNewItem: [type: 'file' | 'directory', targetPaths: string[]];
   paste: [targetDir: string];
+  actionHandled: [];
 }>();
 
 const { handleContextMenuAction } = useDirEntryActions();
 
+function closeContextMenuAfterAction() {
+  void nextTick(() => {
+    emit('actionHandled');
+  });
+}
+
 function handleAction(action: ContextMenuAction) {
   if (action === 'rename' && props.entries.length === 1) {
     emit('rename', props.entries[0]);
+    closeContextMenuAfterAction();
     return;
   }
 
@@ -49,6 +58,7 @@ function handleAction(action: ContextMenuAction) {
       emit('paste', targetDir);
     }
 
+    closeContextMenuAfterAction();
     return;
   }
 
@@ -57,10 +67,12 @@ function handleAction(action: ContextMenuAction) {
       .filter(entry => entry.is_dir)
       .map(entry => entry.path);
     emit('createNewItem', action === 'create-file' ? 'file' : 'directory', targetPaths);
+    closeContextMenuAfterAction();
     return;
   }
 
   handleContextMenuAction(action, props.entries);
+  closeContextMenuAfterAction();
 }
 
 async function handleExtensionAction(registration: ContextMenuItemRegistration) {
