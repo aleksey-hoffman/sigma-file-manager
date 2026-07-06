@@ -779,6 +779,7 @@
   "driveNotMounted": "Not mounted",
   "mounting": "Mounting",
   "unmount": "Unmount",
+  "disconnect": "Disconnect",
   "mount": "Mount",
   "mountableDevices": "Mount a device",
   "mountableDevicesDescription": "Discovered devices that can be mounted",

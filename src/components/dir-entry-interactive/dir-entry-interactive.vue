@@ -17,6 +17,7 @@ import PermanentDeleteConfirmDialog from '@/modules/navigator/components/file-br
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
 import type { DirEntry } from '@/types/dir-entry';
+import type { DriveEntryMetadata } from '@/types/drive-info';
 import { getPathDisplayName } from '@/utils/normalize-path';
 
 const props = withDefaults(defineProps<{
@@ -25,11 +26,13 @@ const props = withDefaults(defineProps<{
   disableDestructiveActions?: boolean;
   disableDropTarget?: boolean;
   isCurrentDirectoryContext?: boolean;
+  driveMetadata?: DriveEntryMetadata | null;
 }>(), {
   isFile: false,
   disableDestructiveActions: false,
   disableDropTarget: false,
   isCurrentDirectoryContext: false,
+  driveMetadata: null,
 });
 
 const {
@@ -103,6 +106,7 @@ const dirEntry = computed<DirEntry>(() => {
     is_dir: !props.isFile,
     is_symlink: false,
     is_hidden: name.startsWith('.'),
+    drive_metadata: props.driveMetadata,
   };
 });
 

@@ -745,6 +745,7 @@
   "driveNotMounted": "نصب نشده",
   "mounting": "در حال نصب",
   "unmount": "جدا کردن",
+  "disconnect": "قطع اتصال",
   "mount": "نصب",
   "mountableDevices": "نصب دستگاه",
   "mountableDevicesDescription": "دستگاه‌های کشف‌شده قابل نصب",

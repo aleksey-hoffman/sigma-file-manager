@@ -74,6 +74,9 @@ describe('virtual-locations', () => {
     expect(driveEntry.drive_metadata).toEqual({
       drive_type: 'SSD',
       is_removable: false,
+      is_mounted: true,
+      mount_point: 'C:\\',
+      device_path: '\\\\.\\C:',
     });
     expect(driveEntry.item_count).toBeNull();
   });

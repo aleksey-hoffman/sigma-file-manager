@@ -5,6 +5,7 @@
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction, ContextMenuItemConfig, EntryType, SelectionType } from '@/modules/navigator/components/file-browser/types';
 import { isActionBlockedByEntryPolicy } from '@/utils/entry-action-policy';
+import { canDisconnectDriveEntry } from '@/utils/drive-disconnect-policy';
 
 const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
   {
@@ -117,6 +118,14 @@ export function isContextMenuActionVisible(
 
   if (action === 'delete-permanently') {
     return isContextMenuActionVisible('delete', entries, options);
+  }
+
+  if (action === 'disconnect') {
+    if (entries.length !== 1 || !entries[0].is_dir) {
+      return false;
+    }
+
+    return canDisconnectDriveEntry(entries[0], options?.platform ?? null);
   }
 
   const config = CONTEXT_MENU_ITEMS.find(item => item.action === action);

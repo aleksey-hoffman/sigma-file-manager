@@ -779,6 +779,7 @@
   "driveNotMounted": "منسلک نہیں",
   "mounting": "منسلک ہو رہا ہے",
   "unmount": "الگ کریں",
+  "disconnect": "منقطع کریں",
   "mount": "منسلک کریں",
   "mountableDevices": "منسلک ہونے والی ڈیوائسز",
   "mountableDevicesDescription": "ملنے والی ڈیوائسز جن کو منسلک کیا جا سکے",

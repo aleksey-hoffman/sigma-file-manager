@@ -749,6 +749,7 @@
   "driveNotMounted": "Nicht eingehängt",
   "mounting": "Einhängen",
   "unmount": "Aushängen",
+  "disconnect": "Trennen",
   "mount": "Einhängen",
   "mountableDevices": "Gerät einhängen",
   "mountableDevicesDescription": "Erkannte Geräte, die eingehängt werden können",

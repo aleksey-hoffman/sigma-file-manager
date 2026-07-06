@@ -199,4 +199,4 @@ export function useDrives() {
   };
 }
 
-export { drives as sharedDrives, getDriveByPath };
+export { drives as sharedDrives, getDriveByPath, refresh as refreshDrives };

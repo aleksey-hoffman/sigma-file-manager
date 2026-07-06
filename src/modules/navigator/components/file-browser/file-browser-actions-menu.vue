@@ -402,6 +402,14 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   </component>
   <component
     :is="menuItemComponent"
+    v-if="isActionVisible('disconnect')"
+    @select="emitAction('disconnect')"
+  >
+    <UnplugIcon :size="16" />
+    <span>{{ t('disconnect') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
     v-if="isActionVisible('copy-path')"
     @select="emitAction('copy-path')"
   >

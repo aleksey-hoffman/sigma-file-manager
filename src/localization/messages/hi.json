@@ -779,6 +779,7 @@
   "driveNotMounted": "नहीं लगाया हुआ है",
   "mounting": "बढ़ते",
   "unmount": "अनमाउंट",
+  "disconnect": "डिस्कनेक्ट करें",
   "mount": "पर्वत",
   "mountableDevices": "एक उपकरण माउंट करें",
   "mountableDevicesDescription": "ऐसे उपकरण खोजे गए जिन्हें माउंट किया जा सकता है",

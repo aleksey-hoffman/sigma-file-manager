@@ -35,6 +35,8 @@ import { isContextMenuActionVisible } from '@/modules/navigator/components/file-
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
+import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
+import { refreshDrives } from '@/modules/home/composables/use-drives';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -340,6 +342,22 @@ export function useFileBrowserSelection(
     return isContextMenuActionVisible(action, entries, {
       platform: platformStore.currentPlatform,
     });
+  }
+
+  async function disconnectDriveEntry(entry: DirEntry) {
+    const result = await disconnectDriveForEntry(entry);
+
+    if (!result.success) {
+      console.error('Failed to disconnect drive:', result.error);
+    }
+
+    try {
+      await refreshDrives();
+      onRefresh();
+    }
+    catch (refreshError) {
+      console.error('Failed to refresh after drive disconnect:', refreshError);
+    }
   }
 
   function copyItems(entries: DirEntry[]) {
@@ -985,6 +1003,12 @@ export function useFileBrowserSelection(
       case 'share':
         if (entries.length > 0 && canPerformAction('share', entries)) {
           startShare(entries);
+        }
+
+        break;
+      case 'disconnect':
+        if (entries.length === 1 && canPerformAction('disconnect', entries)) {
+          void disconnectDriveEntry(entries[0]);
         }
 
         break;

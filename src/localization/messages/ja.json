@@ -749,6 +749,7 @@
   "driveNotMounted": "未マウント",
   "mounting": "マウント中",
   "unmount": "アンマウント",
+  "disconnect": "切断",
   "mount": "マウント",
   "mountableDevices": "デバイスをマウント",
   "mountableDevicesDescription": "マウント可能なデバイス",

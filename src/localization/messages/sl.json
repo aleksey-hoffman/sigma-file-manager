@@ -779,6 +779,7 @@
   "driveNotMounted": "Ni priklopljeno",
   "mounting": "Priklapljanje",
   "unmount": "Odklopi",
+  "disconnect": "Prekini povezavo",
   "mount": "Priklopi",
   "mountableDevices": "Priklopi napravo",
   "mountableDevicesDescription": "Odkrite naprave, ki jih je mogoče priklopiti",

@@ -749,6 +749,7 @@
   "driveNotMounted": "Chưa gắn kết",
   "mounting": "Đang gắn kết",
   "unmount": "Gỡ bỏ",
+  "disconnect": "Ngắt kết nối",
   "mount": "Gắn kết",
   "mountableDevices": "Gắn kết thiết bị",
   "mountableDevicesDescription": "Các thiết bị được phát hiện có thể gắn kết",

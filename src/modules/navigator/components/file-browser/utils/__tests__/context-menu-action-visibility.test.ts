@@ -79,4 +79,26 @@ describe('isContextMenuActionVisible', () => {
     expect(isContextMenuActionVisible('delete', entries, { platform: 'windows' })).toBe(true);
     expect(isContextMenuActionVisible('rename', entries, { platform: 'windows' })).toBe(true);
   });
+
+  it('shows disconnect for network drive entries', () => {
+    const entries: DirEntry[] = [{
+      ...createDirectoryEntry('Z:/'),
+      name: 'test (Z:)',
+      drive_metadata: {
+        drive_type: 'Network',
+        is_removable: false,
+        is_mounted: true,
+        mount_point: 'Z:\\',
+        device_path: 'Z:\\',
+      },
+    }];
+
+    expect(isContextMenuActionVisible('disconnect', entries, { platform: 'windows' })).toBe(true);
+  });
+
+  it('hides disconnect for fixed local drive roots', () => {
+    const entries = [createDirectoryEntry('D:/')];
+
+    expect(isContextMenuActionVisible('disconnect', entries, { platform: 'windows' })).toBe(false);
+  });
 });

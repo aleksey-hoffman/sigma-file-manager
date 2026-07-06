@@ -779,6 +779,7 @@
   "driveNotMounted": "Не подключено",
   "mounting": "Подключение",
   "unmount": "Отключить",
+  "disconnect": "Отключить",
   "mount": "Подключить",
   "mountableDevices": "Подключить устройство",
   "mountableDevicesDescription": "Обнаруженные устройства, которые можно подключить",

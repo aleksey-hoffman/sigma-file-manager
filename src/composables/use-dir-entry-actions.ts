@@ -28,6 +28,8 @@ import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
+import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
+import { refreshDrives } from '@/modules/home/composables/use-drives';
 
 export function useDirEntryActions() {
   const { t } = useI18n();
@@ -445,6 +447,21 @@ export function useDirEntryActions() {
     }
   }
 
+  async function disconnectDriveEntry(entry: DirEntry) {
+    const result = await disconnectDriveForEntry(entry);
+
+    if (!result.success) {
+      console.error('Failed to disconnect drive:', result.error);
+    }
+
+    try {
+      await refreshDrives();
+    }
+    catch (refreshError) {
+      console.error('Failed to refresh drives after disconnect:', refreshError);
+    }
+  }
+
   function handleContextMenuAction(action: ContextMenuAction, entries: DirEntry[]) {
     if (entries.length === 0) return;
 
@@ -494,6 +511,11 @@ export function useDirEntryActions() {
         break;
       case 'properties':
         void openProperties(entries);
+        break;
+      case 'disconnect':
+        if (entries.length === 1) {
+          void disconnectDriveEntry(entries[0]);
+        }
         break;
       case 'rename':
       case 'open-with':

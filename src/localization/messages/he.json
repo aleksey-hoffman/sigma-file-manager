@@ -779,6 +779,7 @@
   "driveNotMounted": "לא מעוגן",
   "mounting": "מעגן",
   "unmount": "בטל עיגון",
+  "disconnect": "נתק",
   "mount": "עגן",
   "mountableDevices": "עגן התקן",
   "mountableDevicesDescription": "התקנים שזוהו וניתנים לעיגון",

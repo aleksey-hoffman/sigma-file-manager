@@ -748,6 +748,7 @@
   "driveNotMounted": "Não montado",
   "mounting": "Montando",
   "unmount": "Desmontar",
+  "disconnect": "Desconectar",
   "mount": "Montar",
   "mountableDevices": "Montar um dispositivo",
   "mountableDevicesDescription": "Dispositivos descobertos que podem ser montados",

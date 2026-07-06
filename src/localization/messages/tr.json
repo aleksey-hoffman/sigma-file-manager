@@ -749,6 +749,7 @@
   "driveNotMounted": "Bağlı değil",
   "mounting": "Bağlanıyor",
   "unmount": "Çıkar",
+  "disconnect": "Bağlantıyı kes",
   "mount": "Bağla",
   "mountableDevices": "Bir aygıt bağla",
   "mountableDevicesDescription": "Bağlanabilir bulunan aygıtlar",

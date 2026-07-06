@@ -83,6 +83,15 @@ pub fn unmount_drive(device_path: String, mount_point: String) -> Result<(), Str
 }
 
 #[tauri::command]
+pub fn disconnect_drive(
+    device_path: String,
+    mount_point: String,
+    drive_type: String,
+) -> Result<(), String> {
+    mount::disconnect_drive(device_path, mount_point, drive_type)
+}
+
+#[tauri::command]
 pub fn mount_network_share(params: NetworkShareParams) -> Result<String, String> {
     network_shares::mount_network_share(params)
 }

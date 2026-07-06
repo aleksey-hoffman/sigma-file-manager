@@ -749,6 +749,7 @@
   "driveNotMounted": "未挂载",
   "mounting": "挂载中",
   "unmount": "卸载",
+  "disconnect": "断开连接",
   "mount": "挂载",
   "mountableDevices": "挂载设备",
   "mountableDevicesDescription": "发现的可挂载设备",

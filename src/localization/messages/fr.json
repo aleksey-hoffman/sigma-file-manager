@@ -749,6 +749,7 @@
   "driveNotMounted": "Non monté",
   "mounting": "Montage",
   "unmount": "Démonter",
+  "disconnect": "Déconnecter",
   "mount": "Monter",
   "mountableDevices": "Monter un périphérique",
   "mountableDevicesDescription": "Périphériques détectés pouvant être montés",

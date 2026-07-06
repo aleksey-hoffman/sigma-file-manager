@@ -63,6 +63,79 @@ pub fn mount_drive(device_path: String) -> Result<String, String> {
     }
 }
 
+pub fn disconnect_drive(
+    device_path: String,
+    mount_point: String,
+    drive_type: String,
+) -> Result<(), String> {
+    if drive_type == "Network" {
+        #[cfg(windows)]
+        {
+            return disconnect_windows_network_drive(&mount_point);
+        }
+
+        #[cfg(not(windows))]
+        {
+            return unmount_drive(device_path, mount_point);
+        }
+    }
+
+    #[cfg(windows)]
+    {
+        let _ = (device_path, mount_point);
+        return Err("Disconnect is not supported for this drive on Windows".to_string());
+    }
+
+    #[cfg(not(windows))]
+    {
+        unmount_drive(device_path, mount_point)
+    }
+}
+
+#[cfg(windows)]
+fn disconnect_windows_network_drive(mount_point: &str) -> Result<(), String> {
+    let drive_letter = parse_windows_drive_letter(mount_point)
+        .ok_or_else(|| format!("Invalid network drive mount point: {}", mount_point.trim()))?;
+
+    let output = std::process::Command::new("net")
+        .args(["use", &drive_letter, "/delete", "/y"])
+        .output()
+        .map_err(|run_error| format!("Failed to run 'net use': {}", run_error))?;
+
+    if output.status.success() {
+        return Ok(());
+    }
+
+    let stderr = super::drives_platform::decode_windows_command_output(&output.stderr);
+    let stdout = super::drives_platform::decode_windows_command_output(&output.stdout);
+    let message = if !stderr.trim().is_empty() {
+        stderr
+    } else {
+        stdout
+    };
+
+    Err(format!("net use failed: {}", message.trim()))
+}
+
+#[cfg(windows)]
+fn parse_windows_drive_letter(mount_point: &str) -> Option<String> {
+    let trimmed = mount_point.trim().trim_end_matches(['\\', '/']);
+
+    if trimmed.len() < 2 {
+        return None;
+    }
+
+    let mut characters = trimmed.chars();
+    let drive_letter = characters.next()?;
+    let colon = characters.next()?;
+
+    if colon != ':' || !drive_letter.is_ascii_alphabetic() {
+        return None;
+    }
+
+    Some(format!("{}:", drive_letter.to_ascii_uppercase()))
+}
+
 pub fn unmount_drive(device_path: String, mount_point: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
@@ -135,4 +208,16 @@ fn linux_unmount(device_path: &str, mount_point: &str) -> Result<(), String> {
         "Could not unmount. Install udisks2 or use 'umount {}'.",
         mount_point
     ))
+}
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::parse_windows_drive_letter;
+
+    #[test]
+    fn parse_windows_drive_letter_accepts_common_mount_points() {
+        assert_eq!(parse_windows_drive_letter("Z:\\"), Some("Z:".to_string()));
+        assert_eq!(parse_windows_drive_letter("z:/"), Some("Z:".to_string()));
+        assert_eq!(parse_windows_drive_letter("Apps"), None);
+    }
 }

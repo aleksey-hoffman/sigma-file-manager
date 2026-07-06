@@ -308,6 +308,7 @@ pub fn run() {
             dir_reader::get_mountable_devices,
             dir_reader::mount_drive,
             dir_reader::unmount_drive,
+            dir_reader::disconnect_drive,
             dir_reader::mount_network_share,
             dir_size::get_dir_size,
             dir_size::get_dir_sizes_batch,

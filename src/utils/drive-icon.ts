@@ -12,6 +12,9 @@ export function createDriveEntryMetadata(drive: DriveInfo): DriveEntryMetadata {
   return {
     drive_type: drive.drive_type,
     is_removable: drive.is_removable,
+    is_mounted: drive.is_mounted,
+    mount_point: drive.mount_point,
+    device_path: drive.device_path,
   };
 }
 

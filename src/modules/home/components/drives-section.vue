@@ -15,6 +15,7 @@ import DriveCard from './drive-card.vue';
 import MountDialog from './mount-dialog.vue';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { createDriveEntryMetadata } from '@/utils/drive-icon';
 
 const { t } = useI18n();
 const { drives, isLoading, error, refresh } = useDrives();
@@ -87,6 +88,7 @@ const sectionTitle = computed(() => {
         v-for="(drive, itemIndex) in drives"
         :key="drive.path"
         :path="drive.path"
+        :drive-metadata="createDriveEntryMetadata(drive)"
       >
         <DriveCard
           v-bind="getStaggerSlideUpBinding(itemIndex, {initialDelayMs: 300})"
