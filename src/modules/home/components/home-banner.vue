@@ -526,7 +526,6 @@ function preventPopoverClose(event: Event) {
 }
 
 .home-banner__title {
-  margin-left: 8px;
   color: hsl(var(--foreground));
   font-size: 20px;
   font-weight: 600;
