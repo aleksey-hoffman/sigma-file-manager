@@ -10,7 +10,7 @@
 // pipeline.
 
 use crate::open_with::types::{GetShellContextMenuResult, OpenWithResult, ShellContextMenuItem};
-use crate::open_with::utils::canonicalize_path;
+use crate::open_with::utils::shell_path_candidates;
 use crate::open_with::windows::icon_utils::icon_location_to_data_uri;
 use std::collections::HashMap;
 use std::path::Path;
@@ -358,23 +358,37 @@ unsafe fn read_owned_pwstr(value: windows::core::Result<PWSTR>) -> Option<String
     Some(text)
 }
 
+unsafe fn parse_shell_item_id_list(path: &str) -> Result<*mut ITEMIDLIST, String> {
+    let mut last_error = String::from("No paths provided");
+
+    for candidate_path in shell_path_candidates(path) {
+        let wide_path = HSTRING::from(&candidate_path);
+        let mut id_list: *mut ITEMIDLIST = std::ptr::null_mut();
+        match SHParseDisplayName(&wide_path, None, &mut id_list, 0, None) {
+            Ok(_) => return Ok(id_list),
+            Err(parse_error) => {
+                last_error = format!(
+                    "Failed to parse path '{}': {}",
+                    candidate_path, parse_error
+                );
+            }
+        }
+    }
+
+    Err(last_error)
+}
+
 unsafe fn create_shell_item_array(file_paths: &[String]) -> Result<IShellItemArray, String> {
     let mut id_lists: Vec<*mut ITEMIDLIST> = Vec::with_capacity(file_paths.len());
 
     for path in file_paths {
-        let normalized_path = canonicalize_path(Path::new(path));
-        let wide_path = HSTRING::from(&normalized_path);
-        let mut id_list: *mut ITEMIDLIST = std::ptr::null_mut();
-        match SHParseDisplayName(&wide_path, None, &mut id_list, 0, None) {
-            Ok(_) => id_lists.push(id_list),
+        match parse_shell_item_id_list(path) {
+            Ok(id_list) => id_lists.push(id_list),
             Err(parse_error) => {
                 for allocated in &id_lists {
                     CoTaskMemFree(Some(*allocated as *const _));
                 }
-                return Err(format!(
-                    "Failed to parse path '{}': {}",
-                    normalized_path, parse_error
-                ));
+                return Err(parse_error);
             }
         }
     }

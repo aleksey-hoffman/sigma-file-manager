@@ -26,15 +26,14 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 import normalizePath, {
   getPathDisplayName,
-  isWslHostRootUncPath,
 } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import {
+  buildVirtualDirectoryFromDrives,
   getNavigableParentPath,
+  isVirtualDirectoryPath,
   isVirtualLocationPath,
   resolveDirectoryContents,
-  buildLocationsDirectoryFromDrives,
-  getLocationsDriveListDisplaySignature,
   getLocationsEntriesDisplaySignature,
 } from '@/utils/virtual-locations';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
@@ -95,7 +94,7 @@ export function useFileBrowserNavigation(
   }
 
   async function directoryPathExists(path: string): Promise<boolean> {
-    if (isVirtualLocationPath(path)) {
+    if (isVirtualDirectoryPath(path)) {
       return true;
     }
 
@@ -258,12 +257,18 @@ export function useFileBrowserNavigation(
   }
 
   watch(sharedDrives, () => {
-    if (!isVirtualLocationPath(currentPath.value) || !dirContents.value) {
+    if (!isVirtualDirectoryPath(currentPath.value) || !dirContents.value) {
       return;
     }
 
     const displayedSignature = getLocationsEntriesDisplaySignature(dirContents.value.entries);
-    const liveSignature = getLocationsDriveListDisplaySignature(sharedDrives.value);
+    const liveDirectory = buildVirtualDirectoryFromDrives(currentPath.value, sharedDrives.value);
+
+    if (!liveDirectory) {
+      return;
+    }
+
+    const liveSignature = getLocationsEntriesDisplaySignature(liveDirectory.entries);
 
     if (displayedSignature === liveSignature) {
       return;
@@ -295,8 +300,9 @@ export function useFileBrowserNavigation(
     isRefreshing.value = true;
 
     try {
-      const result = isVirtualLocationPath(refreshPath)
-        ? buildLocationsDirectoryFromDrives(sharedDrives.value)
+      const virtualDirectory = buildVirtualDirectoryFromDrives(refreshPath, sharedDrives.value);
+      const result = virtualDirectory
+        ? virtualDirectory
         : await loadDirectoryContents(refreshPath, createReadDirOptions());
 
       if (currentPath.value !== refreshPath) {
@@ -318,7 +324,7 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualLocationPath(result.path)) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
     }
@@ -431,6 +437,9 @@ export function useFileBrowserNavigation(
         if (isVirtualLocationPath(result.path)) {
           currentTab.name = result.path;
         }
+        else if (isVirtualDirectoryPath(result.path)) {
+          currentTab.name = getPathDisplayName(result.path);
+        }
         else {
           try {
             currentTab.name = await basename(result.path);
@@ -461,11 +470,11 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualLocationPath(result.path)) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
 
-      if (!isVirtualLocationPath(result.path)) {
+      if (!isVirtualDirectoryPath(result.path)) {
         logDirWatcherDiag('readDir starting watcher after load', {
           path: result.path,
           entryCount: result.entries.length,
@@ -485,13 +494,9 @@ export function useFileBrowserNavigation(
 
   async function navigateToPath(path: string) {
     cancelPendingDirectoryRecord();
-    const normalizedTarget = normalizePath(path);
     await readDir(path);
 
-    if (error.value && isWslHostRootUncPath(normalizedTarget)) {
-      await navigateToHome();
-    }
-    else if (!error.value) {
+    if (!error.value) {
       schedulePendingDirectoryRecord(path);
     }
   }
@@ -513,10 +518,7 @@ export function useFileBrowserNavigation(
     cancelPendingDirectoryRecord();
     await readDir(targetPath);
 
-    if (error.value && isWslHostRootUncPath(targetPath)) {
-      await navigateToHome();
-    }
-    else if (!error.value) {
+    if (!error.value) {
       schedulePendingDirectoryRecord(targetPath);
     }
   }

@@ -5,7 +5,7 @@
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
-import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
+import { isVirtualDirectoryPath } from '@/utils/virtual-path-constants';
 
 export type EntryActionPolicy = 'virtual-location' | 'system-mount-root' | 'normal';
 
@@ -33,7 +33,7 @@ const SYSTEM_MOUNT_ROOT_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
 ]);
 
 export function getEntryActionPolicy(path: string, platform: string | null): EntryActionPolicy {
-  if (isVirtualLocationPath(path)) {
+  if (isVirtualDirectoryPath(path)) {
     return 'virtual-location';
   }
 
@@ -45,7 +45,7 @@ export function getEntryActionPolicy(path: string, platform: string | null): Ent
 }
 
 export function isSelectionVirtualLocation(entries: DirEntry[]): boolean {
-  return entries.some(entry => isVirtualLocationPath(entry.path));
+  return entries.some(entry => isVirtualDirectoryPath(entry.path));
 }
 
 export function isActionBlockedByEntryPolicy(

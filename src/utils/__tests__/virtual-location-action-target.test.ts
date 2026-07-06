@@ -11,7 +11,7 @@ import {
   isBrowsingVirtualLocations,
   resolveActionDirectoryPath,
 } from '@/utils/virtual-location-action-target';
-import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
+import { LOCATIONS_VIRTUAL_PATH, WSL_HOST_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
 
 function createEntry(overrides: Partial<DirEntry> & Pick<DirEntry, 'path'>): DirEntry {
   return {
@@ -35,6 +35,7 @@ describe('virtual-location-action-target', () => {
   describe('isBrowsingVirtualLocations', () => {
     it('detects the locations virtual path', () => {
       expect(isBrowsingVirtualLocations(LOCATIONS_VIRTUAL_PATH)).toBe(true);
+      expect(isBrowsingVirtualLocations(WSL_HOST_VIRTUAL_PATH)).toBe(true);
       expect(isBrowsingVirtualLocations('C:/Users')).toBe(false);
     });
   });
@@ -95,6 +96,13 @@ describe('virtual-location-action-target', () => {
 
     it('treats missing selection as empty', () => {
       expect(resolveActionDirectoryPath(undefined, 'C:/Users')).toBe('C:/Users');
+    });
+
+    it('uses the selected directory when browsing the wsl host virtual path', () => {
+      const selectedEntries = [createEntry({ path: '//wsl.localhost/docker-desktop' })];
+
+      expect(resolveActionDirectoryPath(selectedEntries, WSL_HOST_VIRTUAL_PATH))
+        .toBe('//wsl.localhost/docker-desktop');
     });
 
     it('uses the selected directory when browsing virtual locations', () => {

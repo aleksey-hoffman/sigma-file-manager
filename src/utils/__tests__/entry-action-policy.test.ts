@@ -33,6 +33,7 @@ describe('entry-action-policy', () => {
   describe('getEntryActionPolicy', () => {
     it('classifies virtual, mount-root, and normal paths', () => {
       expect(getEntryActionPolicy(LOCATIONS_VIRTUAL_PATH, 'windows')).toBe('virtual-location');
+      expect(getEntryActionPolicy('//wsl.localhost', 'windows')).toBe('virtual-location');
       expect(getEntryActionPolicy('C:/', 'windows')).toBe('system-mount-root');
       expect(getEntryActionPolicy('C:/Users', 'windows')).toBe('normal');
       expect(getEntryActionPolicy('//wsl.localhost/Ubuntu-24.04', 'windows')).toBe('system-mount-root');

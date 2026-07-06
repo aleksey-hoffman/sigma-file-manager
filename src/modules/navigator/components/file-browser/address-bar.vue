@@ -14,7 +14,6 @@ import {
   markRaw,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { invoke } from '@tauri-apps/api/core';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -46,8 +45,11 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
 import {
+  buildLocationsDirectoryFromDrives,
+  isVirtualDirectoryPath,
   isVirtualLocationPath,
   LOCATIONS_VIRTUAL_PATH,
+  resolveDirectoryContents,
   shouldPrependLocationsCrumb,
 } from '@/utils/virtual-locations';
 import { useDrives } from '@/modules/home/composables/use-drives';
@@ -67,7 +69,9 @@ const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const platformStore = usePlatformStore();
 const { drives } = useDrives();
-const locationsDrivePaths = computed(() => drives.value.map(drive => normalizePath(drive.path)));
+const locationsDirectoryPaths = computed(() => {
+  return buildLocationsDirectoryFromDrives(drives.value).entries.map(entry => entry.path);
+});
 const { openCopiedPath } = useOpenCopiedPath({
   openDirectory: path => emit('navigate', path),
   openFile: path => emit('openFile', path),
@@ -83,7 +87,9 @@ interface AddressBarPart {
   path: string;
   name: string;
   isLast: boolean;
-  virtual?: boolean;
+  disableDropTarget?: boolean;
+  displayRootIcon?: boolean;
+  useLocationsDropdown?: boolean;
 }
 
 const addressParts = computed(() => {
@@ -94,7 +100,9 @@ const addressParts = computed(() => {
       path: LOCATIONS_VIRTUAL_PATH,
       name: t('locations'),
       isLast: true,
-      virtual: true,
+      disableDropTarget: true,
+      displayRootIcon: true,
+      useLocationsDropdown: true,
     }];
   }
 
@@ -128,6 +136,7 @@ const addressParts = computed(() => {
       path: fullPath,
       name: part,
       isLast: index === parts.length - 1,
+      disableDropTarget: isVirtualDirectoryPath(fullPath),
     });
   });
 
@@ -140,7 +149,9 @@ const addressParts = computed(() => {
       path: LOCATIONS_VIRTUAL_PATH,
       name: t('locations'),
       isLast: false,
-      virtual: true,
+      disableDropTarget: true,
+      displayRootIcon: true,
+      useLocationsDropdown: true,
     },
     ...formattedParts,
   ];
@@ -162,12 +173,12 @@ async function loadSeparatorDirectories(index: number) {
   const part = addressParts.value[index];
   if (!part) return;
 
-  if (part.virtual) {
+  if (part.useLocationsDropdown) {
     return;
   }
 
   try {
-    const result = await invoke<DirContents>('read_dir', { path: part.path });
+    const result = await resolveDirectoryContents(part.path);
     const directories = result.entries
       .filter(entry => entry.is_dir)
       .map(entry => ({
@@ -301,18 +312,18 @@ onUnmounted(() => {
           <DirEntryInteractive
             :path="part.path"
             :is-file="false"
-            :disable-drop-target="part.virtual"
+            :disable-drop-target="part.disableDropTarget"
             :is-current-directory-context="part.isLast"
           >
             <button
               class="address-bar__part"
               :class="{ 'address-bar__part--last': part.isLast }"
-              :title="part.virtual ? t('locations') : part.path"
-              :aria-label="part.virtual ? t('locations') : part.name"
+              :title="part.displayRootIcon ? t('locations') : part.path"
+              :aria-label="part.displayRootIcon ? t('locations') : part.name"
               @click.stop="!part.isLast && navigateToPart(part.path)"
             >
               <FolderRootIcon
-                v-if="part.virtual"
+                v-if="part.displayRootIcon"
                 :size="14"
                 class="address-bar__part-icon"
               />
@@ -354,7 +365,7 @@ onUnmounted(() => {
                 class="address-bar__separator-menu-scroll"
               >
                 <DropdownMenuItem
-                  v-for="dirPath in part.virtual ? locationsDrivePaths : separatorDropdowns[index]"
+                  v-for="dirPath in part.useLocationsDropdown ? locationsDirectoryPaths : separatorDropdowns[index]"
                   :key="dirPath"
                   @select="handleSeparatorNavigate(dirPath)"
                 >

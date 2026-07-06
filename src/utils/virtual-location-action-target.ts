@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import type { DirEntry } from '@/types/dir-entry';
-import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
+import { isVirtualDirectoryPath } from '@/utils/virtual-path-constants';
 
 export type VirtualLocationActionContext = {
   isBrowsingVirtualLocations: boolean;
@@ -15,7 +15,7 @@ export type VirtualLocationActionContext = {
 export function isBrowsingVirtualLocations(
   currentDirectoryPath: string | null | undefined,
 ): boolean {
-  return isVirtualLocationPath(currentDirectoryPath ?? '');
+  return isVirtualDirectoryPath(currentDirectoryPath ?? '');
 }
 
 export function getDirectoryPathFromEntry(entry: DirEntry): string | null {
@@ -45,7 +45,7 @@ export function getActionTargetEntries(
     return entries;
   }
 
-  return entries.filter(entry => !isVirtualLocationPath(entry.path));
+  return entries.filter(entry => !isVirtualDirectoryPath(entry.path));
 }
 
 export function resolveActionDirectoryPath(
@@ -63,7 +63,7 @@ export function resolveActionDirectoryPath(
 
     const selectionPath = getDirectoryPathFromEntry(firstTargetEntry);
 
-    if (!selectionPath || isVirtualLocationPath(selectionPath)) {
+    if (!selectionPath || isVirtualDirectoryPath(selectionPath)) {
       return null;
     }
 
@@ -73,7 +73,7 @@ export function resolveActionDirectoryPath(
   if (entries.length > 0) {
     const selectionPath = getDirectoryPathFromEntry(entries[0]);
 
-    if (selectionPath && !isVirtualLocationPath(selectionPath)) {
+    if (selectionPath && !isVirtualDirectoryPath(selectionPath)) {
       return selectionPath;
     }
   }

@@ -78,6 +78,16 @@ pub fn common_parent_directory_for_selections(
     Ok(expected_parent.clone())
 }
 
+pub fn strip_extended_path_prefix(path: &str) -> String {
+    if let Some(rest) = path.strip_prefix(r"\\?\UNC\") {
+        format!(r"\\{rest}")
+    } else if let Some(rest) = path.strip_prefix(r"\\?\") {
+        rest.to_string()
+    } else {
+        path.to_string()
+    }
+}
+
 pub fn prepare_shell_path(file_path: &str) -> String {
     #[cfg(windows)]
     let native_path = path_for_selection(file_path);
@@ -92,7 +102,8 @@ pub fn prepare_shell_path(file_path: &str) -> String {
 
     #[cfg(windows)]
     {
-        resolved.to_string_lossy().replace('/', "\\")
+        let resolved_path = strip_extended_path_prefix(&resolved.to_string_lossy());
+        resolved_path.replace('/', "\\")
     }
     #[cfg(not(windows))]
     {
@@ -143,10 +154,39 @@ pub fn load_png_as_base64(path: &std::path::Path) -> Option<String> {
     None
 }
 
-#[cfg(all(test, windows))]
+#[cfg(test)]
 mod shell_path_tests {
-    use super::{path_for_selection, prepare_shell_path};
+    use super::{path_for_selection, prepare_shell_path, strip_extended_path_prefix};
 
+    #[test]
+    fn strip_extended_path_prefix_strips_extended_unc_prefix() {
+        assert_eq!(
+            strip_extended_path_prefix(r"\\?\UNC\wsl.localhost\Ubuntu-24.04\"),
+            r"\\wsl.localhost\Ubuntu-24.04\",
+        );
+        assert_eq!(
+            strip_extended_path_prefix(r"\\?\UNC\wsl.localhost\docker-desktop\"),
+            r"\\wsl.localhost\docker-desktop\",
+        );
+    }
+
+    #[test]
+    fn strip_extended_path_prefix_strips_extended_local_prefix() {
+        assert_eq!(
+            strip_extended_path_prefix(r"\\?\C:\Users\aleks\file.txt"),
+            r"C:\Users\aleks\file.txt",
+        );
+    }
+
+    #[test]
+    fn strip_extended_path_prefix_leaves_regular_paths_unchanged() {
+        assert_eq!(
+            strip_extended_path_prefix(r"\\wsl.localhost\Ubuntu-24.04\"),
+            r"\\wsl.localhost\Ubuntu-24.04\",
+        );
+    }
+
+    #[cfg(windows)]
     #[test]
     fn path_for_selection_converts_unc_paths_to_backslashes() {
         assert_eq!(
@@ -155,6 +195,7 @@ mod shell_path_tests {
         );
     }
 
+    #[cfg(windows)]
     #[test]
     fn prepare_shell_path_converts_unc_paths_to_backslashes() {
         assert_eq!(
@@ -163,6 +204,7 @@ mod shell_path_tests {
         );
     }
 
+    #[cfg(windows)]
     #[test]
     fn prepare_shell_path_converts_local_windows_paths_to_backslashes() {
         assert_eq!(
