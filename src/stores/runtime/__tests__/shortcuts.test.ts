@@ -13,6 +13,7 @@ const {
   executeCommandMock,
   extensionKeybindings,
   userSettingsStoreMock,
+  routerCurrentRouteMock,
 } = vi.hoisted(() => ({
   extensionKeybindings: [] as Array<{
     extensionId: string;
@@ -33,6 +34,15 @@ const {
       shortcuts: {},
     },
     setUserSettingsStorage: vi.fn(),
+  },
+  routerCurrentRouteMock: {
+    value: { name: 'navigator' as string | symbol | null | undefined },
+  },
+}));
+
+vi.mock('@/router', () => ({
+  default: {
+    currentRoute: routerCurrentRouteMock,
   },
 }));
 
@@ -66,6 +76,7 @@ import {
 describe('shortcuts store', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    routerCurrentRouteMock.value = { name: 'navigator' };
     extensionKeybindings.splice(0, extensionKeybindings.length);
     userSettingsStoreMock.userSettings = reactive({
       shortcuts: {},
@@ -437,6 +448,46 @@ describe('shortcuts store', () => {
 
     await expect(shortcutsStore.handleKeydown(event)).resolves.toBe(true);
     expect(copyCurrentDirectoryPathHandler).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('does not run navigator-scoped shortcuts when not on the navigator route', async () => {
+    routerCurrentRouteMock.value = { name: 'home' };
+
+    const shortcutsStore = useShortcutsStore();
+    const copyCurrentDirectoryPathHandler = vi.fn();
+
+    shortcutsStore.registerHandler('copyCurrentDirectoryPath', copyCurrentDirectoryPathHandler);
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'C',
+      code: 'KeyC',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(event)).resolves.toBe(false);
+    expect(copyCurrentDirectoryPathHandler).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('prevents Ctrl+Shift+C default behavior on non-navigator routes without a registered handler', async () => {
+    routerCurrentRouteMock.value = { name: 'home' };
+
+    const shortcutsStore = useShortcutsStore();
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'C',
+      code: 'KeyC',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(event)).resolves.toBe(false);
     expect(event.defaultPrevented).toBe(true);
   });
 

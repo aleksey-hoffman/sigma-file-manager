@@ -600,14 +600,7 @@ function getNavigatorActionContext(currentDirectoryPath?: string) {
   );
 }
 
-function getPasteTargetPath(): string | undefined {
-  const currentPath = getActiveCurrentPath();
-  const actionContext = getNavigatorActionContext(currentPath);
-
-  if (actionContext.isBrowsingVirtualLocations) {
-    return actionContext.actionDirectoryPath ?? undefined;
-  }
-
+function getTabGroupFallbackPath(): string | undefined {
   if (isSplitView.value && activeTabId.value) {
     const activeTab = workspacesStore.currentTabGroup?.find(
       tab => tab.id === activeTabId.value,
@@ -628,7 +621,18 @@ function getActiveCurrentPath(): string | undefined {
     return pane.currentPath;
   }
 
-  return getPasteTargetPath();
+  return getTabGroupFallbackPath();
+}
+
+function getPasteTargetPath(): string | undefined {
+  const currentPath = getActiveCurrentPath();
+  const actionContext = getNavigatorActionContext(currentPath);
+
+  if (actionContext.isBrowsingVirtualLocations) {
+    return actionContext.actionDirectoryPath ?? undefined;
+  }
+
+  return currentPath;
 }
 
 async function handleGlobalSearchOpenEntry(entry: DirEntry) {

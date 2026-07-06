@@ -19,6 +19,7 @@ import {
   shortcutMainKeyDisplayLabel,
 } from '@/localization/shortcut-main-key-label';
 import { isDialogOpened, isInputFieldActive } from '@/utils/dom-interaction-state';
+import router from '@/router';
 
 export type { ShortcutId, ShortcutKeys, UserShortcuts };
 export type { UserShortcutStoredValue, ShortcutUserAlternateChordSlots } from '@/types/user-settings';
@@ -1574,7 +1575,34 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     await persistShortcutUserAlternateChordSlots({});
   }
 
-  function checkConditions(definition: ShortcutDefinition, registration?: HandlerRegistration): boolean {
+  function isShortcutScopeRouteActive(scope: ShortcutDefinition['scope']): boolean {
+    if (scope === 'global') {
+      return true;
+    }
+
+    const routeName = router.currentRoute.value.name;
+
+    switch (scope) {
+      case 'navigator':
+        return routeName === 'navigator';
+      case 'settings':
+        return routeName === 'settings';
+      default: {
+        const unexpectedScope: never = scope;
+        return unexpectedScope;
+      }
+    }
+  }
+
+  function checkShortcutConditions(
+    definition: ShortcutDefinition,
+    registration?: HandlerRegistration,
+    options?: { ignoreRouteScope?: boolean },
+  ): boolean {
+    if (!options?.ignoreRouteScope && !isShortcutScopeRouteActive(definition.scope)) {
+      return false;
+    }
+
     const { conditions } = definition;
 
     if (conditions.inputFieldIsActive !== undefined) {
@@ -1596,6 +1624,19 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     }
 
     return true;
+  }
+
+  function checkConditions(definition: ShortcutDefinition, registration?: HandlerRegistration): boolean {
+    return checkShortcutConditions(definition, registration);
+  }
+
+  function canPreventDefaultForShortcut(shortcutId: ShortcutId): boolean {
+    const definition = getShortcutDefinition(shortcutId);
+    if (!definition) return false;
+
+    const registration = handlers.value.get(shortcutId);
+
+    return checkShortcutConditions(definition, registration, { ignoreRouteScope: true });
   }
 
   function registerHandler(
@@ -1808,7 +1849,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     }
 
     const shouldPreventDefaultEarly = matchingShortcutIds.some(shortcutId =>
-      EARLY_PREVENT_DEFAULT_SHORTCUT_IDS.has(shortcutId) && canCallShortcutHandler(shortcutId),
+      EARLY_PREVENT_DEFAULT_SHORTCUT_IDS.has(shortcutId) && canPreventDefaultForShortcut(shortcutId),
     );
 
     if (shouldPreventDefaultEarly) {
