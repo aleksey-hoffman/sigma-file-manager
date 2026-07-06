@@ -1,7 +1,12 @@
-# NOTICE
-"Sigma File Manager" is free and open-source software licensed under the GNU GPL v3 or later, subject to the additional rules described below.
-Copyright © 2021 - present, Aleksey Hoffman. All rights reserved.
-Source code of this program can be found on GitHub.
+# LICENSE SUMMARY (TL;DR)
+This project is licensed under the GNU GPLv3. If you modify this software, 
+rebrand it, or distribute a derivative work based on this source code, 
+you are legally required to publish your entire source code for free 
+under the same GNU GPLv3 license. Proprietary re-licensing or hiding the source code is strictly forbidden.
+
+# COPYRIGHT NOTICE
+"Sigma File Manager" is free and open-source software licensed under the GNU GPL v3 or later.
+Copyright © 2021 - present, Aleksey Hoffman.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,10 +20,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>
-
-# ADDITIONAL RULES
-
-- You may not sell this app or represent it as your own software.
 
 # GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
