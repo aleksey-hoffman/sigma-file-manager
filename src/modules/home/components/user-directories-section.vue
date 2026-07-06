@@ -6,11 +6,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PlusIcon, PencilIcon } from '@lucide/vue';
+import { PlusIcon, Settings2Icon } from '@lucide/vue';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import { Button } from '@/components/ui/button';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
-import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import UserDirectoryCard from './user-directory-card.vue';
 import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
@@ -128,12 +127,21 @@ async function handleDeleteDirectory(directoryId: string) {
         :path="directory.path"
         :disable-destructive-actions="true"
       >
-        <template #extra-items>
-          <ContextMenuItem @select="handleEditDirectory(directory)">
-            <PencilIcon :size="16" />
-            {{ t('contextMenus.dirItem.editCard') }}
-          </ContextMenuItem>
-          <ContextMenuSeparator />
+        <template #quick-actions>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                variant="ghost"
+                size="xs"
+                @click="handleEditDirectory(directory)"
+              >
+                <Settings2Icon :size="16" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ t('contextMenus.dirItem.editCard') }}
+            </TooltipContent>
+          </Tooltip>
         </template>
         <UserDirectoryCard
           v-bind="getStaggerSlideUpBinding(itemIndex)"

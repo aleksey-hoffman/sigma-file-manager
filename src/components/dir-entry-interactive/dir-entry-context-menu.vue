@@ -85,7 +85,6 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
 
 <template>
   <ContextMenuContent class="dir-entry-context-menu">
-    <slot name="extra-items" />
     <FileBrowserActionsMenu
       :selected-entries="props.entries"
       :menu-item-component="ContextMenuItem"
@@ -93,7 +92,14 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :disable-destructive-actions="props.disableDestructiveActions"
       :is-current-directory-context="props.isCurrentDirectoryContext"
       @action="handleAction"
-    />
+    >
+      <template
+        v-if="$slots['quick-actions']"
+        #quick-actions
+      >
+        <slot name="quick-actions" />
+      </template>
+    </FileBrowserActionsMenu>
     <FileBrowserExtensionMenuItems
       :selected-entries="props.entries"
       :menu-item-component="ContextMenuItem"

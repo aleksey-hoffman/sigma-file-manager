@@ -198,13 +198,14 @@ function handleCreateLink(linkKind: LinkCreationKind) {
 
 <template>
   <div class="file-browser-actions-menu__quick-actions">
+    <slot name="quick-actions" />
     <Tooltip
       v-if="isActionVisible('rename')"
     >
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
-          size="icon"
+          size="xs"
           @click="emitAction('rename')"
         >
           <PencilIcon :size="16" />
@@ -223,7 +224,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
-          size="icon"
+          size="xs"
           @click="handleCopyClick"
         >
           <CopyIcon :size="16" />
@@ -242,7 +243,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
-          size="icon"
+          size="xs"
           @click="handleCutClick"
         >
           <FolderInputIcon :size="16" />
@@ -261,7 +262,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
           <DropdownMenuTrigger as-child>
             <Button
               variant="ghost"
-              size="icon"
+              size="xs"
             >
               <LinkIcon :size="16" />
             </Button>
@@ -299,7 +300,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
-          size="icon"
+          size="xs"
           @click="emitAction('paste')"
         >
           <ClipboardPasteIcon :size="16" />
@@ -318,7 +319,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
-          size="icon"
+          size="xs"
           class="file-browser-actions-menu__action--danger"
           @click="handleDeleteClick"
         >

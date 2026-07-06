@@ -190,10 +190,10 @@ function handleNewItemCancel() {
       @create-new-item="handleCreateNewItem"
     >
       <template
-        v-if="$slots['extra-items']"
-        #extra-items
+        v-if="$slots['quick-actions']"
+        #quick-actions
       >
-        <slot name="extra-items" />
+        <slot name="quick-actions" />
       </template>
     </DirEntryContextMenu>
   </ContextMenu>
