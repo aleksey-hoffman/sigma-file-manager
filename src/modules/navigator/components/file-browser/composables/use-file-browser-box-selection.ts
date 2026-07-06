@@ -27,6 +27,7 @@ import {
   type FileBrowserBoxSelectionBox,
 } from '../utils/file-browser-box-selection-hit-test';
 import type { FileBrowserVirtualRow } from '../utils/file-browser-virtual-rows';
+import { clearDocumentTextSelection } from '../utils/file-browser-document-selection';
 
 const BOX_SELECTION_OVERLAY_CLASS = 'file-browser-box-selection-overlay';
 const FILE_BROWSER_CONTENT_SELECTOR = '.file-browser__content';
@@ -360,6 +361,7 @@ export function useFileBrowserBoxSelection(options: {
       return;
     }
 
+    clearDocumentTextSelection();
     event.preventDefault();
     stopBoxSelection();
 

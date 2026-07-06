@@ -6,6 +6,7 @@ import { ref, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
+import { clearDocumentTextSelection } from '../utils/file-browser-document-selection';
 
 export type PendingDoubleClick = {
   path: string;
@@ -69,10 +70,6 @@ export function useFileBrowserClickSelection(options: {
 
   function resetMouseState() {
     clearPendingDoubleClick();
-  }
-
-  function clearDocumentTextSelection() {
-    window.getSelection()?.removeAllRanges();
   }
 
   function handleEntryMouseDown(entry: DirEntry, event: MouseEvent) {
