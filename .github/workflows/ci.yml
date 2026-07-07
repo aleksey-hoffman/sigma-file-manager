@@ -36,7 +36,7 @@ jobs:
         run: npm pack --dry-run ./packages/api
 
       - name: Type check
-        run: npm run type-check
+        run: npm run ts
 
       - name: Lint
         run: npm run lint:check

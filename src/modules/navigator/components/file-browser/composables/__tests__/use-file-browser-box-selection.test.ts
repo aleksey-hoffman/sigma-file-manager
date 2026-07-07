@@ -68,7 +68,7 @@ function createBoxSelectionHarness(): {
   const contentElement = createElementWithRect('file-browser__content');
   const viewportElement = createElementWithRect('file-browser__scroll-area-viewport');
   const entriesContainer = createElementWithRect('file-browser__entries-container');
-  let boxSelection: ReturnType<typeof useFileBrowserBoxSelection> | null = null;
+  let handleEntriesContainerPointerDown!: (event: PointerEvent) => void;
 
   viewportElement.appendChild(entriesContainer);
   contentElement.appendChild(viewportElement);
@@ -81,7 +81,7 @@ function createBoxSelectionHarness(): {
       const viewportElementRef: Ref<HTMLElement | null> = ref(viewportElement);
       const entriesContainerRef: Ref<HTMLElement | null> = ref(entriesContainer);
 
-      boxSelection = useFileBrowserBoxSelection({
+      const boxSelection = useFileBrowserBoxSelection({
         enabled: computed(() => true),
         layout: () => 'list',
         paneElementRef,
@@ -98,17 +98,15 @@ function createBoxSelectionHarness(): {
         isFileDragActive: computed(() => false),
       });
 
+      handleEntriesContainerPointerDown = boxSelection.handleEntriesContainerPointerDown;
+
       return () => h('div');
     },
   }));
 
-  if (!boxSelection) {
-    throw new Error('Box selection composable was not initialized');
-  }
-
   return {
     entriesContainer,
-    handleEntriesContainerPointerDown: boxSelection.handleEntriesContainerPointerDown,
+    handleEntriesContainerPointerDown,
     paneElement,
     wrapper,
   };
