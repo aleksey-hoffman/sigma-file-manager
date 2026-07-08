@@ -7,16 +7,27 @@ import {
 } from 'vitest';
 import { effectScope, ref } from 'vue';
 
-const invokeMock = vi.fn<(command: string, payload: unknown) => Promise<string | null>>();
+const {
+  invokeMock,
+  platformMock,
+} = vi.hoisted(() => ({
+  invokeMock: vi.fn<(command: string, payload: unknown) => Promise<string | null>>(),
+  platformMock: vi.fn(() => 'windows'),
+}));
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: invokeMock,
+}));
+
+vi.mock('@tauri-apps/plugin-os', () => ({
+  platform: platformMock,
 }));
 
 describe('useSystemIcon', () => {
   beforeEach(() => {
     vi.resetModules();
     invokeMock.mockReset();
+    platformMock.mockReturnValue('windows');
   });
 
   afterEach(() => {

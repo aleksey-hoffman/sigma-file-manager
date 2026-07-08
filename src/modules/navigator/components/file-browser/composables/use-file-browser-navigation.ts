@@ -143,6 +143,23 @@ export function useFileBrowserNavigation(
     return getFileBrowserSortReadDirOptions(userSettingsStore.userSettings.navigator, layout());
   }
 
+  function getReadDirOptionsSignature(options: ReadDirOptions): string {
+    return [
+      options.includeShortcutTargets ? 'shortcuts' : '',
+      options.includeHardLinkCounts ? 'hard-links' : '',
+      options.includeItemCounts ? 'items' : '',
+      options.includeHiddenItemCounts ? 'hidden-item-counts' : '',
+    ].join(':');
+  }
+
+  function shouldRefreshForReadDirOptions(options: ReadDirOptions): boolean {
+    return Boolean(
+      options.includeShortcutTargets
+      || options.includeHardLinkCounts
+      || options.includeItemCounts,
+    );
+  }
+
   function primeDirectoryMetadataCaches(contents: DirContents, options: ReadDirOptions): void {
     if (options.includeItemCounts) {
       itemCountsStore.primeItemCounts(contents.entries, {
@@ -650,19 +667,16 @@ export function useFileBrowserNavigation(
   });
 
   watch(
-    () => [
-      userSettingsStore.userSettings.navigator.listSortColumn,
-      userSettingsStore.userSettings.navigator.gridSortColumn,
-    ] as const,
-    ([listSortColumn, gridSortColumn], [previousListSortColumn, previousGridSortColumn]) => {
+    () => createReadDirOptions(),
+    (readOptions, previousReadOptions) => {
       if (!currentPath.value || !dirContents.value) {
         return;
       }
 
-      const switchedToItemsSort = (listSortColumn === 'items' && previousListSortColumn !== 'items')
-        || (gridSortColumn === 'items' && previousGridSortColumn !== 'items');
-
-      if (switchedToItemsSort) {
+      if (
+        shouldRefreshForReadDirOptions(readOptions)
+        && getReadDirOptionsSignature(readOptions) !== getReadDirOptionsSignature(previousReadOptions)
+      ) {
         void silentRefresh();
       }
     },

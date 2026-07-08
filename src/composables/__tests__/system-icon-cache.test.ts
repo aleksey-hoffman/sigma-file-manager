@@ -7,6 +7,10 @@ import {
 } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 
+type PendingIconRequest = {
+  resolveIcon: (icon: string | null) => void;
+};
+
 const {
   invokeMock,
   platformMock,
@@ -138,9 +142,7 @@ describe('system icon cache', () => {
   });
 
   it('limits concurrent prefetch requests', async () => {
-    const pendingRequests: Array<{
-      resolveIcon: (icon: string | null) => void;
-    }> = [];
+    const pendingRequests: PendingIconRequest[] = [];
     let activeRequestCount = 0;
     let maxActiveRequestCount = 0;
 
@@ -180,11 +182,31 @@ describe('system icon cache', () => {
     expect(invokeMock).toHaveBeenCalledTimes(7);
     expect(maxActiveRequestCount).toBe(6);
 
+    await drainPendingRequests(pendingRequests, 10);
+
+    expect(invokeMock).toHaveBeenCalledTimes(10);
+    expect(activeRequestCount).toBe(0);
+  });
+});
+
+async function drainPendingRequests(
+  pendingRequests: PendingIconRequest[],
+  expectedRequestCount: number,
+) {
+  for (let attemptIndex = 0; attemptIndex < expectedRequestCount; attemptIndex += 1) {
     while (pendingRequests.length > 0) {
       pendingRequests.shift()?.resolveIcon('folder-icon');
     }
-  });
-});
+
+    await flushPromises();
+
+    if (invokeMock.mock.calls.length >= expectedRequestCount && pendingRequests.length === 0) {
+      return;
+    }
+  }
+
+  expect(invokeMock).toHaveBeenCalledTimes(expectedRequestCount);
+}
 
 async function flushPromises() {
   await Promise.resolve();
