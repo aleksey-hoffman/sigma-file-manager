@@ -17,6 +17,12 @@ type GlobalSearchStore = {
   isOpen: boolean;
 };
 
+const FILTER_TYPING_KEY_PATTERN = /^[\p{L}\p{N}]$/u;
+
+export function isFileBrowserFilterTypingKey(key: string): boolean {
+  return FILTER_TYPING_KEY_PATTERN.test(key);
+}
+
 export function useFileBrowserFilter(options: {
   dismissalLayerStore: DismissalLayerStore;
   globalSearchStore: GlobalSearchStore;
@@ -126,10 +132,6 @@ export function useFileBrowserFilter(options: {
     return false;
   }
 
-  function isFilterTypingKey(key: string): boolean {
-    return /^[a-z0-9]$/i.test(key);
-  }
-
   function shouldApplyKeyToFilterQuery(event: KeyboardEvent): boolean {
     if (event.ctrlKey || event.altKey || event.metaKey) {
       return false;
@@ -139,7 +141,7 @@ export function useFileBrowserFilter(options: {
       return isFilterOpen.value;
     }
 
-    return isFilterTypingKey(event.key);
+    return isFileBrowserFilterTypingKey(event.key);
   }
 
   function applyKeyToFilterQuery(event: KeyboardEvent) {
@@ -149,7 +151,7 @@ export function useFileBrowserFilter(options: {
       return;
     }
 
-    if (isFilterTypingKey(event.key)) {
+    if (isFileBrowserFilterTypingKey(event.key)) {
       filterQuery.value += event.key;
       event.preventDefault();
     }
