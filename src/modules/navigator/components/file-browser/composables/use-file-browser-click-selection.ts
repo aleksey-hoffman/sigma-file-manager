@@ -6,7 +6,7 @@ import { ref, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
-import { clearDocumentTextSelection } from '../utils/file-browser-document-selection';
+import { clearDocumentTextSelection } from '@/utils/document-selection';
 
 export type PendingDoubleClick = {
   path: string;

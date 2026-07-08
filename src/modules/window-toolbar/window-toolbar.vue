@@ -4,8 +4,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import Spacer from './spacer.vue';
 import WindowActions from './window-actions.vue';
 import { GlobalSearchToolbarButton } from '@/modules/global-search';
@@ -13,8 +14,24 @@ import { LanShareReplaceDialog, LanShareToolbarButton } from '@/modules/lan-shar
 import { StatusCenterToolbarButton } from '@/modules/status-center';
 import CommandPaletteToolbarButton from '@/modules/extensions/components/command-palette-toolbar-button.vue';
 import { ProgressiveBlur, type ProgressiveBlurLayer } from '@/components/ui/progressive-blur';
+import { clearDocumentTextSelection } from '@/utils/document-selection';
+
+interface ToolbarDragSession {
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+}
+
+const WINDOW_DRAG_MOVE_THRESHOLD_PX = 8;
+const WINDOW_DRAG_CLICK_SUPPRESSION_MS = 300;
+const WINDOW_DRAG_EXCLUDED_SELECTOR = '.tab-bar';
 
 const route = useRoute();
+const appWindow = getCurrentWindow();
+
+let toolbarDragSession: ToolbarDragSession | null = null;
+let shouldSuppressNextToolbarClick = false;
+let toolbarClickSuppressionTimeout: number | undefined;
 
 const isAbsolute = computed(() => {
   return route.name === 'home';
@@ -54,6 +71,119 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
     end: '100%',
   },
 ];
+
+function clearToolbarClickSuppression() {
+  shouldSuppressNextToolbarClick = false;
+
+  if (toolbarClickSuppressionTimeout === undefined) {
+    return;
+  }
+
+  window.clearTimeout(toolbarClickSuppressionTimeout);
+  toolbarClickSuppressionTimeout = undefined;
+}
+
+function suppressNextToolbarClick() {
+  clearToolbarClickSuppression();
+  shouldSuppressNextToolbarClick = true;
+  toolbarClickSuppressionTimeout = window.setTimeout(
+    clearToolbarClickSuppression,
+    WINDOW_DRAG_CLICK_SUPPRESSION_MS,
+  );
+}
+
+function startToolbarDragTracking() {
+  window.addEventListener('pointermove', handleToolbarPointerMove, true);
+  window.addEventListener('pointerup', handleToolbarPointerEnd, true);
+  window.addEventListener('pointercancel', handleToolbarPointerEnd, true);
+}
+
+function stopToolbarDragTracking() {
+  window.removeEventListener('pointermove', handleToolbarPointerMove, true);
+  window.removeEventListener('pointerup', handleToolbarPointerEnd, true);
+  window.removeEventListener('pointercancel', handleToolbarPointerEnd, true);
+}
+
+function finishToolbarDragSession() {
+  if (!toolbarDragSession) {
+    return;
+  }
+
+  stopToolbarDragTracking();
+  toolbarDragSession = null;
+}
+
+function shouldSkipToolbarWindowDrag(event: PointerEvent) {
+  if (event.button !== 0 || !event.isPrimary || event.pointerType !== 'mouse') {
+    return true;
+  }
+
+  if (!(event.target instanceof Element)) {
+    return false;
+  }
+
+  return Boolean(event.target.closest(WINDOW_DRAG_EXCLUDED_SELECTOR));
+}
+
+function handleToolbarPointerDown(event: PointerEvent) {
+  if (shouldSkipToolbarWindowDrag(event)) {
+    return;
+  }
+
+  clearDocumentTextSelection();
+  finishToolbarDragSession();
+
+  toolbarDragSession = {
+    pointerId: event.pointerId,
+    startClientX: event.clientX,
+    startClientY: event.clientY,
+  };
+
+  startToolbarDragTracking();
+}
+
+function handleToolbarPointerMove(event: PointerEvent) {
+  if (!toolbarDragSession || event.pointerId !== toolbarDragSession.pointerId) {
+    return;
+  }
+
+  const pointerMoveX = event.clientX - toolbarDragSession.startClientX;
+  const pointerMoveY = event.clientY - toolbarDragSession.startClientY;
+  const pointerMoveDistanceSquared = pointerMoveX * pointerMoveX + pointerMoveY * pointerMoveY;
+
+  if (pointerMoveDistanceSquared < WINDOW_DRAG_MOVE_THRESHOLD_PX ** 2) {
+    return;
+  }
+
+  finishToolbarDragSession();
+  suppressNextToolbarClick();
+  appWindow.startDragging().catch((error: unknown) => {
+    console.error('Failed to start window drag:', error);
+  });
+}
+
+function handleToolbarPointerEnd(event: PointerEvent) {
+  if (!toolbarDragSession || event.pointerId !== toolbarDragSession.pointerId) {
+    return;
+  }
+
+  finishToolbarDragSession();
+}
+
+function handleToolbarClick(event: MouseEvent) {
+  if (!shouldSuppressNextToolbarClick) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  clearToolbarClickSuppression();
+}
+
+onBeforeUnmount(() => {
+  finishToolbarDragSession();
+  clearToolbarClickSuppression();
+});
 </script>
 
 <template>
@@ -69,7 +199,11 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
       class="window-toolbar-progressive-blur"
       :layers="toolbarProgressiveBlurLayers"
     />
-    <div class="window-toolbar-action-layer">
+    <div
+      class="window-toolbar-action-layer"
+      @click.capture="handleToolbarClick"
+      @pointerdown.capture="handleToolbarPointerDown"
+    >
       <LanShareReplaceDialog />
       <CommandPaletteToolbarButton />
       <div class="window-toolbar-extension-embed-teleport-target" />
@@ -159,6 +293,7 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
 
 .window-toolbar-spacer {
   z-index: 4;
+  -webkit-app-region: drag;
 }
 
 .window-toolbar-action-layer {
@@ -170,18 +305,13 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
   flex: 1 1 auto;
   align-items: center;
   justify-content: center;
+  -webkit-app-region: drag;
   gap: 8px;
   inset-inline-start: 0;
   padding-inline-start: 4px;
 }
 
-.window-toolbar-action-layer,
 .window-toolbar-action-layer :deep(*) {
-  -webkit-app-region: drag;
-}
-
-.window-toolbar-action-layer :deep(.tab-bar),
-.window-toolbar-action-layer :deep(.tab-bar *) {
   -webkit-app-region: no-drag;
 }
 
