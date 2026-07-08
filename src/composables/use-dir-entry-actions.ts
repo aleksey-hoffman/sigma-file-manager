@@ -516,6 +516,7 @@ export function useDirEntryActions() {
         if (entries.length === 1) {
           void disconnectDriveEntry(entries[0]);
         }
+
         break;
       case 'rename':
       case 'open-with':

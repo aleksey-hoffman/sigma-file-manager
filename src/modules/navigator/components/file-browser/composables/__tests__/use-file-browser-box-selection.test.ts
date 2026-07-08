@@ -10,7 +10,9 @@ import {
   type Ref,
 } from 'vue';
 import { mount, type VueWrapper } from '@vue/test-utils';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterEach, describe, expect, it, vi,
+} from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import type { FileBrowserVirtualRow } from '../../utils/file-browser-virtual-rows';
 import { useFileBrowserBoxSelection } from '../use-file-browser-box-selection';

@@ -19,14 +19,13 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useNavigatorIconsStore } from '@/stores/runtime/navigator-icons';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
-import normalizePath, {
-  getPathDisplayName,
-} from '@/utils/normalize-path';
+import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import {
   buildVirtualDirectoryFromDrives,
@@ -80,6 +79,7 @@ export function useFileBrowserNavigation(
   const userStatsStore = useUserStatsStore();
   const userSettingsStore = useUserSettingsStore();
   const dirSizesStore = useDirSizesStore();
+  const navigatorIconsStore = useNavigatorIconsStore();
   const linkMetadataStore = useLinkMetadataStore();
   const itemCountsStore = useItemCountsStore();
   const statusCenterStore = useStatusCenterStore();
@@ -290,6 +290,12 @@ export function useFileBrowserNavigation(
   const canGoBack = computed(() => historyIndex.value > 0);
   const canGoForward = computed(() => historyIndex.value < history.value.length - 1);
 
+  async function loadDirectoryWithIconPrefetch(path: string, options?: ReadDirOptions): Promise<DirContents> {
+    const directoryContents = await loadDirectoryContents(path, options ?? createReadDirOptions());
+    navigatorIconsStore.prefetchForDirectoryEntries(directoryContents.entries);
+    return directoryContents;
+  }
+
   async function silentRefresh(): Promise<void> {
     const refreshPath = currentPath.value;
 
@@ -303,7 +309,7 @@ export function useFileBrowserNavigation(
       const virtualDirectory = buildVirtualDirectoryFromDrives(refreshPath, sharedDrives.value);
       const result = virtualDirectory
         ? virtualDirectory
-        : await loadDirectoryContents(refreshPath, createReadDirOptions());
+        : await loadDirectoryWithIconPrefetch(refreshPath, createReadDirOptions());
 
       if (currentPath.value !== refreshPath) {
         return;
@@ -417,7 +423,7 @@ export function useFileBrowserNavigation(
 
     try {
       logDirWatcherDiag('readDir loading directory', { path: normalizedPath });
-      const result = await loadDirectoryContents(path, createReadDirOptions());
+      const result = await loadDirectoryWithIconPrefetch(path, createReadDirOptions());
 
       dirContents.value = result;
 

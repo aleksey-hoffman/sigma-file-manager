@@ -1587,6 +1587,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
         return routeName === 'navigator';
       case 'settings':
         return routeName === 'settings';
+
       default: {
         const unexpectedScope: never = scope;
         return unexpectedScope;
@@ -1670,16 +1671,6 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     }
 
     return registration.handler();
-  }
-
-  function canCallShortcutHandler(shortcutId: ShortcutId): boolean {
-    const definition = getShortcutDefinition(shortcutId);
-    if (!definition) return false;
-
-    const registration = handlers.value.get(shortcutId);
-    if (!registration) return false;
-
-    return checkConditions(definition, registration);
   }
 
   async function executeShortcut(shortcutId: ShortcutId): Promise<boolean> {

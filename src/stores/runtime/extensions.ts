@@ -100,6 +100,7 @@ import { i18n } from '@/localization';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
 import { clearInstalledIconThemeCache } from '@/modules/icon-theme/extension-icon-themes';
+import { resetNavigatorIconThemesForExtension } from '@/modules/icon-theme/navigator-icon-theme-settings';
 
 export const useExtensionsStore = defineStore('extensions', () => {
   const storageStore = useExtensionsStorageStore();
@@ -1142,6 +1143,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         await storageStore.removeInstalledExtension(extensionId);
         clearInstalledIconThemeCache();
+
+        if (installed?.manifest.contributes?.iconThemes?.length) {
+          await resetNavigatorIconThemesForExtension(extensionId);
+        }
+
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
         filterRecentCommandsToExisting();
@@ -2133,6 +2139,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     availableExtensions,
     installedExtensions,
     enabledExtensions,
+    enabledIconThemeContributorsSignature,
     featuredExtensions,
     officialExtensions,
     isRegistryCacheValid,

@@ -3,26 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { computed, ref, watchEffect, type Ref } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
-
-const systemIconCache = new Map<string, string | null>();
-const systemIconInFlight = new Map<string, Promise<string | null>>();
-
-function isSystemIconRequestPath(path: string): boolean {
-  const trimmed = path.trim();
-
-  if (!trimmed || trimmed.includes('://')) {
-    return false;
-  }
-
-  const lower = trimmed.toLowerCase();
-
-  if (trimmed.startsWith('::{') || lower.startsWith('shell:')) {
-    return false;
-  }
-
-  return true;
-}
+import { fetchSystemIconCached } from './system-icon-cache';
 
 interface SystemIconParams {
   path: Ref<string> | (() => string);
@@ -47,65 +28,38 @@ export function useSystemIcon(params: SystemIconParams) {
       : params.enabled.value;
   });
 
-  const cacheKey = computed(() => {
-    const entryType = isDir.value ? 'dir' : 'file';
-    return `${entryType}:${path.value.toLowerCase()}:${size.value}`;
-  });
-
   const systemIconSrc = ref<string | null>(null);
 
-  async function fetchSystemIcon(): Promise<string | null> {
-    const iconSize = Math.max(8, Math.min(256, Math.round(size.value)));
-    const requestCacheKey = cacheKey.value;
-    const requestPath = path.value;
-    const requestIsDir = isDir.value;
-    const requestExtension = extension.value;
+  watchEffect(async (onCleanup) => {
+    let isCurrentRequest = true;
 
-    if (!isSystemIconRequestPath(requestPath)) {
-      return null;
-    }
+    onCleanup(() => {
+      isCurrentRequest = false;
+    });
 
-    const cached = systemIconCache.get(requestCacheKey);
-
-    if (cached !== undefined) {
-      return cached;
-    }
-
-    const existingRequest = systemIconInFlight.get(requestCacheKey);
-
-    if (existingRequest) {
-      return await existingRequest;
-    }
-
-    const requestPromise = invoke<string | null>('get_system_icon', {
-      path: requestPath,
-      isDir: requestIsDir,
-      extension: requestExtension,
-      size: iconSize,
-    })
-      .then((result) => {
-        systemIconCache.set(requestCacheKey, result);
-        return result;
-      })
-      .catch(() => {
-        systemIconCache.set(requestCacheKey, null);
-        return null;
-      })
-      .finally(() => {
-        systemIconInFlight.delete(requestCacheKey);
-      });
-
-    systemIconInFlight.set(requestCacheKey, requestPromise);
-    return await requestPromise;
-  }
-
-  watchEffect(async () => {
     if (!useSystemIcons.value) {
       systemIconSrc.value = null;
       return;
     }
 
-    systemIconSrc.value = await fetchSystemIcon();
+    const requestPath = path.value;
+    const requestIsDir = isDir.value;
+    const requestExtension = extension.value;
+    const requestSize = size.value;
+    const iconSrc = await fetchSystemIconCached({
+      path: requestPath,
+      isDir: requestIsDir,
+      extension: requestExtension,
+      size: requestSize,
+    });
+
+    if (isCurrentRequest
+      && requestPath === path.value
+      && requestIsDir === isDir.value
+      && requestExtension === extension.value
+      && requestSize === size.value) {
+      systemIconSrc.value = iconSrc;
+    }
   });
 
   return {

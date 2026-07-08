@@ -98,6 +98,37 @@ describe('useSystemIcon', () => {
     firstScope.stop();
     secondScope.stop();
   });
+
+  it('reuses the cached icon for different file paths with the same extension', async () => {
+    invokeMock.mockResolvedValue('txt-icon');
+
+    const { useSystemIcon } = await import('@/composables/use-system-icon');
+
+    const firstScope = effectScope();
+    const firstResult = firstScope.run(() => useSystemIcon({
+      path: ref('C:/docs/readme.txt'),
+      isDir: ref(false),
+      extension: ref('txt'),
+      size: ref(32),
+    }));
+
+    await waitForSystemIcon(() => firstResult?.systemIconSrc.value, 'txt-icon');
+
+    const secondScope = effectScope();
+    const secondResult = secondScope.run(() => useSystemIcon({
+      path: ref('C:/docs/notes.txt'),
+      isDir: ref(false),
+      extension: ref('txt'),
+      size: ref(32),
+    }));
+
+    await waitForSystemIcon(() => secondResult?.systemIconSrc.value, 'txt-icon');
+
+    expect(invokeMock).toHaveBeenCalledTimes(1);
+
+    firstScope.stop();
+    secondScope.stop();
+  });
 });
 
 async function waitForSystemIcon(readValue: () => string | null | undefined, expectedValue: string) {

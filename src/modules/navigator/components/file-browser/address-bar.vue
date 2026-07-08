@@ -38,7 +38,6 @@ import {
   ChevronRightIcon,
 } from '@lucide/vue';
 import { toast, ToastStatic } from '@/components/ui/toaster';
-import type { DirContents } from '@/types/dir-entry';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';

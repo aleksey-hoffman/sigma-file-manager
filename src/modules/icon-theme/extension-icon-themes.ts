@@ -17,6 +17,11 @@ import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke
 
 const iconThemeCache = new Map<string, Promise<LoadedIconThemeDefinition | null>>();
 
+type IconDefinitionEntry = {
+  definitionId: string;
+  iconPath: string;
+};
+
 export function clearInstalledIconThemeCache(): void {
   iconThemeCache.clear();
 }
@@ -106,10 +111,13 @@ async function loadContributedIconTheme(
     ? rawTheme.iconDefinitions
     : {};
   const iconDefinitions: LoadedIconThemeDefinition['iconDefinitions'] = {};
+  const definitionEntries: IconDefinitionEntry[] = [];
   const extensionPath = await invokeAsExtension<string>(
     extension.id,
     'get_extension_path',
-    { extensionId: extension.id },
+    {
+      extensionId: extension.id,
+    },
   );
 
   for (const [definitionId, definitionValue] of Object.entries(rawDefinitions)) {
@@ -117,28 +125,49 @@ async function loadContributedIconTheme(
       continue;
     }
 
-    try {
-      const relativeAssetPath = resolveThemeRelativePath(themeFilePath, definitionValue.iconPath);
-      const assetExists = await invokeAsExtension<boolean>(
-        extension.id,
-        'extension_path_exists',
-        {
-          extensionId: extension.id,
-          filePath: relativeAssetPath,
-        },
-      );
+    definitionEntries.push({
+      definitionId,
+      iconPath: definitionValue.iconPath,
+    });
+  }
 
-      if (!assetExists) {
-        continue;
+  const resolvedDefinitions = await Promise.all(
+    definitionEntries.map(async ({ definitionId, iconPath }) => {
+      try {
+        const relativeAssetPath = resolveThemeRelativePath(themeFilePath, iconPath);
+        const assetExists = await invokeAsExtension<boolean>(
+          extension.id,
+          'extension_path_exists',
+          {
+            extensionId: extension.id,
+            filePath: relativeAssetPath,
+          },
+        );
+
+        if (!assetExists) {
+          return null;
+        }
+
+        const assetPath = await join(extensionPath, relativeAssetPath);
+        return {
+          definitionId,
+          src: convertFileSrc(assetPath),
+        };
       }
+      catch {
+        return null;
+      }
+    }),
+  );
 
-      const assetPath = await join(extensionPath, relativeAssetPath);
-      iconDefinitions[definitionId] = {
-        src: convertFileSrc(assetPath),
-      };
+  for (const resolvedDefinition of resolvedDefinitions) {
+    if (!resolvedDefinition) {
+      continue;
     }
-    catch {
-    }
+
+    iconDefinitions[resolvedDefinition.definitionId] = {
+      src: resolvedDefinition.src,
+    };
   }
 
   function normalizeAssociationRecord(value: unknown): Record<string, string> | undefined {
@@ -239,6 +268,15 @@ export function findInstalledIconThemeContribution(
     extension,
     contribution,
   };
+}
+
+export function iconThemeReferencesExtension(
+  iconThemeId: string | null | undefined,
+  extensionId: string,
+): boolean {
+  const parsed = parseNavigatorIconThemeId(iconThemeId);
+
+  return parsed?.kind === 'extension' && parsed.extensionId === extensionId;
 }
 
 export async function loadInstalledIconTheme(

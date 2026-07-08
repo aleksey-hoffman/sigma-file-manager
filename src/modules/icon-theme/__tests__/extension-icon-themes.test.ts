@@ -8,6 +8,7 @@ import {
 import {
   clearInstalledIconThemeCache,
   getExtensionNavigatorIconThemeOptions,
+  iconThemeReferencesExtension,
   loadInstalledIconTheme,
   resolveThemeRelativePath,
 } from '@/modules/icon-theme/extension-icon-themes';
@@ -86,6 +87,14 @@ describe('extension icon theme asset path resolution', () => {
 
     expect(options).toHaveLength(1);
     expect(options[0].label).toBe('Example Dark');
+  });
+
+  it('detects icon theme settings that reference an extension', () => {
+    const extension = createInstalledExtension();
+    const iconThemeId = createExtensionNavigatorIconThemeId(extension.id, 'example-dark');
+
+    expect(iconThemeReferencesExtension(iconThemeId, extension.id)).toBe(true);
+    expect(iconThemeReferencesExtension(iconThemeId, 'other.extension')).toBe(false);
   });
 
   it('reloads icon themes after clearing the cache', async () => {

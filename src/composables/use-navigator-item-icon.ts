@@ -2,11 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { computed, ref, watchEffect, type Ref } from 'vue';
+import { computed, type Ref } from 'vue';
 import type { Component } from 'vue';
 import { HardDriveIcon } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { useExtensionsStore } from '@/stores/runtime/extensions';
+import { useNavigatorIconsStore } from '@/stores/runtime/navigator-icons';
 import { useSystemIcon } from './use-system-icon';
 import { getDefaultFileIconComponent } from '@/modules/navigator/components/file-browser/utils';
 import {
@@ -14,7 +14,6 @@ import {
   normalizeNavigatorIconThemeId,
   parseNavigatorIconThemeId,
 } from '@/types/icon-theme';
-import { loadInstalledIconTheme } from '@/modules/icon-theme/extension-icon-themes';
 import { resolveLoadedIconThemeIcon } from '@/modules/icon-theme/resolver';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import type { DriveEntryMetadata } from '@/types/drive-info';
@@ -46,8 +45,7 @@ function getPathSegments(path: string): string[] {
 
 export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
   const userSettingsStore = useUserSettingsStore();
-  const extensionsStore = useExtensionsStore();
-  const loadedExtensionTheme = ref<Awaited<ReturnType<typeof loadInstalledIconTheme>>>(null);
+  const navigatorIconsStore = useNavigatorIconsStore();
 
   const path = computed(() => readMaybeRef(params.path, ''));
   const name = computed(() => {
@@ -90,36 +88,35 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
     return parsedTheme.value?.kind === 'builtin'
       && parsedTheme.value.themeId === BUILTIN_NAVIGATOR_ICON_THEME_IDS.system;
   });
+  const extensionThemeFailed = computed(() => {
+    if (parsedTheme.value?.kind !== 'extension') {
+      return false;
+    }
+
+    return navigatorIconsStore.isExtensionThemeSettled(selectedIconTheme.value)
+      && navigatorIconsStore.getLoadedExtensionTheme(selectedIconTheme.value) === null;
+  });
+
+  const loadedExtensionTheme = computed(() => {
+    if (parsedTheme.value?.kind !== 'extension') {
+      return null;
+    }
+
+    const loadedTheme = navigatorIconsStore.getLoadedExtensionTheme(selectedIconTheme.value);
+
+    if (loadedTheme === undefined) {
+      return null;
+    }
+
+    return loadedTheme;
+  });
 
   const { systemIconSrc } = useSystemIcon({
     path,
     isDir,
     extension,
     size,
-    enabled: useSystemIcons,
-  });
-
-  watchEffect(async (onCleanup) => {
-    let isCurrentLoad = true;
-
-    onCleanup(() => {
-      isCurrentLoad = false;
-    });
-
-    if (parsedTheme.value?.kind !== 'extension') {
-      loadedExtensionTheme.value = null;
-      return;
-    }
-
-    const requestThemeId = selectedIconTheme.value;
-    const loadedTheme = await loadInstalledIconTheme(
-      extensionsStore.enabledExtensions,
-      requestThemeId,
-    );
-
-    if (isCurrentLoad && selectedIconTheme.value === requestThemeId) {
-      loadedExtensionTheme.value = loadedTheme;
-    }
+    enabled: computed(() => useSystemIcons.value || extensionThemeFailed.value),
   });
 
   const extensionThemeIconSrc = computed(() => {
@@ -140,7 +137,7 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
       return null;
     }
 
-    if (useSystemIcons.value) {
+    if (useSystemIcons.value || extensionThemeFailed.value) {
       return systemIconSrc.value;
     }
 
