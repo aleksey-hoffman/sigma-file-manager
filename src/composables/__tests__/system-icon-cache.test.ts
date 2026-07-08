@@ -7,10 +7,20 @@ import {
 } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 
-const invokeMock = vi.fn<(command: string, payload: unknown) => Promise<string | null>>();
+const {
+  invokeMock,
+  platformMock,
+} = vi.hoisted(() => ({
+  invokeMock: vi.fn<(command: string, payload: unknown) => Promise<string | null>>(),
+  platformMock: vi.fn(() => 'windows'),
+}));
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: invokeMock,
+}));
+
+vi.mock('@tauri-apps/plugin-os', () => ({
+  platform: platformMock,
 }));
 
 function createEntry(overrides: Partial<DirEntry> = {}): DirEntry {
@@ -36,6 +46,7 @@ describe('system icon cache', () => {
   beforeEach(() => {
     vi.resetModules();
     invokeMock.mockReset();
+    platformMock.mockReturnValue('windows');
   });
 
   it('deduplicates generic file icons by extension', async () => {
@@ -55,6 +66,47 @@ describe('system icon cache', () => {
 
     expect(firstKey).toBe('ext:txt:32');
     expect(secondKey).toBe(firstKey);
+  });
+
+  it('uses platform-specific unique icon cache keys', async () => {
+    const { getSystemIconCacheKey } = await import('@/composables/system-icon-cache');
+
+    expect(getSystemIconCacheKey({
+      path: 'C:/apps/launcher.desktop',
+      isDir: false,
+      extension: 'desktop',
+      size: 32,
+    })).toBe('ext:desktop:32');
+
+    platformMock.mockReturnValue('linux');
+
+    expect(getSystemIconCacheKey({
+      path: '/usr/share/applications/launcher.desktop',
+      isDir: false,
+      extension: 'desktop',
+      size: 32,
+    })).toBe('path:/usr/share/applications/launcher.desktop:32');
+  });
+
+  it('does not cache generic extension misses for the full session', async () => {
+    invokeMock.mockResolvedValue(null);
+
+    const { fetchSystemIconCached } = await import('@/composables/system-icon-cache');
+
+    await fetchSystemIconCached({
+      path: 'C:/docs/readme.txt',
+      isDir: false,
+      extension: 'txt',
+      size: 32,
+    });
+    await fetchSystemIconCached({
+      path: 'C:/docs/notes.txt',
+      isDir: false,
+      extension: 'txt',
+      size: 32,
+    });
+
+    expect(invokeMock).toHaveBeenCalledTimes(2);
   });
 
   it('prefetches unique cache keys only once per extension', async () => {
@@ -84,4 +136,57 @@ describe('system icon cache', () => {
 
     expect(invokeMock).toHaveBeenCalledTimes(1);
   });
+
+  it('limits concurrent prefetch requests', async () => {
+    const pendingRequests: Array<{
+      resolveIcon: (icon: string | null) => void;
+    }> = [];
+    let activeRequestCount = 0;
+    let maxActiveRequestCount = 0;
+
+    invokeMock.mockImplementation(() => {
+      activeRequestCount += 1;
+      maxActiveRequestCount = Math.max(maxActiveRequestCount, activeRequestCount);
+
+      return new Promise((resolveIcon) => {
+        pendingRequests.push({
+          resolveIcon: (icon) => {
+            activeRequestCount -= 1;
+            resolveIcon(icon);
+          },
+        });
+      });
+    });
+
+    const { prefetchSystemIconsForEntries } = await import('@/composables/system-icon-cache');
+    const entries = Array.from({ length: 10 }, (_value, entryIndex) => createEntry({
+      name: `Folder ${entryIndex}`,
+      path: `C:/Projects/Folder-${entryIndex}`,
+      is_dir: true,
+      is_file: false,
+      ext: null,
+    }));
+
+    prefetchSystemIconsForEntries(entries, [32]);
+    await flushPromises();
+
+    expect(invokeMock).toHaveBeenCalledTimes(6);
+    expect(maxActiveRequestCount).toBe(6);
+
+    const firstPendingRequest = pendingRequests.shift();
+    firstPendingRequest?.resolveIcon('folder-icon');
+    await flushPromises();
+
+    expect(invokeMock).toHaveBeenCalledTimes(7);
+    expect(maxActiveRequestCount).toBe(6);
+
+    while (pendingRequests.length > 0) {
+      pendingRequests.shift()?.resolveIcon('folder-icon');
+    }
+  });
 });
+
+async function flushPromises() {
+  await Promise.resolve();
+  await new Promise(resolve => setTimeout(resolve, 0));
+}

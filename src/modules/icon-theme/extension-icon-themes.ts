@@ -16,10 +16,16 @@ import {
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 const iconThemeCache = new Map<string, Promise<LoadedIconThemeDefinition | null>>();
+const ICON_THEME_ASSET_CHECK_CONCURRENCY = 16;
 
 type IconDefinitionEntry = {
   definitionId: string;
   iconPath: string;
+};
+
+type ResolvedIconDefinitionEntry = {
+  definitionId: string;
+  src: string;
 };
 
 export function clearInstalledIconThemeCache(): void {
@@ -87,6 +93,32 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+async function mapWithConcurrencyLimit<TInput, TOutput>(
+  items: TInput[],
+  concurrency: number,
+  worker: (item: TInput) => Promise<TOutput>,
+): Promise<TOutput[]> {
+  let nextItemIndex = 0;
+  const results: TOutput[] = [];
+  const workerCount = Math.min(concurrency, items.length);
+
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextItemIndex < items.length) {
+      const itemIndex = nextItemIndex;
+      nextItemIndex += 1;
+      const item = items[itemIndex];
+
+      if (item === undefined) {
+        return;
+      }
+
+      results.push(await worker(item));
+    }
+  }));
+
+  return results;
+}
+
 async function loadContributedIconTheme(
   extension: InstalledExtension,
   contribution: ExtensionIconThemeContribution,
@@ -131,8 +163,10 @@ async function loadContributedIconTheme(
     });
   }
 
-  const resolvedDefinitions = await Promise.all(
-    definitionEntries.map(async ({ definitionId, iconPath }) => {
+  const resolvedDefinitions = await mapWithConcurrencyLimit(
+    definitionEntries,
+    ICON_THEME_ASSET_CHECK_CONCURRENCY,
+    async ({ definitionId, iconPath }): Promise<ResolvedIconDefinitionEntry | null> => {
       try {
         const relativeAssetPath = resolveThemeRelativePath(themeFilePath, iconPath);
         const assetExists = await invokeAsExtension<boolean>(
@@ -157,7 +191,7 @@ async function loadContributedIconTheme(
       catch {
         return null;
       }
-    }),
+    },
   );
 
   for (const resolvedDefinition of resolvedDefinitions) {

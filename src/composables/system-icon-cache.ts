@@ -3,9 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { invoke } from '@tauri-apps/api/core';
+import { platform } from '@tauri-apps/plugin-os';
 import type { DirEntry } from '@/types/dir-entry';
 
-const UNIQUE_ICON_EXTENSIONS = new Set([
+const WINDOWS_UNIQUE_ICON_EXTENSIONS = new Set([
   'exe',
   'dll',
   'ico',
@@ -15,12 +16,19 @@ const UNIQUE_ICON_EXTENSIONS = new Set([
   'msi',
   'appx',
   'msix',
+]);
+
+const LINUX_UNIQUE_ICON_EXTENSIONS = new Set([
   'desktop',
   'appimage',
+]);
+
+const MACOS_UNIQUE_ICON_EXTENSIONS = new Set([
   'icns',
 ]);
 
 export const NAVIGATOR_ICON_PREFETCH_SIZES = [18, 24, 48] as const;
+const SYSTEM_ICON_PREFETCH_CONCURRENCY = 6;
 
 const systemIconCache = new Map<string, string | null>();
 const systemIconInFlight = new Map<string, Promise<string | null>>();
@@ -48,6 +56,47 @@ function isSystemIconRequestPath(path: string): boolean {
   return true;
 }
 
+function getUniqueIconExtensions(): Set<string> {
+  const currentPlatform = platform();
+
+  if (currentPlatform === 'linux') {
+    return LINUX_UNIQUE_ICON_EXTENSIONS;
+  }
+
+  if (currentPlatform === 'macos') {
+    return MACOS_UNIQUE_ICON_EXTENSIONS;
+  }
+
+  return WINDOWS_UNIQUE_ICON_EXTENSIONS;
+}
+
+function isExtensionCacheKey(cacheKey: string): boolean {
+  return cacheKey.startsWith('ext:');
+}
+
+async function runWithConcurrencyLimit<T>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T) => Promise<unknown>,
+): Promise<void> {
+  let nextItemIndex = 0;
+  const workerCount = Math.min(concurrency, items.length);
+
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextItemIndex < items.length) {
+      const itemIndex = nextItemIndex;
+      nextItemIndex += 1;
+      const item = items[itemIndex];
+
+      if (item === undefined) {
+        return;
+      }
+
+      await worker(item);
+    }
+  }));
+}
+
 export function getSystemIconCacheKey(request: SystemIconRequest): string {
   const iconSize = Math.max(8, Math.min(256, Math.round(request.size)));
 
@@ -57,7 +106,7 @@ export function getSystemIconCacheKey(request: SystemIconRequest): string {
 
   const normalizedExtension = request.extension?.toLowerCase() ?? '';
 
-  if (normalizedExtension && UNIQUE_ICON_EXTENSIONS.has(normalizedExtension)) {
+  if (normalizedExtension && getUniqueIconExtensions().has(normalizedExtension)) {
     return `path:${request.path.toLowerCase()}:${iconSize}`;
   }
 
@@ -94,11 +143,17 @@ export async function fetchSystemIconCached(request: SystemIconRequest): Promise
     size: iconSize,
   })
     .then((result) => {
-      systemIconCache.set(requestCacheKey, result);
+      if (result !== null || !isExtensionCacheKey(requestCacheKey)) {
+        systemIconCache.set(requestCacheKey, result);
+      }
+
       return result;
     })
     .catch(() => {
-      systemIconCache.set(requestCacheKey, null);
+      if (!isExtensionCacheKey(requestCacheKey)) {
+        systemIconCache.set(requestCacheKey, null);
+      }
+
       return null;
     })
     .finally(() => {
@@ -137,7 +192,9 @@ export function prefetchSystemIconsForEntries(
     }
   }
 
-  for (const request of pendingRequests.values()) {
-    void fetchSystemIconCached(request);
-  }
+  void runWithConcurrencyLimit(
+    [...pendingRequests.values()],
+    SYSTEM_ICON_PREFETCH_CONCURRENCY,
+    request => fetchSystemIconCached(request),
+  );
 }
