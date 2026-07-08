@@ -69,7 +69,10 @@ pub fn ensure_path_is_allowed_command(
     allowed_exact_paths: &[PathBuf],
     access_denied_message: &str,
 ) -> Result<(), String> {
-    if allowed_exact_paths.iter().any(|allowed_path| allowed_path == path) {
+    if allowed_exact_paths
+        .iter()
+        .any(|allowed_path| allowed_path == path)
+    {
         return Ok(());
     }
 

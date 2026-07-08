@@ -13,7 +13,9 @@ use zip::ZipWriter;
 use crate::utils::{normalize_path, unique_path_with_index};
 
 use super::extract::copy_with_periodic_cancel;
-use super::jobs::{ProgressSink, ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER, ARCHIVE_JOB_CANCELLED};
+use super::jobs::{
+    ProgressSink, ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER, ARCHIVE_JOB_CANCELLED,
+};
 
 fn path_to_zip_entry_path(path: &Path) -> String {
     normalize_path(&path.to_string_lossy())

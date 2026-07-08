@@ -86,12 +86,12 @@ fn executable_base_name(path: &str) -> Option<String> {
 
 #[cfg(windows)]
 unsafe fn get_windows_process_image_path(process_id: u32) -> Option<String> {
+    use windows::core::PWSTR;
     use windows::Win32::Foundation::CloseHandle;
     use windows::Win32::System::Threading::{
         OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32,
         PROCESS_QUERY_LIMITED_INFORMATION,
     };
-    use windows::core::PWSTR;
 
     let process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, process_id).ok()?;
 
@@ -200,7 +200,10 @@ mod tests {
 
     #[test]
     fn normalize_optional_string_trims_and_rejects_empty_values() {
-        assert_eq!(normalize_optional_string("  Sigma  ".to_string()), Some("Sigma".to_string()));
+        assert_eq!(
+            normalize_optional_string("  Sigma  ".to_string()),
+            Some("Sigma".to_string())
+        );
         assert_eq!(normalize_optional_string("   ".to_string()), None);
     }
 

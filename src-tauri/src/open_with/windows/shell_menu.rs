@@ -4,26 +4,27 @@
 
 use crate::open_with::types::{GetShellContextMenuResult, OpenWithResult, ShellContextMenuItem};
 use crate::open_with::utils::{
-    canonicalize_path, common_parent_directory_for_selections, normalize_selection_path_for_comparison,
-    parent_directory_for_selection, path_for_selection, prepare_shell_path, shell_path_candidates,
+    canonicalize_path, common_parent_directory_for_selections,
+    normalize_selection_path_for_comparison, parent_directory_for_selection, path_for_selection,
+    prepare_shell_path, shell_path_candidates,
 };
 use crate::open_with::windows::icon_utils::hbitmap_to_base64_png;
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
+use windows::core::PCWSTR;
 use windows::core::PSTR;
 use windows::Win32::Foundation::{HWND, TRUE};
 use windows::Win32::System::Com::{
-    CoInitializeEx, CoTaskMemFree, CoUninitialize, CreateBindCtx, IBindCtx, COINIT_APARTMENTTHREADED,
+    CoInitializeEx, CoTaskMemFree, CoUninitialize, CreateBindCtx, IBindCtx,
+    COINIT_APARTMENTTHREADED,
 };
 use windows::Win32::UI::Shell::Common::ITEMIDLIST;
-use windows::core::PCWSTR;
 use windows::Win32::UI::Shell::{
-    BHID_SFObject, BHID_SFUIObject, FOLDERID_Profile, IContextMenu, ILCreateFromPathW, IShellFolder,
-    IShellItem,
-    KF_FLAG_DEFAULT, SHBindToParent, SHCreateItemFromParsingName, SHGetIDListFromObject,
+    BHID_SFObject, BHID_SFUIObject, FOLDERID_Profile, IContextMenu, ILCreateFromPathW,
+    IShellFolder, IShellItem, SHBindToParent, SHCreateItemFromParsingName, SHGetIDListFromObject,
     SHGetKnownFolderIDList, SHGetKnownFolderItem, SHParseDisplayName, ShellExecuteExW, CMF_EXPLORE,
-    CMF_NORMAL, CMINVOKECOMMANDINFOEX, SEE_MASK_INVOKEIDLIST, SHELLEXECUTEINFOW,
+    CMF_NORMAL, CMINVOKECOMMANDINFOEX, KF_FLAG_DEFAULT, SEE_MASK_INVOKEIDLIST, SHELLEXECUTEINFOW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CreatePopupMenu, DestroyMenu, GetMenuItemCount, GetMenuItemInfoW, MENUITEMINFOW, MIIM_BITMAP,
@@ -127,7 +128,9 @@ unsafe fn create_profile_folder_pidl() -> Result<*mut ITEMIDLIST, String> {
     )
 }
 
-unsafe fn create_absolute_pidl_for_prepared_path(prepared_path: &str) -> Result<*mut ITEMIDLIST, String> {
+unsafe fn create_absolute_pidl_for_prepared_path(
+    prepared_path: &str,
+) -> Result<*mut ITEMIDLIST, String> {
     if path_matches_user_profile_folder(prepared_path) {
         if let Ok(profile_pidl) = create_profile_folder_pidl() {
             return Ok(profile_pidl);
@@ -152,7 +155,15 @@ unsafe fn create_absolute_pidl_for_prepared_path(prepared_path: &str) -> Result<
     }
 
     let mut absolute_pidl: *mut ITEMIDLIST = std::ptr::null_mut();
-    if SHParseDisplayName(wide_path_pointer, &bind_context, &mut absolute_pidl, 0, None).is_ok() {
+    if SHParseDisplayName(
+        wide_path_pointer,
+        &bind_context,
+        &mut absolute_pidl,
+        0,
+        None,
+    )
+    .is_ok()
+    {
         return Ok(absolute_pidl);
     }
 
@@ -161,10 +172,7 @@ unsafe fn create_absolute_pidl_for_prepared_path(prepared_path: &str) -> Result<
         return Ok(legacy_pidl);
     }
 
-    Err(format!(
-        "Failed to resolve shell path '{}'",
-        prepared_path
-    ))
+    Err(format!("Failed to resolve shell path '{}'", prepared_path))
 }
 
 unsafe fn create_absolute_pidl(shell_path: &str) -> Result<*mut ITEMIDLIST, String> {
@@ -213,7 +221,10 @@ unsafe fn find_properties_command_id(
             continue;
         }
 
-        let verb_length = verb_buffer.iter().position(|&character| character == 0).unwrap_or(0);
+        let verb_length = verb_buffer
+            .iter()
+            .position(|&character| character == 0)
+            .unwrap_or(0);
         if verb_length == 0 {
             continue;
         }
@@ -275,7 +286,9 @@ unsafe fn invoke_properties_on_context_menu(menu: &IContextMenu) -> OpenWithResu
     }
 }
 
-unsafe fn invoke_properties_via_shell_execute_for_shell_item(shell_item: &IShellItem) -> OpenWithResult {
+unsafe fn invoke_properties_via_shell_execute_for_shell_item(
+    shell_item: &IShellItem,
+) -> OpenWithResult {
     use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 
     let absolute_pidl = match SHGetIDListFromObject(shell_item) {
@@ -339,19 +352,19 @@ unsafe fn invoke_properties_via_shell_item(shell_item: &IShellItem) -> OpenWithR
 }
 
 unsafe fn invoke_properties_for_user_profile_folder() -> OpenWithResult {
-    let shell_item = match SHGetKnownFolderItem::<_, IShellItem>(&FOLDERID_Profile, KF_FLAG_DEFAULT, None)
-    {
-        Ok(shell_item) => shell_item,
-        Err(known_folder_error) => {
-            return OpenWithResult {
-                success: false,
-                error: Some(format!(
-                    "Failed to resolve user profile folder: {}",
-                    known_folder_error
-                )),
-            };
-        }
-    };
+    let shell_item =
+        match SHGetKnownFolderItem::<_, IShellItem>(&FOLDERID_Profile, KF_FLAG_DEFAULT, None) {
+            Ok(shell_item) => shell_item,
+            Err(known_folder_error) => {
+                return OpenWithResult {
+                    success: false,
+                    error: Some(format!(
+                        "Failed to resolve user profile folder: {}",
+                        known_folder_error
+                    )),
+                };
+            }
+        };
 
     invoke_properties_via_shell_item(&shell_item)
 }
@@ -588,7 +601,9 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
     }
 }
 
-unsafe fn create_shell_context_menu_from_pidl(absolute_pidl: *mut ITEMIDLIST) -> Result<ShellContextMenu, String> {
+unsafe fn create_shell_context_menu_from_pidl(
+    absolute_pidl: *mut ITEMIDLIST,
+) -> Result<ShellContextMenu, String> {
     let mut child_pidl: *mut ITEMIDLIST = std::ptr::null_mut();
     let parent_folder: IShellFolder = match SHBindToParent(absolute_pidl, Some(&mut child_pidl)) {
         Ok(parent_folder) => parent_folder,
@@ -631,7 +646,9 @@ unsafe fn create_shell_context_menu(file_path: &str) -> Result<ShellContextMenu,
     create_shell_context_menu_from_pidl(absolute_pidl)
 }
 
-unsafe fn create_shell_folder_for_directory(parent_directory: &str) -> Result<IShellFolder, String> {
+unsafe fn create_shell_folder_for_directory(
+    parent_directory: &str,
+) -> Result<IShellFolder, String> {
     let shell_item = create_shell_item_for_prepared_path(parent_directory)?;
     shell_item
         .BindToHandler(None, &BHID_SFObject)
@@ -680,7 +697,9 @@ unsafe fn create_child_pidl_in_folder(
     Ok(child_pidl)
 }
 
-unsafe fn create_shell_context_menu_for_paths(file_paths: &[String]) -> Result<ShellContextMenu, String> {
+unsafe fn create_shell_context_menu_for_paths(
+    file_paths: &[String],
+) -> Result<ShellContextMenu, String> {
     let parent_directory = common_parent_directory_for_selections(file_paths)?;
     let parent_directory_string = path_for_selection(&parent_directory.to_string_lossy());
 
@@ -714,8 +733,7 @@ unsafe fn create_shell_context_menu_for_paths(file_paths: &[String]) -> Result<S
             .and_then(|name| name.to_str())
             .ok_or_else(|| format!("Path has no file name: {}", selection_path_string))?;
 
-        let child_pidl =
-            create_child_pidl_in_folder(&parent_folder, item_name, &bind_context)?;
+        let child_pidl = create_child_pidl_in_folder(&parent_folder, item_name, &bind_context)?;
         child_pidl_ptrs.push(child_pidl as *const ITEMIDLIST);
         owned_pidls.push(child_pidl);
     }
@@ -734,13 +752,12 @@ unsafe fn create_shell_context_menu_for_paths(file_paths: &[String]) -> Result<S
         }
     };
 
-    Ok(ShellContextMenu {
-        menu,
-        owned_pidls,
-    })
+    Ok(ShellContextMenu { menu, owned_pidls })
 }
 
-unsafe fn invoke_properties_through_context_menu(shell_context_menu: &ShellContextMenu) -> OpenWithResult {
+unsafe fn invoke_properties_through_context_menu(
+    shell_context_menu: &ShellContextMenu,
+) -> OpenWithResult {
     invoke_properties_on_context_menu(&shell_context_menu.menu)
 }
 
@@ -761,10 +778,10 @@ unsafe fn open_single_item_properties(file_path: &str) -> OpenWithResult {
         }
         last_error = shell_item_result.error;
 
-        if let Ok(shell_context_menu) = create_shell_context_menu_from_prepared_path(&candidate_path)
+        if let Ok(shell_context_menu) =
+            create_shell_context_menu_from_prepared_path(&candidate_path)
         {
-            let context_menu_result =
-                invoke_properties_through_context_menu(&shell_context_menu);
+            let context_menu_result = invoke_properties_through_context_menu(&shell_context_menu);
 
             if context_menu_result.success {
                 return context_menu_result;

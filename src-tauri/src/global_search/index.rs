@@ -7,10 +7,10 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use tantivy::indexer::{IndexWriter, NoMergePolicy};
 use tantivy::schema::{
     IndexRecordOption, Schema, TextFieldIndexing, TextOptions, FAST, STORED, STRING,
 };
-use tantivy::indexer::{IndexWriter, NoMergePolicy};
 use tantivy::{Index, IndexReader, ReloadPolicy};
 
 pub(super) fn build_schema() -> (Schema, GlobalSearchIndexFields) {

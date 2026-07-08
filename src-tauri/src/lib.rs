@@ -13,11 +13,11 @@ mod delete_job;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
-mod input_simulation;
 mod extensions;
 mod file_operations;
 mod global_search;
 mod image_thumbnails;
+mod input_simulation;
 mod lan_share;
 mod link_operations;
 mod open_with;
@@ -42,10 +42,7 @@ const SIGMA_AUTOSTART_CLI_FLAG: &str = "--sigma-autostart";
 const AUXILIARY_WINDOW_RELEASE_EVENT: &str = "auxiliary-window:release";
 const PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT: &str = "print-view:native-close-requested";
 
-fn handle_auxiliary_window_close_requested(
-    window: &tauri::Window,
-    api: &tauri::CloseRequestApi,
-) {
+fn handle_auxiliary_window_close_requested(window: &tauri::Window, api: &tauri::CloseRequestApi) {
     let label = window.label();
 
     if label != "print-view" && label != "quick-view" {
@@ -55,11 +52,7 @@ fn handle_auxiliary_window_close_requested(
     api.prevent_close();
 
     if label == "print-view" {
-        let _ = window.emit_to(
-            "print-view",
-            PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT,
-            (),
-        );
+        let _ = window.emit_to("print-view", PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT, ());
     }
 
     let _ = window.hide();
@@ -427,8 +420,7 @@ pub fn run() {
                 if window.label() == "main" {
                     let _ = window.hide();
                     api.prevent_close();
-                }
-                else {
+                } else {
                     handle_auxiliary_window_close_requested(window, api);
                 }
             }

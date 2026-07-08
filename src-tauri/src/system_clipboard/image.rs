@@ -12,14 +12,14 @@ use image::ImageEncoder;
 
 use crate::utils::unique_path_with_index;
 
+use super::is_valid_png_bytes;
 use super::types::{
     SystemClipboardImageInfo, SystemClipboardImagePasteResult, SystemClipboardImagePngPayload,
     SystemClipboardSavedImage,
 };
-use super::is_valid_png_bytes;
 #[cfg(target_os = "windows")]
 use super::windows::{
-    set_windows_clipboard_bytes, with_windows_clipboard, windows_open_clipboard,
+    set_windows_clipboard_bytes, windows_open_clipboard, with_windows_clipboard,
     MAX_CLIPBOARD_PNG_BYTES,
 };
 
@@ -29,7 +29,9 @@ struct ClipboardImageBytes {
     bytes: Vec<u8>,
 }
 
-pub(crate) fn set_system_clipboard_image_from_png_bytes_sync(png_bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn set_system_clipboard_image_from_png_bytes_sync(
+    png_bytes: &[u8],
+) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         return set_system_clipboard_image_from_png_bytes_inner(png_bytes);
@@ -90,7 +92,8 @@ fn set_system_clipboard_image_from_png_bytes_inner(png_bytes: &[u8]) -> Result<(
     }
 }
 
-pub(crate) fn read_system_clipboard_image_info_sync() -> Result<Option<SystemClipboardImageInfo>, String> {
+pub(crate) fn read_system_clipboard_image_info_sync(
+) -> Result<Option<SystemClipboardImageInfo>, String> {
     #[cfg(target_os = "windows")]
     {
         windows_read_clipboard_image_info()
@@ -117,7 +120,8 @@ fn unix_read_clipboard_image_info() -> Result<Option<SystemClipboardImageInfo>, 
     }
 }
 
-pub(crate) fn save_system_clipboard_image_to_temp_sync() -> Result<Option<SystemClipboardSavedImage>, String> {
+pub(crate) fn save_system_clipboard_image_to_temp_sync(
+) -> Result<Option<SystemClipboardSavedImage>, String> {
     let temp_dir = system_clipboard_image_temp_dir()?;
     cleanup_clipboard_temp_images(&temp_dir)?;
     let destination_file = temp_dir.join("clipboard-image.png");
@@ -426,10 +430,10 @@ fn png_bytes_to_cf_dib(png_bytes: &[u8]) -> Result<Vec<u8>, String> {
         return Err("Clipboard image dimensions must be greater than zero".to_string());
     }
 
-    let width_usize = usize::try_from(width)
-        .map_err(|_| "Clipboard image width is too large".to_string())?;
-    let height_usize = usize::try_from(height)
-        .map_err(|_| "Clipboard image height is too large".to_string())?;
+    let width_usize =
+        usize::try_from(width).map_err(|_| "Clipboard image width is too large".to_string())?;
+    let height_usize =
+        usize::try_from(height).map_err(|_| "Clipboard image height is too large".to_string())?;
     let row_stride = width_usize
         .checked_mul(4)
         .ok_or_else(|| "Clipboard image row stride overflow".to_string())?;
@@ -467,7 +471,9 @@ fn png_bytes_to_cf_dib(png_bytes: &[u8]) -> Result<Vec<u8>, String> {
 #[cfg(target_os = "windows")]
 fn windows_set_clipboard_png_bytes(png_bytes: &[u8]) -> Result<(), String> {
     use windows::core::w;
-    use windows::Win32::System::DataExchange::{CloseClipboard, EmptyClipboard, RegisterClipboardFormatW};
+    use windows::Win32::System::DataExchange::{
+        CloseClipboard, EmptyClipboard, RegisterClipboardFormatW,
+    };
 
     with_windows_clipboard(|| unsafe {
         windows_open_clipboard()?;
@@ -698,13 +704,27 @@ mod tests {
         let mut png_bytes = Vec::new();
         let encoder = image::codecs::png::PngEncoder::new(&mut png_bytes);
         encoder
-            .write_image(&[255, 0, 0, 255, 0, 255, 0, 255], 1, 2, image::ExtendedColorType::Rgba8)
+            .write_image(
+                &[255, 0, 0, 255, 0, 255, 0, 255],
+                1,
+                2,
+                image::ExtendedColorType::Rgba8,
+            )
             .expect("png encode");
 
         let dib_bytes = png_bytes_to_cf_dib(&png_bytes).expect("dib conversion");
         assert!(dib_bytes.len() > 40);
-        assert_eq!(u32::from_le_bytes(dib_bytes[0..4].try_into().expect("header size")), 40);
-        assert_eq!(u32::from_le_bytes(dib_bytes[4..8].try_into().expect("width")), 1);
-        assert_eq!(u32::from_le_bytes(dib_bytes[8..12].try_into().expect("height")), 2);
+        assert_eq!(
+            u32::from_le_bytes(dib_bytes[0..4].try_into().expect("header size")),
+            40
+        );
+        assert_eq!(
+            u32::from_le_bytes(dib_bytes[4..8].try_into().expect("width")),
+            1
+        );
+        assert_eq!(
+            u32::from_le_bytes(dib_bytes[8..12].try_into().expect("height")),
+            2
+        );
     }
 }

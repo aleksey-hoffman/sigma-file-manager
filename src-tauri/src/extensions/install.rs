@@ -31,7 +31,9 @@ struct ParsedLocalExtensionManifest {
     version: String,
 }
 
-fn parse_local_extension_manifest(source_dir: &Path) -> Result<ParsedLocalExtensionManifest, String> {
+fn parse_local_extension_manifest(
+    source_dir: &Path,
+) -> Result<ParsedLocalExtensionManifest, String> {
     if !source_dir.exists() || !source_dir.is_dir() {
         return Err("Source path does not exist or is not a directory".to_string());
     }

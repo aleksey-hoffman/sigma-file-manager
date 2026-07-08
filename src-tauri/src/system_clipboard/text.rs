@@ -8,7 +8,9 @@ use super::files::read_system_clipboard_files_sync;
 use super::image::read_system_clipboard_image_info_sync;
 
 #[cfg(target_os = "windows")]
-use super::windows::{ensure_windows_ole_initialized, with_windows_clipboard, windows_open_clipboard};
+use super::windows::{
+    ensure_windows_ole_initialized, windows_open_clipboard, with_windows_clipboard,
+};
 
 pub fn read_clipboard_change_token_sync() -> Result<String, String> {
     #[cfg(target_os = "windows")]
@@ -58,9 +60,7 @@ fn unix_read_clipboard_change_token() -> Result<String, String> {
     };
 
     let image_hash = image_info.as_ref().map_or(0, |info| {
-        fnv1a_hash(
-            format!("{}x{}x{}", info.width, info.height, info.size_bytes).as_bytes(),
-        )
+        fnv1a_hash(format!("{}x{}x{}", info.width, info.height, info.size_bytes).as_bytes())
     });
 
     let text_hash = fnv1a_hash_str_sample(&text, 4096);
@@ -104,7 +104,9 @@ fn fnv1a_hash_str_sample(text: &str, max_bytes: usize) -> u64 {
 #[cfg(target_os = "windows")]
 fn windows_read_clipboard_text() -> Result<String, String> {
     use windows::Win32::Foundation::HGLOBAL;
-    use windows::Win32::System::DataExchange::{CloseClipboard, GetClipboardData, IsClipboardFormatAvailable};
+    use windows::Win32::System::DataExchange::{
+        CloseClipboard, GetClipboardData, IsClipboardFormatAvailable,
+    };
     use windows::Win32::System::Memory::{GlobalLock, GlobalSize, GlobalUnlock};
 
     const CF_UNICODETEXT: u32 = 13;

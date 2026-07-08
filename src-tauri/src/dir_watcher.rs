@@ -98,11 +98,11 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
     {
         let watchers = ACTIVE_WATCHERS.lock().map_err(|err| err.to_string())?;
         if watchers.contains_key(&normalized_path) {
-        dir_watcher_diag!(
-            "[dir-watcher-diag] watch_directory skipped already-active path={} active_count={}",
-            normalized_path,
-            watchers.len(),
-        );
+            dir_watcher_diag!(
+                "[dir-watcher-diag] watch_directory skipped already-active path={} active_count={}",
+                normalized_path,
+                watchers.len(),
+            );
             return Ok(());
         }
     }
@@ -175,7 +175,10 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
             return;
         }
 
-        dir_watcher_diag!("[dir-watcher-diag] Started watching directory: {}", path_for_thread);
+        dir_watcher_diag!(
+            "[dir-watcher-diag] Started watching directory: {}",
+            path_for_thread
+        );
 
         let debounce_duration = Duration::from_millis(300);
         let mut last_emit_time: Option<Instant> = None;

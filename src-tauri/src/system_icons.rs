@@ -86,9 +86,9 @@ fn normalize_extension_for_probe(extension: &Option<String>) -> Option<String> {
         .filter(|value| {
             !value.is_empty()
                 && value.len() <= 16
-                && value
-                    .chars()
-                    .all(|character| character.is_ascii_alphanumeric() || character == '-' || character == '_')
+                && value.chars().all(|character| {
+                    character.is_ascii_alphanumeric() || character == '-' || character == '_'
+                })
         })
 }
 
@@ -201,8 +201,7 @@ fn is_shell_parsable_path(path: &Path) -> bool {
 
         let path_string = HSTRING::from(path.as_os_str());
         let parsable =
-            SHCreateItemFromParsingName::<_, _, IShellItemImageFactory>(&path_string, None)
-                .is_ok();
+            SHCreateItemFromParsingName::<_, _, IShellItemImageFactory>(&path_string, None).is_ok();
         CoUninitialize();
         parsable
     }
@@ -401,12 +400,10 @@ mod tests {
 
     #[test]
     fn resolve_shell_icon_path_rejects_shell_namespace_paths() {
-        assert!(resolve_shell_icon_path(
-            "::{20D04FE0-3EA5-1069-A2D8-08002B30309D}",
-            true,
-            &None
-        )
-        .is_none());
+        assert!(
+            resolve_shell_icon_path("::{20D04FE0-3EA5-1069-A2D8-08002B30309D}", true, &None)
+                .is_none()
+        );
         assert!(resolve_shell_icon_path("shell:MyComputerFolder", true, &None).is_none());
     }
 

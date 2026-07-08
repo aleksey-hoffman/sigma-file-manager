@@ -19,9 +19,7 @@ fn get_extensions_storage_file_path(app_handle: &tauri::AppHandle) -> Result<Pat
         .map_err(|error| format!("Failed to get app data dir: {}", error))?;
     let app_user_data_dir = app_data_dir.join(&user_storage_files_config().user_data_dir_name);
 
-    Ok(app_user_data_dir.join(
-        &user_storage_files_config().file_names.extensions,
-    ))
+    Ok(app_user_data_dir.join(&user_storage_files_config().file_names.extensions))
 }
 
 fn read_extensions_storage_value(app_handle: &tauri::AppHandle) -> Result<Value, String> {
@@ -33,10 +31,7 @@ fn read_extensions_storage_value(app_handle: &tauri::AppHandle) -> Result<Value,
             return Ok(Value::Object(Default::default()));
         }
         Err(error) => {
-            return Err(format!(
-                "Failed to read extensions storage file: {}",
-                error
-            ));
+            return Err(format!("Failed to read extensions storage file: {}", error));
         }
     };
 
@@ -55,7 +50,10 @@ fn is_drive_root_directory(directory_path: &Path) -> bool {
         && normalized_directory.contains(':')
 }
 
-fn extension_uses_custom_binary(binary_object: &serde_json::Map<String, Value>, extension_id: &str) -> bool {
+fn extension_uses_custom_binary(
+    binary_object: &serde_json::Map<String, Value>,
+    extension_id: &str,
+) -> bool {
     binary_object
         .get("usedBy")
         .and_then(Value::as_array)
@@ -144,11 +142,7 @@ pub fn collect_custom_binary_allowed_roots(
             continue;
         };
 
-        if binary_object
-            .get("source")
-            .and_then(Value::as_str)
-            != Some("custom")
-        {
+        if binary_object.get("source").and_then(Value::as_str) != Some("custom") {
             continue;
         }
 
@@ -193,11 +187,7 @@ pub fn collect_custom_binary_allowed_command_paths(
             continue;
         };
 
-        if binary_object
-            .get("source")
-            .and_then(Value::as_str)
-            != Some("custom")
-        {
+        if binary_object.get("source").and_then(Value::as_str) != Some("custom") {
             continue;
         }
 
@@ -243,9 +233,7 @@ pub fn load_custom_binary_allowed_command_paths(
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        collect_custom_binary_allowed_command_paths, collect_custom_binary_allowed_roots,
-    };
+    use super::{collect_custom_binary_allowed_command_paths, collect_custom_binary_allowed_roots};
     use serde_json::json;
     use std::fs;
     use tempfile::tempdir;
@@ -268,14 +256,11 @@ mod tests {
             }
         });
 
-        let allowed_roots =
-            collect_custom_binary_allowed_roots(&storage_value, "media.converter");
+        let allowed_roots = collect_custom_binary_allowed_roots(&storage_value, "media.converter");
 
         assert_eq!(allowed_roots.len(), 1);
         assert_eq!(
-            allowed_roots[0]
-                .to_string_lossy()
-                .replace('\\', "/"),
+            allowed_roots[0].to_string_lossy().replace('\\', "/"),
             binary_directory
                 .canonicalize()
                 .expect("canonicalize binary directory")
@@ -309,9 +294,7 @@ mod tests {
 
         assert_eq!(allowed_paths.len(), 1);
         assert_eq!(
-            allowed_paths[0]
-                .to_string_lossy()
-                .replace('\\', "/"),
+            allowed_paths[0].to_string_lossy().replace('\\', "/"),
             ffmpeg_path
                 .canonicalize()
                 .expect("canonicalize ffmpeg path")
@@ -369,8 +352,7 @@ mod tests {
             }
         });
 
-        let allowed_roots =
-            collect_custom_binary_allowed_roots(&storage_value, "media.converter");
+        let allowed_roots = collect_custom_binary_allowed_roots(&storage_value, "media.converter");
 
         assert!(allowed_roots.is_empty());
     }

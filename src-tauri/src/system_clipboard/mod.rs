@@ -93,9 +93,7 @@ pub async fn paste_saved_clipboard_image(
 }
 
 #[tauri::command]
-pub async fn set_system_clipboard_image_from_png_bytes(
-    png_bytes: Vec<u8>,
-) -> Result<(), String> {
+pub async fn set_system_clipboard_image_from_png_bytes(png_bytes: Vec<u8>) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
         image::set_system_clipboard_image_from_png_bytes_sync(&png_bytes)
     })
@@ -106,9 +104,8 @@ pub async fn set_system_clipboard_image_from_png_bytes(
 #[tauri::command]
 pub async fn set_system_clipboard_image_from_path(path: String) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let png_bytes = std::fs::read(&path).map_err(|error| {
-            format!("Failed to read clipboard image file at {path}: {error}")
-        })?;
+        let png_bytes = std::fs::read(&path)
+            .map_err(|error| format!("Failed to read clipboard image file at {path}: {error}"))?;
         image::set_system_clipboard_image_from_png_bytes_sync(&png_bytes)
     })
     .await

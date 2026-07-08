@@ -8,9 +8,12 @@ use std::path::{Path, PathBuf};
 use super::types::SystemClipboardFiles;
 
 #[cfg(target_os = "windows")]
-use super::windows::{set_windows_clipboard_bytes, with_windows_clipboard, windows_open_clipboard};
+use super::windows::{set_windows_clipboard_bytes, windows_open_clipboard, with_windows_clipboard};
 
-pub(crate) fn set_system_clipboard_files_sync(paths: &[String], operation: &str) -> Result<(), String> {
+pub(crate) fn set_system_clipboard_files_sync(
+    paths: &[String],
+    operation: &str,
+) -> Result<(), String> {
     if paths.is_empty() {
         return Ok(());
     }

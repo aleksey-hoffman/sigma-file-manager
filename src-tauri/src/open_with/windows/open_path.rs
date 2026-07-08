@@ -3,7 +3,9 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::open_with::types::OpenWithResult;
-use crate::open_with::utils::{parent_directory_for_selection, path_for_selection, prepare_shell_path};
+use crate::open_with::utils::{
+    parent_directory_for_selection, path_for_selection, prepare_shell_path,
+};
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
 use std::os::windows::process::CommandExt;
@@ -65,9 +67,16 @@ fn launch_with_shell_execute(
     }
 }
 
-fn launch_with_cmd_start(absolute_path: &str, working_directory: Option<&str>) -> Result<(), std::io::Error> {
+fn launch_with_cmd_start(
+    absolute_path: &str,
+    working_directory: Option<&str>,
+) -> Result<(), std::io::Error> {
     let mut command = Command::new("cmd");
-    command.arg("/C").arg("start").arg("").creation_flags(CREATE_NO_WINDOW);
+    command
+        .arg("/C")
+        .arg("start")
+        .arg("")
+        .creation_flags(CREATE_NO_WINDOW);
 
     if let Some(working_directory) = working_directory {
         command.arg("/D").arg(working_directory);
@@ -123,10 +132,7 @@ mod tests {
         let path = Path::new(r"C:\Games\Fluffy Mod Manager\Modmanager.exe");
 
         assert_eq!(
-            working_directory_for_path(
-                r"C:/Games/Fluffy Mod Manager/Modmanager.exe",
-                path,
-            ),
+            working_directory_for_path(r"C:/Games/Fluffy Mod Manager/Modmanager.exe", path,),
             Some(r"C:\Games\Fluffy Mod Manager".to_string()),
         );
     }
@@ -138,7 +144,9 @@ mod tests {
 
         assert_eq!(
             working_directory_for_path(&path_string, temp_directory.as_path()),
-            Some(prepare_shell_path(temp_directory.to_string_lossy().as_ref())),
+            Some(prepare_shell_path(
+                temp_directory.to_string_lossy().as_ref()
+            )),
         );
     }
 
@@ -146,9 +154,6 @@ mod tests {
     fn working_directory_for_file_without_parent_returns_none() {
         let path = Path::new("Modmanager.exe");
 
-        assert_eq!(
-            working_directory_for_path("Modmanager.exe", path),
-            None,
-        );
+        assert_eq!(working_directory_for_path("Modmanager.exe", path), None,);
     }
 }

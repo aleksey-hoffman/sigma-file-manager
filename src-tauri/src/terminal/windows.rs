@@ -382,8 +382,7 @@ fn resolve_executable_icon(exe_name: &str) -> Option<String> {
 }
 
 fn get_executable_icon_base64(exe_path: &str) -> Option<String> {
-    let normalized_path =
-        crate::system_icons::strip_shell_icon_index(&expand_env_vars(exe_path));
+    let normalized_path = crate::system_icons::strip_shell_icon_index(&expand_env_vars(exe_path));
     crate::system_icons::get_path_icon_data_url(Path::new(&normalized_path), 32)
 }
 
@@ -423,7 +422,10 @@ fn load_image_as_base64(file_path: &str) -> Option<String> {
         )
         .ok()?;
 
-    Some(format!("data:image/png;base64,{}", STANDARD.encode(&png_bytes)))
+    Some(format!(
+        "data:image/png;base64,{}",
+        STANDARD.encode(&png_bytes)
+    ))
 }
 
 fn expand_env_vars(input: &str) -> String {

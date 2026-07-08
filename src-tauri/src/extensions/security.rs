@@ -128,11 +128,12 @@ pub(crate) fn parse_host_allowlist_pattern(pattern: &str) -> Result<HostAllowlis
         return Err("HTTP host pattern cannot be empty".to_string());
     }
 
-    let (pattern_without_wildcard, wildcard_port) = if let Some(prefix) = trimmed_pattern.strip_suffix(":*") {
-        (prefix, true)
-    } else {
-        (trimmed_pattern, false)
-    };
+    let (pattern_without_wildcard, wildcard_port) =
+        if let Some(prefix) = trimmed_pattern.strip_suffix(":*") {
+            (prefix, true)
+        } else {
+            (trimmed_pattern, false)
+        };
 
     let parsed_pattern = if wildcard_port {
         reqwest::Url::parse(&format!("{pattern_without_wildcard}:0"))
@@ -162,10 +163,7 @@ pub(crate) fn parse_host_allowlist_pattern(pattern: &str) -> Result<HostAllowlis
     Ok(HostAllowlistPattern { scheme, host, port })
 }
 
-fn url_matches_host_allowlist_pattern(
-    url: &reqwest::Url,
-    pattern: &HostAllowlistPattern,
-) -> bool {
+fn url_matches_host_allowlist_pattern(url: &reqwest::Url, pattern: &HostAllowlistPattern) -> bool {
     if url.scheme() != pattern.scheme {
         return false;
     }
@@ -181,17 +179,12 @@ fn url_matches_host_allowlist_pattern(
     match pattern.port {
         HostPatternPort::Any => true,
         HostPatternPort::Exact(expected_port) => {
-            url.port()
-                .unwrap_or(default_port_for_scheme(url.scheme()))
-                == expected_port
+            url.port().unwrap_or(default_port_for_scheme(url.scheme())) == expected_port
         }
     }
 }
 
-pub fn url_matches_host_allowlist(
-    url: &reqwest::Url,
-    allowed_hosts: &[String],
-) -> bool {
+pub fn url_matches_host_allowlist(url: &reqwest::Url, allowed_hosts: &[String]) -> bool {
     allowed_hosts.iter().any(|pattern_text| {
         parse_host_allowlist_pattern(pattern_text)
             .ok()

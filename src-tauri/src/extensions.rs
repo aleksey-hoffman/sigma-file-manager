@@ -24,8 +24,7 @@ mod types;
 pub use types::{
     ExtensionCommandComplete, ExtensionCommandProgress, ExtensionCommandResult,
     ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo, LocalExtensionInstallResult,
-    LocalExtensionManifestPreview,
-    PlatformInfo, ReadTextPreviewResult,
+    LocalExtensionManifestPreview, PlatformInfo, ReadTextPreviewResult,
 };
 
 pub use commands::*;
@@ -71,7 +70,8 @@ mod tests {
     fn rejects_host_outside_allowlist() {
         let allowed_hosts = vec!["http://127.0.0.1:8080".to_string()];
         assert!(
-            validate_extension_http_url("http://127.0.0.1:9090/search", Some(&allowed_hosts)).is_err()
+            validate_extension_http_url("http://127.0.0.1:9090/search", Some(&allowed_hosts))
+                .is_err()
         );
     }
 

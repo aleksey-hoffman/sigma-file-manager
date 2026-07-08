@@ -13,8 +13,8 @@ use super::processes;
 use super::state;
 use super::types::{
     ExtensionCommandResult, ExtensionHttpResponsePayload, ExtensionOperationResult, FetchUrlResult,
-    InstalledExtensionInfo, LocalExtensionInstallResult, LocalExtensionManifestPreview, PlatformInfo,
-    ReadTextPreviewResult,
+    InstalledExtensionInfo, LocalExtensionInstallResult, LocalExtensionManifestPreview,
+    PlatformInfo, ReadTextPreviewResult,
 };
 use serde::Deserialize;
 

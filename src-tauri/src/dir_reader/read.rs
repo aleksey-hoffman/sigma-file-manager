@@ -144,10 +144,7 @@ fn is_windows_drive_root_path(path: &str) -> bool {
     let normalized = normalize_path(path);
     let bytes = normalized.as_bytes();
 
-    bytes.len() == 3
-        && bytes[0].is_ascii_alphabetic()
-        && bytes[1] == b':'
-        && bytes[2] == b'/'
+    bytes.len() == 3 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':' && bytes[2] == b'/'
 }
 
 #[cfg(windows)]

@@ -233,17 +233,18 @@ fn resolve_extension_command(
 
     let (resolved_command_path, is_system_command) = if let Some(local_path) = resolved_path {
         let normalized = canonicalize_path(&local_path, "command path")?;
-        let custom_binary_paths = match load_custom_binary_allowed_command_paths(app_handle, extension_id) {
-            Ok(paths) => paths,
-            Err(error) => {
-                log::warn!(
-                    "Failed to load custom binary command allowlist for extension {}: {}",
-                    extension_id,
-                    error
-                );
-                Vec::new()
-            }
-        };
+        let custom_binary_paths =
+            match load_custom_binary_allowed_command_paths(app_handle, extension_id) {
+                Ok(paths) => paths,
+                Err(error) => {
+                    log::warn!(
+                        "Failed to load custom binary command allowlist for extension {}: {}",
+                        extension_id,
+                        error
+                    );
+                    Vec::new()
+                }
+            };
         let allowed_roots = vec![
             normalized_extension_dir.as_path(),
             normalized_shared_dir.as_path(),

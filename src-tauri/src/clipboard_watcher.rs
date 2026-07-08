@@ -33,7 +33,8 @@ pub fn ensure_clipboard_watcher(app: AppHandle) {
         .clone();
 
     thread::spawn(move || {
-        let mut last_token = system_clipboard::read_clipboard_change_token_sync().unwrap_or_default();
+        let mut last_token =
+            system_clipboard::read_clipboard_change_token_sync().unwrap_or_default();
 
         loop {
             thread::sleep(Duration::from_millis(POLL_INTERVAL_MS));

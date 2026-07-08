@@ -9,10 +9,7 @@ fn simulate_paste_shortcut_sync() -> Result<(), String> {
         VIRTUAL_KEY, VK_CONTROL, VK_V,
     };
 
-    fn create_keyboard_input(
-        virtual_key: VIRTUAL_KEY,
-        flags: KEYBD_EVENT_FLAGS,
-    ) -> INPUT {
+    fn create_keyboard_input(virtual_key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> INPUT {
         INPUT {
             r#type: INPUT_KEYBOARD,
             Anonymous: INPUT_0 {

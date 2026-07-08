@@ -367,10 +367,7 @@ unsafe fn parse_shell_item_id_list(path: &str) -> Result<*mut ITEMIDLIST, String
         match SHParseDisplayName(&wide_path, None, &mut id_list, 0, None) {
             Ok(_) => return Ok(id_list),
             Err(parse_error) => {
-                last_error = format!(
-                    "Failed to parse path '{}': {}",
-                    candidate_path, parse_error
-                );
+                last_error = format!("Failed to parse path '{}': {}", candidate_path, parse_error);
             }
         }
     }

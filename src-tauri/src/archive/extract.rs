@@ -9,7 +9,10 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use super::encoding::decode_zip_entry_path_str;
-use super::jobs::{ProgressSink, ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS, ARCHIVE_ERROR_WRONG_PASSWORD, ARCHIVE_JOB_CANCELLED};
+use super::jobs::{
+    ProgressSink, ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS, ARCHIVE_ERROR_WRONG_PASSWORD,
+    ARCHIVE_JOB_CANCELLED,
+};
 
 const IO_COPY_CHUNK_BYTES: usize = 256 * 1024;
 
@@ -86,13 +89,15 @@ fn read_entry<'a, R: Read + Seek>(
     password: Option<&[u8]>,
 ) -> Result<zip::read::ZipFile<'a, R>, String> {
     match password {
-        Some(password_bytes) => archive.by_index_decrypt(index, password_bytes).map_err(|error| {
-            if is_zip_password_incorrect(&error) || is_zip_password_required(&error) {
-                ARCHIVE_ERROR_WRONG_PASSWORD.to_string()
-            } else {
-                format!("Failed to read zip entry: {}", error)
-            }
-        }),
+        Some(password_bytes) => archive
+            .by_index_decrypt(index, password_bytes)
+            .map_err(|error| {
+                if is_zip_password_incorrect(&error) || is_zip_password_required(&error) {
+                    ARCHIVE_ERROR_WRONG_PASSWORD.to_string()
+                } else {
+                    format!("Failed to read zip entry: {}", error)
+                }
+            }),
         None => archive
             .by_index(index)
             .map_err(|error| format!("Failed to read zip entry: {}", error)),

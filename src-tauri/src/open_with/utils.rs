@@ -56,12 +56,8 @@ pub fn common_parent_directory_for_selections(
     let parent_directories: Vec<std::path::PathBuf> = file_paths
         .iter()
         .map(|file_path| {
-            parent_directory_for_selection(file_path).ok_or_else(|| {
-                format!(
-                    "Path has no parent: {}",
-                    path_for_selection(file_path)
-                )
-            })
+            parent_directory_for_selection(file_path)
+                .ok_or_else(|| format!("Path has no parent: {}", path_for_selection(file_path)))
         })
         .collect::<Result<Vec<_>, _>>()?;
 

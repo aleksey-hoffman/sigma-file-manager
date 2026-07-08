@@ -67,7 +67,10 @@ pub fn parse_extension_http_allowed_hosts(manifest: &Value) -> Result<Vec<String
                 "Access denied: http permission hosts must be strings".to_string()
             })?;
             validate_http_host_pattern(host_pattern).map_err(|error| {
-                format!("Access denied: invalid http host pattern '{}': {}", host_pattern, error)
+                format!(
+                    "Access denied: invalid http host pattern '{}': {}",
+                    host_pattern, error
+                )
             })?;
             parsed_hosts.push(host_pattern.trim().to_string());
         }

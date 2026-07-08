@@ -17,7 +17,7 @@ use super::types::DriveInfo;
 // Linux: mount filtering and display names
 // ---------------------------------------------------------------------------
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", test))]
 fn is_virtual_filesystem(file_system: &str) -> bool {
     let fs_lower = file_system.to_lowercase();
     let virtual_fs: [&str; 24] = [
@@ -51,7 +51,7 @@ fn is_virtual_filesystem(file_system: &str) -> bool {
     })
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", test))]
 fn is_network_filesystem(file_system: &str) -> bool {
     let fs_lower = file_system.to_lowercase();
     let network_fs: [&str; 7] = [
@@ -68,7 +68,7 @@ fn is_network_filesystem(file_system: &str) -> bool {
         .any(|network_fs_type| fs_lower == *network_fs_type)
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", test))]
 pub(super) fn should_skip_linux_mount(file_system: &str, name: &str, mount_point: &str) -> bool {
     if is_virtual_filesystem(file_system) {
         return true;
@@ -80,7 +80,7 @@ pub(super) fn should_skip_linux_mount(file_system: &str, name: &str, mount_point
         return true;
     }
     if mount_point == "/" {
-        return true;
+        return false;
     }
     let is_user_mount = mount_point.starts_with("/media/")
         || mount_point.starts_with("/mnt/")
@@ -447,4 +447,28 @@ pub(super) fn mount_point_last_component(mount_point: &str) -> String {
         .find(|segment| !segment.is_empty())
         .unwrap_or(mount_point)
         .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn linux_mount_filter_keeps_root_filesystem() {
+        assert!(!should_skip_linux_mount("ext4", "/dev/nvme0n1p2", "/"));
+    }
+
+    #[test]
+    fn linux_mount_filter_skips_virtual_root_filesystem() {
+        assert!(should_skip_linux_mount("tmpfs", "tmpfs", "/"));
+    }
+
+    #[test]
+    fn linux_mount_filter_keeps_user_mounts() {
+        assert!(!should_skip_linux_mount(
+            "ext4",
+            "/dev/sdb1",
+            "/media/aleks/Backup"
+        ));
+    }
 }
