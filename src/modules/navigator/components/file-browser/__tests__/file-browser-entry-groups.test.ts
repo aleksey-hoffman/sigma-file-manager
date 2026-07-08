@@ -9,7 +9,7 @@ import {
   getFileBrowserVisualEntryOrder,
   groupFileBrowserEntries,
 } from '../file-browser-entry-groups';
-import { sortFileBrowserEntries, type DirSizesStore } from '../utils/file-browser-sort';
+import { sortFileBrowserEntries } from '../utils/file-browser-sort';
 
 function createEntry(name: string, overrides: Partial<DirEntry> = {}): DirEntry {
   const isDirectory = overrides.is_dir ?? false;
@@ -89,10 +89,7 @@ describe('file browser entry groups', () => {
       }),
       createEntry('notes.txt', { ext: 'txt' }),
     ];
-    const dirSizesStore = {
-      getSize: () => undefined,
-    } as unknown as DirSizesStore;
-    const sortedEntries = sortFileBrowserEntries(entries, 'name', 'asc', dirSizesStore);
+    const sortedEntries = sortFileBrowserEntries(entries, 'name', 'asc');
     const groupedEntries = groupFileBrowserEntries(sortedEntries);
 
     expect(groupedEntries.dirs.map(entry => entry.name)).toEqual(['folder-a', 'folder-b']);
@@ -101,9 +98,6 @@ describe('file browser entry groups', () => {
   });
 
   it('uses section grouping order instead of flat sorted order for grid navigation', () => {
-    const dirSizesStore = {
-      getSize: () => undefined,
-    } as unknown as DirSizesStore;
     const sortedEntries = sortFileBrowserEntries([
       createEntry('photo.png', { ext: 'png' }),
       createEntry('clips', {
@@ -111,7 +105,7 @@ describe('file browser entry groups', () => {
         is_file: false,
       }),
       createEntry('notes.txt', { ext: 'txt' }),
-    ], 'name', 'asc', dirSizesStore);
+    ], 'name', 'asc');
 
     expect(sortedEntries.map(entry => entry.name)).toEqual(['clips', 'notes.txt', 'photo.png']);
     expect(getFileBrowserGridEntryOrder(sortedEntries).map(entry => entry.name)).toEqual([

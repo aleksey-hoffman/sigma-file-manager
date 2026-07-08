@@ -118,6 +118,7 @@ function setupNavigationDataSource(
     options.tab,
     dirEntry => options.onCurrentDirEntryChange(dirEntry),
     onNavigationCleanup,
+    options.layout,
   );
 
   const filter = useFileBrowserFilter({

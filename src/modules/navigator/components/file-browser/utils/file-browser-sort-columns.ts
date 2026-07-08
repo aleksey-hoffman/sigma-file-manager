@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import type { ReadDirOptions } from '@/types/dir-entry';
 import type {
   ListSortColumn,
   ListSortDirection,
@@ -93,6 +94,20 @@ export function getResolvedNavigatorSortColumn(
   return getNavigatorSortSettingsForLayout(navigator, layout).column ?? 'name';
 }
 
+export function getFileBrowserSortReadDirOptions(
+  navigator: UserSettingsNavigator,
+  layout: NavigatorSortLayout,
+): ReadDirOptions {
+  const activeSortColumn = getNavigatorSortSettingsForLayout(navigator, layout).column;
+
+  return {
+    includeShortcutTargets: activeSortColumn === 'linkStatus',
+    includeHardLinkCounts: isLinkMetadataSortColumn(activeSortColumn),
+    includeItemCounts: activeSortColumn === 'items',
+    includeHiddenItemCounts: navigator.showHiddenFiles,
+  };
+}
+
 export function getNavigatorSortSettingKeys(layout: NavigatorSortLayout): NavigatorSortSettingKeys {
   if (layout === 'grid') {
     return {
@@ -137,8 +152,4 @@ export function getNavigatorSortColumnChangeUpdates(
   }
 
   return updates;
-}
-
-export function shouldIncludeItemCountsForSort(navigator: UserSettingsNavigator): boolean {
-  return navigator.listSortColumn === 'items' || navigator.gridSortColumn === 'items';
 }

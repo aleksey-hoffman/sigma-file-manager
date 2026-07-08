@@ -23,6 +23,7 @@ export interface ReadDirOptions {
   includeShortcutTargets: boolean;
   includeHardLinkCounts: boolean;
   includeItemCounts?: boolean;
+  includeHiddenItemCounts?: boolean;
 }
 
 export type ExtendedVirtualEntry = {

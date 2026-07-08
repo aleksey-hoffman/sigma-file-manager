@@ -81,6 +81,23 @@ describe('item counts store', () => {
     });
   });
 
+  it('primes item counts from directory entries', async () => {
+    const store = useItemCountsStore();
+
+    store.primeItemCounts([
+      createEntry({
+        path: '/folder',
+        item_count: 7,
+      }),
+    ], { includeHiddenFiles: false });
+
+    expect(store.getItemCount('/folder')).toBe(7);
+
+    await store.requestItemCountsBatch(['/folder'], { includeHiddenFiles: false });
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
   it('does not duplicate healthy loading requests', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));

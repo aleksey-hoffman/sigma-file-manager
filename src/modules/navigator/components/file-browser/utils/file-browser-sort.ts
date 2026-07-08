@@ -37,11 +37,18 @@ export function getFileBrowserEntryResolvedSizeBytes(entry: DirEntry, dirSizesSt
   return 0;
 }
 
+function getFileBrowserEntryStaticSizeBytes(entry: DirEntry): number {
+  if (entry.is_file || entry.drive_metadata) {
+    return Number(entry.size) || 0;
+  }
+
+  return 0;
+}
+
 export function sortFileBrowserEntries(
   items: DirEntry[],
   column: ListSortColumn,
   direction: ListSortDirection,
-  dirSizesStore: DirSizesStore,
   tagContext?: FileBrowserEntrySortTagContext,
 ): DirEntry[] {
   const multiplier = direction === 'asc' ? 1 : -1;
@@ -87,8 +94,8 @@ export function sortFileBrowserEntries(
       comparison = itemsA - itemsB;
     }
     else if (column === 'size') {
-      const sizeA = getFileBrowserEntryResolvedSizeBytes(entryA, dirSizesStore);
-      const sizeB = getFileBrowserEntryResolvedSizeBytes(entryB, dirSizesStore);
+      const sizeA = getFileBrowserEntryStaticSizeBytes(entryA);
+      const sizeB = getFileBrowserEntryStaticSizeBytes(entryB);
       comparison = sizeA - sizeB;
     }
     else if (column === 'modified') {

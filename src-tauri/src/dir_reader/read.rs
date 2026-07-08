@@ -59,6 +59,7 @@ pub struct ReadDirOptions {
     include_shortcut_targets: bool,
     include_hard_link_counts: bool,
     include_item_counts: Option<bool>,
+    include_hidden_item_counts: Option<bool>,
 }
 
 impl From<Option<ReadDirOptions>> for ReadEntryOptions {
@@ -69,7 +70,7 @@ impl From<Option<ReadDirOptions>> for ReadEntryOptions {
             include_shortcut_targets: options.include_shortcut_targets,
             include_hard_link_counts: options.include_hard_link_counts,
             include_item_counts: options.include_item_counts.unwrap_or(true),
-            include_hidden: true,
+            include_hidden: options.include_hidden_item_counts.unwrap_or(true),
         }
     }
 }
@@ -630,8 +631,8 @@ fn count_listable_dir_entries(path: &Path, options: ReadEntryOptions) -> Option<
     let directory_entries = fs::read_dir(path).ok()?;
     let child_options = ReadEntryOptions {
         include_item_counts: false,
-        include_shortcut_targets: options.include_shortcut_targets,
-        include_hard_link_counts: options.include_hard_link_counts,
+        include_shortcut_targets: false,
+        include_hard_link_counts: false,
         include_hidden: options.include_hidden,
     };
 
@@ -1003,6 +1004,7 @@ mod tests {
                 include_shortcut_targets: true,
                 include_hard_link_counts: true,
                 include_item_counts: None,
+                include_hidden_item_counts: None,
             }),
         );
 
@@ -1025,6 +1027,7 @@ mod tests {
                 include_shortcut_targets: false,
                 include_hard_link_counts: false,
                 include_item_counts: Some(false),
+                include_hidden_item_counts: None,
             }),
         )
         .expect("read dir");
@@ -1035,6 +1038,33 @@ mod tests {
             .expect("child entry");
 
         assert_eq!(child_entry.item_count, None);
+    }
+
+    #[test]
+    fn read_dir_item_counts_can_exclude_hidden_entries() {
+        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let child_dir_path = temp_dir.path().join("child");
+        fs::create_dir(&child_dir_path).expect("create child dir");
+        fs::write(child_dir_path.join("visible.txt"), b"contents").expect("write visible file");
+        fs::write(child_dir_path.join(".hidden.txt"), b"contents").expect("write hidden file");
+
+        let contents = read_dir(
+            temp_dir.path().to_string_lossy().to_string(),
+            Some(ReadDirOptions {
+                include_shortcut_targets: false,
+                include_hard_link_counts: false,
+                include_item_counts: Some(true),
+                include_hidden_item_counts: Some(false),
+            }),
+        )
+        .expect("read dir");
+        let child_entry = contents
+            .entries
+            .iter()
+            .find(|entry| entry.name == "child")
+            .expect("child entry");
+
+        assert_eq!(child_entry.item_count, Some(1));
     }
 
     #[test]

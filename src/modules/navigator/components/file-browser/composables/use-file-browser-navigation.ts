@@ -36,7 +36,7 @@ import {
   getLocationsEntriesDisplaySignature,
 } from '@/utils/virtual-locations';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
-import { shouldIncludeItemCountsForSort } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { getFileBrowserSortReadDirOptions } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -74,6 +74,7 @@ export function useFileBrowserNavigation(
   tab: () => Tab | undefined,
   onNavigationComplete?: (dirEntry: DirEntry | null) => void,
   onSelectionClear?: () => void,
+  layout: () => 'list' | 'grid' | undefined = () => undefined,
 ) {
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
@@ -139,11 +140,19 @@ export function useFileBrowserNavigation(
   };
 
   function createReadDirOptions(): ReadDirOptions {
-    return {
-      includeShortcutTargets: false,
-      includeHardLinkCounts: false,
-      includeItemCounts: shouldIncludeItemCountsForSort(userSettingsStore.userSettings.navigator),
-    };
+    return getFileBrowserSortReadDirOptions(userSettingsStore.userSettings.navigator, layout());
+  }
+
+  function primeDirectoryMetadataCaches(contents: DirContents, options: ReadDirOptions): void {
+    if (options.includeItemCounts) {
+      itemCountsStore.primeItemCounts(contents.entries, {
+        includeHiddenFiles: options.includeHiddenItemCounts ?? true,
+      });
+    }
+
+    if (options.includeShortcutTargets || options.includeHardLinkCounts) {
+      linkMetadataStore.primeMetadata(contents.entries, options);
+    }
   }
 
   function invalidateDirectoryLinkMetadata(contents: DirContents): void {
@@ -306,18 +315,20 @@ export function useFileBrowserNavigation(
     isRefreshing.value = true;
 
     try {
+      const readOptions = createReadDirOptions();
       const virtualDirectory = buildVirtualDirectoryFromDrives(refreshPath, sharedDrives.value);
       const result = virtualDirectory
         ? virtualDirectory
-        : await loadDirectoryWithIconPrefetch(refreshPath, createReadDirOptions());
+        : await loadDirectoryWithIconPrefetch(refreshPath, readOptions);
 
       if (currentPath.value !== refreshPath) {
         return;
       }
 
-      dirContents.value = result;
       invalidateDirectoryLinkMetadata(result);
       invalidateDirectoryItemCounts(result);
+      primeDirectoryMetadataCaches(result, readOptions);
+      dirContents.value = result;
 
       const currentTab = tab();
 
@@ -423,14 +434,16 @@ export function useFileBrowserNavigation(
 
     try {
       logDirWatcherDiag('readDir loading directory', { path: normalizedPath });
-      const result = await loadDirectoryWithIconPrefetch(path, createReadDirOptions());
-
-      dirContents.value = result;
+      const readOptions = createReadDirOptions();
+      const result = await loadDirectoryWithIconPrefetch(path, readOptions);
 
       if (invalidateLinkMetadata) {
         invalidateDirectoryLinkMetadata(result);
         invalidateDirectoryItemCounts(result);
       }
+
+      primeDirectoryMetadataCaches(result, readOptions);
+      dirContents.value = result;
 
       currentPath.value = result.path;
       pathInput.value = result.path;

@@ -89,6 +89,37 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     };
   }
 
+  function primeItemCounts(
+    entries: DirEntry[],
+    options?: ItemCountBatchRequestOptions,
+  ): void {
+    const includeHidden = options?.includeHiddenFiles ?? includeHiddenFiles;
+    syncIncludeHiddenFiles(includeHidden);
+
+    let updatedEntries = 0;
+
+    for (const entry of entries) {
+      if (!entry.is_dir || entry.item_count === null) {
+        continue;
+      }
+
+      const normalizedPath = normalizePath(entry.path);
+
+      countsByPath.set(normalizedPath, {
+        path: normalizedPath,
+        item_count: entry.item_count,
+        status: 'loaded',
+      });
+      updatedEntries++;
+    }
+
+    if (updatedEntries > 0) {
+      trimCache();
+      displayRevision.value++;
+      sortRevision.value++;
+    }
+  }
+
   async function requestItemCountsBatch(
     paths: string[],
     options?: ItemCountBatchRequestOptions,
@@ -222,6 +253,7 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     hasSufficientItemCount,
     getPathsNeedingItemCounts,
     mergeEntry,
+    primeItemCounts,
     requestItemCountsBatch,
     syncIncludeHiddenFiles,
     invalidate,

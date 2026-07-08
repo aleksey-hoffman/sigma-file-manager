@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  getFileBrowserSortReadDirOptions,
   getFileBrowserListColumnLabelKey,
   getNavigatorSortColumnChangeUpdates,
   getNavigatorSortSettingsForLayout,
@@ -12,7 +13,6 @@ import {
   getResolvedNavigatorSortColumn,
   isLinkMetadataSortColumn,
   isListSortColumn,
-  shouldIncludeItemCountsForSort,
 } from '../file-browser-sort-columns';
 import type { UserSettingsNavigator } from '@/types/user-settings';
 
@@ -108,6 +108,45 @@ describe('file browser sort columns', () => {
     expect(getResolvedNavigatorSortColumn(navigator, 'grid')).toBe('name');
   });
 
+  it('returns read options for active layout sort metadata only', () => {
+    const navigator = createNavigatorSettings({
+      showHiddenFiles: true,
+      listSortColumn: 'name',
+      gridSortColumn: 'items',
+    });
+
+    expect(getFileBrowserSortReadDirOptions(navigator, 'list')).toEqual({
+      includeShortcutTargets: false,
+      includeHardLinkCounts: false,
+      includeItemCounts: false,
+      includeHiddenItemCounts: true,
+    });
+
+    expect(getFileBrowserSortReadDirOptions(navigator, 'grid')).toEqual({
+      includeShortcutTargets: false,
+      includeHardLinkCounts: false,
+      includeItemCounts: true,
+      includeHiddenItemCounts: true,
+    });
+  });
+
+  it('loads link target metadata only for link status sorting', () => {
+    const navigator = createNavigatorSettings({
+      listSortColumn: 'links',
+      gridSortColumn: 'linkStatus',
+    });
+
+    expect(getFileBrowserSortReadDirOptions(navigator, 'list')).toMatchObject({
+      includeShortcutTargets: false,
+      includeHardLinkCounts: true,
+    });
+
+    expect(getFileBrowserSortReadDirOptions(navigator, 'grid')).toMatchObject({
+      includeShortcutTargets: true,
+      includeHardLinkCounts: true,
+    });
+  });
+
   it('returns layout-specific sort setting keys', () => {
     expect(getNavigatorSortSettingKeys('grid')).toEqual({
       column: 'navigator.gridSortColumn',
@@ -159,23 +198,6 @@ describe('file browser sort columns', () => {
   it('validates sort column ids', () => {
     expect(isListSortColumn('name')).toBe(true);
     expect(isListSortColumn('invalid')).toBe(false);
-  });
-
-  it('includes item counts when either layout sorts by items', () => {
-    expect(shouldIncludeItemCountsForSort(createNavigatorSettings({
-      listSortColumn: 'items',
-      gridSortColumn: 'name',
-    }))).toBe(true);
-
-    expect(shouldIncludeItemCountsForSort(createNavigatorSettings({
-      listSortColumn: null,
-      gridSortColumn: 'items',
-    }))).toBe(true);
-
-    expect(shouldIncludeItemCountsForSort(createNavigatorSettings({
-      listSortColumn: null,
-      gridSortColumn: 'name',
-    }))).toBe(false);
   });
 
   it('identifies link metadata sort columns', () => {

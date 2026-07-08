@@ -89,6 +89,33 @@ describe('link metadata store', () => {
     });
   });
 
+  it('primes link metadata from directory entries', async () => {
+    const store = useLinkMetadataStore();
+    const requestOptions = {
+      includeShortcutTargets: false,
+      includeHardLinkCounts: true,
+    };
+
+    store.primeMetadata([
+      createEntry({
+        path: '/item',
+        link_type: 'hardlink',
+        link_status: 'valid',
+        hard_link_count: 3,
+      }),
+    ], requestOptions);
+
+    expect(store.mergeEntry(createEntry({ path: '/item' }))).toMatchObject({
+      link_type: 'hardlink',
+      link_status: 'valid',
+      hard_link_count: 3,
+    });
+
+    await store.requestMetadataBatch(['/item'], requestOptions);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
   it('refetches when later options require shortcut targets', async () => {
     invokeMock
       .mockResolvedValueOnce([

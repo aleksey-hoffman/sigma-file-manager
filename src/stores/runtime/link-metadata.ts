@@ -161,6 +161,53 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
     };
   }
 
+  function primeMetadata(entries: DirEntry[], options: ReadDirOptions): void {
+    let updatedEntries = 0;
+    let clearedSkeletonState = false;
+
+    for (const entry of entries) {
+      const normalizedPath = normalizePath(entry.path);
+      const skeletonVisibilityTimer = skeletonVisibilityTimers.get(normalizedPath);
+
+      cancelSkeletonDelay(normalizedPath);
+
+      if (skeletonVisibilityTimer) {
+        clearTimeout(skeletonVisibilityTimer);
+        skeletonVisibilityTimers.delete(normalizedPath);
+        clearedSkeletonState = true;
+      }
+
+      if (skeletonVisibleUntilByPath.delete(normalizedPath)) {
+        clearedSkeletonState = true;
+      }
+
+      metadataByPath.set(normalizedPath, {
+        path: normalizedPath,
+        link_type: entry.link_type ?? null,
+        link_target: entry.link_target ?? null,
+        link_status: entry.link_status ?? null,
+        hard_link_count: entry.hard_link_count ?? null,
+        status: 'loaded',
+        includeShortcutTargets: options.includeShortcutTargets,
+        includeHardLinkCounts: options.includeHardLinkCounts,
+        showSkeleton: false,
+      });
+      updatedEntries++;
+    }
+
+    if (updatedEntries > 0) {
+      if (clearedSkeletonState) {
+        skeletonVisibilityClock.value = Date.now();
+      }
+
+      trimCache();
+      bumpRevision({
+        display: true,
+        sort: true,
+      });
+    }
+  }
+
   function getSortFields(entry: DirEntry): LinkMetadataSortFields {
     const metadata = getMetadata(entry.path);
 
@@ -480,6 +527,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
     hasSufficientMetadata,
     getPathsNeedingMetadata,
     mergeEntry,
+    primeMetadata,
     requestMetadataBatch,
     setSortMetadataScope,
     refreshSortRevision,

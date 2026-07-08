@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
-import { sortFileBrowserEntries, type DirSizesStore } from '../file-browser-sort';
+import { sortFileBrowserEntries } from '../file-browser-sort';
 
 function createEntry(overrides: Partial<DirEntry>): DirEntry {
   return {
@@ -25,11 +25,27 @@ function createEntry(overrides: Partial<DirEntry>): DirEntry {
   };
 }
 
-const dirSizesStore = {
-  getSize: () => undefined,
-} as unknown as DirSizesStore;
-
 describe('sortFileBrowserEntries', () => {
+  it('keeps directories in existing order for size sort', () => {
+    const entries = [
+      createEntry({
+        name: 'small-folder',
+        path: '/small-folder',
+        is_file: false,
+        is_dir: true,
+      }),
+      createEntry({
+        name: 'large-folder',
+        path: '/large-folder',
+        is_file: false,
+        is_dir: true,
+      }),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'size', 'desc');
+
+    expect(sorted.map(entry => entry.name)).toEqual(['small-folder', 'large-folder']);
+  });
+
   it('sorts tags by normalized tag name lists', () => {
     const entries = [
       createEntry({
@@ -54,7 +70,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'tags', 'asc', dirSizesStore, {
+    const sorted = sortFileBrowserEntries(entries, 'tags', 'asc', {
       tags: [
         {
           id: 'beta',
@@ -118,7 +134,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'kind', 'asc', dirSizesStore);
+    const sorted = sortFileBrowserEntries(entries, 'kind', 'asc');
 
     expect(sorted.map(entry => entry.name)).toEqual(['normal', 'hardlink', 'shortcut']);
   });
@@ -135,7 +151,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'links', 'asc', dirSizesStore);
+    const sorted = sortFileBrowserEntries(entries, 'links', 'asc');
 
     expect(sorted.map(entry => entry.name)).toEqual(['one', 'two']);
   });
@@ -154,7 +170,7 @@ describe('sortFileBrowserEntries', () => {
       ['one', 1],
     ]);
 
-    const sorted = sortFileBrowserEntries(entries, 'links', 'asc', dirSizesStore, {
+    const sorted = sortFileBrowserEntries(entries, 'links', 'asc', {
       tags: [],
       taggedItems: [],
       getLinkSortFields: entry => ({
@@ -182,7 +198,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'linkStatus', 'asc', dirSizesStore);
+    const sorted = sortFileBrowserEntries(entries, 'linkStatus', 'asc');
 
     expect(sorted.map(entry => entry.name)).toEqual(['broken', 'valid']);
   });

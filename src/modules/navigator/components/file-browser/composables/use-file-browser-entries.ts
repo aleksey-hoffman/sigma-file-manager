@@ -89,7 +89,6 @@ export function useFileBrowserEntries(
         entriesForSort,
         column,
         sortDirection.value,
-        dirSizesStore,
         sortContext,
       );
     }
