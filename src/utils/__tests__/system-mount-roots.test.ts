@@ -37,5 +37,9 @@ describe('system-mount-roots', () => {
       expect(isUnderUnixSystemMount('/Volumes/MyDisk/Documents')).toBe(true);
       expect(isUnderUnixSystemMount('/home/user')).toBe(false);
     });
+
+    it('treats the unix root filesystem as locations-scoped', () => {
+      expect(isUnderUnixSystemMount('/')).toBe(true);
+    });
   });
 });

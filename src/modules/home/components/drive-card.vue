@@ -15,6 +15,8 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import { getPathDisplayValue } from '@/utils/normalize-path';
 import type { DriveInfo } from '@/types/drive-info';
+import { canDisconnectDriveMetadata } from '@/utils/drive-disconnect-policy';
+import { createDriveEntryMetadata } from '@/utils/drive-icon';
 import { CircularProgress, LinearBar, EdgeIndicator } from './indicators';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 
@@ -57,6 +59,11 @@ const isLinearHorizontal = computed(() => indicatorStyle.value === 'linearHorizo
 const isLinearHorizontalCentered = computed(() => indicatorStyle.value === 'linearHorizontalCentered');
 
 const isWslDrive = computed(() => props.drive.drive_type === 'WSL');
+
+const canUnmount = computed(() => canDisconnectDriveMetadata(
+  createDriveEntryMetadata(props.drive),
+  platformStore.currentPlatform,
+));
 
 const driveIcon = computed(() => {
   if (props.drive.drive_type === 'Network') {
@@ -186,7 +193,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
     </div>
 
     <button
-      v-if="drive.is_mounted && !platformStore.isWindows"
+      v-if="canUnmount"
       type="button"
       class="drive-card__eject"
       :title="t('unmount')"

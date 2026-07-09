@@ -78,7 +78,7 @@ export function isUnderUnixSystemMount(path: string): boolean {
   const normalized = stripTrailingSlashes(path);
 
   if (!normalized || normalized === '/') {
-    return false;
+    return true;
   }
 
   return UNIX_SYSTEM_MOUNT_PREFIXES.some(prefix => normalized.startsWith(prefix));

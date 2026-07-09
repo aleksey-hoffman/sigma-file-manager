@@ -284,6 +284,7 @@ describe('virtual-locations', () => {
     it('prepends for unix system mount paths', () => {
       expect(shouldPrependLocationsCrumb('/Volumes/MyDisk', 'macos')).toBe(true);
       expect(shouldPrependLocationsCrumb('/media/user/disk', 'linux')).toBe(true);
+      expect(shouldPrependLocationsCrumb('/', 'linux')).toBe(true);
     });
   });
 });

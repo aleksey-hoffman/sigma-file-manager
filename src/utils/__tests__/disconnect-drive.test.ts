@@ -83,4 +83,24 @@ describe('canDisconnectDriveMetadata', () => {
       device_path: 'Z:\\',
     }, 'windows')).toBe(false);
   });
+
+  it('blocks non-removable linux root filesystem', () => {
+    expect(canDisconnectDriveMetadata({
+      drive_type: 'SSD',
+      is_removable: false,
+      is_mounted: true,
+      mount_point: '/',
+      device_path: '/dev/nvme0n1p2',
+    }, 'linux')).toBe(false);
+  });
+
+  it('allows removable linux mounts', () => {
+    expect(canDisconnectDriveMetadata({
+      drive_type: 'SSD',
+      is_removable: true,
+      is_mounted: true,
+      mount_point: '/media/user/Backup',
+      device_path: '/dev/sdb1',
+    }, 'linux')).toBe(true);
+  });
 });
