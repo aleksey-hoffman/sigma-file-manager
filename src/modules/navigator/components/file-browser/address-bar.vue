@@ -105,8 +105,11 @@ const addressParts = computed(() => {
     }];
   }
 
-  const normalizedPath = normalizePath(props.currentPath).replace(/\/+$/, '');
-  const parts = getPathSegments(normalizedPath);
+  const rawNormalizedPath = normalizePath(props.currentPath);
+  const strippedPath = rawNormalizedPath.replace(/\/+$/, '');
+  const isUnixFilesystemRoot = !strippedPath && rawNormalizedPath.startsWith('/');
+  const normalizedPath = isUnixFilesystemRoot ? '/' : strippedPath;
+  const parts = isUnixFilesystemRoot ? ['/'] : getPathSegments(normalizedPath);
   const uncPath = isUncPath(normalizedPath);
   const formattedParts: AddressBarPart[] = [];
 
@@ -116,6 +119,9 @@ const addressParts = computed(() => {
 
     if (uncPath) {
       fullPath = `//${pathSegments.join('/')}`;
+    }
+    else if (isUnixFilesystemRoot) {
+      fullPath = '/';
     }
     else if (normalizedPath.startsWith('/')) {
       fullPath = `/${pathSegments.join('/')}`;

@@ -250,7 +250,7 @@ export function getNavigableParentPath(path: string, platform: string | null): s
     return LOCATIONS_VIRTUAL_PATH;
   }
 
-  const pathWithoutTrailingSlash = normalizedPath.replace(/\/+$/, '');
+  const pathWithoutTrailingSlash = normalizedPath.replace(/\/+$/, '') || '/';
 
   if (platform === 'windows'
     && isWslPath(pathWithoutTrailingSlash)

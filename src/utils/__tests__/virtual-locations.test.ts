@@ -261,6 +261,7 @@ describe('virtual-locations', () => {
       expect(getNavigableParentPath('/Volumes/MyDisk', 'macos')).toBe(LOCATIONS_VIRTUAL_PATH);
       expect(getNavigableParentPath('/Volumes/MyDisk/Documents', 'macos')).toBe('/Volumes/MyDisk');
       expect(getNavigableParentPath('/home/user', 'linux')).toBe('/home');
+      expect(getNavigableParentPath('/', 'linux')).toBe(LOCATIONS_VIRTUAL_PATH);
     });
 
     it('keeps unc network paths outside locations', () => {
