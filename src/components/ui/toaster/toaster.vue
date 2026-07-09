@@ -64,8 +64,8 @@ const props = defineProps<ToasterProps>();
   background-color: hsl(var(--background) / 0%);
 }
 
-[data-sonner-toast][data-mounted='false'] :deep(.sigma-ui-toast-static),
-[data-sonner-toast][data-mounted='false'] :deep(.sigma-ui-toast-progress) {
+[data-sonner-toast][data-mounted='false'] .sigma-ui-toast-static,
+[data-sonner-toast][data-mounted='false'] .sigma-ui-toast-progress {
   backdrop-filter: blur(0);
   background-color: hsl(var(--background) / 0%);
 }

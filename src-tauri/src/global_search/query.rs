@@ -195,7 +195,7 @@ fn global_search_query_blocking(
 
     let query_boxed = build_query(&fields, &query, &options);
     let top_docs = searcher
-        .search(&query_boxed, &TopDocs::with_limit(100_000))
+        .search(&query_boxed, &TopDocs::with_limit(100_000).order_by_score())
         .map_err(|error| error.to_string())?;
 
     let internal_ignored: Vec<String> = builtin_ignored_paths()
@@ -475,7 +475,9 @@ mod tests {
         let reader = index.reader().unwrap();
         let searcher = reader.searcher();
         let query = build_query(&fields, query_text, &create_options(exact_match));
-        let top_docs = searcher.search(&query, &TopDocs::with_limit(10)).unwrap();
+        let top_docs = searcher
+            .search(&query, &TopDocs::with_limit(10).order_by_score())
+            .unwrap();
 
         top_docs
             .into_iter()

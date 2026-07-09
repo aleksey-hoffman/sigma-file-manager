@@ -26,16 +26,19 @@ pub fn canonicalize_path(path: &Path) -> String {
     }
 }
 
+#[cfg(windows)]
 pub fn path_for_selection(file_path: &str) -> String {
     file_path.replace('/', "\\")
 }
 
+#[cfg(windows)]
 pub fn parent_directory_for_selection(file_path: &str) -> Option<std::path::PathBuf> {
     Path::new(&path_for_selection(file_path))
         .parent()
         .map(std::path::Path::to_path_buf)
 }
 
+#[cfg(windows)]
 pub fn normalize_selection_path_for_comparison(file_path: &str) -> String {
     let mut normalized_path = path_for_selection(file_path).replace('\\', "/");
 
@@ -46,6 +49,7 @@ pub fn normalize_selection_path_for_comparison(file_path: &str) -> String {
     normalized_path
 }
 
+#[cfg(windows)]
 pub fn common_parent_directory_for_selections(
     file_paths: &[String],
 ) -> Result<std::path::PathBuf, String> {
@@ -74,6 +78,7 @@ pub fn common_parent_directory_for_selections(
     Ok(expected_parent.clone())
 }
 
+#[cfg(windows)]
 pub fn strip_extended_path_prefix(path: &str) -> String {
     if let Some(rest) = path.strip_prefix(r"\\?\UNC\") {
         format!(r"\\{rest}")
@@ -84,35 +89,18 @@ pub fn strip_extended_path_prefix(path: &str) -> String {
     }
 }
 
+#[cfg(windows)]
 pub fn prepare_shell_path(file_path: &str) -> String {
-    #[cfg(windows)]
     let native_path = path_for_selection(file_path);
-    #[cfg(not(windows))]
-    let native_path = file_path.to_string();
-
     let path = Path::new(&native_path);
-    #[cfg(windows)]
     let resolved = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
-    #[cfg(not(windows))]
-    let resolved = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
-
-    #[cfg(windows)]
-    {
-        let resolved_path = strip_extended_path_prefix(&resolved.to_string_lossy());
-        resolved_path.replace('/', "\\")
-    }
-    #[cfg(not(windows))]
-    {
-        resolved.to_string_lossy().into_owned()
-    }
+    let resolved_path = strip_extended_path_prefix(&resolved.to_string_lossy());
+    resolved_path.replace('/', "\\")
 }
 
+#[cfg(windows)]
 pub fn shell_path_candidates(file_path: &str) -> Vec<String> {
-    #[cfg(windows)]
     let native_path = path_for_selection(file_path);
-    #[cfg(not(windows))]
-    let native_path = file_path.to_string();
-
     let path = Path::new(&native_path);
     let mut candidates: Vec<String> = Vec::new();
 
@@ -150,7 +138,7 @@ pub fn load_png_as_base64(path: &std::path::Path) -> Option<String> {
     None
 }
 
-#[cfg(test)]
+#[cfg(all(test, windows))]
 mod shell_path_tests {
     use super::{path_for_selection, prepare_shell_path, strip_extended_path_prefix};
 
@@ -182,7 +170,6 @@ mod shell_path_tests {
         );
     }
 
-    #[cfg(windows)]
     #[test]
     fn path_for_selection_converts_unc_paths_to_backslashes() {
         assert_eq!(
@@ -191,7 +178,6 @@ mod shell_path_tests {
         );
     }
 
-    #[cfg(windows)]
     #[test]
     fn prepare_shell_path_converts_unc_paths_to_backslashes() {
         assert_eq!(
@@ -200,7 +186,6 @@ mod shell_path_tests {
         );
     }
 
-    #[cfg(windows)]
     #[test]
     fn prepare_shell_path_converts_local_windows_paths_to_backslashes() {
         assert_eq!(

@@ -14,6 +14,7 @@ pub const DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME: &str = "launch-target.tx
 #[cfg(windows)]
 pub const APP_EXECUTION_ALIAS_FILE_NAME: &str = "sigma-file-manager.exe";
 
+#[cfg(windows)]
 pub fn executable_path_indicates_windows_store_install(executable_path: &str) -> bool {
     let lower = executable_path.to_lowercase();
     lower.contains("\\windowsapps\\") || lower.contains("\\program files\\windowsapps\\")
@@ -28,11 +29,6 @@ pub fn is_running_in_windows_msix_package() -> bool {
     let mut length = 0u32;
     let result = unsafe { GetCurrentPackageFamilyName(&mut length, PWSTR::null()) };
     result == ERROR_INSUFFICIENT_BUFFER || result == ERROR_SUCCESS
-}
-
-#[cfg(not(windows))]
-pub fn is_running_in_windows_msix_package() -> bool {
-    false
 }
 
 #[cfg(windows)]

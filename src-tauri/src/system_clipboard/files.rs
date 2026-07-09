@@ -2,8 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use std::path::PathBuf;
+
+#[cfg(target_os = "windows")]
 use std::iter::once;
-use std::path::{Path, PathBuf};
+#[cfg(target_os = "windows")]
+use std::path::Path;
 
 use super::types::SystemClipboardFiles;
 
@@ -12,7 +16,7 @@ use super::windows::{set_windows_clipboard_bytes, windows_open_clipboard, with_w
 
 pub(crate) fn set_system_clipboard_files_sync(
     paths: &[String],
-    operation: &str,
+    #[cfg_attr(not(target_os = "windows"), allow(unused_variables))] operation: &str,
 ) -> Result<(), String> {
     if paths.is_empty() {
         return Ok(());

@@ -65,6 +65,7 @@ fn get_recent_cached_clipboard_source_context() -> Option<ClipboardSourceContext
     Some(cached.context.clone())
 }
 
+#[cfg(windows)]
 fn normalize_optional_string(value: String) -> Option<String> {
     let trimmed = value.trim();
 
@@ -75,6 +76,7 @@ fn normalize_optional_string(value: String) -> Option<String> {
     }
 }
 
+#[cfg(windows)]
 fn executable_base_name(path: &str) -> Option<String> {
     let base = path
         .rsplit(['\\', '/'])
@@ -196,9 +198,11 @@ fn get_clipboard_source_context_sync() -> ClipboardSourceContext {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(windows)]
     use super::{executable_base_name, normalize_optional_string};
 
     #[test]
+    #[cfg(windows)]
     fn normalize_optional_string_trims_and_rejects_empty_values() {
         assert_eq!(
             normalize_optional_string("  Sigma  ".to_string()),
@@ -208,6 +212,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(windows)]
     fn executable_base_name_returns_file_name_only() {
         assert_eq!(
             executable_base_name(r"C:\Apps\Cursor\Cursor.exe"),

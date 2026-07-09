@@ -270,7 +270,7 @@ fn snapshot_value(name: String, value: RegValue) -> RegistryValueSnapshot {
     RegistryValueSnapshot {
         name,
         value_type: value_type_name(&value),
-        bytes: value.bytes,
+        bytes: value.bytes.into_owned(),
     }
 }
 
@@ -388,7 +388,7 @@ fn restore_existing_key(snapshot: &RegistryKeyTreeSnapshot) -> Result<(), String
 
     for value_snapshot in &snapshot.values {
         let value = RegValue {
-            bytes: value_snapshot.bytes.clone(),
+            bytes: value_snapshot.bytes.clone().into(),
             vtype: value_type_from_name(&value_snapshot.value_type)?,
         };
 
@@ -562,11 +562,6 @@ pub fn is_current_default_file_manager() -> Result<bool, String> {
     current_registry_is_owned_by_sfm()
 }
 
-#[cfg(not(windows))]
-pub fn is_current_default_file_manager() -> Result<bool, String> {
-    Ok(false)
-}
-
 #[cfg(windows)]
 fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, String> {
     let existing_snapshot = match read_snapshot(app_handle) {
@@ -711,7 +706,7 @@ mod tests {
 
         for (name, original_value) in originals {
             let original_type = value_type_name(&original_value);
-            let original_bytes = original_value.bytes.clone();
+            let original_bytes = original_value.bytes.clone().into_owned();
 
             let snapshot = snapshot_value(name.to_string(), original_value);
             let serialized = serde_json::to_string(&snapshot).unwrap();
@@ -721,7 +716,7 @@ mod tests {
             assert_eq!(deserialized.bytes, original_bytes);
 
             let restored = RegValue {
-                bytes: deserialized.bytes,
+                bytes: deserialized.bytes.into(),
                 vtype: value_type_from_name(&deserialized.value_type).unwrap(),
             };
 

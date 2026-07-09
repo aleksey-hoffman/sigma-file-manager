@@ -190,7 +190,7 @@ const showMarketplaceUnavailable = computed(() => {
   animation: spin 1s linear infinite;
 }
 
-.extensions-marketplace__unavailable :deep(.empty-state) {
+.extensions-marketplace__unavailable .empty-state {
   padding: 48px 24px;
 }
 

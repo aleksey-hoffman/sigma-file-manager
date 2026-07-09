@@ -145,6 +145,7 @@ fn normalize_shell_icon_path(path: &Path) -> PathBuf {
     }
 }
 
+#[cfg(windows)]
 pub(crate) fn strip_shell_icon_index(path: &str) -> String {
     if let Some(comma_index) = path.rfind(',') {
         let suffix = path[comma_index + 1..].trim();
@@ -160,6 +161,7 @@ pub(crate) fn strip_shell_icon_index(path: &str) -> String {
     path.to_string()
 }
 
+#[cfg(windows)]
 pub(crate) fn has_shell_executable_icon_extension(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
@@ -450,6 +452,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(windows)]
     fn strip_shell_icon_index_removes_numeric_suffix() {
         assert_eq!(
             strip_shell_icon_index(r"C:\Windows\System32\cmd.exe,0"),

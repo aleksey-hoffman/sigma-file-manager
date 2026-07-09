@@ -8,11 +8,15 @@
     "test": "wdio run wdio.conf.js"
   },
   "devDependencies": {
-    "@wdio/cli": "^9.19.0",
-    "@wdio/globals": "^9.19.0",
-    "@wdio/local-runner": "^9.19.0",
-    "@wdio/mocha-framework": "^9.19.0",
-    "@wdio/spec-reporter": "^9.19.0",
+    "@wdio/cli": "^9.29.1",
+    "@wdio/globals": "^9.29.1",
+    "@wdio/local-runner": "^9.29.1",
+    "@wdio/mocha-framework": "^9.29.1",
+    "@wdio/spec-reporter": "^9.29.1",
     "edgedriver": "^6.3.0"
+  },
+  "overrides": {
+    "esbuild": "0.28.1",
+    "serialize-javascript": "7.0.7"
   }
 }

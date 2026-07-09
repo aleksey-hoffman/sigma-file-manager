@@ -199,7 +199,7 @@ function handleViewportScroll(event: Event) {
   padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 
-:deep(.file-browser-list-view) :global(.sigma-ui-scroll-area-scrollbar) {
+:deep(.file-browser-list-view .sigma-ui-scroll-area-scrollbar) {
   z-index: 5;
 }
 

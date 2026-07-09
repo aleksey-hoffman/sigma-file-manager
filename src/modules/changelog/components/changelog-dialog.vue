@@ -604,7 +604,7 @@ function renderMarkdown(text: string): string {
   line-height: 1.6;
 }
 
-.changelog-dialog__release-summary :deep(strong) {
+.changelog-dialog__release-summary strong {
   color: hsl(var(--foreground));
   font-weight: 500;
 }
