@@ -3,11 +3,12 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import normalizePath, {
+  canonicalizePath,
   isUncShareRootPath,
+  isUnixFilesystemRoot,
   isWindowsDriveRootPath,
   isWslHostRootUncPath,
   isWslPath,
-  stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
 
 export const UNIX_SYSTEM_MOUNT_ROOTS = [
@@ -33,16 +34,12 @@ export const UNIX_SYSTEM_MOUNT_PREFIXES = UNIX_SYSTEM_MOUNT_ROOTS.map(
   mountRoot => mountRoot.prefix,
 );
 
-function stripTrailingSlashes(path: string): string {
-  return stripTrailingSlashesPreservingRoot(path);
-}
-
 export function isWindowsDrivePath(path: string): boolean {
   return /^[A-Za-z]:/.test(normalizePath(path));
 }
 
 export function isWindowsLocationsMountRoot(path: string): boolean {
-  const normalized = stripTrailingSlashes(path);
+  const normalized = canonicalizePath(path);
 
   if (isWindowsDriveRootPath(normalized)) {
     return true;
@@ -55,12 +52,8 @@ export function isWindowsLocationsMountRoot(path: string): boolean {
   return isUncShareRootPath(normalized) || isWslHostRootUncPath(normalized);
 }
 
-export function isUnixSystemMountRoot(path: string): boolean {
-  const normalized = stripTrailingSlashes(path);
-
-  if (!normalized || normalized === '/') {
-    return true;
-  }
+export function isUnixRemovableOrVolumeMount(path: string): boolean {
+  const normalized = canonicalizePath(path);
 
   for (const { prefix, maxDepth } of UNIX_SYSTEM_MOUNT_ROOTS) {
     if (normalized.startsWith(prefix)) {
@@ -75,10 +68,14 @@ export function isUnixSystemMountRoot(path: string): boolean {
   return false;
 }
 
-export function isUnderUnixSystemMount(path: string): boolean {
-  const normalized = stripTrailingSlashes(path);
+export function isUnixSystemMountRoot(path: string): boolean {
+  return isUnixFilesystemRoot(path) || isUnixRemovableOrVolumeMount(path);
+}
 
-  if (!normalized || normalized === '/') {
+export function isUnderUnixSystemMount(path: string): boolean {
+  const normalized = canonicalizePath(path);
+
+  if (isUnixFilesystemRoot(normalized)) {
     return true;
   }
 

@@ -6,11 +6,11 @@ import { invoke } from '@tauri-apps/api/core';
 import type { DirContents, DirEntry, ReadDirOptions } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import normalizePath, {
+  canonicalizePath,
   getParentPath,
   getPathDisplayName,
   isUncShareRootPath,
   isWslPath,
-  stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
 import {
@@ -251,15 +251,15 @@ export function getNavigableParentPath(path: string, platform: string | null): s
     return LOCATIONS_VIRTUAL_PATH;
   }
 
-  const pathWithoutTrailingSlash = stripTrailingSlashesPreservingRoot(normalizedPath);
+  const canonicalPath = canonicalizePath(normalizedPath);
 
   if (platform === 'windows'
-    && isWslPath(pathWithoutTrailingSlash)
-    && isUncShareRootPath(pathWithoutTrailingSlash)) {
+    && isWslPath(canonicalPath)
+    && isUncShareRootPath(canonicalPath)) {
     return WSL_HOST_VIRTUAL_PATH;
   }
 
-  if (isProtectedSystemPath(pathWithoutTrailingSlash, platform)) {
+  if (isProtectedSystemPath(canonicalPath, platform)) {
     return LOCATIONS_VIRTUAL_PATH;
   }
 

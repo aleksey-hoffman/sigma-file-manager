@@ -48,7 +48,7 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { matchesShortcut, useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
-import normalizePath, { getParentPath, getPathDisplayName } from '@/utils/normalize-path';
+import normalizePath, { canonicalizePath, getParentPath, getPathDisplayName } from '@/utils/normalize-path';
 import {
   resolveDirEntry,
   resolveDirectoryContents,
@@ -448,7 +448,7 @@ async function editorGoUpDirectory(): Promise<boolean> {
     return false;
   }
 
-  const trimmedTip = normalizePath(query.value).trim().replace(/\/+$/, '');
+  const trimmedTip = canonicalizePath(normalizePath(query.value).trim());
 
   if (!trimmedTip) {
     return false;

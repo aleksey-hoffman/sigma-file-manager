@@ -16,7 +16,7 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
-import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
+import normalizePath, { canonicalizePath, getPathDisplayName } from '@/utils/normalize-path';
 import {
   isVirtualLocationPath,
   resolveDirEntry,
@@ -339,7 +339,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   }
 
   function tabPathDedupKey(path: string): string {
-    const normalizedPath = normalizePath(path).replace(/\/+$/, '');
+    const normalizedPath = canonicalizePath(path);
     return /^[A-Za-z]:/.test(normalizedPath) ? normalizedPath.toLowerCase() : normalizedPath;
   }
 

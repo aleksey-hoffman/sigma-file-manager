@@ -29,7 +29,7 @@ import { useDrives } from '@/modules/home/composables/use-drives';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 import { SEARCH_CONSTANTS } from '@/constants';
 import { DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS } from '@/stores/schemas/user-settings';
-import normalizePath from '@/utils/normalize-path';
+import { canonicalizePath } from '@/utils/normalize-path';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
@@ -172,7 +172,7 @@ const selectedDriveCount = computed(() => {
 });
 
 const indexedDriveRootKeys = computed(() => new Set(globalSearchStore.indexedDriveRoots.map(path =>
-  normalizePath(path).replace(/\/+$/, '').toLowerCase(),
+  canonicalizePath(path).toLowerCase(),
 )));
 
 function getDriveIndexStatus(drivePath: string) {
@@ -180,7 +180,7 @@ function getDriveIndexStatus(drivePath: string) {
     return 'notIndexed';
   }
 
-  const driveRootKey = normalizePath(drivePath).replace(/\/+$/, '').toLowerCase();
+  const driveRootKey = canonicalizePath(drivePath).toLowerCase();
   return indexedDriveRootKeys.value.has(driveRootKey) ? 'indexed' : 'notIndexed';
 }
 
@@ -280,7 +280,7 @@ function addIgnoredPathFromFilter(value: string) {
   const next = value.trim();
   if (!next) return;
   const set = new Set(ignoredPaths.value);
-  set.add(normalizePath(next));
+  set.add(canonicalizePath(next));
   ignoredPaths.value = Array.from(set);
 }
 

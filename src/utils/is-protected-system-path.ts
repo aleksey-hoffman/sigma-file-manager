@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import { canonicalizePath } from '@/utils/normalize-path';
 import {
   isUnixSystemMountRoot,
   isWindowsLocationsMountRoot,
@@ -17,7 +18,7 @@ export function isProtectedSystemPath(path: string, platform: string | null): bo
     return true;
   }
 
-  const normalized = path.replace(/\\/g, '/').replace(/\/+$/, '');
+  const normalized = canonicalizePath(path);
 
   if (platform === 'windows') {
     return isWindowsLocationsMountRoot(normalized);

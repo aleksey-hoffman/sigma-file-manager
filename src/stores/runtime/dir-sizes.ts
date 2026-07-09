@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import normalizePath from '@/utils/normalize-path';
+import normalizePath, { canonicalizePath } from '@/utils/normalize-path';
 import { useStatusCenterStore } from './status-center';
 
 export type SizeStatus = 'Complete' | 'Error' | 'Loading';
@@ -278,13 +278,13 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     destinationDirectory: string,
     extraInvalidatePaths?: string[],
   ): Promise<void> {
-    const destDir = normalizePath(destinationDirectory).replace(/\/+$/, '');
+    const destDir = canonicalizePath(destinationDirectory);
     const toRefresh = new Set<string>();
     toRefresh.add(destDir);
 
     for (const extra of extraInvalidatePaths ?? []) {
       if (extra) {
-        toRefresh.add(normalizePath(extra).replace(/\/+$/, ''));
+        toRefresh.add(canonicalizePath(extra));
       }
     }
 

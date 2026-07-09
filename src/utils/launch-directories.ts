@@ -4,6 +4,7 @@
 
 import type { DirEntry } from '@/types/dir-entry';
 import normalizePath, {
+  canonicalizePath,
   getParentDirectory,
   isWindowsDriveRootPath,
 } from '@/utils/normalize-path';
@@ -53,7 +54,7 @@ function normalizeLaunchPathCandidate(path: string): string {
   const normalizedPath = normalizePath(withoutQuotes);
 
   if (isWindowsDriveRootPath(normalizedPath)) {
-    return `${normalizedPath.replace(/\/+$/, '')}/`;
+    return `${canonicalizePath(normalizedPath)}/`;
   }
 
   return normalizedPath;

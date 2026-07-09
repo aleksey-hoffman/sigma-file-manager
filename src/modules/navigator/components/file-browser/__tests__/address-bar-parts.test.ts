@@ -10,18 +10,72 @@ describe('buildAddressBarParts', () => {
   it('builds Locations > / for the unix filesystem root', () => {
     const parts = buildAddressBarParts('/', 'linux', 'Locations');
 
-    expect(parts.map(part => ({ path: part.path, name: part.name }))).toEqual([
-      { path: LOCATIONS_VIRTUAL_PATH, name: 'Locations' },
-      { path: '/', name: '/' },
+    expect(parts.map(part => ({
+      path: part.path,
+      name: part.name,
+    }))).toEqual([
+      {
+        path: LOCATIONS_VIRTUAL_PATH,
+        name: 'Locations',
+      },
+      {
+        path: '/',
+        name: '/',
+      },
     ]);
   });
 
   it('builds Locations > C: for a windows drive root', () => {
     const parts = buildAddressBarParts('C:/', 'windows', 'Locations');
 
-    expect(parts.map(part => ({ path: part.path, name: part.name }))).toEqual([
-      { path: LOCATIONS_VIRTUAL_PATH, name: 'Locations' },
-      { path: 'C:/', name: 'C:' },
+    expect(parts.map(part => ({
+      path: part.path,
+      name: part.name,
+    }))).toEqual([
+      {
+        path: LOCATIONS_VIRTUAL_PATH,
+        name: 'Locations',
+      },
+      {
+        path: 'C:/',
+        name: 'C:',
+      },
+    ]);
+  });
+
+  it('builds Locations > / for trailing-slash-only unix roots', () => {
+    const parts = buildAddressBarParts('///', 'linux', 'Locations');
+
+    expect(parts.map(part => ({
+      path: part.path,
+      name: part.name,
+    }))).toEqual([
+      {
+        path: LOCATIONS_VIRTUAL_PATH,
+        name: 'Locations',
+      },
+      {
+        path: '/',
+        name: '/',
+      },
+    ]);
+  });
+
+  it('does not prepend Locations for nested unix home paths', () => {
+    const parts = buildAddressBarParts('/home/user', 'linux', 'Locations');
+
+    expect(parts.map(part => ({
+      path: part.path,
+      name: part.name,
+    }))).toEqual([
+      {
+        path: '/home',
+        name: 'home',
+      },
+      {
+        path: '/home/user',
+        name: 'user',
+      },
     ]);
   });
 });

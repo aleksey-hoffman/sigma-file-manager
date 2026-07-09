@@ -6,6 +6,7 @@ import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import type { HistoryItem, ItemTag, TaggedItem } from '@/types/user-stats';
 import normalizePath, {
+  canonicalizePath,
   getParentPath,
   getPathDisplayName,
   isUncPath,
@@ -278,11 +279,7 @@ export function addressBarPathHasNoParentDirectory(trimmedNormalizedQuery: strin
     return true;
   }
 
-  let pathStem = trimmedNormalizedQuery.replace(/\/+$/, '');
-
-  if (pathStem === '') {
-    pathStem = trimmedNormalizedQuery;
-  }
+  const pathStem = canonicalizePath(trimmedNormalizedQuery);
 
   return getParentPath(pathStem) === null;
 }
@@ -317,7 +314,7 @@ export function getAddressBarRevealTarget(path: string): {
   parentPath: string;
   entryPath: string;
 } | null {
-  const normalizedPath = normalizePath(path).replace(/\/+$/, '');
+  const normalizedPath = canonicalizePath(path);
   const parentPath = getParentPath(normalizedPath);
 
   if (!parentPath) {
@@ -331,11 +328,7 @@ export function getAddressBarRevealTarget(path: string): {
 }
 
 function resolveAddressBarPathForBrowse(normalizedTrimmedQuery: string): string {
-  const trimmedSeparators = normalizedTrimmedQuery.replace(/\/+$/, '');
-
-  if (trimmedSeparators === '') {
-    return '/';
-  }
+  const trimmedSeparators = canonicalizePath(normalizedTrimmedQuery);
 
   if (isWindowsDriveRootPath(trimmedSeparators)) {
     return `${trimmedSeparators}/`;
@@ -345,7 +338,7 @@ function resolveAddressBarPathForBrowse(normalizedTrimmedQuery: string): string 
 }
 
 function getImplicitAddressBarAbsoluteDirectoryBrowsePath(normalizedQuery: string): string | null {
-  const trim = normalizePath(normalizedQuery).replace(/\/+$/, '');
+  const trim = canonicalizePath(normalizedQuery);
 
   if (!trim) {
     return null;
@@ -373,7 +366,7 @@ function addressBarQueryMeansBrowseInsideDirectory(normalizedTrimmedQuery: strin
 }
 
 function shouldAvoidAddressBarSearchCurrentDirectoryFallback(normalizedQuery: string): boolean {
-  const trimmed = normalizePath(normalizedQuery).replace(/\/+$/, '');
+  const trimmed = canonicalizePath(normalizedQuery);
 
   if (!trimmed) {
     return false;
@@ -416,12 +409,10 @@ async function resolveAddressBarDirectoryListingOrExactOrSearch(
   }
   catch {
     try {
-      let exactPath = pathForReadDir.replace(/\/+$/, '');
-      exactPath = exactPath === ''
-        ? '/'
-        : isWindowsDriveRootPath(exactPath)
-          ? `${exactPath}/`
-          : exactPath;
+      let exactPath = canonicalizePath(pathForReadDir);
+      exactPath = isWindowsDriveRootPath(exactPath)
+        ? `${exactPath}/`
+        : exactPath;
       const exactEntry = await options.lookup.getDirEntry(exactPath);
       return {
         kind: 'exact',
@@ -474,8 +465,7 @@ export async function resolveAddressBarSuggestions(
 }
 
 function addressBarEntryPathDedupeKey(path: string): string {
-  const normalized = normalizePath(path).replace(/\/+$/, '');
-  return normalized === '' ? '/' : normalized;
+  return canonicalizePath(path);
 }
 
 function deduplicateDirEntriesByPath(entries: DirEntry[]): DirEntry[] {

@@ -2,10 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import normalizePath, {
-  getPathSegments,
+import {
+  getAddressBarSegments,
   isUncPath,
-  stripTrailingSlashesPreservingRoot,
+  isUnixFilesystemRoot,
+  canonicalizePath,
 } from '@/utils/normalize-path';
 import {
   isVirtualDirectoryPath,
@@ -43,10 +44,8 @@ export function buildAddressBarParts(
     }];
   }
 
-  const rawNormalizedPath = normalizePath(currentPath);
-  const normalizedPath = stripTrailingSlashesPreservingRoot(rawNormalizedPath);
-  const isUnixFilesystemRoot = normalizedPath === '/';
-  const parts = isUnixFilesystemRoot ? ['/'] : getPathSegments(normalizedPath);
+  const normalizedPath = canonicalizePath(currentPath);
+  const parts = getAddressBarSegments(normalizedPath);
   const uncPath = isUncPath(normalizedPath);
   const formattedParts: AddressBarPart[] = [];
 
@@ -57,7 +56,7 @@ export function buildAddressBarParts(
     if (uncPath) {
       fullPath = `//${pathSegments.join('/')}`;
     }
-    else if (isUnixFilesystemRoot) {
+    else if (isUnixFilesystemRoot(normalizedPath)) {
       fullPath = '/';
     }
     else if (normalizedPath.startsWith('/')) {

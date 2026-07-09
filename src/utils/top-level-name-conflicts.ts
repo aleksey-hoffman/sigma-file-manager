@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { invoke } from '@tauri-apps/api/core';
-import normalizePath, { getPathLeafName } from '@/utils/normalize-path';
+import { getPathLeafName, joinPath } from '@/utils/normalize-path';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
 export type TopLevelNameConflictItem = {
@@ -11,22 +11,6 @@ export type TopLevelNameConflictItem = {
   destinationPath: string;
   name: string;
 };
-
-function joinChildPath(parentPath: string, childName: string): string {
-  const normalizedParentPath = normalizePath(parentPath);
-
-  if (normalizedParentPath === '/') {
-    return `/${childName}`;
-  }
-
-  const trimmedParentPath = normalizedParentPath.replace(/\/+$/, '');
-
-  if (!trimmedParentPath) {
-    return childName;
-  }
-
-  return `${trimmedParentPath}/${childName}`;
-}
 
 export function splitTopLevelSamePathSources(
   sourcePaths: string[],
@@ -41,7 +25,7 @@ export function splitTopLevelSamePathSources(
   for (const sourcePath of sourcePaths) {
     const name = getPathLeafName(sourcePath);
 
-    if (name && arePathsEquivalent(sourcePath, joinChildPath(destinationPath, name))) {
+    if (name && arePathsEquivalent(sourcePath, joinPath(destinationPath, name))) {
       samePathSourcePaths.push(sourcePath);
     }
     else {
@@ -66,7 +50,7 @@ export async function getTopLevelNameConflicts(
       return null;
     }
 
-    const targetPath = joinChildPath(destinationPath, name);
+    const targetPath = joinPath(destinationPath, name);
     const exists = await invoke<boolean>('path_exists', {
       path: targetPath,
     }).catch(() => false);

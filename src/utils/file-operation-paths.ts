@@ -2,17 +2,21 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { stripTrailingSlashesPreservingRoot } from '@/utils/normalize-path';
+import {
+  canonicalizePath,
+  getParentDirectory,
+  isSameOrDescendantPath,
+} from '@/utils/normalize-path';
 import { shouldFoldPathCaseForComparison } from '@/utils/path-comparison-volume-cache';
 
 export function normalizePathForComparison(path: string): string {
-  const withoutTrailingSlashes = stripTrailingSlashesPreservingRoot(path);
+  const canonicalPath = canonicalizePath(path);
 
-  if (shouldFoldPathCaseForComparison(withoutTrailingSlashes)) {
-    return withoutTrailingSlashes.toLowerCase();
+  if (shouldFoldPathCaseForComparison(canonicalPath)) {
+    return canonicalPath.toLowerCase();
   }
 
-  return withoutTrailingSlashes;
+  return canonicalPath;
 }
 
 export function arePathsEquivalent(firstPath: string, secondPath: string): boolean {
@@ -20,14 +24,7 @@ export function arePathsEquivalent(firstPath: string, secondPath: string): boole
 }
 
 export function getParentPath(path: string): string {
-  const normalizedPath = path.replace(/\\/g, '/');
-  const lastSeparatorIndex = normalizedPath.lastIndexOf('/');
-
-  if (lastSeparatorIndex <= 0) {
-    return normalizedPath;
-  }
-
-  return normalizedPath.substring(0, lastSeparatorIndex);
+  return getParentDirectory(path);
 }
 
 export function getSharedSourceDirectory(sourcePaths: string[]): string | null {
@@ -35,9 +32,9 @@ export function getSharedSourceDirectory(sourcePaths: string[]): string | null {
     return null;
   }
 
-  const firstParentPath = getParentPath(sourcePaths[0]);
+  const firstParentPath = getParentDirectory(sourcePaths[0]);
   const allFromSameDirectory = sourcePaths.every(
-    path => arePathsEquivalent(getParentPath(path), firstParentPath),
+    path => arePathsEquivalent(getParentDirectory(path), firstParentPath),
   );
 
   return allFromSameDirectory ? firstParentPath : null;
@@ -48,17 +45,14 @@ export function isDestinationInsideAnySourceDirectory(
   sourcePaths: string[],
   sourcePathIsDirectory: boolean[],
 ): boolean {
-  const normalizedDestinationPath = normalizePathForComparison(destinationPath);
-
   return sourcePaths.some((sourcePath, sourcePathIndex) => {
     if (!sourcePathIsDirectory[sourcePathIndex]) {
       return false;
     }
 
-    const normalizedSourcePath = normalizePathForComparison(sourcePath);
-    return (
-      arePathsEquivalent(normalizedDestinationPath, normalizedSourcePath)
-      || normalizedDestinationPath.startsWith(`${normalizedSourcePath}/`)
+    return isSameOrDescendantPath(
+      normalizePathForComparison(destinationPath),
+      normalizePathForComparison(sourcePath),
     );
   });
 }

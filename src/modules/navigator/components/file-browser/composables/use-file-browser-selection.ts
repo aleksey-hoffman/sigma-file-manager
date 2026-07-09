@@ -19,7 +19,7 @@ import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
-import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
+import normalizePath, { getPathDisplayName, joinPath } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import {
   getSharedSourceDirectory,
@@ -120,8 +120,7 @@ export function useFileBrowserSelection(
   }
 
   function buildJoinedPath(parentPath: string, fileName: string): string {
-    const normalizedParentPath = normalizePath(parentPath).replace(/\/+$/, '');
-    return `${normalizedParentPath}/${fileName}`;
+    return joinPath(parentPath, fileName);
   }
 
   async function resolveAvailableDownloadPath(

@@ -79,13 +79,10 @@ pub(super) fn should_skip_linux_mount(file_system: &str, name: &str, mount_point
     if mount_point.starts_with("/dev/") && !mount_point.starts_with("/dev/pts") {
         return true;
     }
-    if mount_point == "/" {
-        return false;
-    }
     let is_user_mount = mount_point.starts_with("/media/")
         || mount_point.starts_with("/mnt/")
         || mount_point.starts_with("/run/media/");
-    if is_user_mount || is_network_filesystem(file_system) {
+    if mount_point == "/" || is_user_mount || is_network_filesystem(file_system) {
         return false;
     }
     true

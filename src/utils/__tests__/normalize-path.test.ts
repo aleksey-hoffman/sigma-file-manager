@@ -4,16 +4,21 @@
 
 import { describe, expect, it } from 'vitest';
 import normalizePath, {
+  canonicalizePath,
+  getAddressBarSegments,
   getPathDisplayName,
   getPathDisplayValue,
   getParentPath,
   getPathLeafName,
   getPathSegments,
+  isSameOrDescendantPath,
   isUncShareRootPath,
+  isUnixFilesystemRoot,
   isWindowsDriveRootPath,
   isUncPath,
   isWslPath,
   isWslHostRootUncPath,
+  joinPath,
   stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
 
@@ -54,11 +59,14 @@ describe('normalizePath', () => {
     expect(isUncShareRootPath('//wsl.localhost/Ubuntu-24.04/home')).toBe(false);
   });
 
-  it('preserves unix filesystem root when stripping trailing slashes', () => {
+  it('preserves unix filesystem root when canonicalizing', () => {
+    expect(canonicalizePath('/')).toBe('/');
+    expect(canonicalizePath('///')).toBe('/');
+    expect(canonicalizePath('/home/')).toBe('/home');
+    expect(canonicalizePath('')).toBe('');
     expect(stripTrailingSlashesPreservingRoot('/')).toBe('/');
-    expect(stripTrailingSlashesPreservingRoot('///')).toBe('/');
-    expect(stripTrailingSlashesPreservingRoot('/home/')).toBe('/home');
-    expect(stripTrailingSlashesPreservingRoot('')).toBe('');
+    expect(isUnixFilesystemRoot('/')).toBe(true);
+    expect(isUnixFilesystemRoot('/home')).toBe(false);
   });
 
   it('extracts path segments from UNC paths', () => {
@@ -69,9 +77,20 @@ describe('normalizePath', () => {
     ]);
   });
 
-  it('documents root segment and parent behavior for unix filesystem root', () => {
+  it('keeps root-aware address-bar segments and parent behavior', () => {
     expect(getPathSegments('/')).toEqual([]);
+    expect(getAddressBarSegments('/')).toEqual(['/']);
+    expect(getPathLeafName('/')).toBe('/');
     expect(getParentPath('/')).toBeNull();
+    expect(getParentPath('/home')).toBe('/');
+  });
+
+  it('joins and detects descendants without inventing // for root', () => {
+    expect(joinPath('/', 'home')).toBe('/home');
+    expect(joinPath('/home/', 'user')).toBe('/home/user');
+    expect(isSameOrDescendantPath('/home', '/')).toBe(true);
+    expect(isSameOrDescendantPath('/', '/')).toBe(true);
+    expect(isSameOrDescendantPath('/tmp', '/home')).toBe(false);
   });
 
   it('returns the leaf name for UNC roots and child paths', () => {

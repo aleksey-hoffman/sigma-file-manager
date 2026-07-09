@@ -5,9 +5,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   isUnderUnixSystemMount,
+  isUnixRemovableOrVolumeMount,
+  isUnixSystemMountRoot,
   isWindowsLocationsMountRoot,
   isWindowsLocationsScopePath,
 } from '@/utils/system-mount-roots';
+import { isUnixFilesystemRoot } from '@/utils/normalize-path';
 
 describe('system-mount-roots', () => {
   describe('isWindowsLocationsMountRoot', () => {
@@ -32,7 +35,15 @@ describe('system-mount-roots', () => {
     });
   });
 
-  describe('isUnderUnixSystemMount', () => {
+  describe('unix mount predicates', () => {
+    it('separates filesystem root from removable or volume mounts', () => {
+      expect(isUnixFilesystemRoot('/')).toBe(true);
+      expect(isUnixSystemMountRoot('/')).toBe(true);
+      expect(isUnixRemovableOrVolumeMount('/')).toBe(false);
+      expect(isUnixRemovableOrVolumeMount('/media/user/disk')).toBe(true);
+      expect(isUnixSystemMountRoot('/media/user/disk')).toBe(true);
+    });
+
     it('covers paths under unix mount prefixes', () => {
       expect(isUnderUnixSystemMount('/Volumes/MyDisk/Documents')).toBe(true);
       expect(isUnderUnixSystemMount('/home/user')).toBe(false);

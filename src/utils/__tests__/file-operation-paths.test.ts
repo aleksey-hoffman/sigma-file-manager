@@ -87,6 +87,22 @@ describe('isDestinationInsideAnySourceDirectory', () => {
       [false],
     )).toBe(false);
   });
+
+  it('treats child paths as nested under the unix filesystem root', () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(false);
+
+    expect(isDestinationInsideAnySourceDirectory(
+      '/home',
+      ['/'],
+      [true],
+    )).toBe(true);
+
+    expect(isDestinationInsideAnySourceDirectory(
+      '/',
+      ['/'],
+      [true],
+    )).toBe(true);
+  });
 });
 
 describe('path-comparison-volume-cache keys', () => {

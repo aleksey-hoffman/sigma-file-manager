@@ -4,6 +4,7 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import { getPlatformInfo, isPlatformInfoInitialized } from '@/utils/platform-info';
+import { canonicalizePath } from '@/utils/normalize-path';
 
 const volumeCaseSensitiveByKey = new Map<string, boolean>();
 
@@ -46,7 +47,7 @@ export async function warmPathComparisonVolumeCache(): Promise<void> {
   const nextCache = new Map<string, boolean>();
 
   for (const root of roots) {
-    const normalizedRoot = root.replace(/\\/g, '/').replace(/\/+$/, '') || '/';
+    const normalizedRoot = canonicalizePath(root);
     const key = getVolumeCacheKeyForNormalizedPath(normalizedRoot);
 
     try {

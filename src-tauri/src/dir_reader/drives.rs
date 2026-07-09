@@ -96,7 +96,7 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             #[cfg(target_os = "linux")]
             {
                 if mount_point == "/" {
-                    "Root".to_string()
+                    "/".to_string()
                 } else {
                     mount_point_last_component(&mount_point)
                 }
