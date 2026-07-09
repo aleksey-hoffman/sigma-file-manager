@@ -8,6 +8,11 @@ export default function normalizePath(path: string): string {
   return path.replace(/\\/g, '/');
 }
 
+export function stripTrailingSlashesPreservingRoot(path: string): string {
+  const normalizedPath = normalizePath(path);
+  return normalizedPath.replace(/\/+$/, '') || (normalizedPath.startsWith('/') ? '/' : '');
+}
+
 export function isUncPath(path: string): boolean {
   const normalizedPath = normalizePath(path);
   return normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');

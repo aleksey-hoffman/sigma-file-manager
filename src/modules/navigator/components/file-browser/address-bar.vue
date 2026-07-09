@@ -42,17 +42,14 @@ import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
+import { getPathDisplayName } from '@/utils/normalize-path';
 import {
   buildLocationsDirectoryFromDrives,
-  isVirtualDirectoryPath,
-  isVirtualLocationPath,
-  LOCATIONS_VIRTUAL_PATH,
   resolveDirectoryContents,
-  shouldPrependLocationsCrumb,
 } from '@/utils/virtual-locations';
 import { useDrives } from '@/modules/home/composables/use-drives';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
+import { buildAddressBarParts } from './address-bar-parts';
 
 const props = defineProps<{
   currentPath: string;
@@ -82,85 +79,11 @@ const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
 const openSeparatorIndex = ref<number | null>(null);
 
-interface AddressBarPart {
-  path: string;
-  name: string;
-  isLast: boolean;
-  disableDropTarget?: boolean;
-  displayRootIcon?: boolean;
-  useLocationsDropdown?: boolean;
-}
-
-const addressParts = computed(() => {
-  if (!props.currentPath) return [];
-
-  if (isVirtualLocationPath(props.currentPath)) {
-    return [{
-      path: LOCATIONS_VIRTUAL_PATH,
-      name: t('locations'),
-      isLast: true,
-      disableDropTarget: true,
-      displayRootIcon: true,
-      useLocationsDropdown: true,
-    }];
-  }
-
-  const rawNormalizedPath = normalizePath(props.currentPath);
-  const strippedPath = rawNormalizedPath.replace(/\/+$/, '');
-  const isUnixFilesystemRoot = !strippedPath && rawNormalizedPath.startsWith('/');
-  const normalizedPath = isUnixFilesystemRoot ? '/' : strippedPath;
-  const parts = isUnixFilesystemRoot ? ['/'] : getPathSegments(normalizedPath);
-  const uncPath = isUncPath(normalizedPath);
-  const formattedParts: AddressBarPart[] = [];
-
-  parts.forEach((part, index) => {
-    const pathSegments = parts.slice(0, index + 1);
-    let fullPath = '';
-
-    if (uncPath) {
-      fullPath = `//${pathSegments.join('/')}`;
-    }
-    else if (isUnixFilesystemRoot) {
-      fullPath = '/';
-    }
-    else if (normalizedPath.startsWith('/')) {
-      fullPath = `/${pathSegments.join('/')}`;
-    }
-    else if (pathSegments[0]?.includes(':')) {
-      fullPath = `${pathSegments[0]}/`;
-
-      if (pathSegments.length > 1) {
-        fullPath += pathSegments.slice(1).join('/');
-      }
-    }
-    else {
-      fullPath = pathSegments.join('/');
-    }
-
-    formattedParts.push({
-      path: fullPath,
-      name: part,
-      isLast: index === parts.length - 1,
-      disableDropTarget: isVirtualDirectoryPath(fullPath),
-    });
-  });
-
-  if (!shouldPrependLocationsCrumb(props.currentPath, platformStore.currentPlatform)) {
-    return formattedParts;
-  }
-
-  return [
-    {
-      path: LOCATIONS_VIRTUAL_PATH,
-      name: t('locations'),
-      isLast: false,
-      disableDropTarget: true,
-      displayRootIcon: true,
-      useLocationsDropdown: true,
-    },
-    ...formattedParts,
-  ];
-});
+const addressParts = computed(() => buildAddressBarParts(
+  props.currentPath,
+  platformStore.currentPlatform,
+  t('locations'),
+));
 
 watch(() => props.currentPath, () => {
   nextTick(() => {

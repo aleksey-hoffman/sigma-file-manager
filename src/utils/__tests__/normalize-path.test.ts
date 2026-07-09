@@ -14,6 +14,7 @@ import normalizePath, {
   isUncPath,
   isWslPath,
   isWslHostRootUncPath,
+  stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
 
 describe('normalizePath', () => {
@@ -53,12 +54,24 @@ describe('normalizePath', () => {
     expect(isUncShareRootPath('//wsl.localhost/Ubuntu-24.04/home')).toBe(false);
   });
 
+  it('preserves unix filesystem root when stripping trailing slashes', () => {
+    expect(stripTrailingSlashesPreservingRoot('/')).toBe('/');
+    expect(stripTrailingSlashesPreservingRoot('///')).toBe('/');
+    expect(stripTrailingSlashesPreservingRoot('/home/')).toBe('/home');
+    expect(stripTrailingSlashesPreservingRoot('')).toBe('');
+  });
+
   it('extracts path segments from UNC paths', () => {
     expect(getPathSegments('//wsl.localhost/Ubuntu/home')).toEqual([
       'wsl.localhost',
       'Ubuntu',
       'home',
     ]);
+  });
+
+  it('documents root segment and parent behavior for unix filesystem root', () => {
+    expect(getPathSegments('/')).toEqual([]);
+    expect(getParentPath('/')).toBeNull();
   });
 
   it('returns the leaf name for UNC roots and child paths', () => {

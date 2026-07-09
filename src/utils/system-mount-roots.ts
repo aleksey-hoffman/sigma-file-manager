@@ -7,6 +7,7 @@ import normalizePath, {
   isWindowsDriveRootPath,
   isWslHostRootUncPath,
   isWslPath,
+  stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
 
 export const UNIX_SYSTEM_MOUNT_ROOTS = [
@@ -33,7 +34,7 @@ export const UNIX_SYSTEM_MOUNT_PREFIXES = UNIX_SYSTEM_MOUNT_ROOTS.map(
 );
 
 function stripTrailingSlashes(path: string): string {
-  return normalizePath(path).replace(/\/+$/, '');
+  return stripTrailingSlashesPreservingRoot(path);
 }
 
 export function isWindowsDrivePath(path: string): boolean {

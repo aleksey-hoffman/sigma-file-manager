@@ -2,10 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import { stripTrailingSlashesPreservingRoot } from '@/utils/normalize-path';
 import { shouldFoldPathCaseForComparison } from '@/utils/path-comparison-volume-cache';
 
 export function normalizePathForComparison(path: string): string {
-  const withoutTrailingSlashes = path.replace(/\\/g, '/').replace(/\/+$/, '');
+  const withoutTrailingSlashes = stripTrailingSlashesPreservingRoot(path);
 
   if (shouldFoldPathCaseForComparison(withoutTrailingSlashes)) {
     return withoutTrailingSlashes.toLowerCase();

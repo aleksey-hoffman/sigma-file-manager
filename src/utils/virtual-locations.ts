@@ -10,6 +10,7 @@ import normalizePath, {
   getPathDisplayName,
   isUncShareRootPath,
   isWslPath,
+  stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
 import {
@@ -250,7 +251,7 @@ export function getNavigableParentPath(path: string, platform: string | null): s
     return LOCATIONS_VIRTUAL_PATH;
   }
 
-  const pathWithoutTrailingSlash = normalizedPath.replace(/\/+$/, '') || '/';
+  const pathWithoutTrailingSlash = stripTrailingSlashesPreservingRoot(normalizedPath);
 
   if (platform === 'windows'
     && isWslPath(pathWithoutTrailingSlash)

@@ -27,6 +27,13 @@ describe('file-operation-paths', () => {
       vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(false);
       expect(normalizePathForComparison('/tmp/Foo')).toBe('/tmp/Foo');
     });
+
+    it('preserves the unix filesystem root instead of collapsing to empty', () => {
+      vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(false);
+      expect(normalizePathForComparison('/')).toBe('/');
+      expect(normalizePathForComparison('///')).toBe('/');
+      expect(arePathsEquivalent('/', '')).toBe(false);
+    });
   });
 
   describe('arePathsEquivalent', () => {
