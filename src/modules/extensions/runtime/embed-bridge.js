@@ -664,32 +664,7 @@ const sigma = {
     get: key => callHost('settings.get', key),
     getAll: () => callHost('settings.getAll'),
   },
-  path: {
-    dirname(filePath) {
-      const normalized = filePath.replace(/\\/g, '/');
-      const lastSlash = normalized.lastIndexOf('/');
-      if (lastSlash === -1) return '.';
-      if (lastSlash === 0) return '/';
-      return filePath.slice(0, lastSlash);
-    },
-    basename(filePath, suffix) {
-      const normalized = filePath.replace(/\\/g, '/').replace(/\/+$/, '');
-      const lastSlash = normalized.lastIndexOf('/');
-      const base = lastSlash === -1 ? normalized : normalized.slice(lastSlash + 1);
-      if (suffix && base.endsWith(suffix)) {
-        return base.slice(0, base.length - suffix.length);
-      }
-      return base;
-    },
-    extname(filePath) {
-      const normalized = filePath.replace(/\\/g, '/').replace(/\/+$/, '');
-      const lastSlash = normalized.lastIndexOf('/');
-      const base = lastSlash === -1 ? normalized : normalized.slice(lastSlash + 1);
-      const dotIndex = base.lastIndexOf('.');
-      if (dotIndex <= 0) return '';
-      return base.slice(dotIndex);
-    },
-  },
+  path: createPathAPI(),
   i18n: {
     t: (key, params) => translateExtensionMessage(key, params),
     mergeMessages: (messages) => {

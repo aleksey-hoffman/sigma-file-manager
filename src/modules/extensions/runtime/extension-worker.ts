@@ -5,6 +5,7 @@
 import { createI18n } from 'vue-i18n';
 import { messages as appMessages } from '@/localization/data';
 import { pluralRules } from '@/localization/plural-rules';
+import { createPathAPI } from '@/modules/extensions/api/create-path-api';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
 import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 import { cloneForWorkerMessage } from '@/modules/extensions/utils/worker-message-clone';
@@ -981,34 +982,7 @@ function createBridge() {
     runtime: {
       isExtensionInstallCancelledError: (error: unknown) => isExtensionInstallCancelledError(error),
     },
-    path: {
-      dirname(filePath: string): string {
-        const normalizedPath = filePath.replace(/\\/g, '/');
-        const lastSlashIndex = normalizedPath.lastIndexOf('/');
-        if (lastSlashIndex === -1) return '.';
-        if (lastSlashIndex === 0) return '/';
-        return filePath.slice(0, lastSlashIndex);
-      },
-      basename(filePath: string, suffix?: string): string {
-        const normalizedPath = filePath.replace(/\\/g, '/').replace(/\/+$/, '');
-        const lastSlashIndex = normalizedPath.lastIndexOf('/');
-        const base = lastSlashIndex === -1 ? normalizedPath : normalizedPath.slice(lastSlashIndex + 1);
-
-        if (suffix && base.endsWith(suffix)) {
-          return base.slice(0, base.length - suffix.length);
-        }
-
-        return base;
-      },
-      extname(filePath: string): string {
-        const normalizedPath = filePath.replace(/\\/g, '/').replace(/\/+$/, '');
-        const lastSlashIndex = normalizedPath.lastIndexOf('/');
-        const base = lastSlashIndex === -1 ? normalizedPath : normalizedPath.slice(lastSlashIndex + 1);
-        const dotIndex = base.lastIndexOf('.');
-        if (dotIndex <= 0) return '';
-        return base.slice(dotIndex);
-      },
-    },
+    path: createPathAPI(),
     binary: {
       getPath: makeCall('binary.getPath'),
       isInstalled: makeCall('binary.isInstalled'),

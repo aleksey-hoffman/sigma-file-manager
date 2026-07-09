@@ -12,7 +12,15 @@ import { getExtensionAPI } from '@/modules/extensions/runtime/loader';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { clearEmbedHostState, handleEmbedBridgeMessage } from '@/modules/extensions/runtime/embed-host-bridge';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
+import pathApiCoreScript from '@/modules/extensions/api/path-api-core.js?raw';
 import embedBridgeScript from '@/modules/extensions/runtime/embed-bridge.js?raw';
+
+function getInlinePathApiScript(): string {
+  return pathApiCoreScript.replace(
+    /^export\s+function\s+createPathAPI/m,
+    'function createPathAPI',
+  );
+}
 
 const props = withDefaults(defineProps<{
   extensionId: string;
@@ -101,6 +109,7 @@ function createEmbedSrcdoc(scriptSource: string): string {
     <div id="app"></div>
     <script type="module">
 ${runtimeConstants}
+${getInlinePathApiScript()}
 ${embedBridgeScript}
     <\/script>
   </body>
