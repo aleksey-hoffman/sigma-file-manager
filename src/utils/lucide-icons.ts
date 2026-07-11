@@ -13,12 +13,13 @@ import {
 } from 'vue';
 import { Blocks } from '@lucide/vue';
 
-// Include all icon mappings into bundle so we can load any icon  dynamically at runtime
-const iconModules = import.meta.glob<{ default: Component }>(
+const iconModules = import.meta.glob<{ default: Component }>([
+  '../../node_modules/@lucide/vue/dist/esm/icons/*.mjs',
   '../../node_modules/@lucide/vue/dist/esm/icons/*.js',
-);
+]);
 
 const iconCache = new Map<string, Component>();
+const iconWrapperCache = new Map<string, Component>();
 
 function toKebabCase(name: string): string {
   const withoutIcon = name.trim().replace(/Icon$/i, '');
@@ -30,7 +31,11 @@ function toKebabCase(name: string): string {
 
 function getIconModulePath(kebabName: string): string {
   const paths = Object.keys(iconModules);
-  return paths.find(path => path.endsWith(`/${kebabName}.js`)) ?? '';
+  return paths.find((path) => {
+    const normalizedPath = path.replace(/\\/g, '/');
+    return normalizedPath.endsWith(`/${kebabName}.mjs`)
+      || normalizedPath.endsWith(`/${kebabName}.js`);
+  }) ?? '';
 }
 
 function loadIcon(kebabName: string): Promise<Component> {
@@ -44,14 +49,20 @@ function loadIcon(kebabName: string): Promise<Component> {
   const loader = modulePath ? iconModules[modulePath] : undefined;
 
   if (!loader) {
+    iconCache.set(kebabName, Blocks);
     return Promise.resolve(Blocks);
   }
 
-  return loader().then((module) => {
-    const iconComponent = module.default as Component;
-    iconCache.set(kebabName, iconComponent);
-    return iconComponent;
-  });
+  return loader()
+    .then((module) => {
+      const iconComponent = module.default as Component;
+      iconCache.set(kebabName, iconComponent);
+      return iconComponent;
+    })
+    .catch(() => {
+      iconCache.set(kebabName, Blocks);
+      return Blocks;
+    });
 }
 
 export function getLucideIcon(name: string): Component | undefined {
@@ -71,7 +82,14 @@ export function getLucideIcon(name: string): Component | undefined {
     return cached;
   }
 
-  return defineComponent({
+  const cachedWrapper = iconWrapperCache.get(kebabName);
+
+  if (cachedWrapper) {
+    return cachedWrapper;
+  }
+
+  const wrapper = defineComponent({
+    name: `LucideIcon_${kebabName}`,
     setup() {
       const attrs = useAttrs();
       const LoadedIcon = shallowRef<Component | null>(null);
@@ -88,4 +106,7 @@ export function getLucideIcon(name: string): Component | undefined {
       };
     },
   });
+
+  iconWrapperCache.set(kebabName, wrapper);
+  return wrapper;
 }
