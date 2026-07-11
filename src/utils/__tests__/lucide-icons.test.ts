@@ -42,6 +42,7 @@ describe('getLucideIcon', () => {
 
     expect(html).toContain('lucide-pencil-ruler');
     expect(html).not.toContain('lucide-blocks');
+    expect(getLucideIcon('PencilRuler')).toBe(Icon);
   });
 
   it('returns undefined for empty names', () => {
@@ -49,11 +50,17 @@ describe('getLucideIcon', () => {
     expect(getLucideIcon('   ')).toBeUndefined();
   });
 
-  it('returns a stable fallback wrapper for unknown icon names', () => {
+  it('renders Blocks through a stable fallback wrapper for unknown icon names', async () => {
     const first = getLucideIcon('DefinitelyNotARealLucideIcon');
     const second = getLucideIcon('DefinitelyNotARealLucideIcon');
 
     expect(first).toBeDefined();
     expect(second).toBe(first);
+
+    const wrapper = mount(first!);
+    const html = await waitForIconHtml(() => wrapper.html(), 'lucide-blocks');
+
+    expect(html).toContain('lucide-blocks');
+    expect(getLucideIcon('DefinitelyNotARealLucideIcon')).toBe(first);
   });
 });

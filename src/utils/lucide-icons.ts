@@ -19,6 +19,7 @@ const iconModules = import.meta.glob<{ default: Component }>([
 ]);
 
 const iconCache = new Map<string, Component>();
+const iconLoadPromises = new Map<string, Promise<Component>>();
 const iconWrapperCache = new Map<string, Component>();
 
 function toKebabCase(name: string): string {
@@ -45,24 +46,32 @@ function loadIcon(kebabName: string): Promise<Component> {
     return Promise.resolve(cached);
   }
 
+  const pendingLoad = iconLoadPromises.get(kebabName);
+
+  if (pendingLoad) {
+    return pendingLoad;
+  }
+
   const modulePath = getIconModulePath(kebabName);
   const loader = modulePath ? iconModules[modulePath] : undefined;
 
   if (!loader) {
-    iconCache.set(kebabName, Blocks);
     return Promise.resolve(Blocks);
   }
 
-  return loader()
+  const loadPromise = loader()
     .then((module) => {
       const iconComponent = module.default as Component;
       iconCache.set(kebabName, iconComponent);
       return iconComponent;
     })
-    .catch(() => {
-      iconCache.set(kebabName, Blocks);
-      return Blocks;
+    .catch(() => Blocks)
+    .finally(() => {
+      iconLoadPromises.delete(kebabName);
     });
+
+  iconLoadPromises.set(kebabName, loadPromise);
+  return loadPromise;
 }
 
 export function getLucideIcon(name: string): Component | undefined {
@@ -74,12 +83,6 @@ export function getLucideIcon(name: string): Component | undefined {
 
   if (!kebabName || kebabName.length === 0) {
     return undefined;
-  }
-
-  const cached = iconCache.get(kebabName);
-
-  if (cached) {
-    return cached;
   }
 
   const cachedWrapper = iconWrapperCache.get(kebabName);
