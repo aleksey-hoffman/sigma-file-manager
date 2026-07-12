@@ -11,7 +11,7 @@ import {
 import { Blocks } from '@lucide/vue';
 
 interface IconModule {
-  default: Component;
+  default?: Component;
 }
 
 type IconModuleLoader = () => Promise<IconModule>;
@@ -34,6 +34,11 @@ for (const [modulePath, loader] of Object.entries(iconModules)) {
   const normalizedPath = modulePath.replace(/\\/g, '/');
   const fileName = normalizedPath.slice(normalizedPath.lastIndexOf('/') + 1);
   const kebabName = fileName.replace(/\.(?:mjs|js)$/, '');
+
+  if (kebabName === 'index') {
+    continue;
+  }
+
   const pascalName = toPascalCase(kebabName);
   const aliases = [
     kebabName,
@@ -100,7 +105,7 @@ export function createLucideIconResolver(
       ?? moduleLoaders.get(toKebabCase(baseName));
 
     if (!loader) {
-      return Blocks;
+      return undefined;
     }
 
     const cachedWrapper = iconWrappers.get(loader);
@@ -113,6 +118,12 @@ export function createLucideIconResolver(
       loader: async () => {
         try {
           const iconModule = await loader();
+
+          if (!iconModule.default) {
+            console.error(`Lucide icon module "${baseName}" has no default export.`);
+            return Blocks;
+          }
+
           return iconModule.default;
         }
         catch (loadError) {
@@ -123,6 +134,9 @@ export function createLucideIconResolver(
       loadingComponent: LucideIconLoading,
       delay: 0,
       suspensible: false,
+    });
+    Object.assign(wrapper, {
+      name: `LucideIcon(${baseName})`,
     });
 
     iconWrappers.set(loader, wrapper);

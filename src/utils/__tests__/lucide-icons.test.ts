@@ -76,6 +76,7 @@ describe('createLucideIconResolver', () => {
     const Icon = resolveIcon('Circle');
 
     expect(Icon).toBeDefined();
+    expect(Icon).toHaveProperty('name', 'LucideIcon(Circle)');
     expect(resolveIcon('CircleIcon')).toBe(Icon);
 
     const firstWrapper = mountIcon(Icon!);
@@ -187,6 +188,25 @@ describe('createLucideIconResolver', () => {
     );
   });
 
+  it('settles modules without a default export on Blocks', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const loader = vi.fn(() => Promise.resolve({}));
+    const resolveIcon = createLucideIconResolver(new Map([
+      ['missing-default', loader],
+    ]));
+    const Icon = resolveIcon('MissingDefault');
+    const wrapper = mountIcon(Icon!);
+
+    await flushPromises();
+
+    expect(wrapper.html()).toContain('lucide-blocks');
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      'Lucide icon module "MissingDefault" has no default export.',
+    );
+  });
+
   it('retains a resolved icon after its first wrapper unmounts during loading', async () => {
     const deferredModule = createDeferred<{ default: Component }>();
     const loader = vi.fn(() => deferredModule.promise);
@@ -254,16 +274,9 @@ describe('getLucideIcon', () => {
     expect(getLucideIcon('   ')).toBeUndefined();
   });
 
-  it('renders Blocks immediately for unknown icon names', () => {
-    const first = getLucideIcon('DefinitelyNotARealLucideIcon');
-    const second = getLucideIcon('DefinitelyNotARealLucideIcon');
-
-    expect(first).toBeDefined();
-    expect(second).toBe(first);
-
-    const wrapper = mountIcon(first!);
-
-    expect(wrapper.html()).toContain('lucide-blocks');
-    expect(getLucideIcon('DefinitelyNotARealLucideIcon')).toBe(first);
+  it('returns undefined for unknown and barrel module names', () => {
+    expect(getLucideIcon('DefinitelyNotARealLucideIcon')).toBeUndefined();
+    expect(getLucideIcon('Index')).toBeUndefined();
+    expect(getLucideIcon('index')).toBeUndefined();
   });
 });
