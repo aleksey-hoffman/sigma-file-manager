@@ -3,24 +3,59 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
+  defineAsyncComponent,
   defineComponent,
   h,
-  onMounted,
-  shallowRef,
-  useAttrs,
   type Component,
-  type VNode,
 } from 'vue';
 import { Blocks } from '@lucide/vue';
 
-const iconModules = import.meta.glob<{ default: Component }>([
+interface IconModule {
+  default: Component;
+}
+
+type IconModuleLoader = () => Promise<IconModule>;
+
+const iconModules = import.meta.glob<IconModule>([
   '../../node_modules/@lucide/vue/dist/esm/icons/*.mjs',
   '../../node_modules/@lucide/vue/dist/esm/icons/*.js',
 ]);
 
-const iconCache = new Map<string, Component>();
-const iconLoadPromises = new Map<string, Promise<Component>>();
-const iconWrapperCache = new Map<string, Component>();
+const iconModuleLoaders = new Map<string, IconModuleLoader>();
+
+for (const [modulePath, loader] of Object.entries(iconModules)) {
+  const normalizedPath = modulePath.replace(/\\/g, '/');
+  const fileName = normalizedPath.slice(normalizedPath.lastIndexOf('/') + 1);
+  const kebabName = fileName.replace(/\.(?:mjs|js)$/, '');
+
+  if (!iconModuleLoaders.has(kebabName)) {
+    iconModuleLoaders.set(kebabName, loader);
+  }
+}
+
+const LucideIconLoading = defineComponent({
+  name: 'LucideIconLoading',
+  inheritAttrs: false,
+  setup(_, { attrs }) {
+    return () => {
+      const {
+        size = 24,
+        style,
+        ...svgAttrs
+      } = attrs;
+
+      return h('svg', {
+        xmlns: 'http://www.w3.org/2000/svg',
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        ...svgAttrs,
+        width: size,
+        height: size,
+        style: [style, { visibility: 'hidden' }],
+      });
+    };
+  },
+});
 
 function toKebabCase(name: string): string {
   const withoutIcon = name.trim().replace(/Icon$/i, '');
@@ -30,86 +65,53 @@ function toKebabCase(name: string): string {
     .toLowerCase();
 }
 
-function getIconModulePath(kebabName: string): string {
-  const paths = Object.keys(iconModules);
-  return paths.find((path) => {
-    const normalizedPath = path.replace(/\\/g, '/');
-    return normalizedPath.endsWith(`/${kebabName}.mjs`)
-      || normalizedPath.endsWith(`/${kebabName}.js`);
-  }) ?? '';
-}
+export function createLucideIconResolver(
+  moduleLoaders: ReadonlyMap<string, IconModuleLoader>,
+): (name: string) => Component | undefined {
+  const iconWrappers = new Map<string, Component>();
 
-function loadIcon(kebabName: string): Promise<Component> {
-  const cached = iconCache.get(kebabName);
+  return (name: string): Component | undefined => {
+    if (!name || typeof name !== 'string') {
+      return undefined;
+    }
 
-  if (cached) {
-    return Promise.resolve(cached);
-  }
+    const kebabName = toKebabCase(name);
 
-  const pendingLoad = iconLoadPromises.get(kebabName);
+    if (!kebabName) {
+      return undefined;
+    }
 
-  if (pendingLoad) {
-    return pendingLoad;
-  }
+    const cachedWrapper = iconWrappers.get(kebabName);
 
-  const modulePath = getIconModulePath(kebabName);
-  const loader = modulePath ? iconModules[modulePath] : undefined;
+    if (cachedWrapper) {
+      return cachedWrapper;
+    }
 
-  if (!loader) {
-    return Promise.resolve(Blocks);
-  }
+    const loader = moduleLoaders.get(kebabName);
 
-  const loadPromise = loader()
-    .then((module) => {
-      const iconComponent = module.default as Component;
-      iconCache.set(kebabName, iconComponent);
-      return iconComponent;
-    })
-    .catch(() => Blocks)
-    .finally(() => {
-      iconLoadPromises.delete(kebabName);
+    if (!loader) {
+      iconWrappers.set(kebabName, Blocks);
+      return Blocks;
+    }
+
+    const wrapper = defineAsyncComponent({
+      loader: async () => {
+        try {
+          const iconModule = await loader();
+          return iconModule.default;
+        }
+        catch {
+          return Blocks;
+        }
+      },
+      loadingComponent: LucideIconLoading,
+      delay: 0,
+      suspensible: false,
     });
 
-  iconLoadPromises.set(kebabName, loadPromise);
-  return loadPromise;
+    iconWrappers.set(kebabName, wrapper);
+    return wrapper;
+  };
 }
 
-export function getLucideIcon(name: string): Component | undefined {
-  if (!name || typeof name !== 'string') {
-    return undefined;
-  }
-
-  const kebabName = toKebabCase(name);
-
-  if (!kebabName || kebabName.length === 0) {
-    return undefined;
-  }
-
-  const cachedWrapper = iconWrapperCache.get(kebabName);
-
-  if (cachedWrapper) {
-    return cachedWrapper;
-  }
-
-  const wrapper = defineComponent({
-    name: `LucideIcon_${kebabName}`,
-    setup() {
-      const attrs = useAttrs();
-      const LoadedIcon = shallowRef<Component | null>(null);
-
-      onMounted(() => {
-        loadIcon(kebabName).then((component) => {
-          LoadedIcon.value = component;
-        });
-      });
-
-      return () => {
-        const component = LoadedIcon.value ?? Blocks;
-        return h(component as Component, attrs) as VNode;
-      };
-    },
-  });
-
-  iconWrapperCache.set(kebabName, wrapper);
-  return wrapper;
-}
+export const getLucideIcon = createLucideIconResolver(iconModuleLoaders);
