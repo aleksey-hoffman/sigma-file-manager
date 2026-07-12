@@ -7,6 +7,7 @@ import {
 } from 'vitest';
 import {
   getElementContentBoxClientRect,
+  getElementContentBoxInsets,
   getElementContentBoxWidth,
 } from '../file-browser-content-box';
 
@@ -52,5 +53,33 @@ describe('file-browser-content-box', () => {
     } as CSSStyleDeclaration);
 
     expect(getElementContentBoxClientRect(element)).toEqual(new DOMRect(120, 200, 860, 600));
+  });
+
+  it('reuses supplied content-box insets without reading computed style', () => {
+    const element = document.createElement('div');
+
+    Object.defineProperty(element, 'clientWidth', {
+      value: 900,
+      configurable: true,
+    });
+    Object.defineProperty(element, 'clientHeight', {
+      value: 600,
+      configurable: true,
+    });
+    vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 200, 940, 620));
+    const getComputedStyleSpy = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+      paddingLeft: '20px',
+      paddingRight: '20px',
+      paddingTop: '0px',
+      paddingBottom: '0px',
+      borderLeftWidth: '0px',
+      borderTopWidth: '0px',
+    } as CSSStyleDeclaration);
+    const insets = getElementContentBoxInsets(element);
+
+    getComputedStyleSpy.mockClear();
+
+    expect(getElementContentBoxClientRect(element, insets)).toEqual(new DOMRect(120, 200, 860, 600));
+    expect(getComputedStyleSpy).not.toHaveBeenCalled();
   });
 });

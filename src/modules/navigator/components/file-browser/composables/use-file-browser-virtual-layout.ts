@@ -703,6 +703,10 @@ export function useFileBrowserVirtualLayout(options: {
     scheduleViewportSizeUpdate();
   });
 
+  watch(() => options.increaseFileViewGaps?.(), () => {
+    scheduleViewportSizeUpdate();
+  });
+
   onBeforeUnmount(() => {
     disconnectViewportResizeObserver();
   });

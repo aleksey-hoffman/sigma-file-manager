@@ -5,12 +5,17 @@
 import {
   afterEach, describe, expect, it, vi,
 } from 'vitest';
+import {
+  computed, defineComponent, h, nextTick, ref, type Ref,
+} from 'vue';
+import { mount } from '@vue/test-utils';
 import type { DirEntry } from '@/types/dir-entry';
 import {
   createFileBrowserVirtualRows,
   getFileBrowserGridNavigationEntry,
   getGridColumnCount,
   resolveViewportContentWidth,
+  useFileBrowserVirtualLayout,
 } from '../use-file-browser-virtual-layout';
 
 function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
@@ -236,5 +241,64 @@ describe('resolveViewportContentWidth', () => {
     expect(resolveViewportContentWidth(viewport)).toBe(850);
     expect(getGridColumnCount(resolveViewportContentWidth(viewport))).toBe(4);
     expect(getGridColumnCount(viewport.clientWidth)).toBe(5);
+  });
+
+  it('updates content width when increased gaps change entry padding', async () => {
+    const viewport = document.createElement('div');
+    const contentInner = document.createElement('div');
+    const entriesContainer = document.createElement('div');
+    let increaseFileViewGaps!: Ref<boolean>;
+    let viewportWidth!: Ref<number>;
+
+    contentInner.className = 'file-browser__content-inner';
+    entriesContainer.className = 'file-browser__entries-container';
+    contentInner.appendChild(entriesContainer);
+    viewport.appendChild(contentInner);
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      value: 600,
+      configurable: true,
+    });
+    Object.defineProperty(entriesContainer, 'clientWidth', {
+      value: 900,
+      configurable: true,
+    });
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element) => {
+      const padding = element === entriesContainer && increaseFileViewGaps.value ? '20px' : '0px';
+
+      return {
+        paddingLeft: padding,
+        paddingRight: padding,
+      } as CSSStyleDeclaration;
+    });
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+
+    const wrapper = mount(defineComponent({
+      setup() {
+        increaseFileViewGaps = ref(false);
+        const virtualLayout = useFileBrowserVirtualLayout({
+          entries: computed(() => []),
+          layout: () => 'list',
+          increaseFileViewGaps: () => increaseFileViewGaps.value,
+        });
+
+        viewportWidth = virtualLayout.viewportWidth;
+        virtualLayout.setScrollViewportRef(viewport);
+
+        return () => h('div');
+      },
+    }));
+
+    expect(viewportWidth.value).toBe(900);
+
+    increaseFileViewGaps.value = true;
+    await nextTick();
+    await nextTick();
+
+    expect(viewportWidth.value).toBe(860);
+    wrapper.unmount();
   });
 });

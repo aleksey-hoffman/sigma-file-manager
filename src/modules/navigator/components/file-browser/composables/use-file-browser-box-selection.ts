@@ -26,7 +26,11 @@ import {
   collectFileBrowserBoxSelectionEntries,
   type FileBrowserBoxSelectionBox,
 } from '../utils/file-browser-box-selection-hit-test';
-import { getElementContentBoxClientRect } from '../utils/file-browser-content-box';
+import {
+  getElementContentBoxClientRect,
+  getElementContentBoxInsets,
+  type ElementContentBoxInsets,
+} from '../utils/file-browser-content-box';
 import type { FileBrowserVirtualRow } from '../utils/file-browser-virtual-rows';
 import { clearDocumentTextSelection } from '@/utils/document-selection';
 
@@ -104,6 +108,7 @@ export function useFileBrowserBoxSelection(options: {
   let pointerOriginContent: BoxSelectionContentPoint | null = null;
   let latestPointer: BoxSelectionPointerPosition | null = null;
   let scrollViewportElement: HTMLElement | null = null;
+  let entriesContainerContentBoxInsets: ElementContentBoxInsets | null = null;
   let selectionMode: BoxSelectionMode = 'replace';
   let baseSelection: DirEntry[] = [];
   let isActive = false;
@@ -154,16 +159,12 @@ export function useFileBrowserBoxSelection(options: {
     overlay.style.height = style.height;
   }
 
-  function applyBoxSelection(selectionBox: FileBrowserBoxSelectionBox, scrollTop: number) {
-    const viewport = options.scrollViewportRef.value;
-    const entriesContainer = options.entriesContainerRef.value;
-
-    if (!viewport || !entriesContainer) {
-      return;
-    }
-
-    const viewportRect = viewport.getBoundingClientRect();
-    const contentRect = getElementContentBoxClientRect(entriesContainer);
+  function applyBoxSelection(
+    selectionBox: FileBrowserBoxSelectionBox,
+    scrollTop: number,
+    viewportRect: DOMRect,
+    contentRect: DOMRect,
+  ) {
     const boxSelectionEntries = collectFileBrowserBoxSelectionEntries({
       rows: options.virtualRows.value,
       selectionBox,
@@ -184,7 +185,13 @@ export function useFileBrowserBoxSelection(options: {
   function tick() {
     animationFrameId = null;
 
-    if (!isActive || !pointerOriginContent || !pointerOriginClient || !latestPointer) {
+    if (
+      !isActive
+      || !pointerOriginContent
+      || !pointerOriginClient
+      || !latestPointer
+      || !entriesContainerContentBoxInsets
+    ) {
       return;
     }
 
@@ -200,7 +207,10 @@ export function useFileBrowserBoxSelection(options: {
     const paneRect = paneElement.getBoundingClientRect();
     const overlayHostRect = resolveOverlayHostElement(paneElement).getBoundingClientRect();
     const viewportRect = viewport.getBoundingClientRect();
-    const contentRect = entriesContainer.getBoundingClientRect();
+    const contentRect = getElementContentBoxClientRect(
+      entriesContainer,
+      entriesContainerContentBoxInsets,
+    );
     const virtualContentOffset = options.virtualContentOffset.value;
     const deltaX = Math.abs(latestPointer.clientX - pointerOriginClient.clientX);
     const deltaY = Math.abs(latestPointer.clientY - pointerOriginClient.clientY);
@@ -227,7 +237,7 @@ export function useFileBrowserBoxSelection(options: {
       paneRect,
     );
     updateOverlay(selectionBox, overlayHostRect);
-    applyBoxSelection(selectionBox, scrollTop);
+    applyBoxSelection(selectionBox, scrollTop, viewportRect, contentRect);
   }
 
   function scheduleTick() {
@@ -268,6 +278,7 @@ export function useFileBrowserBoxSelection(options: {
     pointerOriginClient = null;
     pointerOriginContent = null;
     latestPointer = null;
+    entriesContainerContentBoxInsets = null;
     selectionMode = 'replace';
     baseSelection = [];
     activationThresholdReached = false;
@@ -378,10 +389,11 @@ export function useFileBrowserBoxSelection(options: {
       clientY: event.clientY,
     };
     latestPointer = { ...pointerOriginClient };
+    entriesContainerContentBoxInsets = getElementContentBoxInsets(entriesContainer);
     pointerOriginContent = clientPointToBoxSelectionContentPoint(
       pointerOriginClient,
       viewport.getBoundingClientRect(),
-      entriesContainer.getBoundingClientRect(),
+      getElementContentBoxClientRect(entriesContainer, entriesContainerContentBoxInsets),
       viewport.scrollTop,
       viewport.scrollLeft,
       options.virtualContentOffset.value,
