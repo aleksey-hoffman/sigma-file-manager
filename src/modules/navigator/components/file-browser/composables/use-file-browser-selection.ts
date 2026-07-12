@@ -19,7 +19,7 @@ import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
-import normalizePath, { getPathDisplayName, joinPath } from '@/utils/normalize-path';
+import normalizePath, { joinPath } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import {
   getSharedSourceDirectory,
@@ -32,6 +32,7 @@ import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
+import { applyBackgroundContextMenu } from '@/modules/navigator/components/file-browser/utils/file-browser-background-context-menu';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
@@ -300,28 +301,10 @@ export function useFileBrowserSelection(
   }
 
   function handleBackgroundContextMenu() {
-    clearSelection();
-
-    const currentDirEntry: DirEntry = {
-      name: getPathDisplayName(currentPathRef.value) || currentPathRef.value,
-      path: currentPathRef.value,
-      is_dir: true,
-      is_file: false,
-      is_hidden: false,
-      is_symlink: false,
-      size: 0,
-      created_time: 0,
-      modified_time: 0,
-      accessed_time: 0,
-      item_count: null,
-      ext: null,
-      mime: null,
-    };
-
-    contextMenu.value = {
-      targetEntry: currentDirEntry,
-      selectedEntries: [currentDirEntry],
-    };
+    contextMenu.value = applyBackgroundContextMenu({
+      clearFileSelection: clearSelection,
+      currentPath: currentPathRef.value,
+    });
   }
 
   function closeContextMenu() {

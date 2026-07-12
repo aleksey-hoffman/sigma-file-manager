@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import {
+  afterEach, describe, expect, it, vi,
+} from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import {
   createFileBrowserVirtualRows,
@@ -152,7 +154,11 @@ describe('getGridColumnCount', () => {
 });
 
 describe('resolveViewportContentWidth', () => {
-  it('prefers entries container width over viewport width', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('prefers entries container content-box width over viewport width', () => {
     const viewport = document.createElement('div');
     const contentInner = document.createElement('div');
     const entriesContainer = document.createElement('div');
@@ -176,6 +182,39 @@ describe('resolveViewportContentWidth', () => {
     });
 
     expect(resolveViewportContentWidth(viewport)).toBe(850);
+  });
+
+  it('subtracts horizontal padding from the entries container width', () => {
+    const viewport = document.createElement('div');
+    const contentInner = document.createElement('div');
+    const entriesContainer = document.createElement('div');
+
+    contentInner.className = 'file-browser__content-inner';
+    entriesContainer.className = 'file-browser__entries-container';
+    contentInner.appendChild(entriesContainer);
+    viewport.appendChild(contentInner);
+
+    Object.defineProperty(entriesContainer, 'clientWidth', {
+      value: 900,
+      configurable: true,
+    });
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element) => {
+      if (element === entriesContainer) {
+        return {
+          paddingLeft: '20px',
+          paddingRight: '20px',
+        } as CSSStyleDeclaration;
+      }
+
+      return {
+        paddingLeft: '0px',
+        paddingRight: '0px',
+      } as CSSStyleDeclaration;
+    });
+
+    expect(resolveViewportContentWidth(viewport)).toBe(860);
+    expect(getGridColumnCount(resolveViewportContentWidth(viewport))).toBe(4);
+    expect(getGridColumnCount(entriesContainer.clientWidth)).toBe(5);
   });
 
   it('falls back to content inner width while entries container is absent', () => {

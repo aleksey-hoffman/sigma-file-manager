@@ -15,6 +15,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import normalizePath from '@/utils/normalize-path';
 import { groupFileBrowserEntries } from '../file-browser-entry-groups';
 import { getFileBrowserGridGap } from '../utils/file-browser-layout-gaps';
+import { getElementContentBoxWidth } from '../utils/file-browser-content-box';
 import {
   getGridColumnCount,
   type FileBrowserGridEntryVariant,
@@ -173,16 +174,16 @@ export function resolveViewportContentWidth(viewport: HTMLElement): number {
   const entriesContainer = viewport.querySelector<HTMLElement>(ENTRIES_CONTAINER_SELECTOR);
 
   if (entriesContainer) {
-    return entriesContainer.clientWidth;
+    return getElementContentBoxWidth(entriesContainer);
   }
 
   const contentInner = viewport.querySelector<HTMLElement>(CONTENT_INNER_SELECTOR);
 
   if (contentInner) {
-    return contentInner.clientWidth;
+    return getElementContentBoxWidth(contentInner);
   }
 
-  return viewport.clientWidth;
+  return getElementContentBoxWidth(viewport);
 }
 
 function createListRows(

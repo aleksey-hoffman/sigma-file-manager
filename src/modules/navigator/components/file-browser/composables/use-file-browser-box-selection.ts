@@ -26,6 +26,7 @@ import {
   collectFileBrowserBoxSelectionEntries,
   type FileBrowserBoxSelectionBox,
 } from '../utils/file-browser-box-selection-hit-test';
+import { getElementContentBoxClientRect } from '../utils/file-browser-content-box';
 import type { FileBrowserVirtualRow } from '../utils/file-browser-virtual-rows';
 import { clearDocumentTextSelection } from '@/utils/document-selection';
 
@@ -162,7 +163,7 @@ export function useFileBrowserBoxSelection(options: {
     }
 
     const viewportRect = viewport.getBoundingClientRect();
-    const contentRect = entriesContainer.getBoundingClientRect();
+    const contentRect = getElementContentBoxClientRect(entriesContainer);
     const boxSelectionEntries = collectFileBrowserBoxSelectionEntries({
       rows: options.virtualRows.value,
       selectionBox,
