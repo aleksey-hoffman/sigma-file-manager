@@ -93,6 +93,10 @@ function handleViewportScroll(event: Event) {
       >
         <div
           class="file-browser__content-inner"
+          :class="{
+            'file-browser__content-inner--side-gutter':
+              ctx.isLoading.value || !!ctx.error.value || ctx.isDirectoryEmpty.value,
+          }"
           @pointerdown="ctx.handleEntriesContainerPointerDown"
         >
           <FileBrowserContentBody
@@ -137,7 +141,8 @@ function handleViewportScroll(event: Event) {
   --file-browser-scrollbar-gutter: 1.25rem;
 }
 
-.file-browser__content--grid .file-browser__content-inner {
+.file-browser__content--grid :deep(.file-browser__entries-container),
+.file-browser__content--grid .file-browser__content-inner--side-gutter {
   padding-inline: var(--file-browser-scrollbar-gutter);
 }
 
@@ -145,7 +150,8 @@ function handleViewportScroll(event: Event) {
   --file-browser-scrollbar-gutter: 20px;
 }
 
-.file-browser__content--increased-gaps:not(.file-browser__content--grid) .file-browser__content-inner {
+.file-browser__content--increased-gaps:not(.file-browser__content--grid) :deep(.file-browser__entries-container),
+.file-browser__content--increased-gaps:not(.file-browser__content--grid) .file-browser__content-inner--side-gutter {
   padding-inline: var(--file-browser-list-side-gutter);
 }
 
@@ -195,7 +201,8 @@ function handleViewportScroll(event: Event) {
   flex-direction: column;
 }
 
-.file-browser__content:not(.file-browser__content--grid, .file-browser__content--increased-gaps) .file-browser__content-inner {
+.file-browser__content:not(.file-browser__content--grid, .file-browser__content--increased-gaps) :deep(.file-browser__entries-container),
+.file-browser__content:not(.file-browser__content--grid, .file-browser__content--increased-gaps) .file-browser__content-inner--side-gutter {
   padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 

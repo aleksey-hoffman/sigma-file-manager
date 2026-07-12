@@ -300,6 +300,8 @@ export function useFileBrowserSelection(
   }
 
   function handleBackgroundContextMenu() {
+    clearSelection();
+
     const currentDirEntry: DirEntry = {
       name: getPathDisplayName(currentPathRef.value) || currentPathRef.value,
       path: currentPathRef.value,
