@@ -4,7 +4,13 @@
 
 import { CircleIcon } from '@lucide/vue';
 import { flushPromises, mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import {
+  afterEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
   defineComponent,
   h,
@@ -14,6 +20,10 @@ import {
   createLucideIconResolver,
   getLucideIcon,
 } from '@/utils/lucide-icons';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 function createDeferred<Value>() {
   let resolvePromise!: (value: Value) => void;
@@ -135,7 +145,9 @@ describe('createLucideIconResolver', () => {
   });
 
   it('settles rejected loaders on Blocks without retrying after remount', async () => {
-    const loader = vi.fn(() => Promise.reject(new Error('Forced icon load failure')));
+    const loadError = new Error('Forced icon load failure');
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const loader = vi.fn(() => Promise.reject(loadError));
     const handleClick = vi.fn();
     const resolveIcon = createLucideIconResolver(new Map([
       ['failed', loader],
@@ -168,6 +180,11 @@ describe('createLucideIconResolver', () => {
 
     expect(remountedWrapper.html()).toContain('lucide-blocks');
     expect(loader).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to load Lucide icon "Failed":',
+      loadError,
+    );
   });
 
   it('retains a resolved icon after its first wrapper unmounts during loading', async () => {
@@ -210,6 +227,27 @@ describe('getLucideIcon', () => {
     expect(html).not.toContain('lucide-blocks');
     expect(getLucideIcon('PencilRuler')).toBe(Icon);
   });
+
+  it.each([
+    ['Building2', 'building2', 'building-2', 'lucide-building-2'],
+    ['ArrowUpAZ', 'arrowupaz', 'arrow-up-a-z', 'lucide-arrow-up-a-z'],
+  ])(
+    'loads %s and reuses its filename aliases',
+    async (pascalName, lowercaseName, kebabName, expectedClass) => {
+      const Icon = getLucideIcon(pascalName);
+
+      expect(Icon).toBeDefined();
+      expect(getLucideIcon(lowercaseName)).toBe(Icon);
+      expect(getLucideIcon(kebabName)).toBe(Icon);
+      expect(getLucideIcon(`${pascalName}Icon`)).toBe(Icon);
+
+      const wrapper = mountIcon(Icon!);
+      const html = await waitForIconHtml(() => wrapper.html(), expectedClass);
+
+      expect(html).toContain(expectedClass);
+      expect(html).not.toContain('lucide-blocks');
+    },
+  );
 
   it('returns undefined for empty names', () => {
     expect(getLucideIcon('')).toBeUndefined();

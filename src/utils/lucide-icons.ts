@@ -16,6 +16,13 @@ interface IconModule {
 
 type IconModuleLoader = () => Promise<IconModule>;
 
+function toPascalCase(kebabName: string): string {
+  return kebabName
+    .split('-')
+    .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join('');
+}
+
 const iconModules = import.meta.glob<IconModule>([
   '../../node_modules/@lucide/vue/dist/esm/icons/*.mjs',
   '../../node_modules/@lucide/vue/dist/esm/icons/*.js',
@@ -27,9 +34,17 @@ for (const [modulePath, loader] of Object.entries(iconModules)) {
   const normalizedPath = modulePath.replace(/\\/g, '/');
   const fileName = normalizedPath.slice(normalizedPath.lastIndexOf('/') + 1);
   const kebabName = fileName.replace(/\.(?:mjs|js)$/, '');
+  const pascalName = toPascalCase(kebabName);
+  const aliases = [
+    kebabName,
+    pascalName,
+    pascalName.toLowerCase(),
+  ];
 
-  if (!iconModuleLoaders.has(kebabName)) {
-    iconModuleLoaders.set(kebabName, loader);
+  for (const alias of aliases) {
+    if (!iconModuleLoaders.has(alias)) {
+      iconModuleLoaders.set(alias, loader);
+    }
   }
 }
 
@@ -58,8 +73,7 @@ const LucideIconLoading = defineComponent({
 });
 
 function toKebabCase(name: string): string {
-  const withoutIcon = name.trim().replace(/Icon$/i, '');
-  return withoutIcon
+  return name
     .replace(/([a-z\d])([A-Z])/g, '$1-$2')
     .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
     .toLowerCase();
@@ -68,30 +82,31 @@ function toKebabCase(name: string): string {
 export function createLucideIconResolver(
   moduleLoaders: ReadonlyMap<string, IconModuleLoader>,
 ): (name: string) => Component | undefined {
-  const iconWrappers = new Map<string, Component>();
+  const iconWrappers = new Map<IconModuleLoader, Component>();
 
   return (name: string): Component | undefined => {
     if (!name || typeof name !== 'string') {
       return undefined;
     }
 
-    const kebabName = toKebabCase(name);
+    const baseName = name.trim().replace(/Icon$/i, '');
 
-    if (!kebabName) {
+    if (!baseName) {
       return undefined;
     }
 
-    const cachedWrapper = iconWrappers.get(kebabName);
+    const loader = moduleLoaders.get(baseName)
+      ?? moduleLoaders.get(baseName.toLowerCase())
+      ?? moduleLoaders.get(toKebabCase(baseName));
+
+    if (!loader) {
+      return Blocks;
+    }
+
+    const cachedWrapper = iconWrappers.get(loader);
 
     if (cachedWrapper) {
       return cachedWrapper;
-    }
-
-    const loader = moduleLoaders.get(kebabName);
-
-    if (!loader) {
-      iconWrappers.set(kebabName, Blocks);
-      return Blocks;
     }
 
     const wrapper = defineAsyncComponent({
@@ -100,7 +115,8 @@ export function createLucideIconResolver(
           const iconModule = await loader();
           return iconModule.default;
         }
-        catch {
+        catch (loadError) {
+          console.error(`Failed to load Lucide icon "${baseName}":`, loadError);
           return Blocks;
         }
       },
@@ -109,7 +125,7 @@ export function createLucideIconResolver(
       suspensible: false,
     });
 
-    iconWrappers.set(kebabName, wrapper);
+    iconWrappers.set(loader, wrapper);
     return wrapper;
   };
 }
