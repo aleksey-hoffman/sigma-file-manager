@@ -13,6 +13,7 @@ import {
 } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import normalizePath from '@/utils/normalize-path';
+import { computeVerticalVirtualRange } from '@/composables/use-vertical-virtual-list';
 import { groupFileBrowserEntries } from '../file-browser-entry-groups';
 import { getFileBrowserGridGap } from '../utils/file-browser-layout-gaps';
 import { getElementContentBoxWidth } from '../utils/file-browser-content-box';
@@ -119,44 +120,6 @@ function getVirtualContentOffset(viewport: HTMLElement): number {
   }
 
   return Math.max(0, virtualSpacer.getBoundingClientRect().top - viewport.getBoundingClientRect().top + viewport.scrollTop);
-}
-
-function findFirstVisibleRowIndex(rows: readonly FileBrowserVirtualRow[], viewportStart: number): number {
-  let startIndex = 0;
-  let endIndex = rows.length - 1;
-  let resultIndex = rows.length;
-
-  while (startIndex <= endIndex) {
-    const middleIndex = Math.floor((startIndex + endIndex) / 2);
-
-    if (getRowEnd(rows[middleIndex]) >= viewportStart) {
-      resultIndex = middleIndex;
-      endIndex = middleIndex - 1;
-    }
-    else {
-      startIndex = middleIndex + 1;
-    }
-  }
-
-  return resultIndex;
-}
-
-function findVisibleRowEndIndex(rows: readonly FileBrowserVirtualRow[], viewportEnd: number): number {
-  let startIndex = 0;
-  let endIndex = rows.length;
-
-  while (startIndex < endIndex) {
-    const middleIndex = Math.floor((startIndex + endIndex) / 2);
-
-    if (rows[middleIndex].start <= viewportEnd) {
-      startIndex = middleIndex + 1;
-    }
-    else {
-      endIndex = middleIndex;
-    }
-  }
-
-  return startIndex;
 }
 
 function escapeCssAttribute(value: string): string {
@@ -390,13 +353,15 @@ export function useFileBrowserVirtualLayout(options: {
 
   const visibleRows = computed(() => {
     const virtualScrollTop = Math.max(0, scrollTop.value - virtualContentOffset.value);
-    const viewportStart = Math.max(0, virtualScrollTop - VIRTUAL_OVERSCAN_PX);
-    const viewportEnd = virtualScrollTop + viewportHeight.value + VIRTUAL_OVERSCAN_PX;
     const rowItems = rows.value;
-    const startIndex = findFirstVisibleRowIndex(rowItems, viewportStart);
-    const endIndex = findVisibleRowEndIndex(rowItems, viewportEnd);
+    const visibleRange = computeVerticalVirtualRange({
+      items: rowItems,
+      overscanPx: VIRTUAL_OVERSCAN_PX,
+      scrollTop: virtualScrollTop,
+      viewportHeight: viewportHeight.value,
+    });
 
-    return rowItems.slice(startIndex, endIndex);
+    return rowItems.slice(visibleRange.start, visibleRange.end);
   });
 
   const activeGridSectionRow = computed(() => {

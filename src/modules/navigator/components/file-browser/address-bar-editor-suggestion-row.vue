@@ -98,6 +98,7 @@ function handleRemoveRecentClick(event: MouseEvent) {
   width: 100%;
   max-width: 100%;
   min-height: 32px;
+  flex-shrink: 0;
   align-items: center;
   padding: var(--address-bar-editor-row-py) var(--address-bar-editor-row-px);
   border-bottom: 1px solid hsl(var(--border) / 50%);

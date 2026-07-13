@@ -250,6 +250,7 @@ defineExpose({
     <AddressBarEditorDialog
       ref="addressBarEditorRef"
       :current-path="fb.pathInput.value"
+      :current-dir-contents="fb.dirContents.value"
       @open-directory="fb.navigateToPath"
       @open-file="fb.openFile"
       @reveal="revealAddressBarEntry"

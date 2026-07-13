@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 
 type CommandDialogProps = DialogRootProps & {
   commandIgnoreFilter?: boolean;
+  commandResetSearchTermOnBlur?: boolean;
   commandResetSearchTermOnSelect?: boolean;
   accessibleTitle?: string;
   accessibleDescription?: string;
@@ -30,6 +31,7 @@ const emits = defineEmits<DialogRootEmits>();
 const delegatedDialogProps = reactiveOmit(
   props,
   'commandIgnoreFilter',
+  'commandResetSearchTermOnBlur',
   'commandResetSearchTermOnSelect',
   'accessibleTitle',
   'accessibleDescription',
@@ -49,6 +51,9 @@ const resolvedAccessibleDescription = computed(() =>
 
 const commandComboboxBindings = computed(() => ({
   ...(props.commandIgnoreFilter ? { ignoreFilter: true } : {}),
+  ...(props.commandResetSearchTermOnBlur !== undefined
+    ? { resetSearchTermOnBlur: props.commandResetSearchTermOnBlur }
+    : {}),
   ...(props.commandResetSearchTermOnSelect !== undefined
     ? { resetSearchTermOnSelect: props.commandResetSearchTermOnSelect }
     : {}),

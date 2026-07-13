@@ -9,6 +9,7 @@ import {
   nextTick,
   ref,
   shallowRef,
+  toRaw,
   watch,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -34,11 +35,6 @@ import {
 } from 'reka-ui';
 import { ScrollBar } from '@/components/ui/scroll-area';
 import Separator from '@/components/ui/separator/separator.vue';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import AddressBarSuggestionRow from './address-bar-editor-suggestion-row.vue';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
@@ -58,6 +54,7 @@ import {
   createFileBrowserQuickSearchCache,
   createFileBrowserQuickSearchMatcher,
 } from './utils/file-browser-entry-quick-search';
+import { useVerticalVirtualList } from '@/composables/use-vertical-virtual-list';
 import {
   addressBarPathHasNoParentDirectory,
   addressBarTrimmedQueryLooksLikeFilesystemPath,
@@ -81,6 +78,7 @@ type RefreshSuggestionsKeyboardSelection = 'reset' | 'preserve';
 
 const props = defineProps<{
   currentPath: string;
+  currentDirContents?: DirContents | null;
 }>();
 
 const emit = defineEmits<{
@@ -91,15 +89,38 @@ const emit = defineEmits<{
 
 interface RenderedSuggestionGroup extends AddressBarSuggestionGroup {
   headerIndex?: number;
-  renderedItems: Array<{
-    suggestion: AddressBarSuggestion;
-    index: number;
-  }>;
+  firstItemIndex: number;
 }
+
+type AddressBarEditorVirtualRow
+  = | {
+    type: 'collapsible-header';
+    key: string;
+    size: number;
+    navigationIndex: number;
+    group: RenderedSuggestionGroup;
+  }
+  | {
+    type: 'group-heading';
+    key: string;
+    size: number;
+    group: RenderedSuggestionGroup;
+  }
+  | {
+    type: 'suggestion';
+    key: string;
+    size: number;
+    navigationIndex: number;
+    groupId: string;
+    suggestion: AddressBarSuggestion;
+  };
 
 const RECENT_ENTRY_LIMIT = 10;
 const PATH_LOOKUP_TIMEOUT_MS = 750;
 const SUGGESTION_DEBOUNCE_MS = 120;
+const COLLAPSIBLE_GROUP_HEADER_HEIGHT_PX = 38;
+const GROUP_HEADING_HEIGHT_PX = 28;
+const SUGGESTION_ROW_HEIGHT_PX = 32;
 const hintKeyLabels = {
   navigate: 'Up/Down',
   expand: 'Tab',
@@ -125,17 +146,16 @@ const isOpen = ref(false);
 const mode = ref<AddressBarEditorMode>('path');
 const query = ref('');
 const selectedIndex = ref(-1);
-const suggestionState = ref<AddressBarSuggestionState>({
+const suggestionState = shallowRef<AddressBarSuggestionState>({
   kind: 'empty',
   groups: [],
   exactEntry: null,
   directoryPath: null,
 });
-const lastDirectoryEntries = ref<DirEntry[]>([]);
+const lastDirectoryEntries = shallowRef<DirEntry[]>([]);
 const groupOpenState = ref<Record<string, boolean>>({});
 const quickSearchCache = ref(createFileBrowserQuickSearchCache());
 let suggestionRequestId = 0;
-const suggestionRowsContainerReference = shallowRef<HTMLElement | null>(null);
 const addressBarCommandInputMountReference = shallowRef<HTMLElement | null>(null);
 const suppressDebouncedSuggestionsOnQueryMutation = ref(false);
 const addressEditorNavigationSteps = ref<string[]>([]);
@@ -244,22 +264,74 @@ const renderedGroups = computed<RenderedSuggestionGroup[]>(() => {
       rowIndex += 1;
     }
 
-    const renderedItems = group.items.map((suggestion) => {
-      const renderedItem = {
-        suggestion,
-        index: rowIndex,
-      };
-      rowIndex += 1;
-      return renderedItem;
-    });
+    const firstItemIndex = rowIndex;
+    rowIndex += group.items.length;
 
     return {
       ...group,
       headerIndex,
-      renderedItems,
+      firstItemIndex,
     };
   });
 });
+
+const suggestionVirtualRows = computed<AddressBarEditorVirtualRow[]>(() => {
+  const rows: AddressBarEditorVirtualRow[] = [];
+
+  for (const group of renderedGroups.value) {
+    if (group.collapsible && group.headerIndex !== undefined) {
+      rows.push({
+        type: 'collapsible-header',
+        key: `group-header:${group.id}`,
+        size: COLLAPSIBLE_GROUP_HEADER_HEIGHT_PX,
+        navigationIndex: group.headerIndex,
+        group,
+      });
+    }
+    else if (group.items.length > 0) {
+      rows.push({
+        type: 'group-heading',
+        key: `group-heading:${group.id}`,
+        size: GROUP_HEADING_HEIGHT_PX,
+        group,
+      });
+    }
+
+    for (const [itemOffset, suggestion] of group.items.entries()) {
+      rows.push({
+        type: 'suggestion',
+        key: `suggestion:${group.id}:${suggestion.id}`,
+        size: SUGGESTION_ROW_HEIGHT_PX,
+        navigationIndex: group.firstItemIndex + itemOffset,
+        groupId: group.id,
+        suggestion,
+      });
+    }
+  }
+
+  return rows;
+});
+
+const virtualRowIndexByNavigationIndex = computed(() => {
+  const rowIndexByNavigationIndex = new Map<number, number>();
+
+  suggestionVirtualRows.value.forEach((row, rowIndex) => {
+    if (row.type !== 'group-heading') {
+      rowIndexByNavigationIndex.set(row.navigationIndex, rowIndex);
+    }
+  });
+
+  return rowIndexByNavigationIndex;
+});
+
+const suggestionVirtualList = useVerticalVirtualList({
+  items: suggestionVirtualRows,
+  getItemSize: row => row.size,
+});
+const visibleSuggestionVirtualRows = suggestionVirtualList.visibleItems;
+const suggestionVirtualSpacerStyle = suggestionVirtualList.spacerStyle;
+const suggestionVirtualWindowStyle = suggestionVirtualList.windowStyle;
+const suggestionVirtualViewportHeight = suggestionVirtualList.viewportHeight;
 
 const flatNavigableRowCount = computed(() => {
   let count = 0;
@@ -269,7 +341,7 @@ const flatNavigableRowCount = computed(() => {
       count += 1;
     }
 
-    count += group.renderedItems.length;
+    count += group.items.length;
   }
 
   return count;
@@ -306,6 +378,15 @@ watch(entryModeGroups, (groups) => {
 }, { immediate: true });
 
 async function readDir(path: string): Promise<DirContents> {
+  const currentDirContents = props.currentDirContents;
+
+  if (
+    currentDirContents
+    && canonicalizePath(currentDirContents.path) === canonicalizePath(path)
+  ) {
+    return toRaw(currentDirContents);
+  }
+
   return resolveDirectoryContents(path);
 }
 
@@ -689,10 +770,10 @@ function getSelectedSuggestion(): AddressBarSuggestion | null {
       return null;
     }
 
-    for (const row of group.renderedItems) {
-      if (row.index === selectedIndex.value) {
-        return row.suggestion;
-      }
+    const itemOffset = selectedIndex.value - group.firstItemIndex;
+
+    if (itemOffset >= 0 && itemOffset < group.items.length) {
+      return group.items[itemOffset] ?? null;
     }
   }
 
@@ -742,11 +823,11 @@ function moveSelection(offset: number): void {
 
 function scrollSelectedIntoView(): void {
   nextTick(() => {
-    suggestionRowsContainerReference.value?.querySelector<HTMLElement>(
-      `[data-address-bar-editor-index="${selectedIndex.value}"]`,
-    )?.scrollIntoView({
-      block: 'nearest',
-    });
+    const virtualRowIndex = virtualRowIndexByNavigationIndex.value.get(selectedIndex.value);
+
+    if (virtualRowIndex !== undefined) {
+      suggestionVirtualList.scrollItemIntoView(virtualRowIndex);
+    }
   });
 }
 
@@ -769,10 +850,9 @@ async function expandSuggestion(): Promise<void> {
     await nextTick();
 
     const freshGroup = renderedGroups.value.find(candidate => candidate.id === group.id);
-    const firstRow = freshGroup?.renderedItems[0];
 
-    if (firstRow) {
-      selectedIndex.value = firstRow.index;
+    if (freshGroup && freshGroup.items.length > 0) {
+      selectedIndex.value = freshGroup.firstItemIndex;
       scrollSelectedIntoView();
       await expandSuggestion();
     }
@@ -1057,15 +1137,35 @@ async function open(modeToOpen: AddressBarEditorMode): Promise<void> {
 async function moveAddressBarInputCaretToEndAfterPaint(): Promise<void> {
   await nextTick();
   requestAnimationFrame(() => {
-    const mountRoot = addressBarCommandInputMountReference.value;
-    const inputElement = mountRoot?.querySelector('input');
+    const inputElement = getAddressBarInputElement();
 
-    if (!(inputElement instanceof HTMLInputElement)) {
+    if (!inputElement) {
       return;
     }
 
     const length = inputElement.value.length;
     inputElement.setSelectionRange(length, length);
+  });
+}
+
+function getAddressBarInputElement(): HTMLInputElement | null {
+  return addressBarCommandInputMountReference.value?.querySelector('input') ?? null;
+}
+
+function restoreAddressBarInputFocusAfterScrollbarPointerDown(event: PointerEvent): void {
+  const pointerTarget = event.target;
+
+  if (
+    !(pointerTarget instanceof Element)
+    || !pointerTarget.closest('.sigma-ui-scroll-area-scrollbar')
+  ) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    if (isOpen.value) {
+      getAddressBarInputElement()?.focus({ preventScroll: true });
+    }
   });
 }
 
@@ -1083,6 +1183,7 @@ defineExpose({
   <CommandDialog
     v-model:open="dialogOpen"
     command-ignore-filter
+    :command-reset-search-term-on-blur="false"
     :command-reset-search-term-on-select="false"
     :accessible-title="t('settings.addressBar.editAddress')"
     :accessible-description="t('settings.addressBar.dialogAccessibleDescription')"
@@ -1099,89 +1200,88 @@ defineExpose({
       v-bind="pathEditorYieldMarkerBindings"
       type="auto"
       class="sigma-ui-scroll-area address-bar-editor__scroll-root"
+      @pointerdown.capture="restoreAddressBarInputFocusAfterScrollbarPointerDown"
     >
-      <ScrollAreaViewport class="sigma-ui-scroll-area__viewport address-bar-editor__viewport">
+      <ScrollAreaViewport
+        :ref="suggestionVirtualList.setScrollViewportRef"
+        class="sigma-ui-scroll-area__viewport address-bar-editor__viewport"
+        @scroll.passive="suggestionVirtualList.handleScroll"
+      >
         <div
-          ref="suggestionRowsContainerReference"
+          v-if="flatNavigableRowCount === 0"
+          class="address-bar-editor__empty"
+        >
+          {{ t('settings.addressBar.noMatchingEntries') }}
+        </div>
+        <div
+          v-else
           class="address-bar-editor__scroll-inner"
+          :style="suggestionVirtualSpacerStyle"
+          :data-virtual-total-rows="suggestionVirtualRows.length"
+          :data-virtual-visible-rows="visibleSuggestionVirtualRows.length"
+          :data-virtual-viewport-height="suggestionVirtualViewportHeight"
         >
           <div
-            v-if="flatNavigableRowCount === 0"
-            class="address-bar-editor__empty"
+            class="address-bar-editor__virtual-window"
+            :style="suggestionVirtualWindowStyle"
           >
-            {{ t('settings.addressBar.noMatchingEntries') }}
-          </div>
-
-          <template
-            v-for="group in renderedGroups"
-            :key="group.id"
-          >
-            <Collapsible
-              v-if="group.collapsible"
-              :open="isGroupOpen(group.id)"
-              class="address-bar-editor__group"
-              @update:open="setGroupOpen(group.id, $event)"
+            <template
+              v-for="virtualRow in visibleSuggestionVirtualRows"
+              :key="virtualRow.item.key"
             >
-              <CollapsibleTrigger as-child>
-                <button
-                  type="button"
-                  class="address-bar-editor__group-trigger"
-                  :data-address-bar-editor-index="group.headerIndex"
-                  :data-selected="group.headerIndex === selectedIndex ? true : undefined"
-                  @mousedown.prevent="selectCollapsibleGroupHeader(group)"
-                >
-                  <ChevronDownIcon
-                    v-if="isGroupOpen(group.id)"
-                    :size="14"
-                  />
-                  <ChevronRightIcon
-                    v-else
-                    :size="14"
-                  />
-                  <component
-                    :is="groupIcon(group)"
-                    :size="14"
-                    class="address-bar-editor__group-icon"
-                  />
-                  <span class="address-bar-editor__group-label">{{ group.label }}</span>
-                  <span class="address-bar-editor__group-count">{{ group.items.length }}</span>
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <AddressBarSuggestionRow
-                  v-for="item in group.renderedItems"
-                  :key="item.suggestion.id"
-                  :suggestion="item.suggestion"
-                  :item-index="item.index"
-                  :shows-path-beside-name="showsPathBesideSuggestionName"
-                  :selected="item.index === selectedIndex"
-                  :recent-entry-remove-label="group.id === 'recent' ? t('settings.addressBar.removeRecentEntry') : undefined"
-                  @activate="openEntry(item.suggestion.entry)"
-                  @remove-recent-entry="removeRecentHistoryRow(item.suggestion, item.index)"
-                />
-              </CollapsibleContent>
-            </Collapsible>
-
-            <template v-else>
-              <div
-                v-if="group.renderedItems.length > 0"
-                class="address-bar-editor__group-heading"
+              <button
+                v-if="virtualRow.item.type === 'collapsible-header'"
+                type="button"
+                class="address-bar-editor__group-trigger"
+                :style="{ height: `${virtualRow.size}px` }"
+                :aria-expanded="isGroupOpen(virtualRow.item.group.id)"
+                :data-address-bar-editor-index="virtualRow.item.navigationIndex"
+                :data-selected="virtualRow.item.navigationIndex === selectedIndex ? true : undefined"
+                @mousedown.prevent="selectCollapsibleGroupHeader(virtualRow.item.group)"
+                @click="setGroupOpen(
+                  virtualRow.item.group.id,
+                  !isGroupOpen(virtualRow.item.group.id),
+                )"
               >
-                {{ group.label }}
+                <ChevronDownIcon
+                  v-if="isGroupOpen(virtualRow.item.group.id)"
+                  :size="14"
+                />
+                <ChevronRightIcon
+                  v-else
+                  :size="14"
+                />
+                <component
+                  :is="groupIcon(virtualRow.item.group)"
+                  :size="14"
+                  class="address-bar-editor__group-icon"
+                />
+                <span class="address-bar-editor__group-label">{{ virtualRow.item.group.label }}</span>
+                <span class="address-bar-editor__group-count">{{ virtualRow.item.group.items.length }}</span>
+              </button>
+              <div
+                v-else-if="virtualRow.item.type === 'group-heading'"
+                class="address-bar-editor__group-heading"
+                :style="{ height: `${virtualRow.size}px` }"
+              >
+                {{ virtualRow.item.group.label }}
               </div>
               <AddressBarSuggestionRow
-                v-for="item in group.renderedItems"
-                :key="item.suggestion.id"
-                :suggestion="item.suggestion"
-                :item-index="item.index"
+                v-else
+                :style="{ height: `${virtualRow.size}px` }"
+                :suggestion="virtualRow.item.suggestion"
+                :item-index="virtualRow.item.navigationIndex"
                 :shows-path-beside-name="showsPathBesideSuggestionName"
-                :selected="item.index === selectedIndex"
-                :recent-entry-remove-label="group.id === 'recent' ? t('settings.addressBar.removeRecentEntry') : undefined"
-                @activate="openEntry(item.suggestion.entry)"
-                @remove-recent-entry="removeRecentHistoryRow(item.suggestion, item.index)"
+                :selected="virtualRow.item.navigationIndex === selectedIndex"
+                :recent-entry-remove-label="virtualRow.item.groupId === 'recent' ? t('settings.addressBar.removeRecentEntry') : undefined"
+                @activate="openEntry(virtualRow.item.suggestion.entry)"
+                @remove-recent-entry="removeRecentHistoryRow(
+                  virtualRow.item.suggestion,
+                  virtualRow.item.navigationIndex,
+                )"
               />
             </template>
-          </template>
+          </div>
         </div>
       </ScrollAreaViewport>
       <ScrollBar orientation="vertical" />
@@ -1267,7 +1367,16 @@ defineExpose({
   --address-bar-editor-row-px: 16px;
   --address-bar-editor-grid-columns: minmax(0, 1fr);
 
+  position: relative;
   width: 100%;
+}
+
+.address-bar-editor__virtual-window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  inset-inline: 0;
+  will-change: transform;
 }
 
 .address-bar-editor__empty {
@@ -1278,21 +1387,19 @@ defineExpose({
 }
 
 .address-bar-editor__group-heading {
+  flex-shrink: 0;
   padding: 0.5rem 1rem 0.25rem;
   color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
   font-weight: 500;
 }
 
-.address-bar-editor__group {
-  padding: 0.25rem 0.5rem;
-}
-
 .address-bar-editor__group-trigger {
   display: flex;
   width: 100%;
+  flex-shrink: 0;
   align-items: center;
-  padding: 0.375rem 0.5rem;
+  padding: 0.375rem 1rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -1301,7 +1408,7 @@ defineExpose({
   font-size: 0.75rem;
   font-weight: 500;
   gap: 0.375rem;
-  padding-inline-end: 1rem;
+  padding-inline-end: 1.5rem;
   text-align: start;
 }
 
