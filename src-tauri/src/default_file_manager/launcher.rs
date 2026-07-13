@@ -4,6 +4,7 @@
 
 use std::fs;
 use std::io::ErrorKind;
+use std::path::Path;
 
 use crate::windows_installation;
 
@@ -31,45 +32,54 @@ pub fn application_launch_target() -> Result<String, String> {
         .map_err(|error| format!("Failed to resolve executable path: {error}"))
 }
 
-pub fn deployed_launcher_executable_path() -> Result<String, String> {
-    windows_installation::deployed_launcher_path()
-        .ok_or_else(|| {
-            "Failed to resolve LOCALAPPDATA for the default file manager launcher".to_string()
-        })
-        .map(|path| path.to_string_lossy().into_owned())
-}
-
 pub fn deploy(application_launch_target: &str) -> Result<(), String> {
     let data_dir = windows_installation::default_file_manager_data_dir().ok_or_else(|| {
         "Failed to resolve LOCALAPPDATA for the default file manager launcher".to_string()
     })?;
 
-    fs::create_dir_all(&data_dir).map_err(|error| {
-        format!(
-            "Failed to create default file manager launcher directory \"{}\": {error}",
-            data_dir.display()
-        )
-    })?;
+    let launch_target_path =
+        data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME);
+    windows_installation::write_file_atomically(
+        &launch_target_path,
+        application_launch_target.as_bytes(),
+    )?;
 
     let launcher_path =
         data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME);
-    fs::write(&launcher_path, LAUNCHER_EXECUTABLE_BYTES).map_err(|error| {
-        format!(
-            "Failed to write default file manager launcher \"{}\": {error}",
-            launcher_path.display()
-        )
-    })?;
-
-    let launch_target_path =
-        data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME);
-    fs::write(&launch_target_path, application_launch_target).map_err(|error| {
-        format!(
-            "Failed to write default file manager launch target \"{}\": {error}",
-            launch_target_path.display()
-        )
-    })?;
+    windows_installation::write_file_atomically(&launcher_path, LAUNCHER_EXECUTABLE_BYTES)?;
 
     Ok(())
+}
+
+fn remove_file_if_exists(path: &Path) -> Result<(), String> {
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!("Failed to remove \"{}\": {error}", path.display())),
+    }
+}
+
+fn remove_owned_deployment_files(data_dir: &Path) -> Result<(), String> {
+    remove_file_if_exists(
+        &data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME),
+    )?;
+    remove_file_if_exists(
+        &data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME),
+    )?;
+
+    match fs::remove_dir(data_dir) {
+        Ok(()) => Ok(()),
+        Err(error)
+            if error.kind() == ErrorKind::NotFound
+                || error.kind() == ErrorKind::DirectoryNotEmpty =>
+        {
+            Ok(())
+        }
+        Err(error) => Err(format!(
+            "Failed to remove empty default file manager launcher directory \"{}\": {error}",
+            data_dir.display()
+        )),
+    }
 }
 
 pub fn remove_deployment() -> Result<(), String> {
@@ -77,12 +87,76 @@ pub fn remove_deployment() -> Result<(), String> {
         return Ok(());
     };
 
-    match fs::remove_dir_all(&data_dir) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
-        Err(error) => Err(format!(
-            "Failed to remove default file manager launcher directory \"{}\": {error}",
-            data_dir.display()
-        )),
+    remove_owned_deployment_files(&data_dir)
+}
+
+pub fn remove_legacy_deployment() -> Result<(), String> {
+    let Some(data_dir) = windows_installation::legacy_default_file_manager_data_dir() else {
+        return Ok(());
+    };
+
+    remove_owned_deployment_files(&data_dir)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deployment_cleanup_preserves_unowned_install_files() {
+        let temporary_directory = tempfile::tempdir().expect("temporary directory");
+        let install_directory = temporary_directory.path().join("Sigma File Manager");
+        fs::create_dir(&install_directory).expect("install directory");
+        fs::write(
+            install_directory.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME),
+            b"launcher",
+        )
+        .expect("launcher");
+        fs::write(
+            install_directory
+                .join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME),
+            b"target",
+        )
+        .expect("launch target");
+        fs::write(
+            install_directory.join("sigma-file-manager.exe"),
+            b"application",
+        )
+        .expect("application");
+        fs::write(install_directory.join("uninstall.exe"), b"uninstaller").expect("uninstaller");
+
+        remove_owned_deployment_files(&install_directory).expect("deployment cleanup");
+
+        assert!(install_directory.exists());
+        assert!(install_directory.join("sigma-file-manager.exe").exists());
+        assert!(install_directory.join("uninstall.exe").exists());
+        assert!(!install_directory
+            .join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME)
+            .exists());
+        assert!(!install_directory
+            .join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME)
+            .exists());
+    }
+
+    #[test]
+    fn deployment_cleanup_removes_empty_launcher_directory() {
+        let temporary_directory = tempfile::tempdir().expect("temporary directory");
+        let launcher_directory = temporary_directory.path().join("launcher");
+        fs::create_dir(&launcher_directory).expect("launcher directory");
+        fs::write(
+            launcher_directory.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME),
+            b"launcher",
+        )
+        .expect("launcher");
+        fs::write(
+            launcher_directory
+                .join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME),
+            b"target",
+        )
+        .expect("launch target");
+
+        remove_owned_deployment_files(&launcher_directory).expect("deployment cleanup");
+
+        assert!(!launcher_directory.exists());
     }
 }

@@ -446,6 +446,10 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
+    #[cfg(windows)]
+    if let Err(error) = default_file_manager::migrate_legacy_default_file_manager(app.handle()) {
+        eprintln!("Failed to migrate legacy default file manager integration: {error}");
+    }
     startup_storage_bootstrap::start_preload(
         app.handle().clone(),
         app.state::<startup_storage_bootstrap::StartupStorageBootstrapState>()

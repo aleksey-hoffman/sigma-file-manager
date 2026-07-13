@@ -5,20 +5,18 @@
 #![cfg(windows)]
 #![windows_subsystem = "windows"]
 
+#[path = "../../default-file-manager-paths.rs"]
+mod default_file_manager_paths;
+
 use std::ffi::OsStr;
 use std::fs;
 use std::os::windows::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const DATA_DIR_NAME: &str = "Sigma File Manager";
-const LAUNCH_TARGET_FILE_NAME: &str = "launch-target.txt";
-
-const REGISTRY_ROOT_KEYS: [&str; 3] = [
-    r"SOFTWARE\Classes\Folder\shell\open",
-    r"SOFTWARE\Classes\Folder\shell\explore",
-    r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}",
-];
+use default_file_manager_paths::{
+    DEFAULT_FILE_MANAGER_DATA_DIR_NAME, DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME,
+};
 
 const FOLDER_OPEN_COMMAND_KEY: &str = r"SOFTWARE\Classes\Folder\shell\open\command";
 const FOLDER_EXPLORE_COMMAND_KEY: &str = r"SOFTWARE\Classes\Folder\shell\explore\command";
@@ -26,12 +24,13 @@ const OPEN_NEW_WINDOW_COMMAND_KEY: &str =
     r"SOFTWARE\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell\opennewwindow\command";
 
 fn local_data_dir() -> Option<PathBuf> {
-    std::env::var_os("LOCALAPPDATA")
-        .map(|local_app_data| PathBuf::from(local_app_data).join(DATA_DIR_NAME))
+    std::env::var_os("LOCALAPPDATA").map(|local_app_data| {
+        PathBuf::from(local_app_data).join(DEFAULT_FILE_MANAGER_DATA_DIR_NAME)
+    })
 }
 
 fn read_launch_target(data_dir: &Path) -> Option<PathBuf> {
-    let launch_target_path = data_dir.join(LAUNCH_TARGET_FILE_NAME);
+    let launch_target_path = data_dir.join(DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME);
     let launch_target = fs::read_to_string(&launch_target_path).ok()?;
     let trimmed = launch_target.trim();
 
@@ -42,17 +41,33 @@ fn read_launch_target(data_dir: &Path) -> Option<PathBuf> {
     }
 }
 
-fn restore_explorer_defaults() {
+fn remove_owned_shell_command_values() {
     if !current_registry_is_owned_by_launcher() {
         return;
     }
 
-    for registry_key in REGISTRY_ROOT_KEYS {
-        let registry_path = format!(r"HKCU\{registry_key}");
-        let _ = Command::new("reg.exe")
-            .args(["delete", registry_path.as_str(), "/f"])
-            .status();
+    for command_key in [
+        FOLDER_OPEN_COMMAND_KEY,
+        FOLDER_EXPLORE_COMMAND_KEY,
+        OPEN_NEW_WINDOW_COMMAND_KEY,
+    ] {
+        delete_registry_value(command_key, "");
+        delete_registry_value(command_key, "DelegateExecute");
     }
+}
+
+fn delete_registry_value(command_key: &str, value_name: &str) {
+    let registry_path = format!(r"HKCU\{command_key}");
+    let mut command = Command::new("reg.exe");
+    command.args(["delete", registry_path.as_str(), "/f"]);
+
+    if value_name.is_empty() {
+        command.arg("/ve");
+    } else {
+        command.args(["/v", value_name]);
+    }
+
+    let _ = command.status();
 }
 
 fn current_registry_is_owned_by_launcher() -> bool {
@@ -168,7 +183,7 @@ fn launch_application(launch_target: &Path, launch_arguments: &[String]) {
 
 fn self_heal_and_open_explorer(folder_path: Option<&str>) {
     show_uninstall_message();
-    restore_explorer_defaults();
+    remove_owned_shell_command_values();
     launch_explorer(folder_path);
 }
 

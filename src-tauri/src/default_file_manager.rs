@@ -96,6 +96,13 @@ struct DefaultFileManagerRegistrySnapshot {
 }
 
 #[cfg(windows)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum LauncherRegistryOwner {
+    Current,
+    Legacy,
+}
+
+#[cfg(windows)]
 fn uses_external_registry_access() -> bool {
     windows_installation::is_windows_store_installation()
 }
@@ -106,14 +113,27 @@ fn normalize_command(command: &str) -> String {
 }
 
 #[cfg(windows)]
-fn expected_folder_command() -> Result<String, String> {
-    let launcher_path = launcher::deployed_launcher_executable_path()?;
+fn launcher_executable_path(owner: LauncherRegistryOwner) -> Result<String, String> {
+    let launcher_path = match owner {
+        LauncherRegistryOwner::Current => windows_installation::deployed_launcher_path(),
+        LauncherRegistryOwner::Legacy => windows_installation::legacy_deployed_launcher_path(),
+    }
+    .ok_or_else(|| {
+        "Failed to resolve LOCALAPPDATA for the default file manager launcher".to_string()
+    })?;
+
+    Ok(launcher_path.to_string_lossy().into_owned())
+}
+
+#[cfg(windows)]
+fn expected_folder_command(owner: LauncherRegistryOwner) -> Result<String, String> {
+    let launcher_path = launcher_executable_path(owner)?;
     Ok(format!("\"{launcher_path}\" \"%1\""))
 }
 
 #[cfg(windows)]
-fn expected_open_new_window_command() -> Result<String, String> {
-    let launcher_path = launcher::deployed_launcher_executable_path()?;
+fn expected_open_new_window_command(owner: LauncherRegistryOwner) -> Result<String, String> {
+    let launcher_path = launcher_executable_path(owner)?;
     Ok(format!("\"{launcher_path}\""))
 }
 
@@ -170,28 +190,11 @@ fn write_snapshot(
     snapshot: &DefaultFileManagerRegistrySnapshot,
 ) -> Result<(), String> {
     let path = snapshot_file_path(app_handle)?;
-    let temporary_path = path.with_extension("json.tmp");
     let data = serde_json::to_string_pretty(snapshot)
         .map_err(|error| format!("Failed to serialize registry snapshot: {error}"))?;
 
-    fs::write(&temporary_path, data)
-        .map_err(|error| format!("Failed to write registry snapshot: {error}"))?;
-
-    match fs::rename(&temporary_path, &path) {
-        Ok(()) => Ok(()),
-        Err(_) if path.exists() => {
-            fs::remove_file(&path)
-                .map_err(|error| format!("Failed to replace registry snapshot: {error}"))?;
-            fs::rename(&temporary_path, &path).map_err(|error| {
-                let _ = fs::remove_file(&temporary_path);
-                format!("Failed to replace registry snapshot: {error}")
-            })
-        }
-        Err(error) => {
-            let _ = fs::remove_file(&temporary_path);
-            Err(format!("Failed to write registry snapshot: {error}"))
-        }
-    }
+    windows_installation::write_file_atomically(&path, data.as_bytes())
+        .map_err(|error| format!("Failed to write registry snapshot: {error}"))
 }
 
 #[cfg(windows)]
@@ -355,15 +358,6 @@ fn snapshot_registry_roots() -> Result<Vec<RegistryKeySnapshot>, String> {
 }
 
 #[cfg(windows)]
-fn delete_registry_key_tree_if_exists(path: &str) -> Result<(), String> {
-    if uses_external_registry_access() {
-        return external_registry::delete_key_tree(path);
-    }
-
-    delete_registry_key_tree_with_winreg(path)
-}
-
-#[cfg(windows)]
 fn delete_registry_key_tree_with_winreg(path: &str) -> Result<(), String> {
     let current_user = RegKey::predef(HKEY_CURRENT_USER);
 
@@ -466,9 +460,9 @@ fn command_key_is_owned_by_sfm(command_key: &str, expected_command: &str) -> Res
 }
 
 #[cfg(windows)]
-fn current_registry_is_owned_by_sfm() -> Result<bool, String> {
-    let expected_folder = expected_folder_command()?;
-    let expected_open_new_window = expected_open_new_window_command()?;
+fn registry_is_owned_by_launcher(owner: LauncherRegistryOwner) -> Result<bool, String> {
+    let expected_folder = expected_folder_command(owner)?;
+    let expected_open_new_window = expected_open_new_window_command(owner)?;
 
     Ok(
         command_key_is_owned_by_sfm(FOLDER_OPEN_COMMAND_KEY, &expected_folder)?
@@ -478,9 +472,23 @@ fn current_registry_is_owned_by_sfm() -> Result<bool, String> {
 }
 
 #[cfg(windows)]
-fn expected_legacy_owned_registry_roots() -> Result<Vec<RegistryKeySnapshot>, String> {
-    let folder_command = expected_folder_command()?;
-    let open_new_window_command = expected_open_new_window_command()?;
+fn launcher_registry_owner() -> Result<Option<LauncherRegistryOwner>, String> {
+    if registry_is_owned_by_launcher(LauncherRegistryOwner::Current)? {
+        return Ok(Some(LauncherRegistryOwner::Current));
+    }
+    if registry_is_owned_by_launcher(LauncherRegistryOwner::Legacy)? {
+        return Ok(Some(LauncherRegistryOwner::Legacy));
+    }
+
+    Ok(None)
+}
+
+#[cfg(windows)]
+fn expected_owned_registry_roots(
+    owner: LauncherRegistryOwner,
+) -> Result<Vec<RegistryKeySnapshot>, String> {
+    let folder_command = expected_folder_command(owner)?;
+    let open_new_window_command = expected_open_new_window_command(owner)?;
 
     Ok(vec![
         native_key_snapshot(
@@ -540,8 +548,44 @@ fn expected_legacy_owned_registry_roots() -> Result<Vec<RegistryKeySnapshot>, St
 }
 
 #[cfg(windows)]
+fn absent_registry_roots() -> Vec<RegistryKeySnapshot> {
+    ROOT_REGISTRY_KEYS
+        .iter()
+        .map(|path| native_key_snapshot((*path).to_string(), false, Vec::new(), Vec::new()))
+        .collect()
+}
+
+#[cfg(windows)]
+fn original_registry_keys_for_enable(
+    current_keys: &[RegistryKeySnapshot],
+    existing_snapshot: Option<DefaultFileManagerRegistrySnapshot>,
+    registry_owner: Option<LauncherRegistryOwner>,
+) -> Result<Vec<RegistryKeySnapshot>, String> {
+    let is_legacy_migration = registry_owner == Some(LauncherRegistryOwner::Legacy);
+
+    match existing_snapshot {
+        Some(snapshot) if current_keys == snapshot.owned_keys => Ok(snapshot.original_keys),
+        Some(_) if is_legacy_migration => Err(
+            "Legacy Sigma File Manager registry commands contain changes not recorded in the restore snapshot. Refusing to migrate them automatically.".to_string(),
+        ),
+        None if is_legacy_migration => {
+            if current_keys
+                != expected_owned_registry_roots(LauncherRegistryOwner::Legacy)?
+            {
+                return Err(
+                    "Legacy Sigma File Manager registry commands contain external values. Refusing to migrate them without a restore snapshot.".to_string(),
+                );
+            }
+
+            Ok(absent_registry_roots())
+        }
+        _ => Ok(current_keys.to_vec()),
+    }
+}
+
+#[cfg(windows)]
 fn detect_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, String> {
-    if current_registry_is_owned_by_sfm()? {
+    if launcher_registry_owner()?.is_some() {
         return Ok(true);
     }
 
@@ -559,14 +603,33 @@ fn detect_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
 
 #[cfg(windows)]
 pub fn is_current_default_file_manager() -> Result<bool, String> {
-    current_registry_is_owned_by_sfm()
+    Ok(launcher_registry_owner()?.is_some())
+}
+
+#[cfg(windows)]
+fn rollback_failed_enable(
+    original_keys: &[RegistryKeySnapshot],
+    operation_error: String,
+) -> String {
+    match restore_registry_roots(original_keys) {
+        Ok(()) => match launcher::remove_deployment() {
+            Ok(()) => operation_error,
+            Err(cleanup_error) => {
+                format!("{operation_error}; launcher cleanup failed: {cleanup_error}")
+            }
+        },
+        Err(rollback_error) => {
+            format!("{operation_error}; rollback failed: {rollback_error}; launcher retained")
+        }
+    }
 }
 
 #[cfg(windows)]
 fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, String> {
+    let registry_owner = launcher_registry_owner()?;
     let existing_snapshot = match read_snapshot(app_handle) {
         Ok(snapshot) => snapshot,
-        Err(error) if current_registry_is_owned_by_sfm()? => {
+        Err(error) if registry_owner == Some(LauncherRegistryOwner::Current) => {
             let application_launch_target = launcher::application_launch_target()?;
             launcher::deploy(&application_launch_target)?;
             eprintln!("Ignoring unreadable registry snapshot while Sigma File Manager already owns the default file manager registry keys: {error}");
@@ -575,23 +638,22 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
         Err(error) => return Err(error),
     };
 
-    if existing_snapshot.is_none() && current_registry_is_owned_by_sfm()? {
+    if registry_owner == Some(LauncherRegistryOwner::Current) {
         let application_launch_target = launcher::application_launch_target()?;
         launcher::deploy(&application_launch_target)?;
         return detect_default_file_manager(app_handle);
     }
 
     let current_keys = snapshot_registry_roots()?;
-    let original_keys = match existing_snapshot {
-        Some(snapshot) if current_keys == snapshot.owned_keys => snapshot.original_keys,
-        _ => current_keys.clone(),
-    };
+    let is_legacy_migration = registry_owner == Some(LauncherRegistryOwner::Legacy);
+    let original_keys =
+        original_registry_keys_for_enable(&current_keys, existing_snapshot, registry_owner)?;
 
     let application_launch_target = launcher::application_launch_target()?;
     launcher::deploy(&application_launch_target)?;
 
-    let folder_command = expected_folder_command()?;
-    let open_new_window_command = expected_open_new_window_command()?;
+    let folder_command = expected_folder_command(LauncherRegistryOwner::Current)?;
+    let open_new_window_command = expected_open_new_window_command(LauncherRegistryOwner::Current)?;
 
     let apply_result = (|| {
         write_shell_command(FOLDER_OPEN_COMMAND_KEY, &folder_command)?;
@@ -601,23 +663,13 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
     })();
 
     if let Err(error) = apply_result {
-        let _ = launcher::remove_deployment();
-        let rollback_result = restore_registry_roots(&original_keys);
-        return match rollback_result {
-            Ok(()) => Err(error),
-            Err(rollback_error) => Err(format!("{error}; rollback failed: {rollback_error}")),
-        };
+        return Err(rollback_failed_enable(&original_keys, error));
     }
 
     let owned_keys = match snapshot_registry_roots() {
         Ok(keys) => keys,
         Err(error) => {
-            let _ = launcher::remove_deployment();
-            let rollback_result = restore_registry_roots(&original_keys);
-            return match rollback_result {
-                Ok(()) => Err(error),
-                Err(rollback_error) => Err(format!("{error}; rollback failed: {rollback_error}")),
-            };
+            return Err(rollback_failed_enable(&original_keys, error));
         }
     };
 
@@ -630,12 +682,13 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
     };
 
     if let Err(error) = write_snapshot(app_handle, &snapshot) {
-        let _ = launcher::remove_deployment();
-        let rollback_result = restore_registry_roots(&snapshot.original_keys);
-        return match rollback_result {
-            Ok(()) => Err(error),
-            Err(rollback_error) => Err(format!("{error}; rollback failed: {rollback_error}")),
-        };
+        return Err(rollback_failed_enable(&snapshot.original_keys, error));
+    }
+
+    if is_legacy_migration {
+        if let Err(error) = launcher::remove_legacy_deployment() {
+            eprintln!("Failed to remove migrated default file manager launcher: {error}");
+        }
     }
 
     detect_default_file_manager(app_handle)
@@ -643,6 +696,8 @@ fn enable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
 
 #[cfg(windows)]
 fn disable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, String> {
+    let registry_owner = launcher_registry_owner()?;
+
     if let Some(snapshot) = read_snapshot(app_handle)? {
         let current_keys = snapshot_registry_roots()?;
 
@@ -654,28 +709,44 @@ fn disable_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, S
 
         restore_registry_roots(&snapshot.original_keys)?;
         remove_snapshot(app_handle)?;
-        launcher::remove_deployment()?;
+        if let Err(error) = launcher::remove_deployment() {
+            eprintln!("Failed to remove default file manager launcher: {error}");
+        }
+        if registry_owner == Some(LauncherRegistryOwner::Legacy) {
+            if let Err(error) = launcher::remove_legacy_deployment() {
+                eprintln!("Failed to remove legacy default file manager launcher: {error}");
+            }
+        }
 
         return detect_default_file_manager(app_handle);
     }
 
-    if !current_registry_is_owned_by_sfm()? {
+    let Some(registry_owner) = registry_owner else {
         return Ok(false);
-    }
+    };
 
     let current_keys = snapshot_registry_roots()?;
 
-    if current_keys != expected_legacy_owned_registry_roots()? {
+    if current_keys != expected_owned_registry_roots(registry_owner)? {
         return Err(
             "Sigma File Manager owns the file manager registry commands, but no restore snapshot exists. Refusing to delete registry keys that contain external values.".to_string(),
         );
     }
 
-    for path in ROOT_REGISTRY_KEYS {
-        delete_registry_key_tree_if_exists(path)?;
-    }
+    restore_registry_roots(&absent_registry_roots())?;
 
-    launcher::remove_deployment()?;
+    match registry_owner {
+        LauncherRegistryOwner::Current => {
+            if let Err(error) = launcher::remove_deployment() {
+                eprintln!("Failed to remove default file manager launcher: {error}");
+            }
+        }
+        LauncherRegistryOwner::Legacy => {
+            if let Err(error) = launcher::remove_legacy_deployment() {
+                eprintln!("Failed to remove legacy default file manager launcher: {error}");
+            }
+        }
+    }
 
     detect_default_file_manager(app_handle)
 }
@@ -690,6 +761,24 @@ fn apply_default_file_manager(
     } else {
         disable_default_file_manager(app_handle)
     }
+}
+
+#[cfg(windows)]
+pub fn migrate_legacy_default_file_manager(app_handle: &tauri::AppHandle) -> Result<(), String> {
+    let should_migrate = match launcher_registry_owner()? {
+        Some(LauncherRegistryOwner::Legacy) => true,
+        Some(LauncherRegistryOwner::Current) => return Ok(()),
+        None => match read_snapshot(app_handle)? {
+            Some(snapshot) => snapshot_registry_roots()? == snapshot.owned_keys,
+            None => false,
+        },
+    };
+
+    if should_migrate {
+        enable_default_file_manager(app_handle)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(all(test, windows))]
@@ -734,7 +823,7 @@ mod tests {
 
     #[test]
     fn owned_snapshot_detects_external_registry_changes() {
-        let owned_keys = expected_legacy_owned_registry_roots().unwrap();
+        let owned_keys = expected_owned_registry_roots(LauncherRegistryOwner::Current).unwrap();
         let mut changed_keys = owned_keys.clone();
 
         let RegistryKeySnapshot::Native(first_key) = &mut changed_keys[0] else {
@@ -745,6 +834,85 @@ mod tests {
             .push(snapshot_string_value("ExternalValue", "external"));
 
         assert_ne!(changed_keys, owned_keys);
+    }
+
+    #[test]
+    fn legacy_and_current_registry_snapshots_target_different_launchers() {
+        let current_keys = expected_owned_registry_roots(LauncherRegistryOwner::Current).unwrap();
+        let legacy_keys = expected_owned_registry_roots(LauncherRegistryOwner::Legacy).unwrap();
+
+        assert_ne!(current_keys, legacy_keys);
+    }
+
+    #[test]
+    fn missing_snapshot_fallback_restores_absent_registry_roots() {
+        let absent_keys = absent_registry_roots();
+
+        assert_eq!(absent_keys.len(), ROOT_REGISTRY_KEYS.len());
+        for key in absent_keys {
+            let RegistryKeySnapshot::Native(key) = key else {
+                panic!("expected native snapshot");
+            };
+            assert!(!key.existed);
+            assert!(key.values.is_empty());
+            assert!(key.subkeys.is_empty());
+        }
+    }
+
+    #[test]
+    fn legacy_migration_preserves_snapshot_originals() {
+        let original_keys = absent_registry_roots();
+        let owned_keys = expected_owned_registry_roots(LauncherRegistryOwner::Legacy).unwrap();
+        let snapshot = DefaultFileManagerRegistrySnapshot {
+            version: SNAPSHOT_VERSION,
+            created_at_unix_seconds: 123,
+            executable_path: "legacy.exe".to_string(),
+            original_keys: original_keys.clone(),
+            owned_keys: owned_keys.clone(),
+        };
+
+        let result = original_registry_keys_for_enable(
+            &owned_keys,
+            Some(snapshot),
+            Some(LauncherRegistryOwner::Legacy),
+        )
+        .unwrap();
+
+        assert_eq!(result, original_keys);
+    }
+
+    #[test]
+    fn exact_legacy_state_without_snapshot_uses_absent_originals() {
+        let owned_keys = expected_owned_registry_roots(LauncherRegistryOwner::Legacy).unwrap();
+
+        let result = original_registry_keys_for_enable(
+            &owned_keys,
+            None,
+            Some(LauncherRegistryOwner::Legacy),
+        )
+        .unwrap();
+
+        assert_eq!(result, absent_registry_roots());
+    }
+
+    #[test]
+    fn legacy_migration_without_snapshot_rejects_external_registry_data() {
+        let mut changed_keys =
+            expected_owned_registry_roots(LauncherRegistryOwner::Legacy).unwrap();
+        let RegistryKeySnapshot::Native(first_key) = &mut changed_keys[0] else {
+            panic!("expected native snapshot");
+        };
+        first_key
+            .values
+            .push(snapshot_string_value("ExternalValue", "external"));
+
+        let result = original_registry_keys_for_enable(
+            &changed_keys,
+            None,
+            Some(LauncherRegistryOwner::Legacy),
+        );
+
+        assert!(result.is_err());
     }
 
     #[test]
