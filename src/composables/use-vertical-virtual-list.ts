@@ -179,15 +179,8 @@ export function useVerticalVirtualList<Item>(options: {
     transform: `translate3d(0, ${windowOffsetPx.value}px, 0)`,
   }));
 
-  function getVisibleViewportHeight(viewport: HTMLElement): number {
-    const windowHeight = viewport.ownerDocument.defaultView?.innerHeight;
-    return windowHeight === undefined
-      ? viewport.clientHeight
-      : Math.min(viewport.clientHeight, windowHeight);
-  }
-
   function syncViewportMetrics(viewport: HTMLElement) {
-    viewportHeight.value = getVisibleViewportHeight(viewport);
+    viewportHeight.value = viewport.clientHeight;
     scrollTop.value = viewport.scrollTop;
   }
 

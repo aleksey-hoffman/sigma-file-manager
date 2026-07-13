@@ -18,6 +18,47 @@ import {
   useVerticalVirtualList,
 } from '@/composables/use-vertical-virtual-list';
 
+type NumberVerticalVirtualList = ReturnType<typeof useVerticalVirtualList<number>>;
+
+function createViewport(clientHeight: number): HTMLElement {
+  const viewport = document.createElement('div');
+  Object.defineProperty(viewport, 'clientHeight', {
+    configurable: true,
+    value: clientHeight,
+  });
+  return viewport;
+}
+
+function mountNumberVirtualList(viewport: HTMLElement): {
+  virtualList: NumberVerticalVirtualList;
+  wrapper: ReturnType<typeof mount>;
+} {
+  let virtualList: NumberVerticalVirtualList | null = null;
+  const wrapper = mount(defineComponent({
+    setup() {
+      const items = computed(() =>
+        Array.from({ length: 100 }, (_, index) => index));
+      virtualList = useVerticalVirtualList({
+        items,
+        getItemSize: () => 32,
+        overscanPx: 0,
+      });
+      virtualList.setScrollViewportRef(viewport);
+
+      return () => h('div');
+    },
+  }));
+
+  if (!virtualList) {
+    throw new Error('Expected virtual list to mount');
+  }
+
+  return {
+    virtualList,
+    wrapper,
+  };
+}
+
 describe('createVerticalVirtualItems', () => {
   it('positions variable-height items consecutively', () => {
     const items = createVerticalVirtualItems(
@@ -117,11 +158,7 @@ describe('computeVerticalVirtualRange', () => {
 
 describe('useVerticalVirtualList', () => {
   it('resolves an exposed scroll-area viewport and limits rendered items', () => {
-    const viewport = document.createElement('div');
-    Object.defineProperty(viewport, 'clientHeight', {
-      configurable: true,
-      value: 320,
-    });
+    const viewport = createViewport(320);
 
     const viewportComponent = {
       viewportElement: ref(viewport),
@@ -153,6 +190,45 @@ describe('useVerticalVirtualList', () => {
 
     expect(wrapper.findAll('.virtual-row').length).toBeGreaterThan(0);
     expect(wrapper.findAll('.virtual-row').length).toBeLessThan(30);
+
+    wrapper.unmount();
+  });
+
+  it('updates the visible range from scroll events', () => {
+    const viewport = createViewport(96);
+    const { virtualList, wrapper } = mountNumberVirtualList(viewport);
+    viewport.scrollTop = 320;
+    const scrollEvent = new Event('scroll');
+    Object.defineProperty(scrollEvent, 'currentTarget', {
+      configurable: true,
+      value: viewport,
+    });
+
+    virtualList.handleScroll(scrollEvent);
+
+    expect(virtualList.scrollTop.value).toBe(320);
+    expect(virtualList.visibleItems.value.map(item => item.index)).toEqual([10, 11, 12]);
+
+    wrapper.unmount();
+  });
+
+  it('uses the scroll viewport client height', () => {
+    const clientHeight = window.innerHeight + 100;
+    const viewport = createViewport(clientHeight);
+    const { virtualList, wrapper } = mountNumberVirtualList(viewport);
+
+    expect(virtualList.viewportHeight.value).toBe(clientHeight);
+
+    wrapper.unmount();
+  });
+
+  it('scrolls an offscreen item into view', () => {
+    const viewport = createViewport(96);
+    const { virtualList, wrapper } = mountNumberVirtualList(viewport);
+
+    expect(virtualList.scrollItemIntoView(20)).toBe(true);
+    expect(viewport.scrollTop).toBe(576);
+    expect(virtualList.scrollTop.value).toBe(576);
 
     wrapper.unmount();
   });

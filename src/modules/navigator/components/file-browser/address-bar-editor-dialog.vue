@@ -98,6 +98,7 @@ type AddressBarEditorVirtualRow
     key: string;
     size: number;
     navigationIndex: number;
+    itemCount: number;
     group: RenderedSuggestionGroup;
   }
   | {
@@ -277,6 +278,9 @@ const renderedGroups = computed<RenderedSuggestionGroup[]>(() => {
 
 const suggestionVirtualRows = computed<AddressBarEditorVirtualRow[]>(() => {
   const rows: AddressBarEditorVirtualRow[] = [];
+  const originalItemCountByGroupId = new Map(
+    suggestionState.value.groups.map(group => [group.id, group.items.length]),
+  );
 
   for (const group of renderedGroups.value) {
     if (group.collapsible && group.headerIndex !== undefined) {
@@ -285,6 +289,7 @@ const suggestionVirtualRows = computed<AddressBarEditorVirtualRow[]>(() => {
         key: `group-header:${group.id}`,
         size: COLLAPSIBLE_GROUP_HEADER_HEIGHT_PX,
         navigationIndex: group.headerIndex,
+        itemCount: originalItemCountByGroupId.get(group.id) ?? group.items.length,
         group,
       });
     }
@@ -1257,7 +1262,7 @@ defineExpose({
                   class="address-bar-editor__group-icon"
                 />
                 <span class="address-bar-editor__group-label">{{ virtualRow.item.group.label }}</span>
-                <span class="address-bar-editor__group-count">{{ virtualRow.item.group.items.length }}</span>
+                <span class="address-bar-editor__group-count">{{ virtualRow.item.itemCount }}</span>
               </button>
               <div
                 v-else-if="virtualRow.item.type === 'group-heading'"
