@@ -14,8 +14,13 @@ use super::types::{
 };
 
 #[tauri::command]
-pub fn read_dir(path: String, options: Option<ReadDirOptions>) -> Result<DirContents, String> {
-    read::read_dir(path, options)
+pub async fn read_dir(
+    path: String,
+    options: Option<ReadDirOptions>,
+) -> Result<DirContents, String> {
+    tauri::async_runtime::spawn_blocking(move || read::read_dir(path, options))
+        .await
+        .map_err(|join_error| format!("Failed to read directory: {join_error}"))?
 }
 
 #[tauri::command]

@@ -6,6 +6,7 @@ import {
   beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import type { DirContents } from '@/types/dir-entry';
 import type { Tab, TabGroup, Workspace } from '@/types/workspaces';
 
 const {
@@ -210,7 +211,51 @@ describe('workspaces storage duplicate tabs', () => {
     expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
       path: 'D:/',
       timeoutMs: expect.any(Number),
+      options: {
+        includeShortcutTargets: false,
+        includeHardLinkCounts: false,
+        includeItemCounts: false,
+      },
     });
+  });
+
+  it('does not overwrite a changed tab path with stale preloaded entries', async () => {
+    const projectsRead = createDeferred<DirContents>();
+    const documentsRead = createDeferred<DirContents>();
+
+    invokeMock.mockImplementation((command: string, payload?: { path?: string }) => {
+      if (command === 'read_dir_with_timeout') {
+        return payload?.path === 'C:/Users/aleks/Projects'
+          ? projectsRead.promise
+          : documentsRead.promise;
+      }
+
+      if (command === 'get_dir_entry_with_timeout') {
+        return Promise.resolve({ path: payload?.path ?? '' });
+      }
+
+      return Promise.resolve(null);
+    });
+
+    const currentTab = createTab('current-tab', 'C:/Users/aleks/Projects');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [currentTab],
+      ]),
+    ];
+
+    const projectsOpen = workspacesStore.openTabGroup([currentTab]);
+    const documentsOpen = workspacesStore.openPathInCurrentTab('D:/Documents');
+
+    documentsRead.resolve(createDirContents('D:/Documents', 'D:/Documents/current.txt'));
+    await documentsOpen;
+
+    projectsRead.resolve(createDirContents('C:/Users/aleks/Projects', 'C:/Users/aleks/Projects/stale.txt'));
+    await projectsOpen;
+
+    expect(currentTab.path).toBe('D:/Documents');
+    expect(currentTab.dirEntries.map(entry => entry.path)).toEqual(['D:/Documents/current.txt']);
   });
 
   it('does not request history when reopening the current tab path', async () => {
@@ -433,6 +478,11 @@ describe('workspaces storage duplicate tabs', () => {
     expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
       path: 'C:/Users/aleks/Projects',
       timeoutMs: 5000,
+      options: {
+        includeShortcutTargets: false,
+        includeHardLinkCounts: false,
+        includeItemCounts: false,
+      },
     });
   });
 
@@ -483,6 +533,11 @@ describe('workspaces storage duplicate tabs', () => {
     expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
       path: '//wsl.localhost/Ubuntu-24.04',
       timeoutMs: 60000,
+      options: {
+        includeShortcutTargets: false,
+        includeHardLinkCounts: false,
+        includeItemCounts: false,
+      },
     });
   });
 
@@ -594,6 +649,48 @@ function createTab(id: string, path: string): Tab {
     filterQuery: '',
     dirEntries: [],
     selectedDirEntries: [],
+  };
+}
+
+function createDeferred<T>() {
+  let resolvePromise: (value: T) => void = () => {};
+
+  const promise = new Promise<T>((resolve) => {
+    resolvePromise = resolve;
+  });
+
+  return {
+    promise,
+    resolve: resolvePromise,
+  };
+}
+
+function createDirContents(path: string, entryPath: string): DirContents {
+  return {
+    path,
+    entries: [{
+      name: entryPath.slice(entryPath.lastIndexOf('/') + 1),
+      ext: 'txt',
+      path: entryPath,
+      size: 0,
+      item_count: null,
+      modified_time: 0,
+      accessed_time: 0,
+      created_time: 0,
+      mime: 'text/plain',
+      is_file: true,
+      is_dir: false,
+      is_symlink: false,
+      is_hidden: false,
+    }],
+    total_count: 1,
+    dir_count: 0,
+    file_count: 1,
+    opened_directory_times: {
+      modified_time: 0,
+      accessed_time: 0,
+      created_time: 0,
+    },
   };
 }
 

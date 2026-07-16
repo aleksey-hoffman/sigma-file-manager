@@ -4,8 +4,9 @@
 
 use super::blocking_timeout::{with_blocking_timeout, BlockingTimeoutError};
 use crate::utils::{
-    is_hidden_path, metadata_times_unix_ms, normalize_path, path_extension_lowercase,
+    is_hidden_from_metadata, metadata_times_unix_ms, normalize_path, path_extension_lowercase,
 };
+use rayon::prelude::*;
 use serde::Deserialize;
 use std::collections::HashSet;
 use std::fs;
@@ -29,7 +30,7 @@ impl Default for ReadEntryOptions {
         Self {
             include_shortcut_targets: false,
             include_hard_link_counts: false,
-            include_item_counts: true,
+            include_item_counts: false,
             include_hidden: true,
         }
     }
@@ -69,7 +70,7 @@ impl From<Option<ReadDirOptions>> for ReadEntryOptions {
         Self {
             include_shortcut_targets: options.include_shortcut_targets,
             include_hard_link_counts: options.include_hard_link_counts,
-            include_item_counts: options.include_item_counts.unwrap_or(true),
+            include_item_counts: options.include_item_counts.unwrap_or(false),
             include_hidden: options.include_hidden_item_counts.unwrap_or(true),
         }
     }
@@ -500,6 +501,7 @@ fn read_link_metadata_fields(
     symlink_metadata: &fs::Metadata,
     metadata: Option<&fs::Metadata>,
     options: ReadEntryOptions,
+    reparse_tag: Option<u32>,
 ) -> (
     Option<DirEntryLinkType>,
     Option<String>,
@@ -507,7 +509,6 @@ fn read_link_metadata_fields(
     Option<u64>,
 ) {
     let is_symlink = symlink_metadata.is_symlink();
-    let reparse_tag = windows_reparse_tag(path, symlink_metadata);
     let is_file = metadata.map(|metadata| metadata.is_file()).unwrap_or(false);
 
     let (mut link_type, link_target, link_status) = if is_windows_junction_reparse_tag(reparse_tag)
@@ -546,6 +547,22 @@ fn read_link_metadata_fields(
     (link_type, link_target, link_status, hard_link_count)
 }
 
+fn needs_followed_metadata(symlink_metadata: &fs::Metadata) -> bool {
+    if symlink_metadata.is_symlink() {
+        return true;
+    }
+
+    #[cfg(windows)]
+    {
+        return is_windows_reparse_point(symlink_metadata);
+    }
+
+    #[cfg(not(windows))]
+    {
+        false
+    }
+}
+
 fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
     if should_skip_path(path) {
         return None;
@@ -553,37 +570,29 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
 
     let symlink_metadata = fs::symlink_metadata(path).ok()?;
     let is_symlink = symlink_metadata.is_symlink();
-    let is_windows_junction =
-        is_windows_junction_reparse_tag(windows_reparse_tag(path, &symlink_metadata));
-    let metadata = fs::metadata(path).ok();
+    let reparse_tag = windows_reparse_tag(path, &symlink_metadata);
+    let is_windows_junction = is_windows_junction_reparse_tag(reparse_tag);
+    let should_follow_metadata = needs_followed_metadata(&symlink_metadata);
+    let followed_metadata = if should_follow_metadata {
+        fs::metadata(path).ok()
+    } else {
+        None
+    };
 
-    if metadata.is_none() && !is_symlink && !is_windows_junction {
+    if followed_metadata.is_none() && should_follow_metadata && !is_symlink && !is_windows_junction
+    {
         return None;
     }
 
+    let metadata_for_type = followed_metadata.as_ref().unwrap_or(&symlink_metadata);
     let path_string = normalize_path(path.to_str()?);
     let name = entry_name(path, &path_string)?;
     let extension = path_extension_lowercase(path);
-    let is_dir = metadata
-        .as_ref()
-        .map(|metadata| metadata.is_dir())
-        .unwrap_or(false);
-    let is_file = metadata
-        .as_ref()
-        .map(|metadata| metadata.is_file())
-        .unwrap_or(false);
+    let is_dir = metadata_for_type.is_dir();
+    let is_file = metadata_for_type.is_file();
+    let (modified_time, accessed_time, created_time) = metadata_times_unix_ms(metadata_for_type);
 
-    let metadata_for_times = metadata.as_ref().unwrap_or(&symlink_metadata);
-    let (modified_time, accessed_time, created_time) = metadata_times_unix_ms(metadata_for_times);
-
-    let size = if is_file {
-        metadata
-            .as_ref()
-            .map(|metadata| metadata.len())
-            .unwrap_or(0)
-    } else {
-        0
-    };
+    let size = if is_file { metadata_for_type.len() } else { 0 };
 
     let item_count = if is_dir && options.include_item_counts {
         count_listable_dir_entries(path, options)
@@ -596,8 +605,13 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
     } else {
         None
     };
-    let (link_type, link_target, link_status, hard_link_count) =
-        read_link_metadata_fields(path, &symlink_metadata, metadata.as_ref(), options);
+    let (link_type, link_target, link_status, hard_link_count) = read_link_metadata_fields(
+        path,
+        &symlink_metadata,
+        Some(metadata_for_type),
+        options,
+        reparse_tag,
+    );
 
     Some(DirEntry {
         name,
@@ -612,7 +626,7 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
         is_file,
         is_dir,
         is_symlink,
-        is_hidden: is_hidden_path(path),
+        is_hidden: is_hidden_from_metadata(path, metadata_for_type),
         link_type,
         link_target,
         link_status,
@@ -680,10 +694,21 @@ fn read_link_metadata(path: &Path, options: ReadEntryOptions) -> Option<DirEntry
     }
 
     let symlink_metadata = fs::symlink_metadata(path).ok()?;
-    let metadata = fs::metadata(path).ok();
+    let reparse_tag = windows_reparse_tag(path, &symlink_metadata);
+    let followed_metadata = if needs_followed_metadata(&symlink_metadata) {
+        fs::metadata(path).ok()
+    } else {
+        None
+    };
+    let metadata_for_type = followed_metadata.as_ref().unwrap_or(&symlink_metadata);
     let path_string = normalize_path(path.to_str()?);
-    let (link_type, link_target, link_status, hard_link_count) =
-        read_link_metadata_fields(path, &symlink_metadata, metadata.as_ref(), options);
+    let (link_type, link_target, link_status, hard_link_count) = read_link_metadata_fields(
+        path,
+        &symlink_metadata,
+        Some(metadata_for_type),
+        options,
+        reparse_tag,
+    );
 
     Some(DirEntryLinkMetadata {
         path: path_string,
@@ -891,27 +916,25 @@ pub fn read_dir(path: String, options: Option<ReadDirOptions>) -> Result<DirCont
     let (self_modified, self_accessed, self_created) = metadata_times_unix_ms(&self_metadata);
 
     let read_result = fs::read_dir(directory).map_err(|error| error.to_string())?;
+    let entry_paths: Vec<PathBuf> = read_result.flatten().map(|entry| entry.path()).collect();
 
-    let mut entries: Vec<DirEntry> = Vec::new();
-    let mut dir_count = 0;
-    let mut file_count = 0;
+    const PARALLEL_READ_THRESHOLD: usize = 64;
+    let mut entries: Vec<DirEntry> = if entry_paths.len() >= PARALLEL_READ_THRESHOLD {
+        entry_paths
+            .par_iter()
+            .filter_map(|entry_path| read_entry(entry_path, read_entry_options))
+            .collect()
+    } else {
+        entry_paths
+            .iter()
+            .filter_map(|entry_path| read_entry(entry_path, read_entry_options))
+            .collect()
+    };
 
-    for entry in read_result.flatten() {
-        if let Some(dir_entry) = read_entry(&entry.path(), read_entry_options) {
-            if dir_entry.is_dir {
-                dir_count += 1;
-            } else if dir_entry.is_file {
-                file_count += 1;
-            }
-            entries.push(dir_entry);
-        }
-    }
+    entries.sort_by_cached_key(|entry| (!entry.is_dir, entry.name.to_lowercase()));
 
-    entries.sort_by(|first, second| match (first.is_dir, second.is_dir) {
-        (true, false) => std::cmp::Ordering::Less,
-        (false, true) => std::cmp::Ordering::Greater,
-        _ => first.name.to_lowercase().cmp(&second.name.to_lowercase()),
-    });
+    let dir_count = entries.iter().filter(|entry| entry.is_dir).count();
+    let file_count = entries.iter().filter(|entry| entry.is_file).count();
 
     Ok(DirContents {
         path: normalize_path(&path),
@@ -1028,6 +1051,24 @@ mod tests {
             }),
         )
         .expect("read dir");
+        let child_entry = contents
+            .entries
+            .iter()
+            .find(|entry| entry.name == "child")
+            .expect("child entry");
+
+        assert_eq!(child_entry.item_count, None);
+    }
+
+    #[test]
+    fn read_dir_defaults_to_skipping_item_counts() {
+        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let child_dir_path = temp_dir.path().join("child");
+        fs::create_dir(&child_dir_path).expect("create child dir");
+        fs::write(child_dir_path.join("nested.txt"), b"contents").expect("write nested file");
+
+        let contents =
+            read_dir(temp_dir.path().to_string_lossy().to_string(), None).expect("read dir");
         let child_entry = contents
             .entries
             .iter()

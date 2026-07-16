@@ -32,6 +32,7 @@ async function readExtensionDir(extensionId: string, path: string): Promise<Exte
     options: {
       includeShortcutTargets: true,
       includeHardLinkCounts: true,
+      includeItemCounts: false,
     },
   });
 

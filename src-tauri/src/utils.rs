@@ -52,17 +52,33 @@ pub fn path_extension_lowercase(path: &Path) -> Option<String> {
         .map(|extension| extension.to_lowercase())
 }
 
+pub fn is_hidden_from_metadata(path: &Path, metadata: &Metadata) -> bool {
+    #[cfg(windows)]
+    {
+        let _ = path;
+        use std::os::windows::fs::MetadataExt;
+
+        const FILE_ATTRIBUTE_HIDDEN: u32 = 0x2;
+        (metadata.file_attributes() & FILE_ATTRIBUTE_HIDDEN) != 0
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = metadata;
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .map(|name| name.starts_with('.'))
+            .unwrap_or(false)
+    }
+}
+
 pub fn is_hidden_path(path: &Path) -> bool {
     #[cfg(windows)]
     {
-        use std::os::windows::fs::MetadataExt;
-
-        if let Ok(metadata) = std::fs::metadata(path) {
-            const FILE_ATTRIBUTE_HIDDEN: u32 = 0x2;
-            return (metadata.file_attributes() & FILE_ATTRIBUTE_HIDDEN) != 0;
+        match std::fs::metadata(path) {
+            Ok(metadata) => is_hidden_from_metadata(path, &metadata),
+            Err(_) => false,
         }
-
-        false
     }
 
     #[cfg(not(windows))]

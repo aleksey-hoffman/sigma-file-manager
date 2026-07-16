@@ -11,7 +11,7 @@ import {
 } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import { homeDir, basename } from '@tauri-apps/api/path';
+import { homeDir } from '@tauri-apps/api/path';
 import { openPathDefault } from '@/utils/open-path-default';
 import type { DirEntry, DirContents, ReadDirOptions } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
@@ -62,6 +62,33 @@ function logDirWatcherDiag(message: string, details?: Record<string, unknown>) {
   }
 
   console.debug(`[dir-watcher-diag] ${message}`);
+}
+
+function buildDirContentsFromEntries(path: string, entries: DirEntry[]): DirContents {
+  let dirCount = 0;
+  let fileCount = 0;
+
+  for (const entry of entries) {
+    if (entry.is_dir) {
+      dirCount += 1;
+    }
+    else if (entry.is_file) {
+      fileCount += 1;
+    }
+  }
+
+  return {
+    path,
+    entries,
+    total_count: dirCount + fileCount,
+    dir_count: dirCount,
+    file_count: fileCount,
+    opened_directory_times: {
+      modified_time: 0,
+      accessed_time: 0,
+      created_time: 0,
+    },
+  };
 }
 
 function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
@@ -132,6 +159,11 @@ export function useFileBrowserNavigation(
   let dirChangeUnlisten: UnlistenFn | null = null;
   let watcherRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   let watcherValidationTimer: ReturnType<typeof setTimeout> | null = null;
+  let iconPrefetchTimer: ReturnType<typeof setTimeout> | null = null;
+  let watcherOperation = Promise.resolve();
+  let readGeneration = 0;
+  let silentRefreshGeneration = 0;
+  let isDisposed = false;
 
   const readDirExistenceOptions: ReadDirOptions = {
     includeShortcutTargets: false,
@@ -201,61 +233,90 @@ export function useFileBrowserNavigation(
     }, DIRECTORY_DWELL_TIME_MS);
   }
 
-  async function startWatching(path: string) {
-    const normalizedPath = normalizePath(path);
-
-    if (watchedPath === normalizedPath) {
-      logDirWatcherDiag('startWatching skipped already watching', { path: normalizedPath });
-      return;
-    }
-
-    logDirWatcherDiag('startWatching begin', {
-      path: normalizedPath,
-      previousPath: watchedPath,
-    });
-
-    await stopWatching();
-
-    try {
-      await invoke('watch_directory', { path: normalizedPath });
-      watchedPath = normalizedPath;
-
-      logDirWatcherDiag('startWatching complete', { path: normalizedPath });
-
-      if (!dirChangeUnlisten) {
-        dirChangeUnlisten = await listen<DirChangePayload>('dir-change', (event) => {
-          if (event.payload.watchedPath === watchedPath) {
-            if (watcherRefreshTimer) {
-              clearTimeout(watcherRefreshTimer);
-            }
-
-            watcherRefreshTimer = setTimeout(() => {
-              if (currentPath.value && watchedPath === currentPath.value) {
-                silentRefresh();
-              }
-
-              watcherRefreshTimer = null;
-            }, WATCHER_DEBOUNCE_MS);
-          }
-          else if (currentPath.value) {
-            if (watcherValidationTimer) {
-              clearTimeout(watcherValidationTimer);
-            }
-
-            watcherValidationTimer = setTimeout(() => {
-              validateCurrentPath();
-              watcherValidationTimer = null;
-            }, WATCHER_DEBOUNCE_MS);
-          }
-        });
-      }
-    }
-    catch (err) {
-      console.error('[dir-watcher-diag] Failed to start directory watcher:', err);
-    }
+  function enqueueWatcherOperation(operation: () => Promise<void>): Promise<void> {
+    const result = watcherOperation.then(operation, operation);
+    watcherOperation = result.catch(() => {});
+    return result;
   }
 
-  async function stopWatching() {
+  function startWatching(path: string): Promise<void> {
+    const normalizedPath = normalizePath(path);
+
+    return enqueueWatcherOperation(async () => {
+      if (isDisposed || normalizePath(currentPath.value) !== normalizedPath) {
+        return;
+      }
+
+      if (watchedPath === normalizedPath) {
+        logDirWatcherDiag('startWatching skipped already watching', { path: normalizedPath });
+        return;
+      }
+
+      logDirWatcherDiag('startWatching begin', {
+        path: normalizedPath,
+        previousPath: watchedPath,
+      });
+
+      await stopWatchingImmediately();
+
+      if (isDisposed || normalizePath(currentPath.value) !== normalizedPath) {
+        return;
+      }
+
+      try {
+        await invoke('watch_directory', { path: normalizedPath });
+
+        if (isDisposed || normalizePath(currentPath.value) !== normalizedPath) {
+          await invoke('unwatch_directory', { path: normalizedPath });
+          return;
+        }
+
+        watchedPath = normalizedPath;
+
+        logDirWatcherDiag('startWatching complete', { path: normalizedPath });
+
+        if (!dirChangeUnlisten) {
+          const unlisten = await listen<DirChangePayload>('dir-change', (event) => {
+            if (event.payload.watchedPath === watchedPath) {
+              if (watcherRefreshTimer) {
+                clearTimeout(watcherRefreshTimer);
+              }
+
+              watcherRefreshTimer = setTimeout(() => {
+                if (currentPath.value && watchedPath === currentPath.value) {
+                  silentRefresh();
+                }
+
+                watcherRefreshTimer = null;
+              }, WATCHER_DEBOUNCE_MS);
+            }
+            else if (currentPath.value) {
+              if (watcherValidationTimer) {
+                clearTimeout(watcherValidationTimer);
+              }
+
+              watcherValidationTimer = setTimeout(() => {
+                validateCurrentPath();
+                watcherValidationTimer = null;
+              }, WATCHER_DEBOUNCE_MS);
+            }
+          });
+
+          if (isDisposed) {
+            unlisten();
+            return;
+          }
+
+          dirChangeUnlisten = unlisten;
+        }
+      }
+      catch (error) {
+        console.error('[dir-watcher-diag] Failed to start directory watcher:', error);
+      }
+    });
+  }
+
+  async function stopWatchingImmediately(): Promise<void> {
     if (watcherRefreshTimer) {
       clearTimeout(watcherRefreshTimer);
       watcherRefreshTimer = null;
@@ -274,12 +335,16 @@ export function useFileBrowserNavigation(
         await invoke('unwatch_directory', { path: pathToStop });
         logDirWatcherDiag('stopWatching complete', { path: pathToStop });
       }
-      catch (err) {
-        console.error('[dir-watcher-diag] Failed to stop directory watcher:', err);
+      catch (error) {
+        console.error('[dir-watcher-diag] Failed to stop directory watcher:', error);
       }
 
       watchedPath = null;
     }
+  }
+
+  function stopWatching(): Promise<void> {
+    return enqueueWatcherOperation(stopWatchingImmediately);
   }
 
   watch(sharedDrives, () => {
@@ -304,8 +369,15 @@ export function useFileBrowserNavigation(
   }, { deep: true });
 
   onUnmounted(() => {
+    isDisposed = true;
+    readGeneration += 1;
     cancelPendingDirectoryRecord();
     stopWatching();
+
+    if (iconPrefetchTimer) {
+      clearTimeout(iconPrefetchTimer);
+      iconPrefetchTimer = null;
+    }
 
     if (dirChangeUnlisten) {
       dirChangeUnlisten();
@@ -316,14 +388,98 @@ export function useFileBrowserNavigation(
   const canGoBack = computed(() => historyIndex.value > 0);
   const canGoForward = computed(() => historyIndex.value < history.value.length - 1);
 
-  async function loadDirectoryWithIconPrefetch(path: string, options?: ReadDirOptions): Promise<DirContents> {
-    const directoryContents = await loadDirectoryContents(path, options ?? createReadDirOptions());
-    navigatorIconsStore.prefetchForDirectoryEntries(directoryContents.entries);
-    return directoryContents;
+  function getCachedDirContentsForPath(path: string): DirContents | null {
+    const currentTab = tab();
+
+    if (!currentTab || currentTab.type !== 'directory') {
+      return null;
+    }
+
+    if (normalizePath(currentTab.path) !== path) {
+      return null;
+    }
+
+    if (!Array.isArray(currentTab.dirEntries) || currentTab.dirEntries.length === 0) {
+      return null;
+    }
+
+    return buildDirContentsFromEntries(path, currentTab.dirEntries);
+  }
+
+  function applyDirectoryContents(
+    result: DirContents,
+    readOptions: ReadDirOptions,
+    options: {
+      addToHistory: boolean;
+      invalidateLinkMetadata: boolean;
+      updateTabName: boolean;
+    },
+  ): void {
+    if (options.invalidateLinkMetadata) {
+      invalidateDirectoryLinkMetadata(result);
+      invalidateDirectoryItemCounts(result);
+    }
+
+    primeDirectoryMetadataCaches(result, readOptions);
+    dirContents.value = result;
+    currentPath.value = result.path;
+    pathInput.value = result.path;
+
+    const currentTab = tab();
+
+    if (currentTab) {
+      currentTab.path = result.path;
+      currentTab.dirEntries = result.entries;
+
+      if (options.updateTabName) {
+        currentTab.name = isVirtualLocationPath(result.path)
+          ? result.path
+          : (getPathDisplayName(result.path) || result.path);
+      }
+    }
+
+    if (options.addToHistory) {
+      if (historyIndex.value < history.value.length - 1) {
+        history.value.splice(historyIndex.value + 1);
+      }
+
+      history.value.push(result.path);
+      historyIndex.value = history.value.length - 1;
+    }
+
+    nextTick(() => {
+      onNavigationComplete?.(currentDirEntry.value);
+    });
+
+    const dirPaths = result.entries
+      .filter(entry => entry.is_dir)
+      .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
+      .map(entry => entry.path);
+
+    if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
+      dirSizesStore.requestSizesBatch(dirPaths);
+    }
+  }
+
+  function scheduleDirectoryIconPrefetch(entries: DirEntry[]): void {
+    if (iconPrefetchTimer) {
+      clearTimeout(iconPrefetchTimer);
+    }
+
+    iconPrefetchTimer = setTimeout(() => {
+      iconPrefetchTimer = null;
+
+      if (!isDisposed) {
+        navigatorIconsStore.prefetchForDirectoryEntries(entries);
+      }
+    }, 0);
   }
 
   async function silentRefresh(): Promise<void> {
+    const requestGeneration = ++silentRefreshGeneration;
+    const startingReadGeneration = readGeneration;
     const refreshPath = currentPath.value;
+    const refreshTabId = tab()?.id;
 
     if (!refreshPath) {
       return;
@@ -336,9 +492,18 @@ export function useFileBrowserNavigation(
       const virtualDirectory = buildVirtualDirectoryFromDrives(refreshPath, sharedDrives.value);
       const result = virtualDirectory
         ? virtualDirectory
-        : await loadDirectoryWithIconPrefetch(refreshPath, readOptions);
+        : await loadDirectoryContents(refreshPath, readOptions);
 
-      if (currentPath.value !== refreshPath) {
+      const currentTab = tab();
+
+      if (
+        isDisposed
+        || requestGeneration !== silentRefreshGeneration
+        || startingReadGeneration !== readGeneration
+        || currentPath.value !== refreshPath
+        || currentTab?.id !== refreshTabId
+        || (currentTab && normalizePath(currentTab.path) !== normalizePath(refreshPath))
+      ) {
         return;
       }
 
@@ -347,11 +512,11 @@ export function useFileBrowserNavigation(
       primeDirectoryMetadataCaches(result, readOptions);
       dirContents.value = result;
 
-      const currentTab = tab();
-
       if (currentTab) {
         currentTab.dirEntries = result.entries;
       }
+
+      scheduleDirectoryIconPrefetch(result.entries);
 
       const dirPaths = result.entries
         .filter(entry => entry.is_dir)
@@ -363,14 +528,29 @@ export function useFileBrowserNavigation(
       }
     }
     catch {
-      if (currentPath.value !== refreshPath) {
+      const currentTab = tab();
+
+      if (
+        isDisposed
+        || requestGeneration !== silentRefreshGeneration
+        || startingReadGeneration !== readGeneration
+        || currentPath.value !== refreshPath
+        || currentTab?.id !== refreshTabId
+        || (currentTab && normalizePath(currentTab.path) !== normalizePath(refreshPath))
+      ) {
         return;
       }
 
       await navigateToNearestExistingAncestor();
     }
     finally {
-      isRefreshing.value = false;
+      if (
+        !isDisposed
+        && requestGeneration === silentRefreshGeneration
+        && startingReadGeneration === readGeneration
+      ) {
+        isRefreshing.value = false;
+      }
     }
   }
 
@@ -433,115 +613,102 @@ export function useFileBrowserNavigation(
     forceLoading = false,
     invalidateLinkMetadata = false,
   ) {
+    const requestGeneration = ++readGeneration;
     const normalizedPath = normalizePath(path);
     const isNewDirectory = normalizedPath !== currentPath.value;
+    const cachedContents = !forceLoading
+      ? getCachedDirContentsForPath(normalizedPath)
+      : null;
 
-    isLoading.value = forceLoading || isNewDirectory || !dirContents.value;
+    if (cachedContents) {
+      dirContents.value = cachedContents;
+      currentPath.value = cachedContents.path;
+      pathInput.value = cachedContents.path;
+      isLoading.value = false;
+      isRefreshing.value = true;
+    }
+    else {
+      isLoading.value = forceLoading || isNewDirectory || !dirContents.value;
+    }
+
     error.value = null;
 
     onSelectionClear?.();
 
-    if (watchedPath && watchedPath !== normalizedPath) {
-      logDirWatcherDiag('readDir stopping watcher before navigation', {
-        from: watchedPath,
-        to: normalizedPath,
-      });
-      await stopWatching();
-    }
+    const stopWatcherPromise = (watchedPath && watchedPath !== normalizedPath)
+      ? (() => {
+          logDirWatcherDiag('readDir stopping watcher before navigation', {
+            from: watchedPath,
+            to: normalizedPath,
+          });
+          return stopWatching();
+        })()
+      : Promise.resolve();
 
     try {
       logDirWatcherDiag('readDir loading directory', { path: normalizedPath });
       const readOptions = createReadDirOptions();
-      const result = await loadDirectoryWithIconPrefetch(path, readOptions);
+      const [result] = await Promise.all([
+        loadDirectoryContents(path, readOptions),
+        stopWatcherPromise,
+      ]);
 
-      if (invalidateLinkMetadata) {
-        invalidateDirectoryLinkMetadata(result);
-        invalidateDirectoryItemCounts(result);
+      if (isDisposed || requestGeneration !== readGeneration) {
+        return;
       }
 
-      primeDirectoryMetadataCaches(result, readOptions);
-      dirContents.value = result;
-
-      currentPath.value = result.path;
-      pathInput.value = result.path;
-
-      const currentTab = tab();
-
-      if (currentTab) {
-        currentTab.path = result.path;
-
-        if (isVirtualLocationPath(result.path)) {
-          currentTab.name = result.path;
-        }
-        else if (isVirtualDirectoryPath(result.path)) {
-          currentTab.name = getPathDisplayName(result.path);
-        }
-        else {
-          try {
-            currentTab.name = await basename(result.path);
-          }
-          catch {
-            currentTab.name = result.path;
-          }
-        }
-
-        currentTab.dirEntries = result.entries;
-      }
-
-      if (addToHistory) {
-        if (historyIndex.value < history.value.length - 1) {
-          history.value.splice(historyIndex.value + 1);
-        }
-
-        history.value.push(result.path);
-        historyIndex.value = history.value.length - 1;
-      }
-
-      nextTick(() => {
-        onNavigationComplete?.(currentDirEntry.value);
+      applyDirectoryContents(result, readOptions, {
+        addToHistory,
+        invalidateLinkMetadata,
+        updateTabName: true,
       });
 
-      const dirPaths = result.entries
-        .filter(entry => entry.is_dir)
-        .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
-        .map(entry => entry.path);
-
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
-        dirSizesStore.requestSizesBatch(dirPaths);
-      }
+      isLoading.value = false;
+      isRefreshing.value = false;
+      scheduleDirectoryIconPrefetch(result.entries);
 
       if (!isVirtualDirectoryPath(result.path)) {
         logDirWatcherDiag('readDir starting watcher after load', {
           path: result.path,
           entryCount: result.entries.length,
         });
-        await startWatching(result.path);
+        startWatching(result.path);
       }
     }
-    catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
+    catch (caughtError: unknown) {
+      if (isDisposed || requestGeneration !== readGeneration) {
+        return;
+      }
+
+      const errorMessage = caughtError instanceof Error ? caughtError.message : String(caughtError);
       error.value = errorMessage;
-      console.error(err);
+      console.error(caughtError);
     }
     finally {
-      isLoading.value = false;
+      if (!isDisposed && requestGeneration === readGeneration) {
+        isLoading.value = false;
+        isRefreshing.value = false;
+      }
+    }
+  }
+
+  function schedulePendingDirectoryRecordIfCurrent(path: string): void {
+    if (!error.value && normalizePath(currentPath.value) === normalizePath(path)) {
+      schedulePendingDirectoryRecord(path);
     }
   }
 
   async function navigateToPath(path: string) {
     cancelPendingDirectoryRecord();
     await readDir(path);
-
-    if (!error.value) {
-      schedulePendingDirectoryRecord(path);
-    }
+    schedulePendingDirectoryRecordIfCurrent(path);
   }
 
   async function navigateToEntry(entry: DirEntry) {
     if (entry.is_dir) {
       cancelPendingDirectoryRecord();
       await readDir(entry.path);
-      schedulePendingDirectoryRecord(entry.path);
+      schedulePendingDirectoryRecordIfCurrent(entry.path);
     }
   }
 
@@ -553,17 +720,14 @@ export function useFileBrowserNavigation(
     const targetPath = parentPath.value;
     cancelPendingDirectoryRecord();
     await readDir(targetPath);
-
-    if (!error.value) {
-      schedulePendingDirectoryRecord(targetPath);
-    }
+    schedulePendingDirectoryRecordIfCurrent(targetPath);
   }
 
   async function navigateToHome() {
     cancelPendingDirectoryRecord();
     const homePath = normalizePath(await homeDir());
     await readDir(homePath);
-    schedulePendingDirectoryRecord(homePath);
+    schedulePendingDirectoryRecordIfCurrent(homePath);
   }
 
   async function goBack() {
@@ -572,7 +736,7 @@ export function useFileBrowserNavigation(
       historyIndex.value--;
       const targetPath = history.value[historyIndex.value];
       await readDir(targetPath, false);
-      schedulePendingDirectoryRecord(targetPath);
+      schedulePendingDirectoryRecordIfCurrent(targetPath);
     }
   }
 
@@ -582,7 +746,7 @@ export function useFileBrowserNavigation(
       historyIndex.value++;
       const targetPath = history.value[historyIndex.value];
       await readDir(targetPath, false);
-      schedulePendingDirectoryRecord(targetPath);
+      schedulePendingDirectoryRecordIfCurrent(targetPath);
     }
   }
 
@@ -597,8 +761,9 @@ export function useFileBrowserNavigation(
   async function handlePathSubmit() {
     if (pathInput.value && pathInput.value !== currentPath.value) {
       cancelPendingDirectoryRecord();
-      await readDir(pathInput.value);
-      schedulePendingDirectoryRecord(pathInput.value);
+      const submittedPath = pathInput.value;
+      await readDir(submittedPath);
+      schedulePendingDirectoryRecordIfCurrent(submittedPath);
     }
   }
 
@@ -624,7 +789,7 @@ export function useFileBrowserNavigation(
         await navigateToHome();
       }
       else {
-        schedulePendingDirectoryRecord(currentTab.path);
+        schedulePendingDirectoryRecordIfCurrent(currentTab.path);
       }
     }
     else {

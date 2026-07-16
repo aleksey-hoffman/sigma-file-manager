@@ -156,6 +156,7 @@ describe('createFsAPI', () => {
       options: {
         includeShortcutTargets: true,
         includeHardLinkCounts: true,
+        includeItemCounts: false,
       },
     });
   });

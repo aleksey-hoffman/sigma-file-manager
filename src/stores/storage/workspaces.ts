@@ -609,11 +609,15 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   async function loadTabGroupDirEntries(tabGroup: TabGroup, options: { timeoutMs?: number } = {}) {
     await Promise.all(tabGroup.map(async (tab: Tab) => {
       if (tab.type === 'directory') {
+        const requestedPath = normalizePath(tab.path);
         const dirEntries = await getDirEntries({
           path: tab.path,
           timeoutMs: options.timeoutMs,
         });
-        tab.dirEntries = dirEntries;
+
+        if (tab.type === 'directory' && normalizePath(tab.path) === requestedPath) {
+          tab.dirEntries = dirEntries;
+        }
       }
     }));
   }
@@ -674,6 +678,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       const dirContents = await invoke<DirContents>('read_dir_with_timeout', {
         path: params.path,
         timeoutMs: effectiveTimeoutMs,
+        options: {
+          includeShortcutTargets: false,
+          includeHardLinkCounts: false,
+          includeItemCounts: false,
+        },
       });
       return dirContents.entries;
     }
