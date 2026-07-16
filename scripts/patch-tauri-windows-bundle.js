@@ -7,29 +7,19 @@ const cliPath = packagePath.replace(/package\.json$/, 'dist/cli.js');
 
 let cliSource = readFileSync(cliPath, 'utf8');
 
-const replacements = [
-  {
-    from: 'EXECUTABLE: `${config.displayName.replace(/\\s+/g, \'\')}.exe`,',
-    to: 'EXECUTABLE: config.executable || `${config.displayName.replace(/\\s+/g, \'\')}.exe`,',
-  },
-  {
-    from: 'const exeName = `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
-    to: 'const exeName = config.executable || `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
-  },
-  {
-    from: 'const executable = `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
-    to: 'const executable = config.executable || `${config.displayName.replace(/\\s+/g, \'\')}.exe`;',
-  },
-];
+const originalExecutableName = `function executableName(config) {
+    return \`\${config.displayName.replace(/\\s+/g, '')}.exe\`;
+}`;
+const patchedExecutableName = `function executableName(config) {
+    return config.executable || \`\${config.displayName.replace(/\\s+/g, '')}.exe\`;
+}`;
 
-for (const replacement of replacements) {
-  if (!cliSource.includes(replacement.to)) {
-    if (!cliSource.includes(replacement.from)) {
-      throw new Error(`Could not patch tauri-windows-bundle. Missing pattern: ${replacement.from}`);
-    }
-
-    cliSource = cliSource.replace(replacement.from, replacement.to);
+if (!cliSource.includes(patchedExecutableName)) {
+  if (!cliSource.includes(originalExecutableName)) {
+    throw new Error('Could not patch tauri-windows-bundle executableName().');
   }
+
+  cliSource = cliSource.replace(originalExecutableName, patchedExecutableName);
 }
 
 writeFileSync(cliPath, cliSource);

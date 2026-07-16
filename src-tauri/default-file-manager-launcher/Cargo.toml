@@ -12,7 +12,11 @@ name = "sigma-file-manager-launcher"
 path = "src/main.rs"
 
 [target.'cfg(windows)'.dependencies]
+serde_json = "1"
+sfm-default-file-manager-common = { path = "../default-file-manager-common" }
+winreg = "0.56"
 windows-sys = { version = "0.59", features = [
     "Win32_Foundation",
+    "Win32_System_Threading",
     "Win32_UI_WindowsAndMessaging",
 ] }

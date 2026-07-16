@@ -9,7 +9,7 @@ edition = "2021"
 rust-version = "1.88.0"
 
 [workspace]
-members = [".", "default-file-manager-launcher"]
+members = [".", "default-file-manager-common", "default-file-manager-launcher"]
 resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -90,6 +90,7 @@ tokio = { version = "1", features = ["macros", "test-util"] }
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
+sfm-default-file-manager-common = { path = "default-file-manager-common" }
 winreg = "0.56"
 roxmltree = "0.21"
 webview-com-bindings-core = { package = "windows-core", version = "0.61.2" }

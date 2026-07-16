@@ -51,6 +51,44 @@ pub fn deploy(application_launch_target: &str) -> Result<(), String> {
     Ok(())
 }
 
+fn read_file_if_exists(path: &Path) -> Result<Option<Vec<u8>>, String> {
+    match fs::read(path) {
+        Ok(data) => Ok(Some(data)),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!("Failed to read \"{}\": {error}", path.display())),
+    }
+}
+
+fn deployment_is_current_in(
+    data_dir: &Path,
+    application_launch_target: &str,
+) -> Result<bool, String> {
+    let launch_target_path =
+        data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME);
+    let launcher_path =
+        data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME);
+
+    Ok(read_file_if_exists(&launch_target_path)?.as_deref()
+        == Some(application_launch_target.as_bytes())
+        && read_file_if_exists(&launcher_path)?.as_deref() == Some(LAUNCHER_EXECUTABLE_BYTES))
+}
+
+pub fn deployment_is_current(application_launch_target: &str) -> Result<bool, String> {
+    let data_dir = windows_installation::default_file_manager_data_dir().ok_or_else(|| {
+        "Failed to resolve LOCALAPPDATA for the default file manager launcher".to_string()
+    })?;
+
+    deployment_is_current_in(&data_dir, application_launch_target)
+}
+
+pub fn ensure_deployment(application_launch_target: &str) -> Result<(), String> {
+    if deployment_is_current(application_launch_target)? {
+        return Ok(());
+    }
+
+    deploy(application_launch_target)
+}
+
 fn remove_file_if_exists(path: &Path) -> Result<(), String> {
     match fs::remove_file(path) {
         Ok(()) => Ok(()),
@@ -65,6 +103,9 @@ fn remove_owned_deployment_files(data_dir: &Path) -> Result<(), String> {
     )?;
     remove_file_if_exists(
         &data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME),
+    )?;
+    remove_file_if_exists(
+        &data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_REGISTRY_SNAPSHOT_FILE_NAME),
     )?;
 
     match fs::remove_dir(data_dir) {
@@ -158,5 +199,34 @@ mod tests {
         remove_owned_deployment_files(&launcher_directory).expect("deployment cleanup");
 
         assert!(!launcher_directory.exists());
+    }
+
+    #[test]
+    fn deployment_integrity_detects_modified_files() {
+        let temporary_directory = tempfile::tempdir().expect("temporary directory");
+        let launcher_directory = temporary_directory.path().join("launcher");
+        fs::create_dir(&launcher_directory).expect("launcher directory");
+        let launch_target = "application.exe";
+        fs::write(
+            launcher_directory
+                .join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME),
+            launch_target,
+        )
+        .expect("launch target");
+        fs::write(
+            launcher_directory.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME),
+            LAUNCHER_EXECUTABLE_BYTES,
+        )
+        .expect("launcher");
+
+        assert!(deployment_is_current_in(&launcher_directory, launch_target).unwrap());
+
+        fs::write(
+            launcher_directory.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME),
+            b"modified",
+        )
+        .expect("modified launcher");
+
+        assert!(!deployment_is_current_in(&launcher_directory, launch_target).unwrap());
     }
 }

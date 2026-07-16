@@ -33,6 +33,8 @@ mod user_storage_files_config;
 pub mod utils;
 mod windows_installation;
 #[cfg(windows)]
+mod windows_msix_storage_migration;
+#[cfg(windows)]
 mod windows_print_view_webview;
 
 use serde::Serialize;
@@ -444,6 +446,10 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         )?;
     }
 
+    #[cfg(windows)]
+    if let Err(error) = windows_msix_storage_migration::migrate_virtualized_app_data(app.handle()) {
+        eprintln!("Failed to migrate virtualized Microsoft Store app data: {error}");
+    }
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
     #[cfg(windows)]

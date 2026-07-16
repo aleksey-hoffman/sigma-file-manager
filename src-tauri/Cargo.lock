@@ -5272,6 +5272,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "sfm-default-file-manager-common"
+version = "2.1.1"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "sha1"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5343,6 +5350,7 @@ dependencies = [
  "rustls",
  "serde",
  "serde_json",
+ "sfm-default-file-manager-common",
  "sha2 0.11.0",
  "sysinfo",
  "tantivy",
@@ -5381,7 +5389,10 @@ dependencies = [
 name = "sigma-file-manager-launcher"
 version = "2.1.1"
 dependencies = [
+ "serde_json",
+ "sfm-default-file-manager-common",
  "windows-sys 0.59.0",
+ "winreg 0.56.0",
 ]
 
 [[package]]

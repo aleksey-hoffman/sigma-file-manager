@@ -7,6 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { onMounted, ref } from 'vue';
 import { FolderOpenIcon } from '@lucide/vue';
 import { Switch } from '@/components/ui/switch';
+import { toast } from '@/components/ui/toaster';
 import { SettingsItem } from '@/modules/settings';
 import { useI18n } from 'vue-i18n';
 import { usePlatformStore } from '@/stores/runtime/platform';
@@ -22,7 +23,7 @@ const isEnabled = ref(false);
 const isLoading = ref(true);
 const isApplying = ref(false);
 
-async function refreshDefaultFileManagerState() {
+async function refreshDefaultFileManagerState(showError = true) {
   isLoading.value = true;
 
   try {
@@ -30,6 +31,11 @@ async function refreshDefaultFileManagerState() {
   }
   catch (error) {
     console.error('Failed to read default file manager state:', error);
+
+    if (showError) {
+      toast.error(error instanceof Error ? error.message : String(error));
+    }
+
     isEnabled.value = false;
   }
   finally {
@@ -45,7 +51,8 @@ async function onDefaultFileManagerChange(enabled: boolean) {
   }
   catch (error) {
     console.error('Failed to update default file manager state:', error);
-    await refreshDefaultFileManagerState();
+    toast.error(error instanceof Error ? error.message : String(error));
+    await refreshDefaultFileManagerState(false);
   }
   finally {
     isApplying.value = false;

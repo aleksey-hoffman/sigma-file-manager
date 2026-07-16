@@ -6,7 +6,11 @@ const currentFilePath = fileURLToPath(import.meta.url);
 const scriptsDirectory = path.dirname(currentFilePath);
 const rootDirectory = path.resolve(scriptsDirectory, '..');
 const packageJsonPath = path.join(rootDirectory, 'package.json');
-const cargoTomlPath = path.join(rootDirectory, 'src-tauri', 'Cargo.toml');
+const cargoTomlPaths = [
+  path.join(rootDirectory, 'src-tauri', 'Cargo.toml'),
+  path.join(rootDirectory, 'src-tauri', 'default-file-manager-common', 'Cargo.toml'),
+  path.join(rootDirectory, 'src-tauri', 'default-file-manager-launcher', 'Cargo.toml'),
+];
 
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const packageVersion = packageJson.version;
@@ -15,16 +19,24 @@ if (typeof packageVersion !== 'string' || packageVersion.trim().length === 0) {
   throw new Error('package.json version is missing or invalid');
 }
 
-const cargoTomlContent = fs.readFileSync(cargoTomlPath, 'utf8');
-const updatedCargoTomlContent = cargoTomlContent.replace(
-  /^version\s*=\s*"[^"]+"$/m,
-  `version = "${packageVersion}"`,
-);
+let updatedManifestCount = 0;
 
-if (cargoTomlContent === updatedCargoTomlContent) {
-  console.log(`Cargo.toml is already synced to ${packageVersion}`);
-  process.exit(0);
+for (const cargoTomlPath of cargoTomlPaths) {
+  const cargoTomlContent = fs.readFileSync(cargoTomlPath, 'utf8');
+  const updatedCargoTomlContent = cargoTomlContent.replace(
+    /^version\s*=\s*"[^"]+"$/m,
+    `version = "${packageVersion}"`,
+  );
+
+  if (cargoTomlContent !== updatedCargoTomlContent) {
+    fs.writeFileSync(cargoTomlPath, updatedCargoTomlContent);
+    updatedManifestCount += 1;
+  }
 }
 
-fs.writeFileSync(cargoTomlPath, updatedCargoTomlContent);
-console.log(`Synced Cargo.toml version to ${packageVersion}`);
+if (updatedManifestCount === 0) {
+  console.log(`Cargo manifests are already synced to ${packageVersion}`);
+}
+else {
+  console.log(`Synced ${updatedManifestCount} Cargo manifests to ${packageVersion}`);
+}

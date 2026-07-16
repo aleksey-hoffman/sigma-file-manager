@@ -1,0 +1,11 @@
+[package]
+name = "sfm-default-file-manager-common"
+description = "Shared state for Sigma File Manager shell integration"
+version = "2.1.1"
+license = "GPL-3.0-or-later"
+authors = ["Aleksey Hoffman"]
+edition = "2021"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }

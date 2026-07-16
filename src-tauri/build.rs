@@ -25,7 +25,8 @@ fn build_default_file_manager_launcher() {
     let launcher_source = launcher_source_path(&launcher_target_dir, &target, &profile);
     let launcher_destination = out_dir.join("sigma-file-manager-launcher.exe");
 
-    println!("cargo:rerun-if-changed=default-file-manager-paths.rs");
+    println!("cargo:rerun-if-changed=default-file-manager-common/src/lib.rs");
+    println!("cargo:rerun-if-changed=default-file-manager-common/Cargo.toml");
     println!("cargo:rerun-if-changed=default-file-manager-launcher/src/main.rs");
     println!("cargo:rerun-if-changed=default-file-manager-launcher/Cargo.toml");
     println!("cargo:rerun-if-changed=Cargo.lock");

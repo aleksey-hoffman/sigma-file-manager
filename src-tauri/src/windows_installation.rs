@@ -3,10 +3,6 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 #[cfg(windows)]
-#[path = "../default-file-manager-paths.rs"]
-mod default_file_manager_paths;
-
-#[cfg(windows)]
 use std::fs::{self, File, OpenOptions};
 #[cfg(windows)]
 use std::io::{ErrorKind, Write};
@@ -24,8 +20,10 @@ use windows::Win32::Storage::FileSystem::{
 };
 
 #[cfg(windows)]
-pub use default_file_manager_paths::{
+pub use sfm_default_file_manager_common::{
     DEFAULT_FILE_MANAGER_DATA_DIR_NAME, DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME,
+    DEFAULT_FILE_MANAGER_REGISTRY_SNAPSHOT_FILE_NAME, FOLDER_EXPLORE_COMMAND_KEY,
+    FOLDER_OPEN_COMMAND_KEY, OPEN_NEW_WINDOW_COMMAND_KEY, ROOT_REGISTRY_KEYS,
 };
 
 #[cfg(windows)]
@@ -75,13 +73,30 @@ pub fn executable_path_indicates_windows_store_install(executable_path: &str) ->
 
 #[cfg(windows)]
 pub fn is_running_in_windows_msix_package() -> bool {
+    current_package_family_name().is_some()
+}
+
+#[cfg(windows)]
+pub fn current_package_family_name() -> Option<String> {
     use windows::core::PWSTR;
     use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS};
     use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFamilyName;
 
     let mut length = 0u32;
     let result = unsafe { GetCurrentPackageFamilyName(&mut length, PWSTR::null()) };
-    result == ERROR_INSUFFICIENT_BUFFER || result == ERROR_SUCCESS
+    if result != ERROR_INSUFFICIENT_BUFFER || length == 0 {
+        return None;
+    }
+
+    let mut buffer = vec![0u16; length as usize];
+    let result =
+        unsafe { GetCurrentPackageFamilyName(&mut length, PWSTR::from_raw(buffer.as_mut_ptr())) };
+    if result != ERROR_SUCCESS {
+        return None;
+    }
+
+    let string_length = buffer.iter().position(|value| *value == 0)?;
+    String::from_utf16(&buffer[..string_length]).ok()
 }
 
 #[cfg(windows)]
