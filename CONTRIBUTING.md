@@ -1,12 +1,10 @@
 # Contributing
 
-- If you just want to fix a typo or do some other small change, please open a new issue instead and show the problem. It usually takes more effort to accept such contributions than to do them myself.
-
-- If you are an experienced developer and want to improve this project, follow the guide.
+⚠️ Before you write any code, keep in mind PRs are now only available to contibutors. If you want to become a contributor, create a new issue or a discussion and propose your changes so we can discuss it first. If we decide to proceed with these changes, then you might get the contributor role and create a PR.
 
 ## How to contribute
 
-⚠️ Before you write any code, please create a new issue or a discussion and describe the feature / fix / changes you want to implement so we can discuss it first. If we decide it makes sense to add these changes, do them and send PR for review.
+If you already have the contributor role, or you just want to run the app in dev mode, see the guide below
 
 ### Prerequisites
 
@@ -23,7 +21,7 @@
 3. Change working directory and go to the `main` branch
 
 ```
-cd sigma-file-manager && git checkout main
+cd sigma-file-manager
 ```
 
 4. Install dependencies:
@@ -72,38 +70,6 @@ npm run tauri:build
 ```
 
 The build can be configured in the `./vite.config.js` file.
-
-### Send your changes
-
-1. Make sure you are on the `main` branch and pull the latest changes from git. Resolve conflicts if there are any.
-```
-git pull && npm i
-```
-2. Create a new branch for your feature / fix with a short meaningful name (without spaces), for example:
-```
-git checkout -b add-new-navigator-layout
-```
-3. Add all your changes to "staged":
-```
-git add .
-```
-4. Create a commit with your changes with a short descriptive message:
-```
-git commit -m "fixed problem X"
-```
-5. Push the commit to Github:
-```
-git push
-```
-6. Create a new pull request on Github. See their [docs](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) if needed.
-
-## Notes:
-
-- Formatter: Use Eslint formatter to format the code. Disable prettier if it's enabled in your IDE.
-
-- Try to stick to the project code style.
-
-- If you are fixing a known problem (specific issue), reference the issue # that the PR resolves at the top of the body of the PR, for example: "Fixes #1234" or "Resolves #6458" (see [closing issues using keywords](https://help.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue))
 
 ## Known issues with the app
 
