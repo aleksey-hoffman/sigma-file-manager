@@ -14,9 +14,14 @@ description: |
 grade: stable
 confinement: strict
 
+platforms:
+  amd64:
+  arm64:
+  armhf:
+
 layout:
-  /usr/lib/$CRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
-    bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/webkit2gtk-4.1
+  /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1:
+    bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1
 
 apps:
   sigma-file-manager:
@@ -55,7 +60,7 @@ parts:
     plugin: dump
     source: .
     build-snaps:
-      - node/22/stable
+      - node/24/stable
       - rustup/latest/stable
     build-packages:
       - libwebkit2gtk-4.1-0=2.44.0-2
@@ -83,6 +88,7 @@ parts:
       craftctl set version="$version"
     override-build: |
       set -eu
+      unset LD_LIBRARY_PATH
       rustup default stable
       npm ci
       npm run sync-version
