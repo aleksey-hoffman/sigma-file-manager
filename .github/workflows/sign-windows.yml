@@ -1,0 +1,207 @@
+name: Sign Windows setup (SignPath)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or commit SHA to build'
+        required: true
+        default: main
+        type: string
+      signing_policy_slug:
+        description: 'SignPath signing policy slug'
+        required: true
+        default: test-signing
+        type: choice
+        options:
+          - test-signing
+          - release-signing
+      artifact_configuration_slug:
+        description: 'SignPath artifact configuration slug'
+        required: true
+        default: windows-signed-setup
+        type: string
+      upload_to_release:
+        description: 'Upload signed EXE to an existing GitHub release for this ref (tag)'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: sign-windows-${{ github.event.inputs.ref }}-${{ github.event.inputs.signing_policy_slug }}
+  cancel-in-progress: false
+
+jobs:
+  sign:
+    name: Build and sign Windows setup
+    if: github.repository == 'aleksey-hoffman/sigma-file-manager'
+    runs-on: windows-latest
+    env:
+      RUSTC_WRAPPER: sccache
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - name: Require SignPath secrets
+        shell: pwsh
+        env:
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          SIGNPATH_ORGANIZATION_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+        run: |
+          if (-not $env:SIGNPATH_API_TOKEN) {
+            throw "Missing repository secret SIGNPATH_API_TOKEN."
+          }
+          if (-not $env:SIGNPATH_ORGANIZATION_ID) {
+            throw "Missing repository secret SIGNPATH_ORGANIZATION_ID."
+          }
+
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "installer=Sigma-File-Manager-${version}-windows-setup.exe" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: sign-windows
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Sync Cargo version with package.json
+        run: npm run sync-version
+
+      - name: Build Tauri Windows bundles
+        run: npm run tauri:build
+
+      - name: Stage unsigned installer
+        id: stage
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          INSTALLER: ${{ steps.version.outputs.installer }}
+        run: |
+          shopt -s nullglob
+          bundles=(src-tauri/target/release/bundle/nsis/*.exe)
+          if (( ${#bundles[@]} == 0 )); then
+            echo "::error::No NSIS installer found"
+            exit 1
+          fi
+          mkdir -p unsigned signed
+          cp "${bundles[0]}" "unsigned/${INSTALLER}"
+          echo "unsigned_path=unsigned/${INSTALLER}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload unsigned installer artifact
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-setup
+          path: unsigned/${{ steps.version.outputs.installer }}
+          if-no-files-found: error
+
+      - name: Submit SignPath signing request
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: sigma-file-manager
+          signing-policy-slug: ${{ github.event.inputs.signing_policy_slug }}
+          artifact-configuration-slug: ${{ github.event.inputs.artifact_configuration_slug }}
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ${{ github.workspace }}/signed
+
+      - name: Show SignPath request
+        shell: bash
+        run: |
+          echo "SignPath request: ${{ steps.signpath.outputs.signing-request-web-url }}"
+
+      - name: Verify signed installer
+        shell: pwsh
+        env:
+          INSTALLER: ${{ steps.version.outputs.installer }}
+        run: |
+          $signedPath = Join-Path $env:GITHUB_WORKSPACE "signed/$env:INSTALLER"
+          if (-not (Test-Path $signedPath)) {
+            $candidates = Get-ChildItem (Join-Path $env:GITHUB_WORKSPACE "signed") -Recurse -Filter "*.exe"
+            if ($candidates.Count -eq 1) {
+              $signedPath = $candidates[0].FullName
+              $destination = Join-Path $env:GITHUB_WORKSPACE "signed/$env:INSTALLER"
+              New-Item -ItemType Directory -Force -Path (Split-Path $destination) | Out-Null
+              Copy-Item $signedPath $destination -Force
+              $signedPath = $destination
+            } else {
+              Get-ChildItem (Join-Path $env:GITHUB_WORKSPACE "signed") -Recurse | Format-Table FullName, Length
+              throw "Signed installer not found at expected path."
+            }
+          }
+
+          $signature = Get-AuthenticodeSignature -FilePath $signedPath
+          if (-not $signature.SignerCertificate) {
+            throw "Signed installer has no Authenticode signature. Status=$($signature.Status) Message=$($signature.StatusMessage)"
+          }
+
+          Write-Host "Signer: $($signature.SignerCertificate.Subject)"
+          Write-Host "Status: $($signature.Status)"
+          Write-Host "StatusMessage: $($signature.StatusMessage)"
+
+      - name: Upload signed installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-windows-setup
+          path: signed/${{ steps.version.outputs.installer }}
+          if-no-files-found: error
+
+      - name: Upload signed installer to GitHub release
+        if: ${{ fromJSON(github.event.inputs.upload_to_release) }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.ref }}
+          INSTALLER: ${{ steps.version.outputs.installer }}
+        shell: bash
+        run: |
+          if [[ "$TAG" != v* ]]; then
+            echo "::error::upload_to_release requires ref to be a tag starting with 'v' (got '$TAG')"
+            exit 1
+          fi
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::GitHub release '$TAG' does not exist. Create/publish the draft release first, or leave upload_to_release false."
+            exit 1
+          fi
+          gh release upload "$TAG" "signed/${INSTALLER}" --clobber
