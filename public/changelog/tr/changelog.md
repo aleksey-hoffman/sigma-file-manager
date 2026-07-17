@@ -1,5 +1,457 @@
 # Değişiklik Günlüğü
 
+## [2.2.0] - July 2026
+
+**Özet:** Sistem panosu aracılığıyla diğer uygulamalarla entegrasyon, kutu seçimi, bağlı bölünmüş görünüm, bağlantı yönetimi, parola korumalı ZIP arşivleri, Windows'ta yerel Özellikler penceresi, genişletilmiş eklenti API'leri, İbranice dil desteği ve gezginde yapılan iyileştirmeler.
+
+- [Yeni Özellikler](#yeni-özellikler)
+  - [Sistem Panosu Entegrasyonu](#sistem-panosu-entegrasyonu)
+  - [Kutu Seçimi](#kutu-seçimi)
+  - [Bağlı Bölünmüş Görünüm](#bağlı-bölünmüş-görünüm)
+  - [Bağlantı Yönetimi](#bağlantı-yönetimi)
+  - [Yerel Özellikler Penceresi](#yerel-özellikler-penceresi)
+  - [Liste Görünümünde Sütunları Yeniden Boyutlandırma ve Sıralama](#liste-görünümünde-sütunları-yeniden-boyutlandırma-ve-sıralama)
+  - [Kök Konumlar Adresi](#kök-konumlar-adresi)
+- [Eklentiler](#eklentiler)
+  - [Eklenti API'leri ve Görünümleri](#eklenti-apileri-ve-görünümleri)
+- [Yeni Ayarlar](#yeni-ayarlar)
+- [Yeni Kısayollar](#yeni-kısayollar)
+- [Yeni Diller](#yeni-diller)
+- [Kullanıcı Deneyimi İyileştirmeleri](#kullanıcı-deneyimi-iyileştirmeleri)
+  - [Arşiv Çıkarma](#arşiv-çıkarma)
+  - [Izgara Sıralama](#ızgara-sıralama)
+  - [Kabuk Uzantıları](#kabuk-uzantıları)
+  - [Oturum Belleği](#oturum-belleği)
+  - [Gezgin Performansı](#gezgin-performansı)
+  - [Ana Sayfa ve Bağlam Menüleri](#ana-sayfa-ve-bağlam-menüleri)
+- [Arayüz İyileştirmeleri](#arayüz-iyileştirmeleri)
+- [Hata Düzeltmeleri](#hata-düzeltmeleri)
+
+### Yeni Özellikler
+
+#### Sistem Panosu Entegrasyonu
+
+Sigma File Manager ile diğer uygulamalar arasında dosya, klasör ve görselleri sistem panosu aracılığıyla kopyalayıp yapıştırın.
+
+- **Uygulamalar arası dosya aktarımı**: SFM'de öğeleri kopyalayın veya kesin ve Windows Dosya Gezgini gibi uygulamalara yapıştırın; diğer uygulamalardan kopyalanan yolları ve dosyaları da `Ctrl+V` ile gezgine yapıştırın;
+- **Görsel yapıştırma**: tarayıcılardan ve diğer uygulamalardan kopyalanan görselleri doğrudan bir klasöre yapıştırın;
+- **Çakışma pencereleri**: yapıştırılan öğeler zaten varsa `Yeniden adlandır` veya `Birleştir` seçeneğini kullanın; tek tek dosya çakışmalarını `Değiştir`, `Atla`, `İkisini de koru` veya `Tümüne uygula` seçenekleriyle çözün;
+- **Pano araç çubuğu**: diğer uygulamalarda kopyalanan görseller ve dosya yolları için isteğe bağlı araç çubuğu önizlemesini kullanın;
+
+Araç çubuğunun görünürlüğünü `Ayarlar > Arayüz görünümü > Pano` bölümünden ayarlayabilirsiniz. Araç çubuğu gizli olsa bile `Ctrl+V` ile yapıştırma çalışır.
+
+![system-clipboard](./public/changelog/assets/2.2.0/system-clipboard.webp)
+
+#### Kutu Seçimi
+
+Gezginde boş alanda sürükleyerek bir seçim kutusuyla birden fazla öğe seçin.
+
+- **Değiştiriciler**: mevcut seçime eklemek için `Ctrl` veya `Shift` tuşunu, seçimi tersine çevirmek için `Alt` tuşunu basılı tutun;
+- **Daha kolay hedefleme**: sürüklemeyi daha kolay başlatmak için isteğe bağlı olarak liste öğelerinin iç boşluğunu ve ızgara aralıklarını artırın;
+
+Bu özelliği `Ayarlar > Genel > Dosya görünümü > Kutu seçimini etkinleştir` bölümünden etkinleştirin.
+
+![box-selection](./public/changelog/assets/2.2.0/box-selection.webp)
+
+#### Bağlı Bölünmüş Görünüm
+
+Daha sade, sütun düzenine benzer bir iş akışı sunan yeni `Bağlı` bölünmüş görünüm modunda, ilk panelde bir klasöre tıkladığınızda klasörün içeriği ikinci panelde gösterilir.
+
+Mevcut bağımsız `Bölünmüş` modu değişmedi. Modu gezgin seçenekleri menüsündeki `Bölünmüş görünüm modu` bölümünden seçin veya `Ctrl+S` ile bölünmüş görünümü açıp kapatın.
+
+Bilgi paneli simgesi de bölünmüş görünüm simgesinden daha kolay ayırt edilecek şekilde güncellendi.
+
+![linked-split-view](./public/changelog/assets/2.2.0/linked-split-view.webp)
+
+#### Bağlantı Yönetimi
+
+Dosya sistemi bağlantılarını doğrudan gezginden oluşturun ve inceleyin.
+
+- **Bağlantı oluşturma**: bağlam menüsündeki `Bağlantı oluştur` seçeneğiyle sembolik bağlantılar, kısayollar, sabit bağlantılar ve birleşimler oluşturun;
+- **Bağlantı sütunları**: `Tür`, `Bağlantılar`, `Bağlantı hedefi` ve `Bağlantı durumu` için isteğe bağlı liste sütunlarını kullanın (`Geçerli`, `Bozuk`, `Bilinmiyor`, `Desteklenmiyor`);
+- **Açma davranışı**: dizin kısayolları ve sembolik bağlantı klasörleri hedeflerine yönlendirir; diğer bağlantı hedefleri varsayılan uygulamayla açılır;
+
+![link-handling](./public/changelog/assets/2.2.0/link-handling.webp)
+
+#### Yerel Özellikler Penceresi
+
+Windows'ta seçili öğeler için sistemin yerel `Özellikler` iletişim kutusunu bağlam menüsünden, eylemler menüsünden, `Alt+Enter` ile veya `Alt` + çift tıklamayla açın.
+
+![native-properties](./public/changelog/assets/2.2.0/native-properties.webp)
+
+#### Liste Görünümünde Sütunları Yeniden Boyutlandırma ve Sıralama
+
+Liste görünümü sütunlarını çalışma biçiminize göre yeniden boyutlandırabilir ve sıralayabilirsiniz.
+
+- **Yeniden boyutlandır**: genişlikleri değiştirmek için sütun kenarlarını sürükleyin;
+- **Sıralama ve görünürlük**: sütunların sırasını ve görünürlüğünü liste başlığındaki `Sütunlar` açılır menüsünden yönetin;
+- **Genişlik seçenekleri**: `Kullanılabilir genişliği doldur` ve `En küçük genişlikleri ayarla` seçeneklerini kullanın;
+
+![list-column-resize](./public/changelog/assets/2.2.0/list-column-resize.webp)
+
+#### Kök Konumlar Adresi
+
+Kök `Konumlar` adresi, sürücüler ve sanal konumlar arasında daha hızlı geçiş yapabilmeniz için bunları tek bir yerde listeler.
+
+- **Adres çubuğu**: bir sürücünün kök dizininden yukarı çıkın veya adres çubuğu ya da adres düzenleyici üzerinden `Konumlar`ı açın;
+- **Sık kullanılanlar ve etiketler**: `Konumlar`, diğer dizinler gibi sık kullanılanlara eklenebilir ve etiketlenebilir;
+- **Bölünmüş görünüm**: gezginden ayrılmadan panellerde farklı sürücülere geçmek için özellikle kullanışlıdır;
+
+![root-locations-address](./public/changelog/assets/2.2.0/root-locations-address.webp)
+
+### Eklentiler
+
+#### Eklenti API'leri ve Görünümleri
+
+Eklentiler artık ana uygulamanın daha fazla özelliğine ve yeni arayüz bileşenlerine erişebilir.
+
+- **Yerel ikili dosyalar**: eklenti bağımlılıklarını otomatik kurulumla veya elle seçilen yerel ikili dosyalarla yapılandırın (`Eklentiler > Bağımlılıklar`);
+- **HTTP istekleri**: eklentiler, manifestlerinde izin verilen adreslere HTTP istekleri gönderebilir;
+- **Görünüm denetimi**: eklentiler gezgin düzeni ve sıralama tercihlerini uygulayabilir (görünüm izniyle);
+- **Pano API'si**: eklentiler panoyu okuyup yazabilir (izinle);
+- **Liste ve ayrıntı görünümü**: aranabilir bir liste ile ayrıntı panelini bir araya getiren yeni eklenti arayüzü;
+
+![extension-local-binaries](./public/changelog/assets/2.2.0/extension-local-binaries.webp)
+
+![extension-dependency-config](./public/changelog/assets/2.2.0/extension-dependency-config.webp)
+
+![extension-list-detail](./public/changelog/assets/2.2.0/extension-list-detail.webp)
+
+![extension-http-api](./public/changelog/assets/2.2.0/extension-http-api.webp)
+
+### Yeni Ayarlar
+
+- **Kutu seçimini etkinleştir**: boş alanda sürükleyerek birden fazla öğe seçin;
+  `Ayarlar > Genel > Dosya görünümü > Kutu seçimini etkinleştir`
+- **Dosya görünümü boşluklarını artır**: öğeleri daha kolay hedeflemek için liste iç boşluğunu ve ızgara aralıklarını artırın;
+  `Ayarlar > Genel > Dosya görünümü > Dosya görünümü boşluklarını artır`
+- **Quick View penceresini bellekte tut**: anında açılması için Quick View'ı bellekte yüklü tutun (yaklaşık 200 MB kullanır);
+  `Ayarlar > Genel > Performans > Quick View penceresini bellekte tut`
+- **Yazdırma penceresini bellekte tut**: anında açılması için Yazdırma penceresini bellekte yüklü tutun (yaklaşık 200 MB kullanır);
+  `Ayarlar > Genel > Performans > Yazdırma penceresini bellekte tut`
+- **Harici görseller için pano araç çubuğu**: diğer uygulamalarda kopyalanan görseller için pano araç çubuğunu göster;
+  `Ayarlar > Arayüz görünümü > Pano`
+- **Harici yollar için pano araç çubuğu**: diğer uygulamalarda kopyalanan dosya yolları için pano araç çubuğunu göster;
+  `Ayarlar > Arayüz görünümü > Pano`
+- **Dinamik bilgi paneli boyutu**: bilgi panelinin boyutunun içeriğe göre otomatik ayarlanmasını sağlayın; paneli elle yeniden boyutlandırmak bu seçeneği kapatır;
+  `Ayarlar > Arayüz görünümü > Bilgi paneli > Dinamik bilgi paneli boyutu`
+- **Bilgi paneli önizlemesinde tam boyutlu görüntü göster**: bilgi panelinde tam çözünürlüklü görselleri göster;
+  `Ayarlar > Arayüz görünümü > Bilgi paneli > Bilgi paneli önizleme alanında tam boyutlu görüntüyü göster`
+- **Video önizlemesini varsayılan olarak sessize al**: gezinirken bilgi paneli video önizlemelerini sessize al;
+  `Ayarlar > Arayüz görünümü > Bilgi paneli > Video önizlemesini varsayılan olarak sessize al`
+- **Video önizlemelerini otomatik oynat**: seçildiğinde bilgi panelinde videoları otomatik oynat;
+  `Ayarlar > Arayüz görünümü > Bilgi paneli > Video önizlemelerini otomatik oynat`
+
+### Yeni Kısayollar
+
+- **Yerel Özellikler** (`Alt+Enter`): Windows'ta seçili öğelerin yerel Özellikler penceresini açın;
+
+### Yeni Diller
+
+- **İbranice** (`עברית`): sağdan sola yerleşim desteğiyle eksiksiz çeviri (`Ayarlar > Genel > Dil`);
+
+### Kullanıcı Deneyimi İyileştirmeleri
+
+#### Arşiv Çıkarma
+
+ZIP çıkarma artık parolayla korunan arşivleri ve UTF-8 olmayan dosya adlarını destekler.
+
+- **Parola korumalı ZIP**: çıkarma sırasında istendiğinde arşiv parolasını girin;
+- **Dosya adı kodlaması**: `Arşiv çıkarma seçenekleri` bölümünden kodlama seçin; otomatik algılama tercih edilir, bölgesel kodlamalar ise gruplandırılmış yedek seçenekler olarak sunulur;
+
+![archive-extraction-options](./public/changelog/assets/2.2.0/archive-extraction-options.webp)
+
+![archive-extraction-encoding](./public/changelog/assets/2.2.0/archive-extraction-encoding.webp)
+
+#### Izgara Sıralama
+
+Izgara düzeni artık gezgin seçenekleri menüsünde kendine ait sıralama denetimleri sunar.
+
+- **Sıralama ölçütü**: Ad, Öğeler, Boyut, Değiştirilme, Oluşturulma, Etiketler, Tür, Bağlantılar ve Bağlantı durumu;
+- **Yön**: artan veya azalan sıralama tercihi, liste görünümünün sıralamasından ayrı olarak saklanır;
+
+![grid-sorting](./public/changelog/assets/2.2.0/grid-sorting.webp)
+
+#### Kabuk Uzantıları
+
+Bağlam menüsünde, diğer uygulamaların kaydettiği modern kabuk uzantısı eylemleri `Kabuk uzantıları` altında gösterilebilir.
+
+![shell-extensions](./public/changelog/assets/2.2.0/shell-extensions.webp)
+
+#### Oturum Belleği
+
+Bir sayfa veya panelden ayrılıp aynı oturumda geri döndüğünüzde kaydırma konumları ve etkin sekmeler geri yüklenir.
+
+#### Gezgin Performansı
+
+Büyük klasörlere ve medya dosyalarına göz atmak artık daha hızlıdır ve daha az bellek kullanır.
+
+- **İlk yükleme**: dizinler açılırken ilk yükleme daha hızlı tamamlanır;
+- **Simge yükleme**: özel ve sistem simgeleri daha az gecikmeyle görünür;
+- **Liste kaydırma**: büyük dizinlerde daha akıcı liste kaydırma;
+- **Medya önizlemeleri**: görsel, GIF ve video önizlemeleri daha duyarlıdır ve daha az bellek kullanır;
+- **Dizin oluşturma**: genel arama için dizin oluşturma işlemi daha kararlıdır;
+
+#### Ana Sayfa ve Bağlam Menüleri
+
+- **Bağlantıyı kes**: desteklendiğinde ağ bağlantılarını veya çıkarılabilir aygıt bağlantılarını bağlam menüsünden kesin;
+- **Tüm yinelenenleri kapat**: sekme menüsündeki `Tüm yinelenenleri kapat` seçeneği artık yalnızca geçerli sekmenin yinelenenlerini değil, çalışma alanındaki tüm yinelenen yolları kapatır;
+- **Sağ tıklamayla seçimi temizleme**: gezginin boş arka planına sağ tıklamak, arka plan menüsü açılmadan önce geçerli seçimi temizler;
+- **Ana sayfa eylemleri**: ana sayfa bağlam menüleri bir eylem seçildikten sonra kapanır, `Yeni sekmede aç` gezgini açar ve yeni sekmeler görünür alana kaydırılır;
+- **Pencere sürükleme bölgesi**: Linux tarzı başlık çubuklarında sürükleme bölgesi, pencereyi daha kolay taşımak için araç çubuğu düğmelerinin üzerine uzanır;
+
+![window-drag-region](./public/changelog/assets/2.2.0/window-drag-region.webp)
+
+### Arayüz İyileştirmeleri
+
+- **Etkin panel göstergesi**: bölünmüş görünüm açıkken durum çubuğunda etkin paneli daha net gösteren bir işaretçi;
+- **Yeniden boyutlandırılabilir bilgi paneli**: bilgi panelinin genişliğini ve önizleme ile ayrıntılar arasındaki bölmeyi sürükleyerek yeniden boyutlandırın;
+- **Kompakt bilgi paneli**: bilgi panelindeki özellikler için daha yoğun bir düzen;
+- **Bağlam menüsü eylemleri**: `Kartı düzenle` seçeneği bir eylem düğmesi olarak gösterilir; eylem düğmeleri genel olarak daha küçüktür;
+- **Gezgin stilleri**: uyarlanabilir düzen, bölünmüş görünümdeki etkin sekme stilleri ve komut paletindeki eklenti görünümü tasarımı iyileştirildi;
+- **RTL düzen**: sağdan sola diller için daha temiz hizalama;
+
+![resizable-info-panel](./public/changelog/assets/2.2.0/resizable-info-panel.webp)
+
+![compact-info-panel](./public/changelog/assets/2.2.0/compact-info-panel.webp)
+
+### Hata Düzeltmeleri
+
+- **Yazarak arama**: Latin olmayan klavye düzenlerinde hızlı aramanın etkinleşmemesi düzeltildi;
+- **Dizin yükleme**: bir dizin yüklendikten sonra girdilerin kendiliğinden yeniden sıralanması düzeltildi;
+- **Özel simgeler**: özel simgelerin belirgin gecikmeyle yüklenmesi düzeltildi;
+- **Izgara kartları**: ızgara düzeni kartlarının yüklenirken boyut değiştirmesi düzeltildi;
+- **Izgara kaydırma çubuğu**: ızgara kaydırma çubuğunun yapışkan başlıkların arkasında gizlenmesi düzeltildi;
+- **Hızlı seçim**: hızlı dosya seçiminin bazen dosyayı açması düzeltildi;
+- **Terminal kısayolu**: `Alt+T` seçili girdi yerine geçerli dizin için terminal açacak şekilde düzeltildi;
+- **Dosyaları aç**: açılan dosyaların yanlış çalışma dizininden başlatılması düzeltildi;
+- **SMB paylaşımları**: SMB paylaşımlarındaki dosyaların açılamaması düzeltildi;
+- **WSL yolları**: Windows'ta WSL ana bilgisayarının UNC yollarını işleme sorunu düzeltildi; `//wsl.localhost` sanal dağıtım listesine eklendi;
+- **Varsayılan dosya yöneticisi**: Microsoft Store derlemelerinde varsayılan dosya yöneticisi ayarı düzeltildi;
+- **AppImage (Linux)**: `Could not create default EGL display: EGL_BAD_PARAMETER` hatası düzeltildi;
+- **Eklenti yükleme (Linux)**: çok dosyalı dağıtım paketine sahip eklentilerdeki yükleme hataları düzeltildi;
+- **Eklenti ayrıntıları**: genel bakış sayfasındaki hizalama stilleri düzeltildi;
+- **Cihaz uyanması**: cihaz uyandıktan sonra uygulamanın yükleme durumunda takılması düzeltildi;
+- **Güncelleme bildirimleri**: henüz yayımlanmamış sürümler için güncelleme bildirimlerinin görünmesi düzeltildi;
+- **RTL**: sağdan sola düzen sorunları düzeltildi;
+- **Çeviriler**: eksik ve yanlış çeviri dizeleri düzeltildi;
+
+---
+
+## [2.1.0] - May 2026
+
+**Özet:** Gezgin performansındaki iyileştirmeler, otomatik oluşturulan küçük resimler, eklenti temaları, yazdırma, dosya önizlemeleri, yeni kısayollar, geliştirilmiş adres düzenleyici, yeniden tasarlanan durum merkezi ve sekme ile gezinti deneyimindeki iyileştirmeler.
+
+- [Yeni Özellikler](#yeni-özellikler)
+  - [Yazdırma](#yazdırma)
+  - [Dosyaları Sekmelere Bırakma](#dosyaları-sekmelere-bırakma)
+  - [Bilgi Panelinde Dosya Önizleme](#bilgi-panelinde-dosya-önizleme)
+  - [Gezginin Liste Görünümü Sütunları](#gezginin-liste-görünümü-sütunları)
+- [Eklentiler](#eklentiler)
+  - [Eklentilerin Sağladığı Uygulama Temaları](#eklentilerin-sağladığı-uygulama-temaları)
+  - [Eklentilerin Sağladığı Simge Temaları](#eklentilerin-sağladığı-simge-temaları)
+- [Yeni Ayarlar](#yeni-ayarlar)
+- [Yeni Kısayollar](#yeni-kısayollar)
+- [Kullanıcı Deneyimi İyileştirmeleri](#kullanıcı-deneyimi-iyileştirmeleri)
+  - [Büyük Dizin Performansı](#büyük-dizin-performansı)
+  - [Hızlı Arama](#hızlı-arama)
+  - [Adres Düzenleyici](#adres-düzenleyici)
+  - [Durum Merkezi](#durum-merkezi)
+  - [Gezinti ve Sekmeler](#gezinti-ve-sekmeler)
+  - [Kısayol Yönetimi](#kısayol-yönetimi)
+- [Arayüz İyileştirmeleri](#arayüz-iyileştirmeleri)
+- [Hata Düzeltmeleri](#hata-düzeltmeleri)
+
+### Yeni Özellikler
+
+#### Yazdırma
+
+Seçili dosyaları bağlam menüsü, eylemler menüsü veya `Ctrl+O` aracılığıyla doğrudan gezginden yazdırın.
+
+- **Desteklenen biçimler**: görseller, PDF, metin biçimleri;
+- **Hızlı çıkış**: yazdırma görünümünü `Escape` ile kapatın;
+
+![printing](./public/changelog/assets/2.1.0/printing.webp)
+
+#### Dosyaları Sekmelere Bırakma
+
+Dosya veya dizinleri sekmelere sürükleyerek başka bir sekmede açık olan dizine taşıyın veya kopyalayın.
+
+- **Bırakma hedefi olarak sekmeler**: gezginde dosya sürüklerken sekmeleri bırakma hedefi olarak kullanın;
+- **Üzerine gelince etkinleştirme**: sürükleme sırasında bir sekmenin üzerinde beklediğinizde, öğeyi bırakmadan önce o sekme etkinleşir;
+- **Bölünmüş sekmeler**: dizin sekme grupları, bölünmüş görünümün sekme yapısını korurken normal bırakma davranışını sürdürür;
+
+![file-drop-to-tabs](./public/changelog/assets/2.1.0/file-drop-to-tabs.webp)
+
+#### Bilgi Panelinde Dosya Önizleme
+
+Bilgi paneli artık yalnızca görselleri ve videoları değil, Quick View'ın desteklediği tüm dosya türlerini önizleyebilir.
+
+- **Medya önizlemeleri**: görseller için oluşturulan küçük resimler kullanılır, video ve ses dosyalarında yerel denetimler sunulur, PDF'ler ise panel içinde görüntülenir;
+- **Metin önizlemeleri**: metin dosyaları, güvenli bir boyut sınırıyla kod çözümü yapılmış kompakt bir önizleme gösterir;
+- **Yedek görünüm**: desteklenmeyen dosya ve klasörler için basit simge yer tutucuları gösterilmeye devam eder;
+
+![info-panel-file-preview](./public/changelog/assets/2.1.0/info-panel-file-preview.webp)
+
+#### Gezginin Liste Görünümü Sütunları
+
+Liste görünümü artık daha fazla isteğe bağlı sütun sunuyor ve meta verilerin doğrudan satır üzerinden yönetilmesini kolaylaştırıyor.
+
+- **Oluşturulma sütunu**: oluşturma tarihini görüntüleyin ve bu tarihe göre sıralayın;
+- **Etiketler sütunu**: etiketleri doğrudan liste görünümünde görüntüleyin; sütun üzerinden etiket ekleyin, kaldırın veya düzenleyin;
+
+![navigator-list-columns](./public/changelog/assets/2.1.0/navigator-list-columns.webp)
+
+### Eklentiler
+
+#### Eklentilerin Sağladığı Uygulama Temaları
+
+Eklentiler artık uygulamanın tamamında kullanılabilen renk temaları sağlayabilir. Yüklü tema eklentileri tema seçicide görünür.
+
+#### Eklentilerin Sağladığı Simge Temaları
+
+Eklentiler artık klasörler ve dosyalar için gezgin simge temaları sağlayabilir.
+
+- **Ayrı seçimler**: klasör ve dosya simge temalarını `Ayarlar > Arayüz görünümü > Simge teması` içinde bağımsız seçin;
+- **Yerleşik ve eklenti temaları**: yerleşik varsayılan veya sistem simge temalarını ya da etkinleştirilmiş herhangi bir eklenti temasını kullanın;
+- **Tema eşleştirme**: eklentilerin sağladığı temalar dosya uzantısına, dosya adına, klasör adına ve klasörün genişletilmiş olup olmamasına göre simgeler tanımlayabilir;
+
+### Yeni Ayarlar
+
+- **Etkin sekme metnini kalın yap**: etkin sekme başlığını kalın yapın (`Ayarlar > Sekmeler > Sekme görünümü > Etkin sekme metnini kalın yap`);
+
+![bold-active-tab-text-setting](./public/changelog/assets/2.1.0/bold-active-tab-text-setting.webp)
+
+### Yeni Kısayollar
+
+- **Bölünmüş görünümü aç/kapat** (`Ctrl+S`): gezginde bölünmüş görünümü gösterin veya gizleyin;
+- **Kapatılan sekmeyi geri yükle** (`Ctrl+Shift+T`): en son kapatılan sekme grubunu geri yükleyin;
+- **Dosya / dizin oluştur** (`Ctrl+Shift+M` / `Ctrl+Shift+N`): geçerli dizinde yeni bir dosya veya dizin oluşturun;
+- **Seçili dosyayı yazdır** (`Ctrl+O`): seçili dosyayı yazdırın;
+- **Kopyalanan yolu aç** (`Ctrl+Shift+V`): panodaki geçerli bir yolu açın;
+- **Sayfalar arasında geç** (`Alt+1` - `Alt+5`): Ana Sayfa, Gezgin, Gösterge Paneli, Ayarlar ve Eklentiler arasında geçiş yapın;
+- **Dizin geçmişinde gezin** (`Alt+Left` / `Alt+Right`): gezgin geçmişinde geri veya ileri gidin;
+- **Üst dizine git** (`Alt+Up`): üst dizine gidin;
+- **Fare geçmiş düğmeleri** (`Mouse Button 4` / `Mouse Button 5`): farenin yan düğmeleriyle geri ve ileri gidin;
+
+![create-file-directory-shortcuts](./public/changelog/assets/2.1.0/create-file-directory-shortcuts.webp)
+
+![navigator-shortcuts](./public/changelog/assets/2.1.0/navigator-shortcuts.webp)
+
+### Kullanıcı Deneyimi İyileştirmeleri
+
+#### Büyük Dizin Performansı
+
+Gezinti, hızlı arama ve yoğun medya içeren klasörler artık daha hızlı yanıt verir ve daha az bellek kullanır.
+
+- **Oluşturulan küçük resimler**: her dosya kartında tam boyutlu medya yüklemek yerine görsel ve videolar için daha küçük boyutlarda önizlemeler oluşturulur;
+- **Aşamalı görseller**: ızgara görsel kartları, nihai küçük resim hazır olana kadar bulanık düşük çözünürlüklü bir küçük resim gösterebilir;
+- **Küçük resim oluşturmayı iptal etme**: klasör veya görünür girdiler değiştiğinde küçük resim oluşturma işlemi iptal edilebilir;
+- **Görüntüleme performansı**: büyük dizinlerdeki girdiler daha verimli görüntülenir; Quick View ise oluşturulan küçük resimleri sanal bir listeyle gösterir;
+
+![low-res-image-thumbnail-preview](./public/changelog/assets/2.1.0/low-res-image-thumbnail-preview.webp)
+
+#### Hızlı Arama
+
+Hızlı aramanın artık iki modu vardır: pasif ve etkin:
+
+- **Pasif mod**: yazmaya başladığınızda otomatik olarak etkinleşir. Arama alanına odaklanmadan girdileri filtreler ve gezinmeyi engellemez.
+- **Etkin mod**: `Ctrl+F` ile etkinleşir. Arama alanına odaklanır ve gezinmeyi engeller ancak girilen sorgu üzerinde daha ayrıntılı denetim sağlar.
+
+Diğer değişiklikler:
+
+- **Yazarak filtreleme**: alfasayısal tuşlara basmak artık etkin panelde her zaman hızlı aramayı (pasif mod) başlatır;
+- **Klavye gezintisi**: ilk eşleşen öğe otomatik seçilir;
+- **Açılır panel tasarımı**: hızlı arama paneli artık daha kompakttır ve dizin öğelerinin üzerini kapatmaz;
+
+![quick-search](./public/changelog/assets/2.1.0/quick-search.webp)
+
+#### Adres Düzenleyici
+
+Adres düzenleyici artık daha kapsamlı bir yol açma aracı olarak kullanılabilir.
+
+- **Dosyalar ve dizinler**: adres düzenleyiciden dizinlerin yanı sıra dosyaları da açın;
+- **Sık kullanılan yollar**: sık kullandığınız yolları hızla açmaya odaklanan moda geçin;
+- **Öneriler**: dizin girdilerine, tam eşleşmelere, son yollara, etiketli öğelere, kullanıcı klasörlerine ve sistem sürücülerine göz atın;
+- **Klavye eylemleri**: düzenleyiciden geri, ileri veya yukarı gidin ve bir girdiyi üst dizininde görüntüleyin;
+
+![address-editor](./public/changelog/assets/2.1.0/address-editor.webp)
+
+#### Durum Merkezi
+
+Durum merkezi artık daha anlaşılır işlem grupları sunan, araç çubuğuna yerleştirilmiş kompakt bir bileşendir.
+
+- **Etkin işlem sayısı**: araç çubuğu düğmesi, etkin işlem sayısını gösteren bir rozete dönüşür;
+- **İşlem grupları**: etkin ve tamamlanan işlemler birbirinden ayrılır; tamamlanan işlemler daraltılabilir bir bölümde gösterilir;
+- **Tümünü iptal et**: etkin işlemlerin tümünü bölüm başlığından tek seferde iptal edin;
+- **İşlem kartları**: işlem kartlarında `Kopyalama | Başarılı` veya `Arşiv | Hata` gibi daha anlaşılır tür ve durum etiketleri gösterilir;
+- **Pano kurtarma**: yapıştırma işlemi, bir görev kuyruğa alındığında panoyu hemen temizler ve görev başarısız olursa içeriği geri yükler;
+
+![status-center](./public/changelog/assets/2.1.0/status-center.webp)
+
+#### Gezinti ve Sekmeler
+
+Gezginde dolaşma ve sekme davranışları artık daha öngörülebilirdir.
+
+- **Kenar çubuğundaki sürücüler**: gezinti kenar çubuğunda bir sürücüye tıkladığınızda sürücü geçerli sekmede açılır;
+- **Geçerli dizin**: adresin geçerli dizini gösteren son bölümü daha belirgindir; bu bölümün bağlam menüsü, üzerine sağ tıklayarak açılır;
+- **Kapatılan sekmeler**: geri yüklenen sekmeler önceki konumlarına döner, yeniden adlandırılmış yolları korur ve silinen yolları ana sayfaya yönlendirir;
+- **Duyarlı düzen**: araç çubuğundaki gezinti düğmeleri daha erken daralır, çok dar panellerde bölünmüş görünüm adres çubukları ikinci satıra geçer ve kompakt sekmeler tutarlı yüksekliklerini korur;
+
+![nav-sidebar-drive-current-tab](./public/changelog/assets/2.1.0/nav-sidebar-drive-current-tab.webp)
+
+![current-directory-address-bar](./public/changelog/assets/2.1.0/current-directory-address-bar.webp)
+
+#### Kısayol Yönetimi
+
+Kısayol düzenleme arayüzü artık çakışmaları ve özelleştirmeleri daha anlaşılır biçimde yönetir.
+
+- **Birden fazla atama**: bir eyleme birden fazla kısayol atayın;
+- **Kısayol atamasını kaldırma**: atanmış kısayolları kaldırın;
+- **Çakışan kısayolu değiştirme**: çakışan bir kısayolu doğrudan çakışma iletişim kutusundan değiştirin;
+- **Kısayol listesi menüsü**: kısayol listesindeki bir bağlam menüsünden kısayolları yönetin;
+
+![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
+
+#### Sürükle ve Bırak
+
+`Alt+Tab` ile uygulamalar arasında geçerken dışarı sürükleme işlemini başlatabilirsiniz. Böylece dosyaları, yalnızca imleci pencerenin dışına çıkararak değil, uygulama değiştirerek de dışarı sürükleyebilirsiniz;
+
+### Arayüz İyileştirmeleri
+
+- **Seçim halkası**: gezgin seçim halkasının opaklığı ve konumu, panel başlığı stilleri ve klavye odak davranışı iyileştirildi;
+- **Sekme çubuğu**: sekme çubuğunun stilleri ve etkin sekmenin okunabilirliği iyileştirildi;
+- **Tema seçimi**: tema seçme arayüzünün tasarımı iyileştirildi;
+- **Hızlı erişim**: hızlı erişim panelinin stilleri geliştirildi;
+- **Açılış ekranı**: uygulama başlatılırken gösterilen bir açılış ekranı eklendi;
+- **Açılır panel görünürlüğü**: yarı saydam açılır panel öğelerinin görünürlüğü iyileştirildi;
+- **Araç ipuçları**: daha fazla araç çubuğu düğmesine araç ipuçları eklendi;
+- **Çeviriler**: Japonca ve Vietnamca çeviri metinleri iyileştirildi, yerelleştirme yapısı sadeleştirildi;
+
+![selection-ring](./public/changelog/assets/2.1.0/selection-ring.webp)
+
+![tab-bar-styles](./public/changelog/assets/2.1.0/tab-bar-styles.webp)
+
+![narrow-window-layout](./public/changelog/assets/2.1.0/narrow-window-layout.webp)
+
+### Hata Düzeltmeleri
+
+- **Eşlenmiş sürücüler**: eşlenmiş ağ sürücülerinden uygulama dışına sürükleyip bırakmanın çalışmaması düzeltildi;
+- **Klavye kaydırma**: ilk satırın yapışkan başlığın arkasında gizlenmesi düzeltildi;
+- **Başlangıç donması**: başlangıç ve güncelleme kontrolleri sırasında yavaş senkron sistem çağrılarının neden olduğu nadir çok dakikalık Windows başlangıç donmaları düzeltildi;
+- **Arşiv çıkarma**: arşivler çıkarılırken Unix dosya modları korundu;
+- **Eklenti HTTP istekleri**: kalıcı 2xx dışı yanıtların işlenmesi yeniden sağlandı ve yeniden denemeler arasındaki bekleme iptal edilebilir hale getirildi;
+- **Komut paleti**: kısayolu özelleştirildiğinde komut paleti araç çubuğu düğmesi düzeltildi;
+- **Izgara aralık seçimi**: ızgara görünümünde aralık seçiminin kapsam dışındaki girdileri seçmesi düzeltildi;
+- **Bağlam menüleri**: seçili öğe ve geçerli dizin bağlam menülerinin eylem tıklamalarından sonra açık kalması düzeltildi;
+- **Kısayol kaydı**: pencere yeniden yüklemesinden sonra kısayol kayıt hataları düzeltildi;
+- **Tema uygulama**: seçili temaların tüm pencerelerde uygulanmaması düzeltildi;
+- **macOS taşıma işlemleri**: macOS'ta birimler arası taşıma işlemleri düzeltildi ve paket hedeflerine taşıma etkinleştirildi;
+- **Varsayılan dosya yöneticisi**: etkinleştirme başarısız olduğunda veya önceki sistem değerleri geri yüklenirken Windows'un varsayılan dosya yöneticisi kayıt defteri değerlerinin daha güvenli biçimde geri yüklenmesi sağlandı;
+
+![keyboard-scroll-floating-header](./public/changelog/assets/2.1.0/keyboard-scroll-floating-header.webp)
+
+---
 ## [2.0.0-beta.3] - April 2026
 
 **Özet:** Mağazalı eklenti sistemi, LAN dosya paylaşımı, hızlı erişim menüsü, zip arşivleri, WSL sürücüleri, etiket düzenleme, geliştirilmiş hızlı önizleme ve arama, görsel efekt iyileştirmeleri ve birçok kullanıcı deneyimi ve kararlılık iyileştirmesi.

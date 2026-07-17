@@ -1,5 +1,457 @@
 # Änderungsprotokoll
 
+## [2.2.0] - July 2026
+
+**Zusammenfassung:** Integration der System-Zwischenablage in andere Apps, Rahmenauswahl, verknüpfte geteilte Ansicht, Link-Verwaltung, passwortgeschützte ZIP-Archive, native Eigenschaften unter Windows, Erweiterungen der Extension-API, Unterstützung für Hebräisch und Verbesserungen am Navigator.
+
+- [Neue Funktionen](#neue-funktionen)
+  - [System-Zwischenablage](#system-zwischenablage)
+  - [Rahmenauswahl](#rahmenauswahl)
+  - [Verknüpfte geteilte Ansicht](#verknüpfte-geteilte-ansicht)
+  - [Link-Verwaltung](#link-verwaltung)
+  - [Native Eigenschaften](#native-eigenschaften)
+  - [Spalten in der Listenansicht anpassen](#spalten-in-der-listenansicht-anpassen)
+  - [Adresse „Standorte“](#adresse-standorte)
+- [Erweiterungen](#erweiterungen)
+  - [Extension-APIs und Ansichten](#extension-apis-und-ansichten)
+- [Neue Einstellungen](#neue-einstellungen)
+- [Neue Tastenkürzel](#neue-tastenkürzel)
+- [Neue Sprachen](#neue-sprachen)
+- [UX-Verbesserungen](#ux-verbesserungen)
+  - [Archivextraktion](#archivextraktion)
+  - [Raster-Sortierung](#raster-sortierung)
+  - [Shell-Erweiterungen](#shell-erweiterungen)
+  - [Sitzungsspeicher](#sitzungsspeicher)
+  - [Navigator-Leistung](#navigator-leistung)
+  - [Startseite und Kontextmenüs](#startseite-und-kontextmenüs)
+- [UI-Verbesserungen](#ui-verbesserungen)
+- [Fehlerbehebungen](#fehlerbehebungen)
+
+### Neue Funktionen
+
+#### System-Zwischenablage
+
+Dateien, Ordner und Bilder lassen sich über die System-Zwischenablage zwischen Sigma File Manager und anderen Apps kopieren und einfügen.
+
+- **Dateiübertragung zwischen Apps**: Elemente in SFM kopieren oder ausschneiden und in Apps wie den Datei-Explorer einfügen oder mit `Ctrl+V` Pfade und Dateien aus anderen Apps in den Navigator einfügen;
+- **Bilder einfügen**: aus Browsern und anderen Apps kopierte Bilder direkt in einen Ordner einfügen;
+- **Konfliktdialoge**: wenn eingefügte Elemente bereits vorhanden sind, `Umbenennen` oder `Zusammenführen` wählen und einzelne Dateikonflikte mit Ersetzen, Überspringen, Beide behalten oder Auf alle anwenden lösen;
+- **Zwischenablage-Symbolleiste**: optionale Symbolleistenvorschau für Bilder und Dateipfade, die in anderen Apps kopiert wurden;
+
+Die Symbolleiste lässt sich unter `Einstellungen > Erscheinungsbild > Zwischenablage` ein- und ausblenden. Das Einfügen mit `Ctrl+V` funktioniert auch bei ausgeblendeter Symbolleiste.
+
+![system-clipboard](./public/changelog/assets/2.2.0/system-clipboard.webp)
+
+#### Rahmenauswahl
+
+Ziehen Sie im leeren Bereich des Navigators einen Auswahlrahmen auf, um mehrere Elemente auszuwählen.
+
+- **Zusatztasten**: `Ctrl` oder `Shift` gedrückt halten, um Elemente zur aktuellen Auswahl hinzuzufügen; mit `Alt` wird die Auswahl umgekehrt;
+- **Einfachere Auswahl**: optional die Abstände in Listen und Rastern vergrößern, damit sich der Auswahlrahmen leichter aufziehen lässt;
+
+Aktivieren Sie diese Funktion unter `Einstellungen > Allgemein > Dateiansicht > Rahmenauswahl aktivieren`.
+
+![box-selection](./public/changelog/assets/2.2.0/box-selection.webp)
+
+#### Verknüpfte geteilte Ansicht
+
+Der neue Modus `Verknüpft` vereinfacht Arbeitsabläufe in Spalten: Ein Klick auf einen Ordner im ersten Bereich zeigt dessen Inhalt im zweiten Bereich.
+
+Der bestehende unabhängige Modus `Geteilt` bleibt unverändert. Der Modus lässt sich im Optionsmenü des Navigators unter `Modus der geteilten Ansicht` auswählen; mit `Ctrl+S` wird die geteilte Ansicht ein- oder ausgeschaltet.
+
+Das Symbol des Infobereichs wurde ebenfalls aktualisiert, damit es sich leichter vom Symbol der geteilten Ansicht unterscheiden lässt.
+
+![linked-split-view](./public/changelog/assets/2.2.0/linked-split-view.webp)
+
+#### Link-Verwaltung
+
+Im Navigator lassen sich Dateisystem-Links erstellen und prüfen.
+
+- **Link erstellen**: symbolische Links, Verknüpfungen, Hardlinks und Junctions über das Kontextmenü erstellen (`Link erstellen`);
+- **Link-Spalten**: optionale Listenspalten für Art, Links, Linkziel und Linkstatus (`Gültig`, `Defekt`, `Unbekannt`, `Nicht unterstützt`);
+- **Öffnen**: Verzeichnisverknüpfungen und Symlink-Ordner führen zu ihren Zielen; andere Linkziele werden mit der Standard-App geöffnet;
+
+![link-handling](./public/changelog/assets/2.2.0/link-handling.webp)
+
+#### Native Eigenschaften
+
+Unter Windows lässt sich der native Dialog `Eigenschaften` für ausgewählte Elemente über das Kontextmenü, das Aktionsmenü, `Alt+Enter` oder `Alt` + Doppelklick öffnen.
+
+![native-properties](./public/changelog/assets/2.2.0/native-properties.webp)
+
+#### Spalten in der Listenansicht anpassen
+
+Spalten der Listenansicht können in der Breite geändert und neu angeordnet werden.
+
+- **Größe ändern**: Spaltenränder ziehen, um die Breite zu ändern;
+- **Reihenfolge und Sichtbarkeit**: Reihenfolge und Sichtbarkeit über das Menü `Spalten` in der Kopfzeile der Liste verwalten;
+- **Breitenoptionen**: `Verfügbare Breite füllen` und `Mindestbreiten festlegen`;
+
+![list-column-resize](./public/changelog/assets/2.2.0/list-column-resize.webp)
+
+#### Adresse „Standorte“
+
+Über die Stammadresse `Standorte` lassen sich Laufwerke und virtuelle Orte schneller aufrufen.
+
+- **Adressleiste**: von der Stammebene eines Laufwerks eine Ebene nach oben wechseln oder `Standorte` über die Adressleiste oder den Adresseditor öffnen;
+- **Favoriten und Tags**: Standorte können wie andere Verzeichnisse zu den Favoriten hinzugefügt und mit Tags versehen werden;
+- **Geteilte Ansicht**: besonders nützlich, um Laufwerke zwischen Bereichen zu wechseln, ohne den Navigator zu verlassen;
+
+![root-locations-address](./public/changelog/assets/2.2.0/root-locations-address.webp)
+
+### Erweiterungen
+
+#### Extension-APIs und Ansichten
+
+Erweiterungen erhalten zusätzliche Hostfunktionen und UI-Bausteine.
+
+- **Lokale Binärdateien**: Erweiterungsabhängigkeiten mit automatischer Einrichtung oder manuell gewählten lokalen Binärdateien konfigurieren (`Erweiterungen > Abhängigkeiten`);
+- **HTTP-Anfragen**: Erweiterungen können HTTP-Anfragen an Hosts senden, die in ihrem Manifest erlaubt sind;
+- **Ansichtssteuerung**: Erweiterungen können Layout- und Sortiereinstellungen des Navigators anwenden (mit der Berechtigung für Ansichten);
+- **Zwischenablage-API**: Erweiterungen können die Zwischenablage lesen und schreiben (mit Berechtigung);
+- **Listen-Detail-Ansicht**: neues UI-Muster für Erweiterungen mit einer Liste mit Suchfunktion und einem Detailbereich;
+
+![extension-local-binaries](./public/changelog/assets/2.2.0/extension-local-binaries.webp)
+
+![extension-dependency-config](./public/changelog/assets/2.2.0/extension-dependency-config.webp)
+
+![extension-list-detail](./public/changelog/assets/2.2.0/extension-list-detail.webp)
+
+![extension-http-api](./public/changelog/assets/2.2.0/extension-http-api.webp)
+
+### Neue Einstellungen
+
+- **Rahmenauswahl aktivieren**: in einem leeren Bereich ziehen, um mehrere Elemente auszuwählen;
+  `Einstellungen > Allgemein > Dateiansicht > Rahmenauswahl aktivieren`
+- **Abstände in der Dateiansicht vergrößern**: größere Abstände in Listen und Rastern erleichtern das Aufziehen eines Auswahlrahmens;
+  `Einstellungen > Allgemein > Dateiansicht > Abstände in der Dateiansicht vergrößern`
+- **Schnellansicht-Fenster im Speicher behalten**: Schnellansicht geladen halten, damit sie sich sofort öffnet (etwa 200 MB);
+  `Einstellungen > Allgemein > Leistung > Schnellansicht-Fenster im Speicher behalten`
+- **Druckfenster im Speicher behalten**: Druckfenster geladen halten, damit es sich sofort öffnet (etwa 200 MB);
+  `Einstellungen > Allgemein > Leistung > Druckfenster im Speicher behalten`
+- **Zwischenablage-Symbolleiste für externe Bilder**: Zwischenablage-Symbolleiste für in anderen Apps kopierte Bilder anzeigen;
+  `Einstellungen > Erscheinungsbild > Zwischenablage`
+- **Zwischenablage-Symbolleiste für externe Pfade**: Zwischenablage-Symbolleiste für in anderen Apps kopierte Dateipfade anzeigen;
+  `Einstellungen > Erscheinungsbild > Zwischenablage`
+- **Dynamische Größe des Infobereichs**: Größe des Infobereichs automatisch anpassen lassen oder die Funktion durch manuelles Ändern der Größe deaktivieren;
+  `Einstellungen > Erscheinungsbild > Infobereich > Dynamische Größe des Infobereichs`
+- **Bild in voller Größe in der Vorschau des Infobereichs anzeigen**: Bilder in voller Auflösung im Infobereich anzeigen;
+  `Einstellungen > Erscheinungsbild > Infobereich > Bild in voller Größe in der Vorschau des Infobereichs anzeigen`
+- **Videovorschau standardmäßig stummschalten**: Videovorschauen im Infobereich beim Durchsuchen stummschalten;
+  `Einstellungen > Erscheinungsbild > Infobereich > Videovorschau standardmäßig stummschalten`
+- **Videovorschauen automatisch abspielen**: Videos im Infobereich bei Auswahl automatisch abspielen;
+  `Einstellungen > Erscheinungsbild > Infobereich > Videovorschauen automatisch abspielen`
+
+### Neue Tastenkürzel
+
+- **Native Eigenschaften** (`Alt+Enter`): unter Windows den nativen Eigenschaften-Dialog für ausgewählte Elemente öffnen;
+
+### Neue Sprachen
+
+- **Hebräisch** (`עברית`): vollständige Übersetzung mit Rechts-nach-links-Layout (`Einstellungen > Allgemein > Sprache`);
+
+### UX-Verbesserungen
+
+#### Archivextraktion
+
+Die ZIP-Extraktion unterstützt jetzt verschlüsselte Archive und Dateinamen mit einer anderen Kodierung als UTF-8.
+
+- **Passwortgeschützte ZIP-Archive**: Archivpasswort eingeben, wenn die Extraktion es erfordert;
+- **Dateinamenskodierung**: Kodierung unter `Optionen zur Archivextraktion` auswählen; die automatische Erkennung wird bevorzugt, regional gruppierte Kodierungen stehen als Alternativen zur Verfügung;
+
+![archive-extraction-options](./public/changelog/assets/2.2.0/archive-extraction-options.webp)
+
+![archive-extraction-encoding](./public/changelog/assets/2.2.0/archive-extraction-encoding.webp)
+
+#### Raster-Sortierung
+
+Das Rasterlayout verfügt jetzt über eigene Steuerelemente zum Sortieren im Optionsmenü des Navigators.
+
+- **Sortieren nach**: Name, Elemente, Größe, Geändert, Erstellt, Tags, Art, Links und Linkstatus;
+- **Richtung**: aufsteigend oder absteigend, getrennt von der Sortierung der Listenansicht gespeichert;
+
+![grid-sorting](./public/changelog/assets/2.2.0/grid-sorting.webp)
+
+#### Shell-Erweiterungen
+
+Das Kontextmenü kann moderne Aktionen von Shell-Erweiterungen laden, die andere Apps unter `Shell-Erweiterungen` registriert haben.
+
+![shell-extensions](./public/changelog/assets/2.2.0/shell-extensions.webp)
+
+#### Sitzungsspeicher
+
+Scrollpositionen und aktive Tabs werden wiederhergestellt, wenn Sie während derselben Sitzung eine Seite oder einen Bereich verlassen und zurückkehren.
+
+#### Navigator-Leistung
+
+Das Durchsuchen großer Ordner und Medien ist schneller und speicherschonender.
+
+- **Erstmaliges Laden**: Verzeichnisse werden beim ersten Öffnen schneller geladen;
+- **Symbole laden**: benutzerdefinierte Symbole und Systemsymbole erscheinen schneller;
+- **Scrollen in Listen**: flüssigeres Scrollen in großen Verzeichnissen;
+- **Medienvorschauen**: Bild-, GIF- und Videovorschauen reagieren schneller und nutzen weniger Speicher;
+- **Indexierung**: stabilere globale Suchindexierung;
+
+#### Startseite und Kontextmenüs
+
+- **Trennen**: Netzwerkverbindungen oder Wechseldatenträger über das Kontextmenü trennen, sofern dies unterstützt wird;
+- **Alle Duplikate schließen**: der Tab-Menüpunkt `Alle Duplikate schließen` schließt jetzt alle mehrfach geöffneten Pfade im Arbeitsbereich, nicht nur Duplikate des aktuellen Tabs;
+- **Auswahl per Rechtsklick aufheben**: ein Rechtsklick auf den leeren Hintergrund des Navigators hebt die aktuelle Auswahl auf, bevor das Hintergrundmenü geöffnet wird;
+- **Startseiten-Aktionen**: Kontextmenüs der Startseite schließen sich nach dem Ausführen einer Aktion, `In neuem Tab öffnen` öffnet den Navigator und die Tab-Leiste scrollt automatisch zu neuen Tabs;
+- **Ziehbereich des Fensters**: bei Titelleisten im Linux-Stil erstreckt sich der Ziehbereich über die Schaltflächen der Symbolleiste, damit sich das Fenster leichter verschieben lässt;
+
+![window-drag-region](./public/changelog/assets/2.2.0/window-drag-region.webp)
+
+### UI-Verbesserungen
+
+- **Anzeige des aktiven Bereichs**: klarere Markierung des aktiven Bereichs in der Statusleiste bei aktivierter geteilter Ansicht;
+- **Größe des Infobereichs änderbar**: Breite des Infobereichs und Aufteilung zwischen Vorschau und Details durch Ziehen anpassen;
+- **Kompakter Infobereich**: dichteres Eigenschaftslayout im Infobereich;
+- **Kontextmenü-Aktionen**: `Karte bearbeiten` wird als Aktionsschaltfläche angezeigt; außerdem sind alle Aktionsschaltflächen kleiner;
+- **Darstellung des Navigators**: verbessertes adaptives Layout, deutlichere Hervorhebung aktiver Tabs in der geteilten Ansicht und überarbeitete Erweiterungsansicht in der Befehlspalette;
+- **RTL-Layout**: sauberere Ausrichtung für Rechts-nach-links-Sprachen;
+
+![resizable-info-panel](./public/changelog/assets/2.2.0/resizable-info-panel.webp)
+
+![compact-info-panel](./public/changelog/assets/2.2.0/compact-info-panel.webp)
+
+### Fehlerbehebungen
+
+- **Suche beim Tippen**: die Schnellsuche wird jetzt auch bei nicht-lateinischen Tastaturlayouts aktiviert;
+- **Verzeichnis laden**: Einträge werden nach dem Laden eines Verzeichnisses nicht mehr neu angeordnet;
+- **Benutzerdefinierte Symbole**: benutzerdefinierte Symbole laden ohne spürbare Verzögerung;
+- **Rasterkarten**: Rasterlayout-Karten ändern ihre Größe beim Laden nicht mehr;
+- **Raster-Scrollleiste**: Raster-Scrollleiste versteckt sich nicht mehr hinter fixierten Kopfzeilen;
+- **Schnellauswahl**: bei der Schnellauswahl von Dateien wird nicht mehr versehentlich eine Datei geöffnet;
+- **Terminal-Kürzel**: `Alt+T` öffnet das Terminal jetzt für den ausgewählten Eintrag und nicht mehr für das aktuelle Verzeichnis;
+- **Dateien öffnen**: Dateien werden jetzt mit dem richtigen Arbeitsverzeichnis geöffnet;
+- **SMB-Freigaben**: Dateien auf SMB-Freigaben können wieder geöffnet werden;
+- **WSL-Pfade**: Verarbeitung von UNC-Pfaden des WSL-Hosts unter Windows korrigiert, einschließlich `//wsl.localhost` als virtuelle Liste der Distributionen;
+- **Standard-Dateimanager**: Problem beim Festlegen des Standard-Dateimanagers in Versionen aus dem Microsoft Store behoben;
+- **AppImage (Linux)**: `Could not create default EGL display: EGL_BAD_PARAMETER` behoben;
+- **Erweiterungsinstallation (Linux)**: Installationsfehler bei Erweiterungen mit mehreren Dateien im Verzeichnis `dist` behoben;
+- **Erweiterungsdetails**: Ausrichtung der Übersichtsseite korrigiert;
+- **Geräte-Aufwachen**: App bleibt nach dem Aufwachen des Geräts nicht mehr im Ladezustand stecken;
+- **Update-Benachrichtigungen**: Update-Benachrichtigungen erscheinen nicht mehr für unveröffentlichte Versionen;
+- **RTL**: Probleme mit dem Rechts-nach-links-Layout behoben;
+- **Übersetzungen**: fehlende und fehlerhafte Übersetzungstexte korrigiert;
+
+---
+
+## [2.1.0] - May 2026
+
+**Zusammenfassung:** Leistungsverbesserungen im Navigator, generierte Miniaturansichten, Erweiterungsthemen, Drucken, Dateivorschauen, neue Tastenkürzel, Verbesserungen am Adresseditor, Neugestaltung des Statuscenters sowie Verfeinerungen von Tabs und Navigation.
+
+- [Neue Funktionen](#neue-funktionen)
+  - [Drucken](#drucken)
+  - [Dateien auf Tabs ziehen](#dateien-auf-tabs-ziehen)
+  - [Dateivorschau im Infobereich](#dateivorschau-im-infobereich)
+  - [Navigator-Listenspalten](#navigator-listenspalten)
+- [Erweiterungen](#erweiterungen)
+  - [App-Themes aus Erweiterungen](#app-themes-aus-erweiterungen)
+  - [Symbol-Themes aus Erweiterungen](#symbol-themes-aus-erweiterungen)
+- [Neue Einstellungen](#neue-einstellungen)
+- [Neue Tastenkürzel](#neue-tastenkürzel)
+- [UX-Verbesserungen](#ux-verbesserungen)
+  - [Leistung bei großen Verzeichnissen](#leistung-bei-großen-verzeichnissen)
+  - [Schnellsuche](#schnellsuche)
+  - [Adresseditor](#adresseditor)
+  - [Statuscenter](#statuscenter)
+  - [Navigation und Tabs](#navigation-und-tabs)
+  - [Tastenkürzel-Verwaltung](#tastenkürzel-verwaltung)
+- [UI-Verbesserungen](#ui-verbesserungen)
+- [Fehlerbehebungen](#fehlerbehebungen)
+
+### Neue Funktionen
+
+#### Drucken
+
+Ausgewählte Dateien lassen sich direkt aus dem Navigator über das Kontextmenü, das Aktionsmenü oder `Ctrl+O` drucken.
+
+- **Unterstützte Formate**: Bilder, PDF-Dateien und Textdateien;
+- **Schnelles Beenden**: Druckansicht mit `Escape` schließen;
+
+![printing](./public/changelog/assets/2.1.0/printing.webp)
+
+#### Dateien auf Tabs ziehen
+
+Dateien oder Verzeichnisse lassen sich auf Tabs ziehen, um sie in das Verzeichnis eines anderen Tabs zu verschieben oder zu kopieren.
+
+- **Tabs als Ablageziel**: Tabs werden beim Ziehen von Dateien im Navigator zu Zielen für Drag-and-drop;
+- **Aktivierung beim Überfahren**: verweilt der Mauszeiger während des Ziehens über einem Tab, kann vor dem Ablegen zu diesem Tab gewechselt werden;
+- **Geteilte Tabs**: Tabgruppen für Verzeichnisse behalten ihr normales Ablegeverhalten und die Tab-Struktur der geteilten Ansicht bei;
+
+![file-drop-to-tabs](./public/changelog/assets/2.1.0/file-drop-to-tabs.webp)
+
+#### Dateivorschau im Infobereich
+
+Der Infobereich kann jetzt Vorschauen für alle von der Schnellansicht unterstützten Dateitypen anzeigen, nicht nur für Bilder und Videos.
+
+- **Medienvorschauen**: Bilder nutzen generierte Miniaturansichten, Videos und Audiodateien bieten native Bedienelemente und PDF-Dateien werden direkt im Infobereich dargestellt;
+- **Textvorschauen**: Textdateien zeigen eine kompakte dekodierte Vorschau mit einer sinnvollen Größenbegrenzung;
+- **Ersatzdarstellung**: nicht unterstützte Dateien und Ordner werden weiterhin durch einfache Symbole dargestellt;
+
+![info-panel-file-preview](./public/changelog/assets/2.1.0/info-panel-file-preview.webp)
+
+#### Navigator-Listenspalten
+
+Die Listenansicht bietet mehr optionale Spalten und eine bessere direkte Verwaltung von Metadaten.
+
+- **Spalte `Erstellt`**: Erstellungsdatum anzeigen und danach sortieren;
+- **Spalte `Tags`**: Tags direkt in der Listenansicht anzeigen und über die Spalte hinzufügen, entfernen oder bearbeiten;
+
+![navigator-list-columns](./public/changelog/assets/2.1.0/navigator-list-columns.webp)
+
+### Erweiterungen
+
+#### App-Themes aus Erweiterungen
+
+Erweiterungen können jetzt vollständige Farbschemas für die App bereitstellen. Installierte Theme-Erweiterungen erscheinen in der Theme-Auswahl.
+
+#### Symbol-Themes aus Erweiterungen
+
+Erweiterungen können jetzt Symbol-Themes für Ordner und Dateien im Navigator bereitstellen.
+
+- **Getrennte Auswahl**: Ordner- und Datei-Symbolthemes separat unter `Einstellungen > Erscheinungsbild > Symbol-Theme` auswählen;
+- **Integrierte und Erweiterungs-Themes**: das mitgelieferte Standard- oder System-Symboltheme sowie jedes aktivierte Erweiterungs-Theme verwenden;
+- **Theme-Zuordnung**: bereitgestellte Themes können Symbole anhand von Dateierweiterung, Dateiname, Ordnername und geöffnetem Ordnerzustand definieren;
+
+### Neue Einstellungen
+
+- **Fetter Text des aktiven Tabs**: Titel des aktiven Tabs fett darstellen (`Einstellungen > Tabs > Tab-Erscheinungsbild > Fetter Text des aktiven Tabs`);
+
+![bold-active-tab-text-setting](./public/changelog/assets/2.1.0/bold-active-tab-text-setting.webp)
+
+### Neue Tastenkürzel
+
+- **Geteilte Ansicht umschalten** (`Ctrl+S`): geteilte Ansicht im Navigator ein- oder ausblenden;
+- **Geschlossenen Tab wiederherstellen** (`Ctrl+Shift+T`): die zuletzt geschlossene Tabgruppe wiederherstellen;
+- **Datei / Verzeichnis erstellen** (`Ctrl+Shift+M` / `Ctrl+Shift+N`): eine neue Datei oder ein neues Verzeichnis im aktuellen Verzeichnis erstellen;
+- **Ausgewählte Datei drucken** (`Ctrl+O`): die ausgewählte Datei drucken;
+- **Kopierten Pfad öffnen** (`Ctrl+Shift+V`): einen gültigen Pfad aus der Zwischenablage öffnen;
+- **Seiten wechseln** (`Alt+1` - `Alt+5`): zwischen Startseite, Navigator, Dashboard, Einstellungen und Erweiterungen wechseln;
+- **Im Verzeichnisverlauf navigieren** (`Alt+Left` / `Alt+Right`): im Navigator-Verlauf zurück oder vorwärts gehen;
+- **Zum übergeordneten Verzeichnis** (`Alt+Up`): zum übergeordneten Verzeichnis gehen;
+- **Maustasten für den Verlauf** (`Mouse Button 4` / `Mouse Button 5`): mit den Seitentasten der Maus zurück und vorwärts navigieren;
+
+![create-file-directory-shortcuts](./public/changelog/assets/2.1.0/create-file-directory-shortcuts.webp)
+
+![navigator-shortcuts](./public/changelog/assets/2.1.0/navigator-shortcuts.webp)
+
+### UX-Verbesserungen
+
+#### Leistung bei großen Verzeichnissen
+
+Navigation, Schnellsuche und medienreiche Ordner reagieren schneller und nutzen weniger Speicher.
+
+- **Generierte Miniaturansichten**: Miniaturansichten für Bilder und Videos werden in kleineren Abmessungen erzeugt, sodass nicht mehr die vollständigen Mediendateien für jede Dateikarte geladen werden;
+- **Progressive Bilder**: Bildkarten im Raster können eine unscharfe, niedrig aufgelöste Miniaturansicht zeigen, bevor die endgültige Miniaturansicht bereit ist;
+- **Erzeugung abbrechen**: die Erzeugung von Miniaturansichten kann abgebrochen werden, wenn sich der Ordner oder die sichtbaren Einträge ändern;
+- **Darstellungsleistung**: Einträge in großen Verzeichnissen werden effizienter dargestellt und die Schnellansicht nutzt generierte Miniaturansichten in einer virtuellen Liste;
+
+![low-res-image-thumbnail-preview](./public/changelog/assets/2.1.0/low-res-image-thumbnail-preview.webp)
+
+#### Schnellsuche
+
+Die Schnellsuche bietet jetzt zwei Modi: passiv und aktiv:
+
+- **Passiver Modus**: wird beim Tippen automatisch aktiviert, filtert Einträge, ohne den Eingabefokus in das Suchfeld zu setzen, und behindert die Navigation nicht;
+- **Aktiver Modus**: wird mit `Ctrl+F` aktiviert, setzt den Eingabefokus in das Suchfeld und verhindert die Navigation, ermöglicht dafür aber eine genauere Steuerung der Suchanfrage;
+
+Weitere Änderungen:
+
+- **Tippen zum Filtern**: alphanumerische Tasten starten jetzt immer die Schnellsuche (passiver Modus) im aktiven Bereich;
+- **Tastaturnavigation**: der erste passende Eintrag wird automatisch ausgewählt;
+- **Suchfenster**: das Schnellsuche-Fenster ist kompakter und verdeckt weniger Verzeichniseinträge;
+
+![quick-search](./public/changelog/assets/2.1.0/quick-search.webp)
+
+#### Adresseditor
+
+Mit dem Adresseditor lassen sich jetzt nicht nur Verzeichnisse, sondern generell Pfade öffnen.
+
+- **Dateien und Verzeichnisse**: Dateien sowie Verzeichnisse aus dem Adresseditor öffnen;
+- **Häufige Pfade**: in einen Modus zum schnellen Öffnen häufig genutzter Pfade wechseln;
+- **Vorschläge**: Verzeichniseinträge, exakte Treffer, zuletzt verwendete Pfade, mit Tags versehene Elemente, Benutzerordner und Systemlaufwerke durchsuchen;
+- **Tastaturaktionen**: im Editor zurück, vorwärts und nach oben navigieren sowie einen Eintrag im übergeordneten Verzeichnis anzeigen;
+
+![address-editor](./public/changelog/assets/2.1.0/address-editor.webp)
+
+#### Statuscenter
+
+Das Statuscenter ist jetzt eine kompakte Komponente in der Symbolleiste mit übersichtlicheren Vorgangsgruppen.
+
+- **Anzahl aktiver Vorgänge**: die Schaltfläche in der Symbolleiste erweitert sich zu einer pillenförmigen Anzeige mit der Anzahl aktiver Vorgänge;
+- **Vorgangsgruppen**: aktive und abgeschlossene Vorgänge sind getrennt; abgeschlossene Vorgänge befinden sich in einem einklappbaren Bereich;
+- **Alle abbrechen**: aktive Vorgänge gleichzeitig über die Kopfzeile des Bereichs abbrechen;
+- **Vorgangskarten**: Vorgangskarten zeigen deutlichere Typ- und Statusbezeichnungen wie `Kopieren | Erfolg` oder `Archiv | Fehler`;
+- **Wiederherstellung der Zwischenablage**: beim Einfügen wird die Zwischenablage geleert, sobald ein Vorgang in die Warteschlange gestellt wird, und bei einem Fehlschlag wiederhergestellt;
+
+![status-center](./public/changelog/assets/2.1.0/status-center.webp)
+
+#### Navigation und Tabs
+
+Die Navigation und das Verhalten der Tabs sind jetzt vorhersehbarer.
+
+- **Laufwerke in der Seitenleiste**: ein Klick auf ein Laufwerk in der Navigationsseitenleiste öffnet es im aktuellen Tab;
+- **Aktuelles Verzeichnis**: der aktuelle Abschnitt der Adresse wird deutlicher hervorgehoben; sein Kontextmenü öffnet sich per Rechtsklick auf den letzten Abschnitt;
+- **Geschlossene Tabs**: wiederhergestellte Tabs kehren an ihre vorherige Position zurück, behalten umbenannte Pfade und leiten gelöschte Pfade zur Startseite um;
+- **Adaptives Layout**: Navigationsschaltflächen der Symbolleiste werden früher eingeklappt, Adressleisten der geteilten Ansicht wechseln in sehr schmalen Bereichen in eine zweite Zeile und kompakte Tabs behalten eine einheitliche Höhe;
+
+![nav-sidebar-drive-current-tab](./public/changelog/assets/2.1.0/nav-sidebar-drive-current-tab.webp)
+
+![current-directory-address-bar](./public/changelog/assets/2.1.0/current-directory-address-bar.webp)
+
+#### Tastenkürzel-Verwaltung
+
+Bei der Bearbeitung von Tastenkürzeln werden Konflikte und Anpassungen jetzt übersichtlicher behandelt.
+
+- **Mehrere Tastenbelegungen**: einer Aktion mehrere Tastenkürzel zuweisen;
+- **Belegungen aufheben**: die Zuweisung von Tastenkürzeln aufheben;
+- **Konflikt ersetzen**: ein kollidierendes Tastenkürzel direkt über die Konfliktmeldung ersetzen;
+- **Menü der Tastenkürzelliste**: Tastenkürzel über ein Kontextmenü in der Tastenkürzelliste verwalten;
+
+![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
+
+#### Drag-and-drop
+
+Beim Ziehen kann jetzt mit `Alt+Tab` zu einer anderen App gewechselt werden. Dateien lassen sich dadurch aus Sigma File Manager herausziehen, ohne dass der Mauszeiger das Fenster verlassen muss;
+
+### UI-Verbesserungen
+
+- **Auswahlring**: Deckkraft und Versatz des Auswahlrings sowie die Darstellung der Bereichskopfzeile und das Verhalten des Tastaturfokus verbessert;
+- **Tab-Leiste**: Darstellung der Tab-Leiste und Lesbarkeit des aktiven Tabs verbessert;
+- **Theme-Auswahl**: verbessertes Design der Theme-Auswahl;
+- **Schnellzugriff**: Darstellung des Schnellzugriffspanels verfeinert;
+- **Startbildschirm**: beim App-Start wird jetzt ein Startbildschirm angezeigt;
+- **Sichtbarkeit von Einblendmenüs**: Sichtbarkeit durchscheinender Elemente in Einblendmenüs verbessert;
+- **Tooltips**: Tooltips zu weiteren Symbolleistenschaltflächen hinzugefügt;
+- **Übersetzungen**: japanische und vietnamesische Texte verbessert und Lokalisierungsstruktur bereinigt;
+
+![selection-ring](./public/changelog/assets/2.1.0/selection-ring.webp)
+
+![tab-bar-styles](./public/changelog/assets/2.1.0/tab-bar-styles.webp)
+
+![narrow-window-layout](./public/changelog/assets/2.1.0/narrow-window-layout.webp)
+
+### Fehlerbehebungen
+
+- **Zugeordnete Laufwerke**: Drag-and-drop aus zugeordneten Netzwerklaufwerken funktioniert wieder;
+- **Scrollen mit der Tastatur**: die erste Zeile wird nicht mehr von der fixierten Kopfzeile verdeckt;
+- **Einfrieren beim Start**: seltenes, mehrere Minuten langes Einfrieren unter Windows behoben, das durch langsame synchrone Systemaufrufe beim Start und bei Update-Prüfungen verursacht wurde;
+- **Archivextraktion**: Unix-Dateimodi beim Extrahieren von Archiven beibehalten;
+- **HTTP für Erweiterungen**: Verarbeitung dauerhaft fehlschlagender Nicht-2xx-Antworten wiederhergestellt und Wartezeiten vor erneuten Versuchen abbrechbar gemacht;
+- **Befehlspalette**: Schaltfläche der Befehlspalette in der Symbolleiste bei geändertem Tastenkürzel korrigiert;
+- **Raster-Bereichsauswahl**: die Bereichsauswahl in der Rasteransicht wählt keine Einträge über den ausgewählten Bereich hinaus mehr aus;
+- **Kontextmenüs**: Kontextmenüs für ausgewähltes Element und aktuelles Verzeichnis bleiben nach Aktionsklicks nicht mehr offen;
+- **Tastenkürzel-Registrierung**: Fehler bei der Registrierung von Tastenkürzeln nach dem Neuladen eines Fensters behoben;
+- **Theme-Anwendung**: ausgewählte Themes werden in allen Fenstern angewendet;
+- **Verschieben unter macOS**: Verarbeitung von Verschiebungen zwischen Volumes unter macOS korrigiert und Bundle-Ziele aktiviert;
+- **Standard-Dateimanager**: vorherige Windows-Registry-Werte des Standard-Dateimanagers werden jetzt sicherer wiederhergestellt, wenn die Aktivierung fehlschlägt;
+
+![keyboard-scroll-floating-header](./public/changelog/assets/2.1.0/keyboard-scroll-floating-header.webp)
+
+---
 ## [2.0.0-beta.3] - April 2026
 
 **Zusammenfassung:** Erweiterungssystem mit Marketplace, Dateifreigabe im lokalen Netzwerk, Schnellzugriffsmenü, Zip-Archive, WSL-Laufwerke, Tag-Bearbeitung, verbesserter Schnellansicht und Suche, Verbesserungen der visuellen Effekte sowie zahlreiche UX- und Stabilitätsverbesserungen.

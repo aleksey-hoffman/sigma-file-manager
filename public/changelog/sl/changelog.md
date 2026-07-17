@@ -1,5 +1,415 @@
 # Dnevnik sprememb
 
+## [2.2.0] - July 2026
+
+**Povzetek:** Integracija s sistemskim odložiščem, izbiranje z okvirjem, povezani razdeljeni pogled, upravljanje povezav, ZIP-arhivi z geslom, sistemsko okno Lastnosti v sistemu Windows, nove zmožnosti API-jev za razširitve, podpora za hebrejščino in izboljšave navigatorja.
+
+### Nove funkcije
+
+#### Integracija sistemskega odložišča
+
+Kopirajte in prilepite datoteke, mape in slike med Sigma File Manager in drugimi aplikacijami prek sistemskega odložišča.
+
+- **Prenos datotek med aplikacijami**: kopirajte ali izrežite elemente v SFM in jih prilepite v aplikacije, kot je Raziskovalec, ali pa s `Ctrl+V` v navigator prilepite poti in datoteke, kopirane v drugih aplikacijah;
+- **Lepljenje slik**: prilepite slike, kopirane iz brskalnikov in drugih aplikacij, neposredno v mapo;
+- **Razreševanje sporov**: če prilepljeni elementi že obstajajo, izberite `Preimenuj` ali `Združi`; za posamezne datoteke so na voljo možnosti Zamenjaj, Preskoči, Obdrži obe ali Uporabi za vse;
+- **Orodna vrstica odložišča**: po želji v orodni vrstici prikažite slike in poti datotek, kopirane v drugih aplikacijah;
+
+Vidnost orodne vrstice lahko nastavite v `Nastavitve > Videz uporabniškega vmesnika > Odložišče`. Lepljenje s `Ctrl+V` deluje tudi, ko je orodna vrstica skrita.
+
+![system-clipboard](./public/changelog/assets/2.2.0/system-clipboard.webp)
+
+#### Izbiranje z okvirjem
+
+Po praznem prostoru v navigatorju povlecite izbirni okvir in z njim izberite več elementov.
+
+- **Modifikacijske tipke**: držite `Ctrl` ali `Shift`, da elemente dodate trenutnemu izboru; držite `Alt`, da izbor obrnete;
+- **Lažji začetek izbiranja**: po želji povečajte odmike v seznamu in mreži, da boste okvir lažje začeli vleči na praznem prostoru;
+
+Omogočite v `Nastavitve > Splošno > Pogled datotek > Omogoči izbiranje z okvirjem`.
+
+![box-selection](./public/changelog/assets/2.2.0/box-selection.webp)
+
+#### Povezani razdeljeni pogled
+
+Novi način razdeljenega pogleda `Povezan` poenostavi delo v stolpcih: ko v prvem podoknu izberete mapo, se njena vsebina prikaže v drugem.
+
+Obstoječi neodvisni način `Razdeljen` ostaja nespremenjen. Način izberite v meniju možnosti navigatorja pod `Način razdeljenega pogleda`, razdeljeni pogled pa vklopite ali izklopite s `Ctrl+S`.
+
+Posodobljena je tudi ikona podokna z informacijami, da jo je lažje razlikovati od ikone razdeljenega pogleda.
+
+![linked-split-view](./public/changelog/assets/2.2.0/linked-split-view.webp)
+
+#### Upravljanje povezav
+
+Ustvarjajte datotečne povezave in preverjajte njihove podatke neposredno v navigatorju.
+
+- **Ustvarjanje povezav**: v kontekstnem meniju izberite `Ustvari povezavo`, da ustvarite simbolno ali trdo povezavo, bližnjico oziroma spoj;
+- **Stolpci povezav**: seznam lahko prikaže stolpce Vrsta, Povezave, Cilj povezave in Stanje povezave (`Veljavna`, `Prekinjena`, `Neznana`, `Nepodprta`);
+- **Odpiranje povezav**: bližnjice imenikov in simbolne povezave do map odprejo ciljni imenik v navigatorju, drugi cilji pa se odprejo s privzeto aplikacijo;
+
+![link-handling](./public/changelog/assets/2.2.0/link-handling.webp)
+
+#### Sistemsko okno Lastnosti
+
+V sistemu Windows lahko sistemsko okno Lastnosti za izbrane elemente odprete iz kontekstnega menija, menija dejanj, z `Alt+Enter` ali dvojnim klikom ob pritisnjeni tipki `Alt`.
+
+![native-properties](./public/changelog/assets/2.2.0/native-properties.webp)
+
+#### Spreminjanje velikosti in prerazporejanje stolpcev v seznamskem pogledu
+
+Širino in vrstni red stolpcev v seznamskem pogledu lahko prilagodite svojemu načinu dela.
+
+- **Spreminjanje širine**: povlecite rob stolpca;
+- **Vrstni red in vidnost**: nastavite ju v pojavnem meniju `Stolpci` v glavi seznama;
+- **Možnosti širine**: `Zapolni razpoložljivo širino` in `Nastavi najmanjše širine`;
+
+![list-column-resize](./public/changelog/assets/2.2.0/list-column-resize.webp)
+
+#### Naslov korenskih lokacij
+
+Novi korenski naslov `Lokacije` združuje pogone in navidezne lokacije, da lahko med njimi hitreje preklapljate.
+
+- **Naslovna vrstica**: iz korena pogona se pomaknite eno raven višje ali odprite `Lokacije` iz naslovne vrstice oziroma urejevalnika naslova;
+- **Priljubljene in oznake**: naslov `Lokacije` lahko tako kot druge imenike dodate med priljubljene in mu dodelite oznake;
+- **Razdeljen pogled**: še posebej uporabno za preklapljanje pogonov med podokni, ne da bi zapustili navigator;
+
+![root-locations-address](./public/changelog/assets/2.2.0/root-locations-address.webp)
+
+### Razširitve
+
+#### API-ji in pogledi razširitev
+
+Razširitve imajo na voljo več zmožnosti aplikacije in gradnikov uporabniškega vmesnika.
+
+- **Lokalne izvršljive datoteke**: nastavite samodejno namestitev odvisnosti razširitve ali ročno izberite lokalne izvršljive datoteke (`Razširitve > Odvisnosti`);
+- **Zahteve HTTP**: razširitve lahko pošiljajo zahteve HTTP gostiteljem, dovoljenim v njihovem manifestu;
+- **Nadzor pogleda**: razširitve z ustreznim dovoljenjem lahko spreminjajo postavitev in razvrščanje navigatorja;
+- **API odložišča**: razširitve z ustreznim dovoljenjem lahko berejo in spreminjajo vsebino odložišča;
+- **Pogled s seznamom in podrobnostmi**: nov vzorec uporabniškega vmesnika razširitve z iskanjem po seznamu in podoknom s podrobnostmi;
+
+![extension-local-binaries](./public/changelog/assets/2.2.0/extension-local-binaries.webp)
+
+![extension-dependency-config](./public/changelog/assets/2.2.0/extension-dependency-config.webp)
+
+![extension-list-detail](./public/changelog/assets/2.2.0/extension-list-detail.webp)
+
+![extension-http-api](./public/changelog/assets/2.2.0/extension-http-api.webp)
+
+### Nove nastavitve
+
+- **Omogoči izbiranje z okvirjem**: po praznem prostoru povlecite okvir in izberite več elementov;
+  `Nastavitve > Splošno > Pogled datotek > Omogoči izbiranje z okvirjem`
+- **Povečaj razmike v pogledu datotek**: povečajte odmike v seznamu in mreži, da boste lažje začeli izbirati;
+  `Nastavitve > Splošno > Pogled datotek > Povečaj razmike v pogledu datotek`
+- **Ohrani okno hitrega predogleda v pomnilniku**: okno ostane naloženo in se odpre takoj (porabi približno 200 MB);
+  `Nastavitve > Splošno > Zmogljivost > Ohrani okno hitrega predogleda v pomnilniku`
+- **Ohrani okno za tiskanje v pomnilniku**: okno ostane naloženo in se odpre takoj (porabi približno 200 MB);
+  `Nastavitve > Splošno > Zmogljivost > Ohrani okno za tiskanje v pomnilniku`
+- **Orodna vrstica odložišča za zunanje slike**: prikažite orodno vrstico odložišča za slike, kopirane v drugih aplikacijah;
+  `Nastavitve > Videz uporabniškega vmesnika > Odložišče`
+- **Orodna vrstica odložišča za zunanje poti**: prikažite orodno vrstico odložišča za poti datotek, kopirane v drugih aplikacijah;
+  `Nastavitve > Videz uporabniškega vmesnika > Odložišče`
+- **Dinamična velikost podokna z informacijami**: velikost naj se prilagaja samodejno; ročno spreminjanje velikosti to možnost izklopi;
+  `Nastavitve > Videz uporabniškega vmesnika > Podokno z informacijami > Dinamična velikost podokna z informacijami`
+- **Slika polne velikosti v predogledu**: v podoknu z informacijami prikažite slike v polni ločljivosti;
+  `Nastavitve > Videz uporabniškega vmesnika > Podokno z informacijami > Prikaži sliko polne velikosti v predogledu`
+- **Privzeto utišaj predogled videoposnetka**: med brskanjem predvajajte videoposnetke v podoknu z informacijami brez zvoka;
+  `Nastavitve > Videz uporabniškega vmesnika > Podokno z informacijami > Privzeto utišaj predogled videoposnetka`
+- **Samodejno predvajaj predoglede videoposnetkov**: izbrani videoposnetek se samodejno začne predvajati v podoknu z informacijami;
+  `Nastavitve > Videz uporabniškega vmesnika > Podokno z informacijami > Samodejno predvajaj predogled videoposnetka`
+
+### Nove bližnjice
+
+- **Sistemsko okno Lastnosti** (`Alt+Enter`): odprite sistemsko okno Lastnosti za izbrane elemente v sistemu Windows;
+
+### Novi jeziki
+
+- **Hebrejščina** (`עברית`): popoln prevod s podporo za vmesnik od desne proti levi (`Nastavitve > Splošno > Jezik`);
+
+### Izboljšave uporabniške izkušnje
+
+#### Razpakiranje arhivov
+
+Zdaj lahko razpakirate šifrirane ZIP-arhive in arhive z imeni datotek v kodiranjih, ki niso UTF-8.
+
+- **ZIP z geslom**: ko ga razpakiranje zahteva, vnesite geslo arhiva;
+- **Kodiranje imen datotek**: kodiranje izberite v `Možnosti razpakiranja arhiva`; najprej se uporabi samodejno zaznavanje, regionalna kodiranja pa so združena med nadomestnimi možnostmi;
+
+![archive-extraction-options](./public/changelog/assets/2.2.0/archive-extraction-options.webp)
+
+![archive-extraction-encoding](./public/changelog/assets/2.2.0/archive-extraction-encoding.webp)
+
+#### Razvrščanje mreže
+
+Mrežni pogled ima zdaj v meniju možnosti navigatorja lastne nastavitve razvrščanja.
+
+- **Razvrsti po**: Ime, Elementi, Velikost, Spremenjeno, Ustvarjeno, Oznake, Vrsta, Povezave in Stanje povezave;
+- **Smer**: naraščajoči ali padajoči vrstni red se shrani ločeno od razvrščanja v seznamskem pogledu;
+
+![grid-sorting](./public/changelog/assets/2.2.0/grid-sorting.webp)
+
+#### Razširitve lupine
+
+V razdelku `Razširitve lupine` kontekstnega menija so zdaj na voljo sodobna dejanja lupine, ki so jih registrirale druge aplikacije.
+
+![shell-extensions](./public/changelog/assets/2.2.0/shell-extensions.webp)
+
+#### Obnovitev stanja seje
+
+Ko se med isto sejo vrnete na stran ali v podokno, se obnovijo položaji pomikanja in aktivni zavihki.
+
+#### Zmogljivost navigatorja
+
+Brskanje po velikih mapah in predstavnostnih datotekah je hitrejše in porabi manj pomnilnika.
+
+- **Prvo nalaganje**: imeniki se ob prvem odpiranju naložijo hitreje;
+- **Nalaganje ikon**: prilagojene in sistemske ikone se prikažejo z manjšo zakasnitvijo;
+- **Pomikanje po seznamu**: seznami v velikih imenikih se pomikajo bolj gladko;
+- **Predogledi predstavnostnih datotek**: slike, GIF-i in videoposnetki se odzivajo hitreje in porabijo manj pomnilnika;
+- **Indeksiranje**: indeksiranje globalnega iskanja je zanesljivejše;
+
+#### Domača stran in kontekstni meniji
+
+- **Prekini povezavo**: kadar je podprto, lahko omrežne ali izmenljive nosilce odklopite iz kontekstnega menija;
+- **Zapri vse dvojnike**: ukaz `Zapri vse dvojnike` v meniju zavihka zdaj zapre vse zavihke s podvojenimi potmi v delovnem prostoru, ne le kopij trenutnega zavihka;
+- **Desni klik za počistitev**: desni klik na prazno ozadje navigatorja pred odpiranjem menija ozadja počisti trenutno izbiro;
+- **Dejanja domače strani**: kontekstni meni se po izbiri dejanja zapre, ukaz `Odpri v novem zavihku` odpre navigator, novi zavihki pa se samodejno pomaknejo v vidno območje;
+- **Območje vlečenja okna**: pri naslovnih vrsticah v slogu Linuxa območje vlečenja poteka tudi čez gumbe orodne vrstice, zato je okno lažje premikati;
+
+![window-drag-region](./public/changelog/assets/2.2.0/window-drag-region.webp)
+
+### Izboljšave uporabniškega vmesnika
+
+- **Kazalnik aktivnega podokna**: jasnejša oznaka aktivnega podokna v vrstici stanja, ko je razdeljen pogled vklopljen;
+- **Podokno z informacijami s spremenljivo velikostjo**: z vlečenjem spremenite širino podokna in razmerje med predogledom ter podrobnostmi;
+- **Kompaktno podokno z informacijami**: gostejša razporeditev lastnosti;
+- **Dejanja kontekstnega menija**: ukaz `Uredi kartico` je prikazan kot poseben gumb, vsi gumbi dejanj pa so manjši;
+- **Slog navigatorja**: izboljšave vključujejo prilagodljivo postavitev, videz aktivnih zavihkov v razdeljenem pogledu in pogled razširitev v ukazni paleti;
+- **Vmesnik od desne proti levi**: izboljšana poravnava za jezike, ki se pišejo od desne proti levi;
+
+![resizable-info-panel](./public/changelog/assets/2.2.0/resizable-info-panel.webp)
+
+![compact-info-panel](./public/changelog/assets/2.2.0/compact-info-panel.webp)
+
+### Popravki napak
+
+- **Iskanje med tipkanjem**: odpravljena je napaka, zaradi katere se hitro iskanje pri nelatiničnih razporeditvah tipkovnice ni vklopilo;
+- **Nalaganje imenika**: elementi po končanem nalaganju imenika ne spremenijo več vrstnega reda;
+- **Prilagojene ikone**: zmanjšana je bila opazna zakasnitev pri nalaganju prilagojenih ikon;
+- **Kartice mreže**: kartice med nalaganjem ne spreminjajo več velikosti;
+- **Drsnik mreže**: drsnik se ne skriva več za pritrjenimi glavami;
+- **Hitra izbira**: odpravljena je napaka, zaradi katere je hitra izbira včasih odprla datoteko;
+- **Bližnjica terminala**: `Alt+T` zdaj odpre terminal za izbrani element namesto za trenutni imenik;
+- **Odpiranje datotek**: datoteke se ne zaženejo več iz napačnega delovnega imenika;
+- **Skupne rabe SMB**: datoteke v skupnih rabah SMB je znova mogoče odpreti;
+- **Poti WSL**: popravljeno je obravnavanje gostiteljskih poti UNC za WSL v sistemu Windows; `//wsl.localhost` se prepozna kot navidezni seznam distribucij;
+- **Privzeti upravitelj datotek**: privzeti upravitelj datotek je znova mogoče nastaviti v različicah iz trgovine Microsoft Store;
+- **AppImage (Linux)**: popravljeno `Could not create default EGL display: EGL_BAD_PARAMETER`;
+- **Namestitev razširitev (Linux)**: odpravljene so napake pri nameščanju paketov razširitev z več datotekami;
+- **Podrobnosti razširitve**: popravljena je poravnava strani s pregledom;
+- **Prebuditev naprave**: aplikacija po prebuditvi naprave ne obtiči več v stanju nalaganja;
+- **Obvestila o posodobitvah**: obvestila se ne prikazujejo več za neizdane različice;
+- **Vmesnik od desne proti levi**: odpravljene so težave s postavitvijo;
+- **Prevodi**: popravljeni manjkajoči in napačni prevodni nizi;
+
+---
+
+## [2.1.0] - May 2026
+
+**Povzetek:** Hitrejši navigator, ustvarjene sličice, teme iz razširitev, tiskanje, predogledi datotek, nove bližnjice, izboljšan urejevalnik naslova, prenovljeno središče stanja ter boljša uporaba zavihkov in navigacije.
+
+### Nove funkcije
+
+#### Tiskanje
+
+Natisnite izbrane datoteke neposredno iz navigatorja prek kontekstnega menija, menija dejanj ali s `Ctrl+O`.
+
+- **Podprti formati**: slike, PDF, besedilni formati;
+- **Hiter izhod**: zaprite pogled tiskanja s `Escape`;
+
+![printing](./public/changelog/assets/2.1.0/printing.webp)
+
+#### Vlečenje datotek na zavihke
+
+Povlecite datoteke ali imenike na zavihke, da jih premaknete ali kopirate v imenik drugega zavihka.
+
+- **Zavihki kot cilji**: med vlečenjem datotek v navigatorju jih lahko spustite na zavihke;
+- **Preklop ob zadržanju kazalca**: med vlečenjem zadržite kazalec nad zavihkom, da ga pred spustom odprete;
+- **Razdeljeni zavihki**: skupine zavihkov imenikov sprejemajo datoteke kot prej, pri tem pa ohranijo strukturo zavihkov razdeljenega pogleda;
+
+![file-drop-to-tabs](./public/changelog/assets/2.1.0/file-drop-to-tabs.webp)
+
+#### Predogled datotek v podoknu z informacijami
+
+Podokno z informacijami lahko zdaj prikaže vse vrste datotek, ki jih podpira hitri predogled, ne le slik in videoposnetkov.
+
+- **Predogledi predstavnostnih datotek**: slike uporabljajo ustvarjene sličice, videoposnetki in zvok imajo običajne kontrolnike, PDF-ji pa se prikažejo neposredno v podoknu;
+- **Predogledi besedila**: besedilne datoteke prikažejo kratek, dekodiran predogled z varno omejitvijo velikosti;
+- **Nepodprte datoteke**: pri nepodprtih datotekah in mapah se še naprej prikažejo preproste nadomestne ikone;
+
+![info-panel-file-preview](./public/changelog/assets/2.1.0/info-panel-file-preview.webp)
+
+#### Stolpci seznama navigatorja
+
+Seznamski pogled ima več izbirnih stolpcev in priročnejše upravljanje metapodatkov neposredno v seznamu.
+
+- **Stolpec Ustvarjeno**: prikažite in razvrščajte po datumu ustvarjanja;
+- **Stolpec Oznake**: prikažite oznake neposredno v seznamskem pogledu ter dodajajte, odstranjujte ali urejajte oznake iz stolpca;
+
+![navigator-list-columns](./public/changelog/assets/2.1.0/navigator-list-columns.webp)
+
+### Razširitve
+
+#### Teme aplikacije iz razširitev
+
+Razširitve lahko zdaj dodajajo celovite barvne teme aplikacije. Nameščene teme razširitev se prikažejo v izbirniku tem.
+
+#### Teme ikon iz razširitev
+
+Razširitve lahko zdaj dodajajo teme ikon za mape in datoteke v navigatorju.
+
+- **Ločene izbire**: teme ikon map in datotek izberite neodvisno v `Nastavitve > Videz uporabniškega vmesnika > Tema ikon`;
+- **Vgrajene teme in teme razširitev**: uporabite vgrajeno privzeto ali sistemsko temo ikon oziroma katero koli temo omogočene razširitve;
+- **Pravila ikon**: teme lahko določijo ikone glede na končnico ali ime datoteke, ime mape in stanje razširjene mape;
+
+### Nove nastavitve
+
+- **Krepko besedilo aktivnega zavihka**: naslov aktivnega zavihka izpišite krepko (`Nastavitve > Zavihki > Videz zavihkov > Krepko besedilo aktivnega zavihka`);
+
+![bold-active-tab-text-setting](./public/changelog/assets/2.1.0/bold-active-tab-text-setting.webp)
+
+### Nove bližnjice
+
+- **Preklopi razdeljen pogled** (`Ctrl+S`): prikažite ali skrijte razdeljen pogled v navigatorju;
+- **Obnovi zaprti zavihek** (`Ctrl+Shift+T`): obnovite nazadnje zaprto skupino zavihkov;
+- **Ustvari datoteko / imenik** (`Ctrl+Shift+M` / `Ctrl+Shift+N`): ustvarite novo datoteko ali imenik v trenutnem imeniku;
+- **Natisni izbrano datoteko** (`Ctrl+O`): natisnite izbrano datoteko;
+- **Odpri kopirano pot** (`Ctrl+Shift+V`): odprite veljavno pot iz odložišča;
+- **Preklopi strani** (`Alt+1` - `Alt+5`): preklapljajte med Domov, Navigator, Nadzorna plošča, Nastavitve in Razširitve;
+- **Navigacija po zgodovini imenika** (`Alt+Left` / `Alt+Right`): pojdite nazaj ali naprej po zgodovini navigatorja;
+- **Pojdi v nadrejeni imenik** (`Alt+Up`): pojdite v nadrejeni imenik;
+- **Gumbi zgodovine miške** (`Mouse Button 4` / `Mouse Button 5`): krmarite nazaj in naprej s stranskimi gumbi miške;
+
+![create-file-directory-shortcuts](./public/changelog/assets/2.1.0/create-file-directory-shortcuts.webp)
+
+![navigator-shortcuts](./public/changelog/assets/2.1.0/navigator-shortcuts.webp)
+
+### Izboljšave uporabniške izkušnje
+
+#### Zmogljivost velikih imenikov
+
+Navigacija, hitro iskanje in mape z veliko predstavnostnimi datotekami delujejo hitreje ter porabijo manj pomnilnika.
+
+- **Ustvarjene sličice**: slike in videoposnetki dobijo manjše sličice, zato posamezni kartici datoteke ni treba naložiti celotne predstavnostne datoteke;
+- **Progresivne slike**: kartice slik v mreži lahko prikažejo zamegljeno sličico nizke ločljivosti, preden je končna sličica pripravljena;
+- **Preklic ustvarjanja sličic**: ob spremembi mape ali vidnih elementov se lahko ustvarjanje prekine;
+- **Zmogljivost upodabljanja**: vsebina velikih imenikov se upodablja učinkoviteje, hitri predogled pa uporablja ustvarjene sličice in navidezni seznam;
+
+![low-res-image-thumbnail-preview](./public/changelog/assets/2.1.0/low-res-image-thumbnail-preview.webp)
+
+#### Hitro iskanje
+
+Hitro iskanje ima zdaj dva načina: pasivni in aktivni:
+
+- **Pasivni način**: vklopi se samodejno ob začetku tipkanja, filtrira elemente brez prehoda v iskalno polje in ne ovira navigacije.
+- **Aktivni način**: vklopi se s `Ctrl+F`, premakne fokus v iskalno polje in začasno onemogoči navigacijo, vendar omogoča natančnejše urejanje poizvedbe.
+
+Druge spremembe:
+
+- **Tipkanje za filtriranje**: alfanumerične tipke v aktivnem podoknu vedno zaženejo hitro iskanje v pasivnem načinu;
+- **Navigacija s tipkovnico**: prvi rezultat se izbere samodejno;
+- **Pojavno okno**: okno hitrega iskanja je kompaktnejše in manj prekriva vsebino imenika;
+
+![quick-search](./public/changelog/assets/2.1.0/quick-search.webp)
+
+#### Urejevalnik naslova
+
+Urejevalnik naslova lahko zdaj uporabite za hitro odpiranje datotek in poti.
+
+- **Datoteke in imeniki**: odprite datoteke in imenike iz urejevalnika naslova;
+- **Pogoste poti**: preklopite v poseben način za hitro odpiranje pogosto uporabljenih poti;
+- **Predlogi**: izbirajte med elementi imenika, natančnimi ujemanji, nedavnimi potmi, označenimi elementi, uporabniškimi mapami in sistemskimi pogoni;
+- **Dejanja s tipkovnico**: iz urejevalnika se premikajte nazaj, naprej ali navzgor in prikažite element v nadrejenem imeniku;
+
+![address-editor](./public/changelog/assets/2.1.0/address-editor.webp)
+
+#### Središče stanja
+
+Središče stanja je zdaj kompakten pripomoček v orodni vrstici z jasnejšo razvrstitvijo operacij.
+
+- **Število aktivnih operacij**: gumb v orodni vrstici se razširi v kompaktno značko s številom dejavnih operacij;
+- **Skupine operacij**: dejavne in dokončane operacije so ločene, dokončane pa so zbrane v zložljivem razdelku;
+- **Prekliči vse**: iz glave razdelka lahko hkrati prekličete vse dejavne operacije;
+- **Kartice operacij**: vrsta in stanje sta označena jasneje, na primer `Kopiranje | Uspeh` ali `Arhiviranje | Napaka`;
+- **Obnovitev odložišča**: ko je operacija lepljenja dodana v čakalno vrsto, se odložišče počisti, ob neuspehu pa se njegova vsebina obnovi;
+
+![status-center](./public/changelog/assets/2.1.0/status-center.webp)
+
+#### Navigacija in zavihki
+
+Krmarjenje po navigatorju in delovanje zavihkov sta predvidljivejša.
+
+- **Pogoni v stranski vrstici**: klik na pogon v navigacijski stranski vrstici ga odpre v trenutnem zavihku;
+- **Trenutni imenik**: zadnji del naslova je izrazitejši, z desnim klikom nanj pa odprete kontekstni meni trenutnega imenika;
+- **Zaprti zavihki**: obnovljeni zavihki se vrnejo na prejšnje mesto, upoštevajo preimenovane poti, pri izbrisani poti pa odprejo domačo stran;
+- **Odzivna postavitev**: navigacijski gumbi v orodni vrstici se skrčijo prej, naslovni vrstici razdeljenega pogleda se v zelo ozkih podoknih premakneta v drugo vrstico, kompaktni zavihki pa ohranijo enako višino;
+
+![nav-sidebar-drive-current-tab](./public/changelog/assets/2.1.0/nav-sidebar-drive-current-tab.webp)
+
+![current-directory-address-bar](./public/changelog/assets/2.1.0/current-directory-address-bar.webp)
+
+#### Upravljanje bližnjic
+
+Nastavljanje bližnjic in razreševanje sporov sta zdaj jasnejša.
+
+- **Več vezav**: eni akciji dodelite več bližnjic;
+- **Nedodeljene bližnjice**: dejanjem lahko odstranite dodeljene bližnjice;
+- **Zamenjava ob sporu**: sporno bližnjico zamenjajte neposredno v opozorilu;
+- **Kontekstni meni**: bližnjice upravljajte iz kontekstnega menija seznama;
+
+![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
+
+#### Povleci in spusti
+
+Datoteke lahko zdaj povlečete v drugo aplikacijo tudi po preklopu z Alt+Tab; kazalca ni več treba najprej premakniti iz okna;
+
+### Izboljšave uporabniškega vmesnika
+
+- **Izbirni obris**: izboljšani so njegova prosojnost in odmik, videz glave podokna ter obnašanje fokusa pri uporabi tipkovnice;
+- **Vrstica zavihkov**: izboljšani slogi vrstice zavihkov in berljivost aktivnega zavihka;
+- **Izbira teme**: izboljšana zasnova izbire teme;
+- **Hitri dostop**: dodelan je videz podokna za hitri dostop;
+- **Zagonski zaslon**: med zagonom aplikacije se zdaj prikaže uvodni zaslon;
+- **Vidnost pojavnih oken**: izboljšana vidnost prosojnih elementov pojavnih oken;
+- **Namigi**: dodani namigi na več gumbov orodne vrstice;
+- **Prevodi**: izboljšani japonski in vietnamski jezikovni nizi ter očiščena struktura lokalizacije;
+
+![selection-ring](./public/changelog/assets/2.1.0/selection-ring.webp)
+
+![tab-bar-styles](./public/changelog/assets/2.1.0/tab-bar-styles.webp)
+
+![narrow-window-layout](./public/changelog/assets/2.1.0/narrow-window-layout.webp)
+
+### Popravki napak
+
+- **Preslikani pogoni**: obnovljeno je vlečenje datotek iz preslikanih omrežnih pogonov v druge aplikacije;
+- **Pomikanje s tipkovnico**: prva vrstica se ne skrije več za pritrjeno glavo;
+- **Zastoj ob zagonu**: odpravljeni so redki večminutni zastoji v sistemu Windows, ki so jih povzročali počasni sinhroni sistemski klici med zagonom in preverjanjem posodobitev;
+- **Razpakiranje arhivov**: pri razpakiranju se zdaj ohranijo dovoljenja datotek Unix;
+- **HTTP razširitev**: obnovljena je obravnava trajnih odgovorov s kodami, ki niso 2xx, čakanje pred ponovnim poskusom pa je mogoče preklicati;
+- **Ukazna paleta**: gumb ukazne palete v orodni vrstici znova deluje po spremembi njene bližnjice;
+- **Izbira obsega v mreži**: obseg ne vključuje več elementov zunaj svojih meja;
+- **Kontekstni meniji**: menija izbranega elementa in trenutnega imenika se po izbiri dejanja zapreta;
+- **Registracija bližnjic**: popravljene napake registracije bližnjic po ponovnem nalaganju okna;
+- **Uporaba tem**: izbrana tema se zdaj uporabi v vseh oknih;
+- **Premiki v macOS**: popravljeni so premiki med nosilci in dodana podpora za aplikacijske pakete kot cilje;
+- **Privzeti upravitelj datotek**: obnovitev registra sistema Windows je varnejša, če nastavitev privzetega upravitelja ne uspe ali če se obnavljajo prejšnje sistemske vrednosti;
+
+![keyboard-scroll-floating-header](./public/changelog/assets/2.1.0/keyboard-scroll-floating-header.webp)
+
+---
+
 ## [2.0.0-beta.3] - April 2026
 
 **Povzetek:** Sistem razširitev s tržnico, deljenje datotek v lokalnem omrežju, meni za hitri dostop, zip arhivi, WSL pogoni, urejanje oznak, izboljšan hitri predogled in iskanje, izboljšave vizualnih učinkov ter številne izboljšave uporabniške izkušnje in stabilnosti.

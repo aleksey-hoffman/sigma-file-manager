@@ -1,5 +1,457 @@
 # Nhật ký thay đổi
 
+## [2.2.0] - July 2026
+
+**Tóm tắt:** Tích hợp bảng tạm hệ thống với các ứng dụng khác, chọn bằng khung kéo, chế độ xem chia đôi liên kết, xử lý liên kết, tệp ZIP có mật khẩu, cửa sổ Thuộc tính gốc của Windows, mở rộng API tiện ích, hỗ trợ tiếng Do Thái và cải thiện trình điều hướng.
+
+- [Tính năng mới](#tính-năng-mới)
+  - [Tích hợp bảng tạm hệ thống](#tích-hợp-bảng-tạm-hệ-thống)
+  - [Chọn bằng khung kéo](#chọn-bằng-khung-kéo)
+  - [Chế độ xem chia đôi liên kết](#chế-độ-xem-chia-đôi-liên-kết)
+  - [Xử lý liên kết](#xử-lý-liên-kết)
+  - [Cửa sổ Thuộc tính gốc](#cửa-sổ-thuộc-tính-gốc)
+  - [Thay đổi kích thước và sắp xếp cột chế độ xem danh sách](#thay-đổi-kích-thước-và-sắp-xếp-cột-chế-độ-xem-danh-sách)
+  - [Vị trí ở cấp gốc](#vị-trí-ở-cấp-gốc)
+- [Tiện ích mở rộng](#tiện-ích-mở-rộng)
+  - [API và chế độ xem tiện ích](#api-và-chế-độ-xem-tiện-ích)
+- [Cài đặt mới](#cài-đặt-mới)
+- [Phím tắt mới](#phím-tắt-mới)
+- [Ngôn ngữ mới](#ngôn-ngữ-mới)
+- [Cải thiện trải nghiệm người dùng](#cải-thiện-trải-nghiệm-người-dùng)
+  - [Giải nén tệp lưu trữ](#giải-nén-tệp-lưu-trữ)
+  - [Sắp xếp lưới](#sắp-xếp-lưới)
+  - [Tiện ích Shell](#tiện-ích-shell)
+  - [Bộ nhớ phiên](#bộ-nhớ-phiên)
+  - [Hiệu năng trình điều hướng](#hiệu-năng-trình-điều-hướng)
+  - [Trang chủ và menu ngữ cảnh](#trang-chủ-và-menu-ngữ-cảnh)
+- [Cải thiện giao diện](#cải-thiện-giao-diện)
+- [Sửa lỗi](#sửa-lỗi)
+
+### Tính năng mới
+
+#### Tích hợp bảng tạm hệ thống
+
+Sao chép và dán tệp, thư mục và hình ảnh giữa Sigma File Manager và các ứng dụng khác qua bảng tạm hệ thống.
+
+- **Chuyển tệp giữa các ứng dụng**: sao chép hoặc cắt mục trong SFM rồi dán vào ứng dụng như File Explorer, hoặc dùng `Ctrl+V` để dán đường dẫn và tệp đã sao chép từ ứng dụng khác vào trình điều hướng;
+- **Dán hình ảnh**: dán hình ảnh đã sao chép từ trình duyệt và ứng dụng khác trực tiếp vào thư mục;
+- **Hộp thoại xung đột**: khi mục cần dán đã tồn tại, chọn `Đổi tên` hoặc `Hợp nhất`; với từng tệp xung đột, có thể chọn `Thay thế`, `Bỏ qua`, `Giữ cả hai` hoặc `Áp dụng cho tất cả`;
+- **Thanh công cụ bảng tạm**: tùy chọn xem trước hình ảnh và đường dẫn tệp được sao chép từ ứng dụng khác ngay trên thanh công cụ;
+
+Có thể bật hoặc tắt thanh công cụ trong `Cài đặt > Giao diện > Bảng tạm`. Phím `Ctrl+V` vẫn hoạt động khi thanh công cụ bị ẩn.
+
+![system-clipboard](./public/changelog/assets/2.2.0/system-clipboard.webp)
+
+#### Chọn bằng khung kéo
+
+Kéo trên vùng trống trong trình điều hướng để chọn nhiều mục bằng khung chọn.
+
+- **Phím bổ trợ**: giữ `Ctrl` hoặc `Shift` để thêm mục vào vùng chọn hiện tại; giữ `Alt` để đảo ngược trạng thái chọn;
+- **Dễ bắt đầu kéo hơn**: có thể tăng khoảng đệm của danh sách và khoảng cách trong lưới để tạo thêm vùng trống;
+
+Bật trong `Cài đặt > Chung > Chế độ xem tệp > Bật chọn bằng khung kéo`.
+
+![box-selection](./public/changelog/assets/2.2.0/box-selection.webp)
+
+#### Chế độ xem chia đôi liên kết
+
+Chế độ xem chia đôi `Liên kết` mới mang lại cách làm việc theo cột đơn giản hơn: khi nhấp vào một thư mục trong ngăn đầu tiên, nội dung của thư mục sẽ xuất hiện trong ngăn thứ hai.
+
+Chế độ `Chia đôi` độc lập hiện có vẫn giữ nguyên. Chọn chế độ trong mục `Chế độ xem chia đôi` của menu tùy chọn trình điều hướng, hoặc bật và tắt chế độ xem chia đôi bằng `Ctrl+S`.
+
+Biểu tượng bảng thông tin cũng được cập nhật để dễ phân biệt với biểu tượng chế độ xem chia đôi.
+
+![linked-split-view](./public/changelog/assets/2.2.0/linked-split-view.webp)
+
+#### Xử lý liên kết
+
+Tạo và kiểm tra liên kết hệ thống tệp từ trình điều hướng.
+
+- **Tạo liên kết**: tạo liên kết tượng trưng, lối tắt, liên kết cứng và điểm nối từ menu ngữ cảnh (`Tạo liên kết`);
+- **Cột liên kết**: các cột danh sách tùy chọn gồm Loại, Liên kết, Đích liên kết và Trạng thái liên kết (`Hợp lệ`, `Hỏng`, `Không rõ`, `Không được hỗ trợ`);
+- **Cách mở liên kết**: lối tắt thư mục và thư mục liên kết tượng trưng sẽ mở đích tương ứng; các đích liên kết khác được mở bằng ứng dụng mặc định;
+
+![link-handling](./public/changelog/assets/2.2.0/link-handling.webp)
+
+#### Cửa sổ Thuộc tính gốc
+
+Trên Windows, có thể mở hộp thoại Thuộc tính gốc của hệ thống cho các mục đã chọn qua menu ngữ cảnh, menu thao tác, phím `Alt+Enter` hoặc bằng cách giữ `Alt` rồi nhấp đúp.
+
+![native-properties](./public/changelog/assets/2.2.0/native-properties.webp)
+
+#### Thay đổi kích thước và sắp xếp cột chế độ xem danh sách
+
+Các cột chế độ xem danh sách có thể thay đổi kích thước và sắp xếp lại cho phù hợp cách bạn làm việc.
+
+- **Đổi kích thước**: kéo cạnh cột để thay đổi chiều rộng;
+- **Sắp xếp và hiển thị**: quản lý thứ tự và khả năng hiển thị trong cửa sổ bật lên `Cột` ở tiêu đề danh sách;
+- **Tùy chọn chiều rộng**: `Lấp đầy chiều rộng còn trống` và `Đặt chiều rộng tối thiểu`;
+
+![list-column-resize](./public/changelog/assets/2.2.0/list-column-resize.webp)
+
+#### Vị trí ở cấp gốc
+
+Mục `Vị trí` ở cấp gốc liệt kê các ổ đĩa và vị trí ảo để bạn chuyển đổi nhanh hơn.
+
+- **Thanh địa chỉ**: đi lên một cấp từ thư mục gốc của ổ đĩa, hoặc mở `Vị trí` từ thanh địa chỉ hay trình chỉnh sửa địa chỉ;
+- **Mục yêu thích và thẻ**: có thể thêm `Vị trí` vào mục yêu thích và gắn thẻ như các thư mục khác;
+- **Chế độ xem chia đôi**: đặc biệt hữu ích khi chuyển ổ đĩa giữa các ngăn mà không cần rời trình điều hướng;
+
+![root-locations-address](./public/changelog/assets/2.2.0/root-locations-address.webp)
+
+### Tiện ích mở rộng
+
+#### API và chế độ xem tiện ích
+
+Tiện ích mở rộng có thêm nhiều khả năng từ ứng dụng chủ và các thành phần để xây dựng giao diện.
+
+- **Tệp nhị phân cục bộ**: cấu hình phần phụ thuộc của tiện ích bằng thiết lập tự động hoặc tệp nhị phân cục bộ được chọn thủ công (`Tiện ích mở rộng > Phần phụ thuộc`);
+- **Yêu cầu HTTP**: tiện ích có thể gửi yêu cầu HTTP đến các máy chủ được tệp khai báo cho phép;
+- **Điều khiển chế độ xem**: tiện ích có quyền xem có thể áp dụng tùy chọn về bố cục và cách sắp xếp của trình điều hướng;
+- **API bảng tạm**: tiện ích có quyền tương ứng có thể đọc và ghi bảng tạm;
+- **Chế độ xem danh sách-chi tiết**: mẫu giao diện tiện ích mới gồm danh sách có thể tìm kiếm và ngăn chi tiết;
+
+![extension-local-binaries](./public/changelog/assets/2.2.0/extension-local-binaries.webp)
+
+![extension-dependency-config](./public/changelog/assets/2.2.0/extension-dependency-config.webp)
+
+![extension-list-detail](./public/changelog/assets/2.2.0/extension-list-detail.webp)
+
+![extension-http-api](./public/changelog/assets/2.2.0/extension-http-api.webp)
+
+### Cài đặt mới
+
+- **Bật chọn bằng khung kéo**: kéo vùng trống để chọn nhiều mục;
+  `Cài đặt > Chung > Chế độ xem tệp > Bật chọn bằng khung kéo`
+- **Tăng khoảng cách trong chế độ xem tệp**: tăng khoảng đệm của danh sách và khoảng cách trong lưới để dễ bắt đầu kéo hơn;
+  `Cài đặt > Chung > Chế độ xem tệp > Tăng khoảng cách trong chế độ xem tệp`
+- **Giữ cửa sổ Quick View trong bộ nhớ**: giữ Quick View đã tải để mở ngay (dùng khoảng 200 MB);
+  `Cài đặt > Chung > Hiệu năng > Giữ cửa sổ Quick View trong bộ nhớ`
+- **Giữ cửa sổ in trong bộ nhớ**: giữ cửa sổ In đã tải để mở ngay (dùng khoảng 200 MB);
+  `Cài đặt > Chung > Hiệu năng > Giữ cửa sổ in trong bộ nhớ`
+- **Thanh công cụ bảng tạm cho hình ảnh bên ngoài**: hiện thanh công cụ bảng tạm cho hình ảnh được sao chép từ ứng dụng khác;
+  `Cài đặt > Giao diện > Bảng tạm`
+- **Thanh công cụ bảng tạm cho đường dẫn bên ngoài**: hiện thanh công cụ bảng tạm cho đường dẫn tệp được sao chép từ ứng dụng khác;
+  `Cài đặt > Giao diện > Bảng tạm`
+- **Kích thước bảng thông tin động**: tự động điều chỉnh kích thước bảng thông tin; việc đổi kích thước thủ công sẽ tắt tùy chọn này;
+  `Cài đặt > Giao diện > Bảng thông tin > Kích thước bảng thông tin động`
+- **Hiển thị ảnh kích thước đầy đủ trong xem trước bảng thông tin**: hiện ảnh độ phân giải đầy đủ trong bảng thông tin;
+  `Cài đặt > Giao diện > Bảng thông tin > Hiển thị ảnh kích thước đầy đủ trong khu vực xem trước bảng thông tin`
+- **Tắt tiếng xem trước video theo mặc định**: tắt tiếng xem trước video bảng thông tin khi duyệt;
+  `Cài đặt > Giao diện > Bảng thông tin > Tắt tiếng xem trước video theo mặc định`
+- **Tự động phát xem trước video**: tự phát video trong bảng thông tin khi được chọn;
+  `Cài đặt > Giao diện > Bảng thông tin > Tự động phát xem trước video`
+
+### Phím tắt mới
+
+- **Thuộc tính gốc** (`Alt+Enter`): mở cửa sổ Thuộc tính gốc của Windows cho các mục đã chọn;
+
+### Ngôn ngữ mới
+
+- **Tiếng Do Thái** (`עברית`): bản dịch đầy đủ, hỗ trợ bố cục từ phải sang trái (`Cài đặt > Chung > Ngôn ngữ`);
+
+### Cải thiện trải nghiệm người dùng
+
+#### Giải nén tệp lưu trữ
+
+Tính năng giải nén ZIP hiện hỗ trợ tệp lưu trữ được mã hóa và tên tệp dùng bảng mã khác UTF-8.
+
+- **ZIP có mật khẩu**: nhập mật khẩu của tệp lưu trữ khi được yêu cầu trong quá trình giải nén;
+- **Bảng mã tên tệp**: chọn bảng mã trong `Tùy chọn giải nén tệp lưu trữ`; hệ thống ưu tiên tự động phát hiện và cung cấp các bảng mã được nhóm theo khu vực để dùng khi cần;
+
+![archive-extraction-options](./public/changelog/assets/2.2.0/archive-extraction-options.webp)
+
+![archive-extraction-encoding](./public/changelog/assets/2.2.0/archive-extraction-encoding.webp)
+
+#### Sắp xếp lưới
+
+Bố cục lưới giờ có điều khiển sắp xếp riêng trong menu tùy chọn trình điều hướng.
+
+- **Sắp xếp theo**: Tên, Số mục, Kích thước, Ngày sửa đổi, Ngày tạo, Thẻ, Loại, Liên kết và Trạng thái liên kết;
+- **Hướng**: tăng dần hoặc giảm dần, lưu riêng với sắp xếp chế độ xem danh sách;
+
+![grid-sorting](./public/changelog/assets/2.2.0/grid-sorting.webp)
+
+#### Tiện ích Shell
+
+Menu ngữ cảnh có thể tải các thao tác tiện ích Shell hiện đại do ứng dụng khác đăng ký trong mục `Tiện ích Shell`.
+
+![shell-extensions](./public/changelog/assets/2.2.0/shell-extensions.webp)
+
+#### Bộ nhớ phiên
+
+Vị trí cuộn và thẻ đang hoạt động được khôi phục khi bạn rời khỏi trang hoặc ngăn rồi quay lại trong cùng một phiên.
+
+#### Hiệu năng trình điều hướng
+
+Duyệt thư mục lớn và nội dung đa phương tiện nhanh hơn, đồng thời sử dụng ít bộ nhớ hơn.
+
+- **Tải lần đầu**: tải lần đầu nhanh hơn khi mở thư mục;
+- **Tải biểu tượng**: biểu tượng tùy chỉnh và biểu tượng hệ thống xuất hiện nhanh hơn;
+- **Cuộn danh sách**: cuộn danh sách mượt hơn trong thư mục lớn;
+- **Xem trước phương tiện**: xem trước hình ảnh, GIF và video phản hồi tốt hơn và dùng ít bộ nhớ hơn;
+- **Lập chỉ mục**: lập chỉ mục tìm kiếm toàn cục ổn định hơn;
+
+#### Trang chủ và menu ngữ cảnh
+
+- **Ngắt kết nối**: ngắt kết nối ổ mạng hoặc thiết bị lưu trữ di động từ menu ngữ cảnh khi được hỗ trợ;
+- **Đóng tất cả mục trùng lặp**: mục `Đóng tất cả mục trùng lặp` trong menu thẻ giờ đóng mọi đường dẫn trùng lặp trong không gian làm việc, thay vì chỉ các bản sao của thẻ hiện tại;
+- **Bỏ chọn bằng nhấp phải**: nhấp phải vào vùng trống của trình điều hướng sẽ bỏ vùng chọn hiện tại trước khi mở menu nền;
+- **Thao tác trên trang chủ**: menu ngữ cảnh của trang chủ đóng sau khi chọn thao tác; `Mở trong thẻ mới` sẽ mở trình điều hướng và tự cuộn thẻ mới vào vùng hiển thị;
+- **Vùng kéo cửa sổ**: trên thanh tiêu đề kiểu Linux, vùng kéo kéo dài qua các nút thanh công cụ để dễ di chuyển cửa sổ hơn;
+
+![window-drag-region](./public/changelog/assets/2.2.0/window-drag-region.webp)
+
+### Cải thiện giao diện
+
+- **Chỉ báo ngăn đang hoạt động**: chỉ báo ngăn đang hoạt động trên thanh trạng thái rõ ràng hơn khi bật chế độ xem chia đôi;
+- **Bảng thông tin có thể đổi kích thước**: kéo để điều chỉnh chiều rộng bảng thông tin và tỷ lệ giữa phần xem trước với phần chi tiết;
+- **Bảng thông tin gọn**: bố cục thuộc tính trong bảng thông tin gọn gàng và tiết kiệm diện tích hơn;
+- **Thao tác menu ngữ cảnh**: `Chỉnh sửa thẻ` được hiển thị dưới dạng nút thao tác, đồng thời các nút thao tác có kích thước nhỏ hơn;
+- **Giao diện trình điều hướng**: cải thiện bố cục thích ứng, kiểu thẻ đang hoạt động trong chế độ xem chia đôi và thiết kế chế độ xem tiện ích trong bảng lệnh;
+- **Bố cục RTL**: căn chỉnh gọn gàng hơn cho các ngôn ngữ viết từ phải sang trái;
+
+![resizable-info-panel](./public/changelog/assets/2.2.0/resizable-info-panel.webp)
+
+![compact-info-panel](./public/changelog/assets/2.2.0/compact-info-panel.webp)
+
+### Sửa lỗi
+
+- **Gõ để tìm**: sửa tìm kiếm nhanh không kích hoạt trên bố cục bàn phím không Latin;
+- **Tải thư mục**: sửa mục bị sắp xếp lại sau khi thư mục tải xong;
+- **Biểu tượng tùy chỉnh**: sửa biểu tượng tùy chỉnh tải với độ trễ đáng chú ý;
+- **Thẻ lưới**: sửa thẻ bố cục lưới đổi kích thước khi đang tải;
+- **Thanh cuộn lưới**: sửa thanh cuộn lưới bị che bởi tiêu đề cố định;
+- **Chọn nhanh**: sửa chọn tệp nhanh đôi khi mở tệp;
+- **Phím tắt terminal**: sửa lỗi `Alt+T` mở terminal tại thư mục hiện tại thay vì tại mục đã chọn;
+- **Mở tệp**: sửa tệp mở từ thư mục làm việc sai;
+- **Chia sẻ SMB**: sửa không thể mở tệp trên chia sẻ SMB;
+- **Đường dẫn WSL**: sửa cách xử lý đường dẫn UNC của máy chủ WSL trên Windows, bao gồm việc dùng `//wsl.localhost` làm danh sách bản phân phối ảo;
+- **Trình quản lý tệp mặc định**: sửa đặt trình quản lý tệp mặc định trong bản Microsoft Store;
+- **AppImage (Linux)**: sửa `Could not create default EGL display: EGL_BAD_PARAMETER`;
+- **Cài tiện ích (Linux)**: sửa lỗi cài đặt tiện ích có bản phân phối gồm nhiều tệp;
+- **Chi tiết tiện ích**: sửa kiểu căn chỉnh trang tổng quan;
+- **Đánh thức thiết bị**: sửa ứng dụng bị kẹt trạng thái tải sau khi thiết bị đánh thức;
+- **Thông báo cập nhật**: sửa thông báo cập nhật hiện cho phiên bản chưa phát hành;
+- **RTL**: sửa các vấn đề về bố cục từ phải sang trái;
+- **Bản dịch**: sửa chuỗi dịch thiếu và sai;
+
+---
+
+## [2.1.0] - May 2026
+
+**Tóm tắt:** Cải thiện hiệu năng trình điều hướng, hình thu nhỏ được tạo tự động, chủ đề từ tiện ích, in tệp, xem trước tệp, phím tắt mới, cải tiến trình chỉnh sửa địa chỉ, thiết kế lại trung tâm trạng thái và hoàn thiện trải nghiệm thẻ cùng thao tác điều hướng.
+
+- [Tính năng mới](#tính-năng-mới)
+  - [In tệp](#in-tệp)
+  - [Thả tệp vào thẻ](#thả-tệp-vào-thẻ)
+  - [Xem trước tệp trong bảng thông tin](#xem-trước-tệp-trong-bảng-thông-tin)
+  - [Cột danh sách trình điều hướng](#cột-danh-sách-trình-điều-hướng)
+- [Tiện ích mở rộng](#tiện-ích-mở-rộng)
+  - [Chủ đề ứng dụng từ tiện ích](#chủ-đề-ứng-dụng-từ-tiện-ích)
+  - [Chủ đề biểu tượng từ tiện ích](#chủ-đề-biểu-tượng-từ-tiện-ích)
+- [Cài đặt mới](#cài-đặt-mới)
+- [Phím tắt mới](#phím-tắt-mới)
+- [Cải thiện trải nghiệm người dùng](#cải-thiện-trải-nghiệm-người-dùng)
+  - [Hiệu năng thư mục lớn](#hiệu-năng-thư-mục-lớn)
+  - [Tìm kiếm nhanh](#tìm-kiếm-nhanh)
+  - [Trình chỉnh sửa địa chỉ](#trình-chỉnh-sửa-địa-chỉ)
+  - [Trung tâm trạng thái](#trung-tâm-trạng-thái)
+  - [Điều hướng và thẻ](#điều-hướng-và-thẻ)
+  - [Quản lý phím tắt](#quản-lý-phím-tắt)
+- [Cải thiện giao diện](#cải-thiện-giao-diện)
+- [Sửa lỗi](#sửa-lỗi)
+
+### Tính năng mới
+
+#### In tệp
+
+In các tệp đã chọn trực tiếp từ trình điều hướng bằng menu ngữ cảnh, menu thao tác, hoặc `Ctrl+O`.
+
+- **Định dạng hỗ trợ**: hình ảnh, PDF, định dạng văn bản;
+- **Thoát nhanh**: đóng màn hình in bằng `Escape`;
+
+![printing](./public/changelog/assets/2.1.0/printing.webp)
+
+#### Thả tệp vào thẻ
+
+Kéo tệp hoặc thư mục lên thẻ để di chuyển hoặc sao chép chúng vào thư mục của một thẻ khác.
+
+- **Thẻ đích**: có thể dùng thẻ làm nơi thả khi kéo tệp trong trình điều hướng;
+- **Kích hoạt khi di chuột**: di chuột lên thẻ trong lúc kéo để chuyển sang thẻ đó trước khi thả;
+- **Thẻ trong chế độ chia đôi**: nhóm thẻ thư mục vẫn nhận tệp được thả như bình thường và giữ nguyên cấu trúc thẻ của chế độ xem chia đôi;
+
+![file-drop-to-tabs](./public/changelog/assets/2.1.0/file-drop-to-tabs.webp)
+
+#### Xem trước tệp trong bảng thông tin
+
+Bảng thông tin giờ có thể xem trước tất cả kiểu tệp được Quick View hỗ trợ, không chỉ hình ảnh và video.
+
+- **Xem trước phương tiện**: hình ảnh dùng hình thu nhỏ được tạo tự động, video và âm thanh có các nút điều khiển tích hợp, còn PDF được hiển thị trực tiếp;
+- **Xem trước văn bản**: tệp văn bản hiển thị nội dung đã giải mã ở dạng gọn, với giới hạn kích thước an toàn;
+- **Nội dung không được hỗ trợ**: tệp và thư mục không được hỗ trợ vẫn hiển thị biểu tượng giữ chỗ đơn giản;
+
+![info-panel-file-preview](./public/changelog/assets/2.1.0/info-panel-file-preview.webp)
+
+#### Cột danh sách trình điều hướng
+
+Chế độ xem danh sách có thêm các cột tùy chọn và cho phép quản lý siêu dữ liệu trực tiếp thuận tiện hơn.
+
+- **Cột Ngày tạo**: hiển thị và sắp xếp theo ngày tạo;
+- **Cột Thẻ**: hiển thị thẻ trực tiếp trong chế độ xem danh sách, đồng thời cho phép thêm, xóa hoặc chỉnh sửa thẻ ngay trong cột;
+
+![navigator-list-columns](./public/changelog/assets/2.1.0/navigator-list-columns.webp)
+
+### Tiện ích mở rộng
+
+#### Chủ đề ứng dụng từ tiện ích
+
+Tiện ích giờ có thể cung cấp chủ đề màu hoàn chỉnh cho ứng dụng. Các tiện ích chủ đề đã cài đặt sẽ xuất hiện trong bộ chọn chủ đề.
+
+#### Chủ đề biểu tượng từ tiện ích
+
+Tiện ích giờ có thể cung cấp chủ đề biểu tượng cho thư mục và tệp trong trình điều hướng.
+
+- **Lựa chọn riêng**: chọn chủ đề biểu tượng thư mục và tệp độc lập trong `Cài đặt > Giao diện > Chủ đề biểu tượng`;
+- **Chủ đề có sẵn và từ tiện ích**: dùng chủ đề biểu tượng mặc định hoặc hệ thống có sẵn, cũng như mọi chủ đề do tiện ích đã bật cung cấp;
+- **Quy tắc khớp chủ đề**: chủ đề do tiện ích cung cấp có thể xác định biểu tượng theo phần mở rộng, tên tệp, tên thư mục và trạng thái mở rộng của thư mục;
+
+### Cài đặt mới
+
+- **In đậm chữ trên thẻ đang hoạt động**: in đậm tiêu đề của thẻ đang hoạt động (`Cài đặt > Thẻ > Giao diện thẻ > In đậm chữ trên thẻ đang hoạt động`);
+
+![bold-active-tab-text-setting](./public/changelog/assets/2.1.0/bold-active-tab-text-setting.webp)
+
+### Phím tắt mới
+
+- **Bật/tắt chế độ xem chia đôi** (`Ctrl+S`): hiện hoặc ẩn chế độ xem chia đôi trong trình điều hướng;
+- **Khôi phục thẻ đã đóng** (`Ctrl+Shift+T`): khôi phục nhóm thẻ vừa đóng gần nhất;
+- **Tạo tệp / thư mục** (`Ctrl+Shift+M` / `Ctrl+Shift+N`): tạo tệp hoặc thư mục mới trong thư mục hiện tại;
+- **In tệp đã chọn** (`Ctrl+O`): in tệp đã chọn;
+- **Mở đường dẫn đã sao chép** (`Ctrl+Shift+V`): mở đường dẫn hợp lệ từ bảng tạm;
+- **Chuyển trang** (`Alt+1` - `Alt+5`): chuyển giữa Trang chủ, Trình điều hướng, Bảng điều khiển, Cài đặt và Tiện ích mở rộng;
+- **Điều hướng lịch sử thư mục** (`Alt+Left` / `Alt+Right`): quay lại hoặc tiến trong lịch sử trình điều hướng;
+- **Điều hướng lên thư mục cha** (`Alt+Up`): đi tới thư mục cha;
+- **Nút lịch sử trên chuột** (`Mouse Button 4` / `Mouse Button 5`): quay lại hoặc tiến tới bằng các nút bên hông chuột;
+
+![create-file-directory-shortcuts](./public/changelog/assets/2.1.0/create-file-directory-shortcuts.webp)
+
+![navigator-shortcuts](./public/changelog/assets/2.1.0/navigator-shortcuts.webp)
+
+### Cải thiện trải nghiệm người dùng
+
+#### Hiệu năng thư mục lớn
+
+Các thao tác điều hướng và tìm kiếm nhanh phản hồi tốt hơn; thư mục chứa nhiều nội dung đa phương tiện cũng sử dụng ít bộ nhớ hơn.
+
+- **Hình thu nhỏ được tạo tự động**: hình ảnh và video dùng hình thu nhỏ có kích thước nhỏ hơn thay vì tải toàn bộ nội dung vào từng thẻ tệp;
+- **Hiển thị hình ảnh theo từng giai đoạn**: thẻ hình ảnh trong lưới có thể hiển thị hình thu nhỏ độ phân giải thấp đã làm mờ trong khi chờ hình thu nhỏ hoàn chỉnh;
+- **Hủy tạo hình thu nhỏ**: dừng tạo các hình thu nhỏ không còn cần thiết khi thư mục hoặc các mục đang hiển thị thay đổi;
+- **Hiệu năng kết xuất**: các mục trong thư mục lớn được kết xuất hiệu quả hơn, còn Quick View sử dụng hình thu nhỏ được tạo tự động cùng danh sách ảo;
+
+![low-res-image-thumbnail-preview](./public/changelog/assets/2.1.0/low-res-image-thumbnail-preview.webp)
+
+#### Tìm kiếm nhanh
+
+Tìm kiếm nhanh giờ có hai chế độ: thụ động và chủ động:
+
+- **Chế độ thụ động**: tự động kích hoạt khi bạn bắt đầu gõ. Chế độ này lọc các mục mà không chuyển tiêu điểm vào ô tìm kiếm, nên không cản trở thao tác điều hướng.
+- **Chế độ chủ động**: kích hoạt bằng `Ctrl+F`. Tiêu điểm được chuyển vào ô tìm kiếm và thao tác điều hướng tạm thời bị chặn, giúp bạn chỉnh sửa truy vấn chính xác hơn.
+
+Các thay đổi khác:
+
+- **Gõ để lọc**: nhấn phím chữ hoặc số sẽ luôn bắt đầu tìm kiếm nhanh ở chế độ thụ động trong ngăn đang hoạt động;
+- **Điều hướng bàn phím**: mục khớp đầu tiên được tự chọn;
+- **Thiết kế cửa sổ bật lên**: cửa sổ tìm kiếm nhanh gọn hơn và không che các mục trong thư mục;
+
+![quick-search](./public/changelog/assets/2.1.0/quick-search.webp)
+
+#### Trình chỉnh sửa địa chỉ
+
+Trình chỉnh sửa địa chỉ giờ có thể mở nhiều loại đường dẫn một cách linh hoạt hơn.
+
+- **Tệp và thư mục**: mở tệp cũng như thư mục từ trình chỉnh sửa địa chỉ;
+- **Đường dẫn thường dùng**: chuyển sang chế độ chuyên dùng để mở nhanh các đường dẫn thường xuyên truy cập;
+- **Gợi ý**: duyệt mục thư mục, khớp chính xác, đường dẫn gần đây, mục đã gắn thẻ, thư mục người dùng và ổ đĩa hệ thống;
+- **Thao tác bàn phím**: điều hướng lùi, tiến, lên và hiện mục trong thư mục cha từ trình chỉnh sửa;
+
+![address-editor](./public/changelog/assets/2.1.0/address-editor.webp)
+
+#### Trung tâm trạng thái
+
+Trung tâm trạng thái giờ là một thành phần gọn trên thanh công cụ, với các nhóm thao tác rõ ràng hơn.
+
+- **Số thao tác đang chạy**: nút trên thanh công cụ mở rộng thành hình viên nang và hiển thị số thao tác đang chạy;
+- **Nhóm thao tác**: các thao tác đang chạy và đã hoàn tất được tách riêng; thao tác đã hoàn tất nằm trong một phần có thể thu gọn;
+- **Hủy tất cả**: hủy đồng thời mọi thao tác đang chạy từ tiêu đề của phần;
+- **Thẻ tác vụ**: thẻ thao tác hiển thị loại và trạng thái rõ ràng hơn, chẳng hạn `Sao chép | Thành công` hoặc `Lưu trữ | Lỗi`;
+- **Khôi phục bảng tạm**: thao tác dán xóa bảng tạm ngay khi tác vụ được đưa vào hàng đợi và khôi phục nội dung nếu tác vụ thất bại;
+
+![status-center](./public/changelog/assets/2.1.0/status-center.webp)
+
+#### Điều hướng và thẻ
+
+Thao tác trong trình điều hướng và hành vi của thẻ trở nên nhất quán, dễ đoán hơn.
+
+- **Ổ đĩa trên thanh bên**: nhấp vào ổ đĩa trên thanh điều hướng sẽ mở ổ đĩa đó trong thẻ hiện tại;
+- **Thư mục hiện tại**: phần địa chỉ hiện tại được làm nổi bật hơn; nhấp phải vào phần cuối của địa chỉ để mở menu ngữ cảnh;
+- **Thẻ đã đóng**: thẻ được khôi phục về vị trí cũ, giữ đúng đường dẫn sau khi mục được đổi tên và chuyển các đường dẫn đã bị xóa về trang chủ;
+- **Bố cục thích ứng**: các nút điều hướng trên thanh công cụ thu gọn sớm hơn; trong ngăn rất hẹp, thanh địa chỉ của chế độ xem chia đôi chuyển xuống hàng thứ hai; các thẻ gọn cũng có chiều cao đồng nhất;
+
+![nav-sidebar-drive-current-tab](./public/changelog/assets/2.1.0/nav-sidebar-drive-current-tab.webp)
+
+![current-directory-address-bar](./public/changelog/assets/2.1.0/current-directory-address-bar.webp)
+
+#### Quản lý phím tắt
+
+Chỉnh sửa phím tắt giờ xử lý xung đột và tùy chỉnh rõ hơn.
+
+- **Nhiều tổ hợp phím**: gán nhiều phím tắt cho cùng một thao tác;
+- **Phím tắt chưa gán**: bỏ gán phím tắt;
+- **Thay thế xung đột**: thay phím tắt xung đột trực tiếp từ lời nhắc xung đột;
+- **Menu danh sách phím tắt**: quản lý phím tắt từ menu ngữ cảnh trong danh sách phím tắt;
+
+![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
+
+#### Kéo và thả
+
+Trong khi kéo tệp, giờ có thể dùng `Alt+Tab` để chuyển sang ứng dụng khác rồi thả tệp ra ngoài SFM mà không cần đưa con trỏ ra khỏi cửa sổ trước.
+
+### Cải thiện giao diện
+
+- **Viền chọn**: cải thiện độ trong suốt và vị trí của viền chọn trong trình điều hướng, kiểu tiêu đề ngăn và hành vi tiêu điểm bàn phím;
+- **Thanh thẻ**: cải thiện kiểu thanh thẻ và khả năng nhận biết thẻ đang hoạt động;
+- **Chọn chủ đề**: cải thiện thiết kế chọn chủ đề;
+- **Truy cập nhanh**: tinh chỉnh giao diện của bảng truy cập nhanh;
+- **Màn hình khởi động**: thêm màn hình chào trong lúc ứng dụng khởi động;
+- **Khả năng hiển thị cửa sổ bật lên**: giúp các thành phần bán trong suốt trong cửa sổ bật lên dễ nhìn hơn;
+- **Gợi ý**: thêm gợi ý cho nhiều nút trên thanh công cụ;
+- **Bản dịch**: cải thiện nội dung bản dịch tiếng Nhật và tiếng Việt, đồng thời sắp xếp lại cấu trúc bản địa hóa;
+
+![selection-ring](./public/changelog/assets/2.1.0/selection-ring.webp)
+
+![tab-bar-styles](./public/changelog/assets/2.1.0/tab-bar-styles.webp)
+
+![narrow-window-layout](./public/changelog/assets/2.1.0/narrow-window-layout.webp)
+
+### Sửa lỗi
+
+- **Ổ đĩa ánh xạ**: sửa lỗi không thể kéo và thả tệp ra ngoài từ ổ đĩa mạng đã ánh xạ;
+- **Cuộn bằng bàn phím**: sửa lỗi hàng đầu tiên bị tiêu đề cố định che khuất;
+- **Đóng băng khi khởi động**: khắc phục trường hợp hiếm khi quá trình khởi động trên Windows bị treo trong nhiều phút do các lệnh gọi hệ thống đồng bộ chạy chậm lúc khởi động và kiểm tra cập nhật;
+- **Giải nén lưu trữ**: giữ chế độ tệp Unix khi giải nén lưu trữ;
+- **HTTP của tiện ích**: khôi phục cách xử lý các phản hồi non-2xx được xem là lỗi vĩnh viễn và cho phép hủy trong thời gian chờ thử lại;
+- **Bảng lệnh**: sửa nút thanh công cụ bảng lệnh khi phím tắt của nó được tùy chỉnh;
+- **Chọn phạm vi trong lưới**: sửa lỗi thao tác chọn phạm vi trong chế độ xem lưới chọn cả các mục nằm ngoài phạm vi;
+- **Menu ngữ cảnh**: sửa lỗi menu ngữ cảnh của mục đã chọn và thư mục hiện tại vẫn mở sau khi chọn thao tác;
+- **Đăng ký phím tắt**: sửa lỗi đăng ký phím tắt sau khi tải lại cửa sổ;
+- **Áp dụng chủ đề**: sửa chủ đề đã chọn không áp dụng trong tất cả cửa sổ;
+- **Di chuyển trên macOS**: sửa cách xử lý thao tác di chuyển giữa các ổ đĩa trên macOS và cho phép chọn gói ứng dụng làm đích;
+- **Trình quản lý tệp mặc định**: giúp quá trình khôi phục Registry của trình quản lý tệp mặc định trên Windows an toàn hơn khi không bật được tính năng hoặc khi phục hồi các giá trị hệ thống trước đó;
+
+![keyboard-scroll-floating-header](./public/changelog/assets/2.1.0/keyboard-scroll-floating-header.webp)
+
+---
 ## [2.0.0-beta.3] - April 2026
 
 **Tóm tắt:** Hệ thống tiện ích mở rộng với cửa hàng, chia sẻ tệp qua mạng LAN, menu truy cập nhanh, lưu trữ zip, ổ đĩa WSL, chỉnh sửa thẻ, cải thiện xem nhanh và tìm kiếm, cải thiện hiệu ứng hình ảnh, và nhiều cải thiện trải nghiệm người dùng và độ ổn định.

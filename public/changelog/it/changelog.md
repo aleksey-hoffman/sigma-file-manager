@@ -1,5 +1,457 @@
 # Registro delle modifiche
 
+## [2.2.0] - July 2026
+
+**Riepilogo:** Integrazione degli appunti di sistema con altre applicazioni, selezione a riquadro, vista divisa collegata, gestione dei collegamenti, archivi ZIP protetti da password, proprietà native su Windows, nuove API per le estensioni, supporto per l'ebraico e miglioramenti alla navigazione.
+
+- [Nuove funzionalità](#nuove-funzionalità)
+  - [Integrazione degli appunti di sistema](#integrazione-degli-appunti-di-sistema)
+  - [Selezione a riquadro](#selezione-a-riquadro)
+  - [Vista divisa collegata](#vista-divisa-collegata)
+  - [Gestione dei collegamenti](#gestione-dei-collegamenti)
+  - [Finestra Proprietà nativa](#finestra-proprietà-nativa)
+  - [Ridimensionamento e riordino delle colonne della vista elenco](#ridimensionamento-e-riordino-delle-colonne-della-vista-elenco)
+  - [Indirizzo radice Posizioni](#indirizzo-radice-posizioni)
+- [Estensioni](#estensioni)
+  - [API e viste delle estensioni](#api-e-viste-delle-estensioni)
+- [Nuove impostazioni](#nuove-impostazioni)
+- [Nuove scorciatoie](#nuove-scorciatoie)
+- [Nuove lingue](#nuove-lingue)
+- [Miglioramenti UX](#miglioramenti-ux)
+  - [Estrazione archivi](#estrazione-archivi)
+  - [Ordinamento griglia](#ordinamento-griglia)
+  - [Estensioni shell](#estensioni-shell)
+  - [Memoria di sessione](#memoria-di-sessione)
+  - [Prestazioni del navigatore](#prestazioni-del-navigatore)
+  - [Pagina home e menu contestuali](#pagina-home-e-menu-contestuali)
+- [Miglioramenti dell'interfaccia](#miglioramenti-dellinterfaccia)
+- [Correzioni di bug](#correzioni-di-bug)
+
+### Nuove funzionalità
+
+#### Integrazione degli appunti di sistema
+
+Copia e incolla file, cartelle e immagini tra Sigma File Manager e altre applicazioni tramite gli appunti di sistema.
+
+- **Trasferimento di file tra applicazioni**: copia o taglia elementi in SFM e incollali in applicazioni come Esplora file, oppure incolla nel navigatore percorsi e file copiati da altre applicazioni con `Ctrl+V`;
+- **Incolla immagini**: incolla direttamente in una cartella le immagini copiate da browser e altre applicazioni;
+- **Risoluzione dei conflitti**: quando gli elementi incollati esistono già, scegli `Rinomina` o `Unisci` e risolvi ogni conflitto con Sostituisci, Salta, Mantieni entrambi o Applica a tutti;
+- **Barra degli strumenti degli appunti**: mostra facoltativamente un'anteprima delle immagini e dei percorsi di file copiati da altre applicazioni;
+
+La visibilità della barra degli strumenti può essere controllata in `Impostazioni > Aspetto dell'interfaccia > Appunti`. Incollare con `Ctrl+V` funziona anche quando la barra degli strumenti è nascosta.
+
+![system-clipboard](./public/changelog/assets/2.2.0/system-clipboard.webp)
+
+#### Selezione a riquadro
+
+Trascina sullo spazio vuoto del navigatore per selezionare più elementi con un riquadro di selezione.
+
+- **Modificatori**: tieni premuto `Ctrl` o `Shift` per aggiungere alla selezione corrente; tieni premuto `Alt` per invertire;
+- **Selezione più agevole**: aumenta facoltativamente la spaziatura di elenchi e griglie per avere più spazio da cui iniziare il trascinamento;
+
+Abilita in `Impostazioni > Generale > Vista file > Abilita selezione a riquadro`.
+
+![box-selection](./public/changelog/assets/2.2.0/box-selection.webp)
+
+#### Vista divisa collegata
+
+La nuova modalità di vista divisa `Collegata` offre un flusso di lavoro a colonne più semplice: facendo clic su una cartella nel primo riquadro, il suo contenuto viene mostrato nel secondo.
+
+La modalità indipendente `Divisa` rimane invariata. Scegli la modalità dalla voce `Modalità vista divisa` nel menu delle opzioni del navigatore oppure attiva e disattiva la vista divisa con `Ctrl+S`.
+
+Anche l'icona del pannello informazioni è stata aggiornata per distinguerla più facilmente dall'icona della vista divisa.
+
+![linked-split-view](./public/changelog/assets/2.2.0/linked-split-view.webp)
+
+#### Gestione dei collegamenti
+
+Crea e ispeziona collegamenti del file system dal navigatore.
+
+- **Crea collegamento**: crea collegamenti simbolici, collegamenti a file, collegamenti fisici e giunzioni dal menu contestuale (`Crea collegamento`);
+- **Colonne dei collegamenti**: colonne facoltative nella vista elenco per Tipo, Collegamenti, Destinazione del collegamento e Stato del collegamento (`Valido`, `Rotto`, `Sconosciuto`, `Non supportato`);
+- **Comportamento all'apertura**: i collegamenti alle directory e le cartelle collegate simbolicamente portano alle rispettive destinazioni; le altre destinazioni si aprono con l'applicazione predefinita;
+
+![link-handling](./public/changelog/assets/2.2.0/link-handling.webp)
+
+#### Finestra Proprietà nativa
+
+Su Windows, apri la finestra di dialogo nativa delle proprietà di sistema per gli elementi selezionati dal menu contestuale, dal menu delle azioni, con `Alt+Enter` o con `Alt` + doppio clic.
+
+![native-properties](./public/changelog/assets/2.2.0/native-properties.webp)
+
+#### Ridimensionamento e riordino delle colonne della vista elenco
+
+Le colonne della vista elenco possono essere ridimensionate e riordinate in base al tuo modo di lavorare.
+
+- **Ridimensiona**: trascina i bordi delle colonne per modificarne la larghezza;
+- **Ordine e visibilità**: gestisci l'ordine e la visibilità dal menu `Colonne` nell'intestazione dell'elenco;
+- **Opzioni di larghezza**: `Riempi la larghezza disponibile` e `Imposta larghezze minime`;
+
+![list-column-resize](./public/changelog/assets/2.2.0/list-column-resize.webp)
+
+#### Indirizzo radice Posizioni
+
+L'indirizzo radice `Posizioni` elenca le unità e le posizioni virtuali, consentendo di passare più rapidamente da una all'altra.
+
+- **Barra degli indirizzi**: risali di un livello dalla radice di un'unità oppure apri `Posizioni` dalla barra o dall'editor degli indirizzi;
+- **Preferiti ed etichette**: `Posizioni` può essere aggiunto ai preferiti ed etichettato come qualsiasi altra directory;
+- **Vista divisa**: particolarmente utile per cambiare unità tra i riquadri senza lasciare il navigatore;
+
+![root-locations-address](./public/changelog/assets/2.2.0/root-locations-address.webp)
+
+### Estensioni
+
+#### API e viste delle estensioni
+
+Le estensioni dispongono di nuove funzioni di integrazione con l'applicazione e di nuovi componenti per l'interfaccia.
+
+- **Binari locali**: configura le dipendenze delle estensioni tramite l'installazione automatica o selezionando manualmente i binari locali (`Estensioni > Dipendenze`);
+- **Richieste HTTP**: le estensioni possono effettuare richieste HTTP agli host consentiti dal proprio manifest;
+- **Controllo della vista**: le estensioni possono applicare le preferenze di disposizione e ordinamento del navigatore (con il permesso per la vista);
+- **API degli appunti**: le estensioni possono leggere e scrivere gli appunti (con permesso);
+- **Vista elenco e dettagli**: nuovo schema di interfaccia per le estensioni con un elenco in cui è possibile effettuare ricerche e un riquadro dei dettagli;
+
+![extension-local-binaries](./public/changelog/assets/2.2.0/extension-local-binaries.webp)
+
+![extension-dependency-config](./public/changelog/assets/2.2.0/extension-dependency-config.webp)
+
+![extension-list-detail](./public/changelog/assets/2.2.0/extension-list-detail.webp)
+
+![extension-http-api](./public/changelog/assets/2.2.0/extension-http-api.webp)
+
+### Nuove impostazioni
+
+- **Abilita selezione a riquadro**: trascina lo spazio vuoto per selezionare più elementi;
+  `Impostazioni > Generale > Vista file > Abilita selezione a riquadro`
+- **Aumenta gli spazi della vista file**: aggiungi più spazio a elenchi e griglie per facilitare la selezione;
+  `Impostazioni > Generale > Vista file > Aumenta gli spazi della vista file`
+- **Mantieni la finestra Anteprima rapida in memoria**: mantieni l'Anteprima rapida caricata così si apre all'istante (usa circa 200 MB);
+  `Impostazioni > Generale > Prestazioni > Mantieni la finestra Anteprima rapida in memoria`
+- **Mantieni la finestra Stampa in memoria**: mantieni la finestra Stampa caricata così si apre all'istante (usa circa 200 MB);
+  `Impostazioni > Generale > Prestazioni > Mantieni la finestra Stampa in memoria`
+- **Barra degli strumenti degli appunti per immagini esterne**: mostra la barra degli strumenti degli appunti per le immagini copiate in altre applicazioni;
+  `Impostazioni > Aspetto dell'interfaccia > Appunti`
+- **Barra degli strumenti degli appunti per percorsi esterni**: mostra la barra degli strumenti degli appunti per i percorsi di file copiati in altre applicazioni;
+  `Impostazioni > Aspetto dell'interfaccia > Appunti`
+- **Dimensione dinamica del pannello informazioni**: adatta automaticamente le dimensioni del pannello informazioni; per disattivare questa opzione, ridimensionalo manualmente;
+  `Impostazioni > Aspetto dell'interfaccia > Pannello informazioni > Dimensione dinamica del pannello informazioni`
+- **Mostra immagine a dimensione piena nell'anteprima del pannello informazioni**: mostra immagini a piena risoluzione nel pannello informazioni;
+  `Impostazioni > Aspetto dell'interfaccia > Pannello informazioni > Mostra immagine a dimensione piena nell'anteprima del pannello informazioni`
+- **Disattiva l'audio dell'anteprima video per impostazione predefinita**: disattiva l'audio delle anteprime video del pannello informazioni durante la navigazione;
+  `Impostazioni > Aspetto dell'interfaccia > Pannello informazioni > Disattiva l'audio dell'anteprima video per impostazione predefinita`
+- **Riproduci automaticamente le anteprime video**: riproduci automaticamente i video nel pannello informazioni quando selezionati;
+  `Impostazioni > Aspetto dell'interfaccia > Pannello informazioni > Riproduci automaticamente le anteprime video`
+
+### Nuove scorciatoie
+
+- **Proprietà native** (`Alt+Enter`): apri la finestra Proprietà nativa per gli elementi selezionati su Windows;
+
+### Nuove lingue
+
+- **Ebraico** (`עברית`): traduzione completa con supporto per le interfacce da destra a sinistra (`Impostazioni > Generale > Lingua`);
+
+### Miglioramenti UX
+
+#### Estrazione archivi
+
+L'estrazione dei file ZIP ora supporta archivi crittografati e nomi di file con codifiche diverse da UTF-8.
+
+- **ZIP protetto da password**: inserisci la password dell'archivio quando l'estrazione la richiede;
+- **Codifica dei nomi file**: scegli la codifica in `Opzioni di estrazione archivi`; viene privilegiato il rilevamento automatico, con gruppi di codifiche regionali come alternative;
+
+![archive-extraction-options](./public/changelog/assets/2.2.0/archive-extraction-options.webp)
+
+![archive-extraction-encoding](./public/changelog/assets/2.2.0/archive-extraction-encoding.webp)
+
+#### Ordinamento griglia
+
+La vista a griglia dispone ora di controlli di ordinamento dedicati nel menu delle opzioni del navigatore.
+
+- **Ordina per**: Nome, Elementi, Dimensione, Modificato, Creato, Etichette, Tipo, Collegamenti e Stato del collegamento;
+- **Direzione**: crescente o decrescente, memorizzata separatamente dall'ordinamento della vista elenco;
+
+![grid-sorting](./public/changelog/assets/2.2.0/grid-sorting.webp)
+
+#### Estensioni shell
+
+Il menu contestuale può caricare in `Estensioni shell` le azioni moderne della shell registrate da altre applicazioni.
+
+![shell-extensions](./public/changelog/assets/2.2.0/shell-extensions.webp)
+
+#### Memoria di sessione
+
+Le posizioni di scorrimento e le schede attive vengono ripristinate quando torni a una pagina o a un riquadro durante la stessa sessione.
+
+#### Prestazioni del navigatore
+
+La navigazione nelle cartelle di grandi dimensioni e tra i contenuti multimediali è ora più veloce e richiede meno memoria.
+
+- **Caricamento iniziale**: le directory vengono visualizzate più rapidamente al primo accesso;
+- **Caricamento icone**: le icone personalizzate e di sistema appaiono con meno ritardo;
+- **Scorrimento elenco**: scorrimento più fluido nelle directory grandi;
+- **Anteprime multimediali**: le anteprime di immagini, GIF e video sono più reattive e usano meno memoria;
+- **Indicizzazione**: indicizzazione della ricerca globale più stabile;
+
+#### Pagina home e menu contestuali
+
+- **Disconnetti**: disconnetti le unità di rete o rimovibili dal menu contestuale quando il sistema lo consente;
+- **Chiudi tutti i duplicati**: la voce `Chiudi tutti i duplicati` del menu delle schede ora chiude tutti i percorsi duplicati nell'area di lavoro, non solo quelli duplicati rispetto alla scheda corrente;
+- **Deselezione con il pulsante destro**: facendo clic con il pulsante destro su un'area vuota del navigatore, la selezione corrente viene annullata prima di aprire il menu contestuale dello sfondo;
+- **Azioni della pagina iniziale**: i menu contestuali della pagina iniziale si chiudono dopo la selezione di un'azione, `Apri in una nuova scheda` apre il navigatore e le nuove schede scorrono fino a diventare visibili;
+- **Area di trascinamento della finestra**: nelle barre del titolo in stile Linux, l'area di trascinamento si estende sui pulsanti della barra degli strumenti per facilitare lo spostamento della finestra;
+
+![window-drag-region](./public/changelog/assets/2.2.0/window-drag-region.webp)
+
+### Miglioramenti dell'interfaccia
+
+- **Indicatore del riquadro attivo**: indicatore più evidente del riquadro attivo nella barra di stato quando la vista divisa è attiva;
+- **Pannello informazioni ridimensionabile**: trascina per ridimensionare la larghezza del pannello informazioni e la suddivisione anteprima/dettagli;
+- **Pannello informazioni compatto**: disposizione più compatta delle proprietà nel pannello informazioni;
+- **Azioni del menu contestuale**: `Modifica scheda` viene mostrato come pulsante di azione, con pulsanti di azione più piccoli in generale;
+- **Stile del navigatore**: miglioramenti alla disposizione adattiva, allo stato attivo delle schede nella vista divisa e alla vista delle estensioni nella tavolozza dei comandi;
+- **Disposizione RTL**: allineamento più pulito per le lingue da destra a sinistra;
+
+![resizable-info-panel](./public/changelog/assets/2.2.0/resizable-info-panel.webp)
+
+![compact-info-panel](./public/changelog/assets/2.2.0/compact-info-panel.webp)
+
+### Correzioni di bug
+
+- **Digita per cercare**: risolto un problema che impediva l'attivazione della ricerca rapida con disposizioni di tastiera non latine;
+- **Caricamento delle directory**: risolto il riordinamento delle voci al termine del caricamento di una directory;
+- **Icone personalizzate**: eliminato il ritardo evidente nel caricamento delle icone personalizzate;
+- **Schede della griglia**: risolto il cambiamento di dimensione delle schede durante il caricamento;
+- **Barra di scorrimento della griglia**: risolto un problema per cui la barra di scorrimento rimaneva nascosta dietro le intestazioni fisse;
+- **Selezione rapida**: risolto un problema per cui la selezione rapida a volte apriva il file;
+- **Scorciatoia del terminale**: risolto un problema per cui `Alt+T` apriva il terminale nella directory corrente anziché per la voce selezionata;
+- **Apertura dei file**: risolta l'apertura dei file dalla directory di lavoro errata;
+- **Condivisioni SMB**: risolto un problema che impediva di aprire i file nelle condivisioni SMB;
+- **Percorsi WSL**: corretta la gestione dei percorsi UNC dell'host WSL su Windows, incluso `//wsl.localhost` come elenco virtuale delle distribuzioni;
+- **Gestore file predefinito**: corretta l'impostazione del gestore file predefinito nelle versioni di Microsoft Store;
+- **AppImage (Linux)**: corretto `Could not create default EGL display: EGL_BAD_PARAMETER`;
+- **Installazione delle estensioni (Linux)**: risolti gli errori di installazione delle estensioni distribuite su più file;
+- **Dettagli delle estensioni**: corretta l'impaginazione della pagina panoramica;
+- **Riattivazione del dispositivo**: risolto un problema per cui l'applicazione rimaneva bloccata nello stato di caricamento dopo la riattivazione del dispositivo;
+- **Notifiche di aggiornamento**: corrette le notifiche relative a versioni non ancora pubblicate;
+- **RTL**: risolti diversi problemi con la disposizione da destra a sinistra;
+- **Traduzioni**: corrette le stringhe di traduzione mancanti o errate;
+
+---
+
+## [2.1.0] - May 2026
+
+**Riepilogo:** Miglioramenti alle prestazioni del navigatore, generazione delle miniature, temi forniti dalle estensioni, stampa, anteprime dei file, nuove scorciatoie, miglioramenti all'editor degli indirizzi, riprogettazione del centro di stato e perfezionamenti delle schede e della navigazione.
+
+- [Nuove funzionalità](#nuove-funzionalità)
+  - [Stampa](#stampa)
+  - [Trascina file sulle schede](#trascina-file-sulle-schede)
+  - [Anteprima file nel pannello informazioni](#anteprima-file-nel-pannello-informazioni)
+  - [Colonne elenco del navigatore](#colonne-elenco-del-navigatore)
+- [Estensioni](#estensioni)
+  - [Temi dell'app dalle estensioni](#temi-dellapp-dalle-estensioni)
+  - [Temi di icone dalle estensioni](#temi-di-icone-dalle-estensioni)
+- [Nuove impostazioni](#nuove-impostazioni)
+- [Nuove scorciatoie](#nuove-scorciatoie)
+- [Miglioramenti UX](#miglioramenti-ux)
+  - [Prestazioni con directory grandi](#prestazioni-con-directory-grandi)
+  - [Ricerca rapida](#ricerca-rapida)
+  - [Editor degli indirizzi](#editor-degli-indirizzi)
+  - [Centro di stato](#centro-di-stato)
+  - [Navigazione e schede](#navigazione-e-schede)
+  - [Gestione delle scorciatoie](#gestione-delle-scorciatoie)
+- [Miglioramenti dell'interfaccia](#miglioramenti-dellinterfaccia)
+- [Correzioni di bug](#correzioni-di-bug)
+
+### Nuove funzionalità
+
+#### Stampa
+
+Stampa i file selezionati direttamente dal navigatore usando il menu contestuale, il menu azioni o `Ctrl+O`.
+
+- **Formati supportati**: immagini, PDF, formati di testo;
+- **Uscita rapida**: chiudi la vista di stampa con `Escape`;
+
+![printing](./public/changelog/assets/2.1.0/printing.webp)
+
+#### Trascina file sulle schede
+
+Trascina file o directory sulle schede per spostarli o copiarli nella directory di un'altra scheda.
+
+- **Schede come destinazione**: le schede diventano destinazioni di rilascio mentre trascini file nel navigatore;
+- **Attivazione al passaggio**: passa il mouse su una scheda durante il trascinamento per attivarla prima di rilasciare gli elementi;
+- **Schede divise**: i gruppi di schede delle directory mantengono il normale comportamento come destinazione senza alterare la struttura della vista divisa;
+
+![file-drop-to-tabs](./public/changelog/assets/2.1.0/file-drop-to-tabs.webp)
+
+#### Anteprima file nel pannello informazioni
+
+Il pannello informazioni può ora mostrare l'anteprima di tutti i tipi di file supportati dall'Anteprima rapida, non solo di immagini e video.
+
+- **Anteprime multimediali**: le immagini usano miniature generate, video e audio includono controlli nativi e i PDF vengono mostrati direttamente nel pannello;
+- **Anteprime testo**: i file di testo mostrano un'anteprima compatta del testo decodificato, con un limite di dimensione sicuro;
+- **Alternative**: i file e le cartelle non supportati continuano a mostrare semplici icone segnaposto;
+
+![info-panel-file-preview](./public/changelog/assets/2.1.0/info-panel-file-preview.webp)
+
+#### Colonne elenco del navigatore
+
+La vista elenco offre più colonne facoltative e un controllo più preciso dei metadati visualizzati.
+
+- **Colonna Creato**: mostra e ordina per data di creazione;
+- **Colonna Etichette**: mostra le etichette direttamente nella vista elenco e aggiungi, rimuovi o modifica le etichette dalla colonna;
+
+![navigator-list-columns](./public/changelog/assets/2.1.0/navigator-list-columns.webp)
+
+### Estensioni
+
+#### Temi dell'app dalle estensioni
+
+Le estensioni possono ora fornire temi colore completi per l'applicazione. I temi installati tramite estensioni compaiono nel selettore dei temi.
+
+#### Temi di icone dalle estensioni
+
+Le estensioni possono ora fornire temi di icone del navigatore per cartelle e file.
+
+- **Scelte separate**: scegli i temi di icone di cartelle e file in modo indipendente in `Impostazioni > Aspetto dell'interfaccia > Tema icone`;
+- **Temi integrati e delle estensioni**: usa i temi di icone predefiniti del sistema o qualsiasi tema fornito da un'estensione abilitata;
+- **Corrispondenza dei temi**: i temi forniti possono definire le icone in base all'estensione o al nome del file, al nome della cartella e al suo stato espanso;
+
+### Nuove impostazioni
+
+- **Testo in grassetto della scheda attiva**: rende in grassetto il titolo della scheda attiva (`Impostazioni > Schede > Aspetto delle schede > Testo in grassetto della scheda attiva`);
+
+![bold-active-tab-text-setting](./public/changelog/assets/2.1.0/bold-active-tab-text-setting.webp)
+
+### Nuove scorciatoie
+
+- **Attiva/disattiva vista divisa** (`Ctrl+S`): mostra o nascondi la vista divisa nel navigatore;
+- **Ripristina scheda chiusa** (`Ctrl+Shift+T`): ripristina il gruppo di schede chiuso più di recente;
+- **Crea file / directory** (`Ctrl+Shift+M` / `Ctrl+Shift+N`): crea un nuovo file o una nuova directory nella directory corrente;
+- **Stampa file selezionato** (`Ctrl+O`): stampa il file selezionato;
+- **Apri percorso copiato** (`Ctrl+Shift+V`): apri un percorso valido dagli appunti;
+- **Cambia pagina** (`Alt+1` - `Alt+5`): passa tra Home, Navigatore, Dashboard, Impostazioni ed Estensioni;
+- **Naviga nella cronologia delle directory** (`Alt+Left` / `Alt+Right`): vai indietro o avanti nella cronologia del navigatore;
+- **Vai alla directory superiore** (`Alt+Up`): vai alla directory superiore;
+- **Pulsanti cronologia del mouse** (`Mouse Button 4` / `Mouse Button 5`): naviga indietro e avanti con i pulsanti laterali del mouse;
+
+![create-file-directory-shortcuts](./public/changelog/assets/2.1.0/create-file-directory-shortcuts.webp)
+
+![navigator-shortcuts](./public/changelog/assets/2.1.0/navigator-shortcuts.webp)
+
+### Miglioramenti UX
+
+#### Prestazioni con directory grandi
+
+La navigazione, la ricerca rapida e le cartelle ricche di contenuti multimediali sono più reattive e richiedono meno memoria.
+
+- **Miniature generate**: le miniature di immagini e video vengono generate in dimensioni ridotte anziché caricare l'intero file multimediale in ogni scheda;
+- **Immagini progressive**: le schede immagine della griglia possono mostrare una miniatura sfocata a bassa risoluzione prima che sia pronta quella finale;
+- **Annullamento miniature**: la generazione delle miniature può essere annullata quando cambiano la cartella o le voci visibili;
+- **Prestazioni di rendering**: le voci di directory grandi usano un rendering più efficiente e l'Anteprima rapida usa miniature generate con un elenco virtuale;
+
+![low-res-image-thumbnail-preview](./public/changelog/assets/2.1.0/low-res-image-thumbnail-preview.webp)
+
+#### Ricerca rapida
+
+La ricerca rapida offre ora due modalità: passiva e attiva:
+
+- **Modalità passiva**: si attiva automaticamente quando inizi a digitare, filtra le voci senza spostare il cursore nel campo di ricerca e consente di continuare a navigare;
+- **Modalità attiva**: si attiva con `Ctrl+F`, sposta il cursore nel campo di ricerca e impedisce la navigazione, ma consente un controllo più preciso del testo inserito;
+
+Altre modifiche:
+
+- **Digita per filtrare**: digitare tasti alfanumerici avvia sempre la ricerca rapida (modalità passiva) nel riquadro attivo;
+- **Navigazione da tastiera**: la prima voce corrispondente viene selezionata automaticamente;
+- **Pannello a comparsa**: il pannello della ricerca rapida è più compatto ed evita di coprire gli elementi della directory;
+
+![quick-search](./public/changelog/assets/2.1.0/quick-search.webp)
+
+#### Editor degli indirizzi
+
+L'editor degli indirizzi può ora essere usato come uno strumento più versatile per aprire i percorsi.
+
+- **File e directory**: apri file oltre alle directory dall'editor degli indirizzi;
+- **Percorsi frequenti**: passa a una modalità incentrata sull'apertura rapida dei percorsi usati di frequente;
+- **Suggerimenti**: sfoglia voci di directory, corrispondenze esatte, percorsi recenti, elementi etichettati, cartelle utente e unità di sistema;
+- **Azioni da tastiera**: naviga indietro, avanti o alla directory superiore e mostra una voce nella cartella che la contiene;
+
+![address-editor](./public/changelog/assets/2.1.0/address-editor.webp)
+
+#### Centro di stato
+
+Il centro di stato è ora un controllo compatto nella barra degli strumenti che organizza le operazioni con maggiore chiarezza.
+
+- **Conteggio delle operazioni attive**: il pulsante della barra degli strumenti si espande per mostrare quante operazioni sono in corso;
+- **Gruppi di operazioni**: le operazioni attive e completate sono separate, con quelle completate in una sezione comprimibile;
+- **Annulla tutto**: annulla le operazioni attive in parallelo dall'intestazione della sezione;
+- **Schede delle operazioni**: le schede mostrano più chiaramente il tipo e lo stato, ad esempio `Copia | Successo` o `Archivio | Errore`;
+- **Ripristino degli appunti**: quando si incolla, gli appunti vengono svuotati appena l'operazione entra in coda e ripristinati se questa non riesce;
+
+![status-center](./public/changelog/assets/2.1.0/status-center.webp)
+
+#### Navigazione e schede
+
+La navigazione e il comportamento delle schede sono ora più prevedibili.
+
+- **Unità della barra laterale**: fare clic su un'unità nella barra laterale di navigazione la apre nella scheda corrente;
+- **Directory corrente**: il segmento dell'indirizzo che corrisponde alla directory corrente è più evidente e consente di aprire il menu contestuale con il pulsante destro;
+- **Schede chiuse**: le schede ripristinate tornano alla posizione precedente, conservano i percorsi rinominati e reindirizzano alla pagina iniziale se il percorso è stato eliminato;
+- **Disposizione adattiva**: i pulsanti di navigazione della barra degli strumenti si comprimono prima, le barre degli indirizzi della vista divisa passano a una seconda riga nei riquadri molto stretti e le schede compatte mantengono un'altezza coerente;
+
+![nav-sidebar-drive-current-tab](./public/changelog/assets/2.1.0/nav-sidebar-drive-current-tab.webp)
+
+![current-directory-address-bar](./public/changelog/assets/2.1.0/current-directory-address-bar.webp)
+
+#### Gestione delle scorciatoie
+
+L'editor delle scorciatoie permette ora di gestire con maggiore chiarezza i conflitti e la personalizzazione.
+
+- **Assegnazioni multiple**: assegna più scorciatoie a un'azione;
+- **Scorciatoie non assegnate**: rimuovi l'assegnazione delle scorciatoie;
+- **Sostituzione in caso di conflitto**: sostituisci una scorciatoia in conflitto direttamente dall'avviso;
+- **Menu elenco scorciatoie**: gestisci le scorciatoie da un menu contestuale nell'elenco delle scorciatoie;
+
+![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
+
+#### Trascinamento
+
+Ora puoi iniziare a trascinare file verso un'altra applicazione anche passando da una finestra all'altra con `Alt+Tab`; non è più necessario spostare il cursore fuori dalla finestra.
+
+### Miglioramenti dell'interfaccia
+
+- **Anello di selezione**: migliorati l'opacità e la distanza dell'anello di selezione, lo stile dell'intestazione del riquadro e il comportamento dell'evidenziazione da tastiera;
+- **Barra delle schede**: migliorati gli stili della barra delle schede e la leggibilità della scheda attiva;
+- **Selezione tema**: migliorato l'aspetto del selettore dei temi;
+- **Accesso rapido**: raffinato lo stile del pannello di accesso rapido;
+- **Schermata iniziale**: aggiunta una schermata iniziale durante l'avvio dell'applicazione;
+- **Visibilità dei pannelli a comparsa**: migliorata la visibilità degli elementi traslucidi;
+- **Suggerimenti**: aggiunti suggerimenti a più pulsanti della barra degli strumenti;
+- **Traduzioni**: migliorati i testi in giapponese e vietnamita e riorganizzata la struttura delle localizzazioni;
+
+![selection-ring](./public/changelog/assets/2.1.0/selection-ring.webp)
+
+![tab-bar-styles](./public/changelog/assets/2.1.0/tab-bar-styles.webp)
+
+![narrow-window-layout](./public/changelog/assets/2.1.0/narrow-window-layout.webp)
+
+### Correzioni di bug
+
+- **Unità mappate**: risolto il trascinamento dei file dalle unità di rete mappate verso altre applicazioni;
+- **Scorrimento da tastiera**: risolto un problema per cui la prima riga rimaneva nascosta dietro l'intestazione fissa;
+- **Blocco all'avvio**: risolti rari blocchi di diversi minuti su Windows, causati da chiamate di sistema sincrone lente durante l'avvio e il controllo degli aggiornamenti;
+- **Estrazione degli archivi**: conservati i permessi dei file Unix durante l'estrazione;
+- **HTTP delle estensioni**: ripristinata la gestione permanente delle risposte diverse da 2xx e rese annullabili le attese tra i tentativi;
+- **Tavolozza dei comandi**: corretto il pulsante della barra degli strumenti quando la relativa scorciatoia viene personalizzata;
+- **Selezione per intervallo nella griglia**: risolto un problema per cui venivano selezionate voci al di fuori dell'intervallo indicato;
+- **Menu contestuali**: corretti i menu dell'elemento selezionato e della directory corrente che rimanevano aperti dopo la scelta di un'azione;
+- **Registrazione delle scorciatoie**: corretti gli errori di registrazione dopo il ricaricamento della finestra;
+- **Applicazione dei temi**: risolto un problema per cui i temi selezionati non venivano applicati a tutte le finestre;
+- **Spostamenti su macOS**: corretta la gestione degli spostamenti tra volumi e abilitati i bundle di applicazioni come destinazioni;
+- **Gestore file predefinito**: reso più sicuro il ripristino del registro di Windows quando l'abilitazione del gestore file predefinito non riesce o vengono recuperati i valori di sistema precedenti;
+
+![keyboard-scroll-floating-header](./public/changelog/assets/2.1.0/keyboard-scroll-floating-header.webp)
+
+---
 ## [2.0.0-beta.3] - April 2026
 
 **Riepilogo:** Sistema di estensioni con marketplace, condivisione file in rete locale, menu di accesso rapido, archivi zip, unità WSL, modifica delle etichette, miglioramenti dell'anteprima rapida e della ricerca, miglioramenti degli effetti visivi e molti miglioramenti UX e di stabilità.
