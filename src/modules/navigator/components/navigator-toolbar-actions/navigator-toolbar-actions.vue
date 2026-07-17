@@ -366,7 +366,8 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
 }
 
 .navigator-settings-menu.sigma-ui-dropdown-menu-content {
-  min-width: 200px;
+  min-width: 230px;
+  max-width: 300px;
 }
 
 .navigator-settings-menu__item.sigma-ui-dropdown-menu-item {
