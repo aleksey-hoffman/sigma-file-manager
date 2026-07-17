@@ -4,13 +4,43 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+function Resolve-MakeAppxPath {
+  $onPath = Get-Command makeappx.exe -ErrorAction SilentlyContinue
+  if ($onPath) {
+    return $onPath.Source
+  }
+
+  $candidatePatterns = @(
+    "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe",
+    "${env:ProgramFiles}\Windows Kits\10\bin\*\x64\makeappx.exe",
+    "${env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\makeappx.exe"
+  )
+
+  $candidates = @()
+  foreach ($pattern in $candidatePatterns) {
+    $candidates += @(Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue)
+  }
+
+  $makeappx = $candidates |
+    Sort-Object { $_.Directory.Parent.Name } -Descending |
+    Select-Object -First 1
+
+  if (-not $makeappx) {
+    throw "makeappx.exe was not found. Install the Windows 10 SDK App Packaging Tools, or add makeappx.exe to PATH."
+  }
+
+  return $makeappx.FullName
+}
+
 $bundle = Resolve-Path $BundlePath
+$makeappx = Resolve-MakeAppxPath
 $temporaryDirectory = Join-Path ([IO.Path]::GetTempPath()) "sigma-file-manager-msix-$([Guid]::NewGuid())"
 $bundleDirectory = Join-Path $temporaryDirectory "bundle"
 
 try {
   New-Item -ItemType Directory -Path $bundleDirectory | Out-Null
-  & makeappx.exe unpack /p $bundle /d $bundleDirectory /o | Out-Null
+  & $makeappx unpack /p $bundle /d $bundleDirectory /o | Out-Null
 
   $packages = Get-ChildItem $bundleDirectory -Filter "*.msix"
   if ($packages.Count -eq 0) {
@@ -20,7 +50,7 @@ try {
   foreach ($package in $packages) {
     $packageDirectory = Join-Path $temporaryDirectory $package.BaseName
     New-Item -ItemType Directory -Path $packageDirectory | Out-Null
-    & makeappx.exe unpack /p $package.FullName /d $packageDirectory /o | Out-Null
+    & $makeappx unpack /p $package.FullName /d $packageDirectory /o | Out-Null
 
     [xml]$manifest = Get-Content (Join-Path $packageDirectory "AppxManifest.xml") -Raw
     $namespaces = [Xml.XmlNamespaceManager]::new($manifest.NameTable)
