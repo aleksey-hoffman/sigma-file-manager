@@ -151,8 +151,8 @@ The funding will be used for funding the development of this and my other big pr
     <tr>
       <td>Linux | Snapcraft </td>
       <td>
-        <a target="_blank" href="https://snapcraft.io/sigma-file-manager">
-          snapcraft.io/sigma-file-manager
+        <a href="https://snapcraft.io/sigma-file-manager">
+          <img alt="Get it from the Snap Store" src=https://snapcraft.io/en/dark/install.svg />
         </a>
         <br>
         <code>sudo snap install sigma-file-manager --edge</code>
