@@ -425,7 +425,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "Définir Sigma File Manager comme gestionnaire de fichiers par défaut",
-        "description": "Cette option modifie le registre système et peut avoir des effets secondaires inattendus sur votre appareil. Continuez à vos propres risques."
+        "description": "Cette option modifie le registre système et peut avoir des effets secondaires inattendus sur votre appareil. Continuez à vos propres risques.",
+        "unavailableInMicrosoftStore": "Indisponible dans la version Microsoft Store"
       }
     }
   },

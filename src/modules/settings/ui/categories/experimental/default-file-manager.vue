@@ -60,7 +60,7 @@ async function onDefaultFileManagerChange(enabled: boolean) {
 }
 
 onMounted(async () => {
-  if (!platformStore.isWindows) {
+  if (!platformStore.supportsDefaultFileManager) {
     isLoading.value = false;
     return;
   }
@@ -76,11 +76,33 @@ onMounted(async () => {
     :description="t('settings.experimental.defaultFileManager.description')"
     :icon="FolderOpenIcon"
   >
+    <template #title-suffix>
+      <span
+        v-if="platformStore.isMicrosoftStoreInstallation"
+        class="default-file-manager__availability-badge"
+      >
+        {{ t('settings.experimental.defaultFileManager.unavailableInMicrosoftStore') }}
+      </span>
+    </template>
     <Switch
       id="default-file-manager"
-      :disabled="isLoading || isApplying"
+      :disabled="!platformStore.supportsDefaultFileManager || isLoading || isApplying"
       :model-value="isEnabled"
       @update:model-value="onDefaultFileManagerChange"
     />
   </SettingsItem>
 </template>
+
+<style scoped>
+.default-file-manager__availability-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: hsl(var(--warning) / 12%);
+  color: hsl(var(--warning));
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+</style>

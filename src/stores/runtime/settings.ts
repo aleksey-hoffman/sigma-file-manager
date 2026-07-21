@@ -120,14 +120,22 @@ export const useSettingsStore = defineStore('settings', () => {
   });
 
   const search = ref<string>('');
-  const sections = shallowRef<SettingsSection[]>([]);
+  const allSections = shallowRef<SettingsSection[]>([]);
   const isInitialized = ref(false);
 
+  const sections = computed(() => allSections.value.filter(
+    section => section.key !== 'defaultFileManager' || platformStore.isWindows,
+  ));
   const tabs = computed(() =>
-    settingsTabs.map(tab => ({
-      name: tab.name,
-      label: i18n.global.t(tab.labelKey),
-    })),
+    settingsTabs
+      .filter(tab =>
+        tab.name !== 'experimental'
+        || sections.value.some(section => section.category === 'experimental'),
+      )
+      .map(tab => ({
+        name: tab.name,
+        label: i18n.global.t(tab.labelKey),
+      })),
   );
 
   async function init() {
@@ -197,7 +205,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/experimental/default-file-manager.vue'),
     ]);
 
-    sections.value = [
+    allSections.value = [
       {
         key: 'language',
         titleKey: 'language.language',
@@ -405,15 +413,13 @@ export const useSettingsStore = defineStore('settings', () => {
         component: markRaw(ExtensionsListSection),
         category: 'extensions',
       },
-      ...(platformStore.isWindows
-        ? [{
-            key: 'defaultFileManager',
-            titleKey: 'settings.experimental.defaultFileManager.title',
-            tags: 'settingsTags.experimental',
-            component: markRaw(DefaultFileManagerSection),
-            category: 'experimental',
-          }]
-        : []),
+      {
+        key: 'defaultFileManager',
+        titleKey: 'settings.experimental.defaultFileManager.title',
+        tags: 'settingsTags.experimental',
+        component: markRaw(DefaultFileManagerSection),
+        category: 'experimental',
+      },
     ];
 
     const normalizedStoredTab = normalizeSettingsTabName(userSettingsStore.userSettings.settingsCurrentTab);

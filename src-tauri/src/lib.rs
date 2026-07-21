@@ -33,8 +33,6 @@ mod user_storage_files_config;
 pub mod utils;
 mod windows_installation;
 #[cfg(windows)]
-mod windows_msix_storage_migration;
-#[cfg(windows)]
 mod windows_print_view_webview;
 
 use serde::Serialize;
@@ -279,6 +277,7 @@ pub fn run() {
             configure_webview_hide_pdf_more_settings,
             get_launch_context,
             startup_storage_bootstrap::get_startup_storage_bootstrap,
+            default_file_manager::default_file_manager_available,
             default_file_manager::is_default_file_manager,
             default_file_manager::set_default_file_manager,
             app_updater::check_for_updates,
@@ -446,10 +445,6 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         )?;
     }
 
-    #[cfg(windows)]
-    if let Err(error) = windows_msix_storage_migration::migrate_virtualized_app_data(app.handle()) {
-        eprintln!("Failed to migrate virtualized Microsoft Store app data: {error}");
-    }
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
     #[cfg(windows)]

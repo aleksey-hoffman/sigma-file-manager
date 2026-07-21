@@ -37,6 +37,22 @@ struct EnableRegistryKeys {
 }
 
 #[cfg(windows)]
+const MICROSOFT_STORE_UNAVAILABLE_ERROR: &str =
+    "Setting Sigma File Manager as the default file manager is not available in the Microsoft Store version.";
+
+#[cfg(windows)]
+fn default_file_manager_is_supported_for_installation(is_windows_store_installation: bool) -> bool {
+    !is_windows_store_installation
+}
+
+#[cfg(windows)]
+fn default_file_manager_is_supported() -> bool {
+    default_file_manager_is_supported_for_installation(
+        windows_installation::is_windows_store_installation(),
+    )
+}
+
+#[cfg(windows)]
 fn normalize_command(command: &str) -> String {
     command.trim().replace('/', "\\").to_ascii_lowercase()
 }
@@ -251,6 +267,10 @@ fn ensure_current_integration(app_handle: &tauri::AppHandle) -> Result<(), Strin
 
 #[cfg(windows)]
 fn detect_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, String> {
+    if !default_file_manager_is_supported() {
+        return Ok(false);
+    }
+
     match launcher_registry_owner()? {
         Some(LauncherRegistryOwner::Current) => {
             let application_launch_target = launcher::application_launch_target()?;
@@ -274,6 +294,10 @@ fn detect_default_file_manager(app_handle: &tauri::AppHandle) -> Result<bool, St
 
 #[cfg(windows)]
 pub fn is_current_default_file_manager() -> Result<bool, String> {
+    if !default_file_manager_is_supported() {
+        return Ok(false);
+    }
+
     match launcher_registry_owner()? {
         Some(LauncherRegistryOwner::Current) => {
             let application_launch_target = launcher::application_launch_target()?;
@@ -463,6 +487,10 @@ fn apply_default_file_manager(
     app_handle: &tauri::AppHandle,
     enabled: bool,
 ) -> Result<bool, String> {
+    if !default_file_manager_is_supported() {
+        return Err(MICROSOFT_STORE_UNAVAILABLE_ERROR.to_string());
+    }
+
     if enabled {
         enable_default_file_manager(app_handle)
     } else {
@@ -472,6 +500,10 @@ fn apply_default_file_manager(
 
 #[cfg(windows)]
 pub fn migrate_legacy_default_file_manager(app_handle: &tauri::AppHandle) -> Result<(), String> {
+    if !default_file_manager_is_supported() {
+        return Ok(());
+    }
+
     let should_migrate = match launcher_registry_owner()? {
         Some(LauncherRegistryOwner::Legacy) => true,
         Some(LauncherRegistryOwner::Current) => {
@@ -493,6 +525,12 @@ pub fn migrate_legacy_default_file_manager(app_handle: &tauri::AppHandle) -> Res
 #[cfg(all(test, windows))]
 mod tests {
     use super::*;
+
+    #[test]
+    fn default_file_manager_is_disabled_for_store_installations() {
+        assert!(!default_file_manager_is_supported_for_installation(true));
+        assert!(default_file_manager_is_supported_for_installation(false));
+    }
 
     #[test]
     fn owned_snapshot_detects_external_registry_changes() {
@@ -612,6 +650,19 @@ mod tests {
         assert_eq!(restored.version, snapshot.version);
         assert_eq!(restored.original_keys, snapshot.original_keys);
         assert_eq!(restored.owned_keys, snapshot.owned_keys);
+    }
+}
+
+#[tauri::command]
+pub fn default_file_manager_available() -> bool {
+    #[cfg(windows)]
+    {
+        default_file_manager_is_supported()
+    }
+
+    #[cfg(not(windows))]
+    {
+        false
     }
 }
 

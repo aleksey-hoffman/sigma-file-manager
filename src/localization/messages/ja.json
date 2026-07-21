@@ -425,7 +425,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "Sigma File Manager を既定のファイルマネージャーとして設定",
-        "description": "このオプションはシステム レジストリを変更するため、デバイスで予期しない副作用が発生する可能性があります。自己責任で続行してください。"
+        "description": "このオプションはシステム レジストリを変更するため、デバイスで予期しない副作用が発生する可能性があります。自己責任で続行してください。",
+        "unavailableInMicrosoftStore": "Microsoft Store 版では利用できません"
       }
     }
   },

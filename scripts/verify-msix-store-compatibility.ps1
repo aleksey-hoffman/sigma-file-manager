@@ -86,22 +86,22 @@ try {
       "/foundation:Package/foundation:Capabilities/rescap:Capability[@Name='unvirtualizedResources']",
       $namespaces
     )
-    $targetDeviceFamily = $manifest.SelectSingleNode(
-      "/foundation:Package/foundation:Dependencies/foundation:TargetDeviceFamily[@Name='Windows.Desktop']",
+    $runFullTrust = $manifest.SelectSingleNode(
+      "/foundation:Package/foundation:Capabilities/rescap:Capability[@Name='runFullTrust']",
       $namespaces
     )
 
-    if ($registryVirtualization.InnerText -ne "disabled") {
-      throw "$($package.Name) does not disable registry write virtualization."
+    if ($null -ne $registryVirtualization) {
+      throw "$($package.Name) disables registry write virtualization."
     }
-    if ($fileSystemVirtualization.InnerText -ne "disabled") {
-      throw "$($package.Name) does not disable file system write virtualization."
+    if ($null -ne $fileSystemVirtualization) {
+      throw "$($package.Name) disables file system write virtualization."
     }
-    if ($null -eq $unvirtualizedResources) {
-      throw "$($package.Name) does not declare unvirtualizedResources."
+    if ($null -ne $unvirtualizedResources) {
+      throw "$($package.Name) declares the restricted unvirtualizedResources capability."
     }
-    if ([Version]$targetDeviceFamily.MinVersion -lt [Version]"10.0.18362.0") {
-      throw "$($package.Name) targets a Windows version that does not support desktop6 virtualization controls."
+    if ($null -eq $runFullTrust) {
+      throw "$($package.Name) does not declare the required runFullTrust capability."
     }
   }
 }

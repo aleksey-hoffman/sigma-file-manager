@@ -7,9 +7,7 @@
     "general": [
       "internetClient"
     ],
-    "restricted": [
-      "unvirtualizedResources"
-    ]
+    "restricted": []
   },
   "extensions": {
     "shareTarget": false,

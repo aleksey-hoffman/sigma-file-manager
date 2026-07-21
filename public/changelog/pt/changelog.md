@@ -227,7 +227,7 @@ A navegação por pastas grandes e conteúdos de mídia ficou mais rápida e con
 - **Abrir arquivos**: corrigida a abertura de arquivos a partir do diretório de trabalho errado;
 - **Compartilhamentos SMB**: corrigido um problema que impedia a abertura de arquivos em compartilhamentos SMB;
 - **Caminhos WSL**: corrigido o tratamento dos caminhos UNC do host WSL no Windows, incluindo `//wsl.localhost` como lista virtual de distribuições;
-- **Gerenciador de arquivos padrão**: corrigida a definição do gerenciador de arquivos padrão nas versões da Microsoft Store;
+- **Gerenciador de arquivos padrão**: a opção continua disponível em instalações diretas do Windows; a versão da Microsoft Store agora a mostra como indisponível;
 - **AppImage (Linux)**: corrigido `Could not create default EGL display: EGL_BAD_PARAMETER`;
 - **Instalação de extensões (Linux)**: corrigidas falhas ao instalar extensões distribuídas em vários arquivos;
 - **Detalhes da extensão**: corrigido o alinhamento da página de visão geral;

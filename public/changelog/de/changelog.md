@@ -227,7 +227,7 @@ Das Durchsuchen großer Ordner und Medien ist schneller und speicherschonender.
 - **Dateien öffnen**: Dateien werden jetzt mit dem richtigen Arbeitsverzeichnis geöffnet;
 - **SMB-Freigaben**: Dateien auf SMB-Freigaben können wieder geöffnet werden;
 - **WSL-Pfade**: Verarbeitung von UNC-Pfaden des WSL-Hosts unter Windows korrigiert, einschließlich `//wsl.localhost` als virtuelle Liste der Distributionen;
-- **Standard-Dateimanager**: Problem beim Festlegen des Standard-Dateimanagers in Versionen aus dem Microsoft Store behoben;
+- **Standard-Dateimanager**: Die Einstellung bleibt für direkte Windows-Installationen verfügbar; in der Microsoft Store-Version wird sie als nicht verfügbar angezeigt;
 - **AppImage (Linux)**: `Could not create default EGL display: EGL_BAD_PARAMETER` behoben;
 - **Erweiterungsinstallation (Linux)**: Installationsfehler bei Erweiterungen mit mehreren Dateien im Verzeichnis `dist` behoben;
 - **Erweiterungsdetails**: Ausrichtung der Übersichtsseite korrigiert;

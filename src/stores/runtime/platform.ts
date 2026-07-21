@@ -8,14 +8,25 @@ import type { Platform } from '@tauri-apps/plugin-os';
 import { invoke } from '@tauri-apps/api/core';
 import { initPlatformInfo as initSharedPlatformInfo } from '@/utils/platform-info';
 
+export function canUseDefaultFileManager(
+  platform: Platform | null,
+  defaultFileManagerAvailable: boolean,
+): boolean {
+  return platform === 'windows' && defaultFileManagerAvailable;
+}
+
 export const usePlatformStore = defineStore('platform', () => {
   const currentPlatform = ref<Platform | null>(null);
   const appUpdatesManagedExternally = ref(false);
+  const supportsDefaultFileManager = ref(false);
 
   const isWindows = computed(() => currentPlatform.value === 'windows');
   const isMacOS = computed(() => currentPlatform.value === 'macos');
   const isLinux = computed(() => currentPlatform.value === 'linux');
   const isUnix = computed(() => isMacOS.value || isLinux.value);
+  const isMicrosoftStoreInstallation = computed(
+    () => isWindows.value && appUpdatesManagedExternally.value,
+  );
 
   async function init() {
     const platformInfo = await initSharedPlatformInfo();
@@ -27,6 +38,17 @@ export const usePlatformStore = defineStore('platform', () => {
     catch {
       appUpdatesManagedExternally.value = false;
     }
+
+    try {
+      const defaultFileManagerAvailable = await invoke<boolean>('default_file_manager_available');
+      supportsDefaultFileManager.value = canUseDefaultFileManager(
+        currentPlatform.value,
+        defaultFileManagerAvailable,
+      );
+    }
+    catch {
+      supportsDefaultFileManager.value = false;
+    }
   }
 
   return {
@@ -36,6 +58,8 @@ export const usePlatformStore = defineStore('platform', () => {
     isMacOS,
     isLinux,
     isUnix,
+    isMicrosoftStoreInstallation,
+    supportsDefaultFileManager,
     init,
   };
 });

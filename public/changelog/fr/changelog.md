@@ -227,7 +227,7 @@ La navigation dans les grands dossiers et les médias est plus rapide et utilise
 - **Ouverture de fichiers** : les fichiers s'ouvrent désormais depuis le bon répertoire de travail ;
 - **Partages SMB** : les fichiers des partages SMB peuvent de nouveau être ouverts ;
 - **Chemins WSL** : la gestion des chemins UNC de l'hôte WSL sous Windows a été corrigée, y compris celle de `//wsl.localhost` comme liste virtuelle de distributions ;
-- **Gestionnaire de fichiers par défaut** : il est de nouveau possible de définir le gestionnaire de fichiers par défaut dans les versions distribuées via le Microsoft Store ;
+- **Gestionnaire de fichiers par défaut** : le réglage reste disponible pour les installations Windows directes ; la version Microsoft Store l'affiche désormais comme indisponible ;
 - **AppImage (Linux)** : l'erreur `Could not create default EGL display: EGL_BAD_PARAMETER` a été corrigée ;
 - **Installation d'extensions (Linux)** : les échecs d'installation des extensions contenant plusieurs fichiers dans leur répertoire `dist` ont été corrigés ;
 - **Détails d'extension** : l'alignement de la page de présentation a été corrigé ;

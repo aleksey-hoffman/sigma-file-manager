@@ -425,7 +425,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "Imposta Sigma File Manager come file manager predefinito",
-        "description": "Questa opzione modifica il registro di sistema e può avere effetti collaterali imprevisti sul dispositivo. Continua a tuo rischio."
+        "description": "Questa opzione modifica il registro di sistema e può avere effetti collaterali imprevisti sul dispositivo. Continua a tuo rischio.",
+        "unavailableInMicrosoftStore": "Non disponibile nella versione Microsoft Store"
       }
     }
   },

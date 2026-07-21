@@ -227,7 +227,7 @@ Navegar por carpetas grandes y contenido multimedia ahora es más rápido y cons
 - **Abrir archivos**: se corrigió la apertura de archivos desde un directorio de trabajo incorrecto;
 - **Recursos compartidos SMB**: se corrigió un problema que impedía abrir archivos en recursos compartidos SMB;
 - **Rutas WSL**: se corrigió la gestión de rutas UNC del host de WSL en Windows, incluida `//wsl.localhost` como lista virtual de distribuciones;
-- **Administrador de archivos predeterminado**: se corrigió la configuración del administrador de archivos predeterminado en las versiones de Microsoft Store;
+- **Administrador de archivos predeterminado**: la opción sigue disponible en las instalaciones directas de Windows; la versión de Microsoft Store ahora la muestra como no disponible;
 - **AppImage (Linux)**: corregido `Could not create default EGL display: EGL_BAD_PARAMETER`;
 - **Instalación de extensiones (Linux)**: se corrigieron los fallos al instalar extensiones distribuidas en varios archivos;
 - **Detalles de extensiones**: se corrigió la alineación de la página de resumen;

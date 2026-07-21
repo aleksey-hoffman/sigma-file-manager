@@ -425,7 +425,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "Sigma File Manager als Standard-Dateimanager festlegen",
-        "description": "Diese Option ändert die Systemregistrierung und kann unerwartete Nebenwirkungen auf Ihrem Gerät haben. Fahren Sie auf eigenes Risiko fort."
+        "description": "Diese Option ändert die Systemregistrierung und kann unerwartete Nebenwirkungen auf Ihrem Gerät haben. Fahren Sie auf eigenes Risiko fort.",
+        "unavailableInMicrosoftStore": "In der Microsoft Store-Version nicht verfügbar"
       }
     }
   },

@@ -227,7 +227,7 @@ Duyệt thư mục lớn và nội dung đa phương tiện nhanh hơn, đồng 
 - **Mở tệp**: sửa tệp mở từ thư mục làm việc sai;
 - **Chia sẻ SMB**: sửa không thể mở tệp trên chia sẻ SMB;
 - **Đường dẫn WSL**: sửa cách xử lý đường dẫn UNC của máy chủ WSL trên Windows, bao gồm việc dùng `//wsl.localhost` làm danh sách bản phân phối ảo;
-- **Trình quản lý tệp mặc định**: sửa đặt trình quản lý tệp mặc định trong bản Microsoft Store;
+- **Trình quản lý tệp mặc định**: cài đặt vẫn khả dụng cho bản Windows được cài đặt trực tiếp; phiên bản Microsoft Store hiện hiển thị cài đặt này là không khả dụng;
 - **AppImage (Linux)**: sửa `Could not create default EGL display: EGL_BAD_PARAMETER`;
 - **Cài tiện ích (Linux)**: sửa lỗi cài đặt tiện ích có bản phân phối gồm nhiều tệp;
 - **Chi tiết tiện ích**: sửa kiểu căn chỉnh trang tổng quan;

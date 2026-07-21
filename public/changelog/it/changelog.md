@@ -227,7 +227,7 @@ La navigazione nelle cartelle di grandi dimensioni e tra i contenuti multimedial
 - **Apertura dei file**: risolta l'apertura dei file dalla directory di lavoro errata;
 - **Condivisioni SMB**: risolto un problema che impediva di aprire i file nelle condivisioni SMB;
 - **Percorsi WSL**: corretta la gestione dei percorsi UNC dell'host WSL su Windows, incluso `//wsl.localhost` come elenco virtuale delle distribuzioni;
-- **Gestore file predefinito**: corretta l'impostazione del gestore file predefinito nelle versioni di Microsoft Store;
+- **Gestore file predefinito**: l'impostazione resta disponibile per le installazioni dirette di Windows; nella versione Microsoft Store ora viene indicata come non disponibile;
 - **AppImage (Linux)**: corretto `Could not create default EGL display: EGL_BAD_PARAMETER`;
 - **Installazione delle estensioni (Linux)**: risolti gli errori di installazione delle estensioni distribuite su più file;
 - **Dettagli delle estensioni**: corretta l'impaginazione della pagina panoramica;

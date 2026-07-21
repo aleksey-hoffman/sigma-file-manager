@@ -454,7 +454,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "Sigma File Manager کو ڈیفالٹ فائل مینیجر بنائیں",
-        "description": "یہ اختیار سسٹم رجسٹری بدلتا ہے اور غیر متوقع اثر کر سکتا ہے۔ اپنے خطرے پر آگے بڑھیں۔"
+        "description": "یہ اختیار سسٹم رجسٹری بدلتا ہے اور غیر متوقع اثر کر سکتا ہے۔ اپنے خطرے پر آگے بڑھیں۔",
+        "unavailableInMicrosoftStore": "Microsoft Store ورژن میں دستیاب نہیں"
       }
     }
   },

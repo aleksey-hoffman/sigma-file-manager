@@ -204,7 +204,7 @@ ZIP 解压现已支持加密压缩包和使用非 UTF-8 编码的文件名。
 - **打开文件**：修复打开的文件从错误的工作目录启动的问题；
 - **SMB 共享**：修复无法打开 SMB 共享上文件的问题；
 - **WSL 路径**：修复 Windows 上 WSL 主机 UNC 路径的处理，并将 `//wsl.localhost` 作为虚拟发行版列表；
-- **默认文件管理器**：修复 Microsoft Store 构建中设置默认文件管理器的问题；
+- **默认文件管理器**：直接安装的 Windows 版本仍可使用此设置；Microsoft Store 版本现在会将其显示为不可用；
 - **AppImage（Linux）**：修复 `Could not create default EGL display: EGL_BAD_PARAMETER`；
 - **扩展安装（Linux）**：修复由多个发布文件组成的扩展安装失败；
 - **扩展详情**：修复概览页对齐样式；

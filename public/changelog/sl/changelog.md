@@ -204,7 +204,7 @@ Brskanje po velikih mapah in predstavnostnih datotekah je hitrejše in porabi ma
 - **Odpiranje datotek**: datoteke se ne zaženejo več iz napačnega delovnega imenika;
 - **Skupne rabe SMB**: datoteke v skupnih rabah SMB je znova mogoče odpreti;
 - **Poti WSL**: popravljeno je obravnavanje gostiteljskih poti UNC za WSL v sistemu Windows; `//wsl.localhost` se prepozna kot navidezni seznam distribucij;
-- **Privzeti upravitelj datotek**: privzeti upravitelj datotek je znova mogoče nastaviti v različicah iz trgovine Microsoft Store;
+- **Privzeti upravitelj datotek**: nastavitev ostaja na voljo pri neposrednih namestitvah za Windows; v različici iz trgovine Microsoft Store je zdaj prikazana kot nedostopna;
 - **AppImage (Linux)**: popravljeno `Could not create default EGL display: EGL_BAD_PARAMETER`;
 - **Namestitev razširitev (Linux)**: odpravljene so napake pri nameščanju paketov razširitev z več datotekami;
 - **Podrobnosti razširitve**: popravljena je poravnava strani s pregledom;

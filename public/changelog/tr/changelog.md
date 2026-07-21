@@ -227,7 +227,7 @@ Büyük klasörlere ve medya dosyalarına göz atmak artık daha hızlıdır ve 
 - **Dosyaları aç**: açılan dosyaların yanlış çalışma dizininden başlatılması düzeltildi;
 - **SMB paylaşımları**: SMB paylaşımlarındaki dosyaların açılamaması düzeltildi;
 - **WSL yolları**: Windows'ta WSL ana bilgisayarının UNC yollarını işleme sorunu düzeltildi; `//wsl.localhost` sanal dağıtım listesine eklendi;
-- **Varsayılan dosya yöneticisi**: Microsoft Store derlemelerinde varsayılan dosya yöneticisi ayarı düzeltildi;
+- **Varsayılan dosya yöneticisi**: ayar doğrudan Windows kurulumlarında kullanılmaya devam eder; Microsoft Store sürümünde artık kullanılamaz olarak gösterilir;
 - **AppImage (Linux)**: `Could not create default EGL display: EGL_BAD_PARAMETER` hatası düzeltildi;
 - **Eklenti yükleme (Linux)**: çok dosyalı dağıtım paketine sahip eklentilerdeki yükleme hataları düzeltildi;
 - **Eklenti ayrıntıları**: genel bakış sayfasındaki hizalama stilleri düzeltildi;

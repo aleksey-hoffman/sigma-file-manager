@@ -425,7 +425,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "Đặt Sigma File Manager làm trình quản lý tệp mặc định",
-        "description": "Tùy chọn này sửa đổi sổ đăng ký hệ thống và có thể gây ra tác dụng phụ ngoài ý muốn trên thiết bị của bạn. Hãy tiếp tục với rủi ro của riêng bạn."
+        "description": "Tùy chọn này sửa đổi sổ đăng ký hệ thống và có thể gây ra tác dụng phụ ngoài ý muốn trên thiết bị của bạn. Hãy tiếp tục với rủi ro của riêng bạn.",
+        "unavailableInMicrosoftStore": "Không khả dụng trong phiên bản Microsoft Store"
       }
     }
   },

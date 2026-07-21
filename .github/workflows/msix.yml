@@ -121,14 +121,14 @@ jobs:
           MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
         run: npm run tauri:windows:build -- --arch "${{ github.event.inputs.architectures }}" --runner npm --verbose
 
-      - name: Verify default file manager package access
+      - name: Verify Microsoft Store package restrictions
         shell: pwsh
         run: |
           $bundle = Get-ChildItem "src-tauri/target/msix/*.msixbundle" | Select-Object -First 1
           if (-not $bundle) {
             throw "MSIX bundle was not generated."
           }
-          ./scripts/verify-msix-default-file-manager.ps1 -BundlePath $bundle.FullName
+          ./scripts/verify-msix-store-compatibility.ps1 -BundlePath $bundle.FullName
 
       - name: Upload MSIX artifact
         uses: actions/upload-artifact@v4

@@ -227,7 +227,7 @@ Browsing large folders and media is faster and uses less memory.
 - **Open files**: fixed opened files launching from the wrong working directory;
 - **SMB shares**: fixed inability to open files on SMB shares;
 - **WSL paths**: fixed WSL host UNC path handling on Windows, including `//wsl.localhost` as a virtual distro list;
-- **Default file manager**: fixed setting the default file manager in Microsoft Store builds;
+- **Default file manager**: kept the setting available for direct Windows installations; the Microsoft Store version now shows it as unavailable;
 - **AppImage (Linux)**: fixed `Could not create default EGL display: EGL_BAD_PARAMETER`;
 - **Extension install (Linux)**: fixed install failures for multi-file dist extensions;
 - **Extension details**: fixed overview page alignment styles;

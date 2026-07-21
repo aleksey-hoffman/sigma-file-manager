@@ -454,7 +454,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "הגדר את Sigma File Manager כמנהל הקבצים שמוגדר כברירת מחדל",
-        "description": "אפשרות זו משנה את רישום המערכת ועלולה לגרום לתופעות לוואי בלתי צפויות במכשירך. המשך על אחריותך."
+        "description": "אפשרות זו משנה את רישום המערכת ועלולה לגרום לתופעות לוואי בלתי צפויות במכשירך. המשך על אחריותך.",
+        "unavailableInMicrosoftStore": "לא זמין בגרסת Microsoft Store"
       }
     }
   },

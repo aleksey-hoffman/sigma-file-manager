@@ -425,7 +425,8 @@
     "experimental": {
       "defaultFileManager": {
         "title": "将 Sigma File Manager 设为默认文件管理器",
-        "description": "此选项会修改系统注册表，并且可能会对您的设备产生意外的副作用。请自行承担风险后继续。"
+        "description": "此选项会修改系统注册表，并且可能会对您的设备产生意外的副作用。请自行承担风险后继续。",
+        "unavailableInMicrosoftStore": "Microsoft Store 版本不可用"
       }
     }
   },
