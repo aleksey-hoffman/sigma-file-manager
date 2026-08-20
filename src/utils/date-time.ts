@@ -12,6 +12,7 @@ import 'dayjs/locale/es';
 import 'dayjs/locale/de';
 import 'dayjs/locale/fr';
 import 'dayjs/locale/he';
+import 'dayjs/locale/hy-am';
 import 'dayjs/locale/it';
 import 'dayjs/locale/pt';
 import 'dayjs/locale/tr';

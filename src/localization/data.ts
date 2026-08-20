@@ -10,6 +10,7 @@ import fa from './messages/fa.json';
 import fr from './messages/fr.json';
 import he from './messages/he.json';
 import hi from './messages/hi.json';
+import hy from './messages/hy.json';
 import it from './messages/it.json';
 import ja from './messages/ja.json';
 import pt from './messages/pt.json';
@@ -37,6 +38,7 @@ export const messages = {
   hi,
   ur,
   he,
+  hy,
 };
 
 export const languages: LocalizationLanguage[] = [
@@ -136,6 +138,12 @@ export const languages: LocalizationLanguage[] = [
     isCorrected: true,
     isRtl: true,
   },
+  {
+    name: 'Հայերեն',
+    locale: 'hy',
+    isCorrected: false,
+    isRtl: false,
+  },
 ] as const;
 
 export function getLanguage(locale: string) {
@@ -161,6 +169,7 @@ export const dayjsLocaleMapping: Record<AppLocale, string> = {
   hi: 'hi',
   ur: 'ur',
   he: 'he',
+  hy: 'hy-am',
 };
 
 export const intlLocaleMapping: Record<AppLocale, string> = {
@@ -180,4 +189,5 @@ export const intlLocaleMapping: Record<AppLocale, string> = {
   hi: 'hi-IN',
   ur: 'ur-PK',
   he: 'he-IL',
+  hy: 'hy-AM',
 };
