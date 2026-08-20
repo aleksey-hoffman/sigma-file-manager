@@ -1,6 +1,6 @@
 # Contributing
 
-⚠️ Before you write any code, keep in mind PRs are now only available to contibutors. If you want to become a contributor, create a new issue or a discussion and propose your changes so we can discuss it first. If we decide to proceed with these changes, then you might get the contributor role and create a PR.
+⚠️ Before you implement any changes, create a new issue / discussion so we can discuss it first and decide if we should add it.
 
 ## How to contribute
 
