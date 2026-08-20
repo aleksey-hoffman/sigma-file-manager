@@ -4,7 +4,7 @@
 
 ## How to contribute
 
-If you already have the contributor role, or you just want to run the app in dev mode, see the guide below
+If you want to contribute, or you just want to run the app in dev mode, see the guide below
 
 ### Prerequisites
 
@@ -22,6 +22,7 @@ If you already have the contributor role, or you just want to run the app in dev
 
 ```
 cd sigma-file-manager
+git switch main
 ```
 
 4. Install dependencies:
@@ -49,7 +50,7 @@ On Linux, if you see any visual issues, try this
 npm run tauri:dev:webkit-igpu
 ```
 
-7. Implement your changes
+7. Implement your changes only after the issue / discussion is accepted
 
 8. Pull changes. The code base is updated frequently, so make sure you pull the latest changes from Github, install dependencies if they were updated, merge conflicts with your feature, before sending your changes or running / building the app:
 
@@ -63,13 +64,13 @@ git pull && npm i
 npm run check
 ```
 
-9. Build the app to make sure there's no issues with building
+10. Build the app to make sure there's no issues with building
 
 ```
 npm run tauri:build
 ```
 
-The build can be configured in the `./vite.config.js` file.
+The build can be configured in the `./vite.config.ts` file.
 
 ## Known issues with the app
 
@@ -80,5 +81,5 @@ When running on proprietary Nvidia (or unsupported) drivers, you may encounter d
 To run the AppImage build on a Linux system with unsupported drivers, run the app with the compositing flag, for example:
 
 ```
-env WEBKIT_DISABLE_COMPOSITING_MODE=1 ./sigma-file-manager-v2_2.0.0-alpha.1_amd64.AppImage
+env WEBKIT_DISABLE_COMPOSITING_MODE=1 ./{FILE_NAME}.AppImage
 ```
