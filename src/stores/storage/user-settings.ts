@@ -65,7 +65,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     language: {
       name: 'English',
       locale: 'en',
-      isCorrected: true,
+      isHumanReviewed: true,
       isRtl: false,
     },
     theme: 'dark',

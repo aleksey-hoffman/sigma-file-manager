@@ -232,7 +232,7 @@ export type DriveCardSettings = {
 export type LocalizationLanguage = {
   name: string;
   locale: string;
-  isCorrected: boolean;
+  isHumanReviewed: boolean;
   isRtl: boolean;
 };
 

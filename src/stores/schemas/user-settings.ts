@@ -5,7 +5,7 @@
 import type { UserSettings } from '@/types/user-settings';
 import type { StorageAdapter } from './schema-utils';
 import type { CustomBackgroundMediaItem, HomeBannerPosition } from '@/types/user-settings';
-import { collectNestedRecordPaths, migrateStorageSchema } from './schema-utils';
+import { collectNestedRecordPaths, isRecord, migrateStorageSchema } from './schema-utils';
 import { backgroundMedia, DEFAULT_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import { invoke } from '@tauri-apps/api/core';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 24;
+export const USER_SETTINGS_SCHEMA_VERSION = 25;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -453,6 +453,21 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
       'navigator.enableBoxSelection',
       currentBoxSelectionEnabled ?? legacyBoxSelectionEnabled === true,
     );
+  }
+
+  if (fromVersion === 24 && toVersion === 25) {
+    const storedLanguage = await storage.get<unknown>('language');
+
+    if (isRecord(storedLanguage) && typeof storedLanguage.isCorrected === 'boolean') {
+      const { isCorrected, ...languageWithoutLegacyFlag } = storedLanguage;
+
+      await storage.set('language', {
+        ...languageWithoutLegacyFlag,
+        isHumanReviewed: typeof storedLanguage.isHumanReviewed === 'boolean'
+          ? storedLanguage.isHumanReviewed
+          : isCorrected,
+      });
+    }
   }
 
   if (fromVersion === 6 && toVersion === 7) {

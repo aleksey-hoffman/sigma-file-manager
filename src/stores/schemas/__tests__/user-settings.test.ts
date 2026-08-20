@@ -223,4 +223,27 @@ describe('migrateUserSettingsStorage', () => {
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
+
+  it('renames stored language.isCorrected to isHumanReviewed', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 24,
+      language: {
+        name: 'English',
+        locale: 'en',
+        isCorrected: true,
+        isRtl: false,
+      },
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('language')).toEqual({
+      name: 'English',
+      locale: 'en',
+      isRtl: false,
+      isHumanReviewed: true,
+    });
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
 });
