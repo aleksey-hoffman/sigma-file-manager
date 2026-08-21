@@ -150,12 +150,18 @@ export function getNavigatorSortColumnChangePatch(
   if (layout === 'grid') {
     return currentColumn === column
       ? { gridSortColumn: column }
-      : { gridSortColumn: column, gridSortDirection: 'asc' };
+      : {
+          gridSortColumn: column,
+          gridSortDirection: 'asc',
+        };
   }
 
   return currentColumn === column
     ? { listSortColumn: column }
-    : { listSortColumn: column, listSortDirection: 'asc' };
+    : {
+        listSortColumn: column,
+        listSortDirection: 'asc',
+      };
 }
 
 export function getNavigatorSortStoreUpdates(

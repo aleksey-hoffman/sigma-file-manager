@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  beforeEach, describe, expect, it, vi,
+} from 'vitest';
 import type { NavigatorFolderSettings, NavigatorFolderSettingsMap, UserSettingsNavigator } from '@/types/user-settings';
 import { normalizePathForComparison } from '@/utils/file-operation-paths';
 import {
