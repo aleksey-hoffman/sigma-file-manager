@@ -373,8 +373,15 @@
       "systemIconsDirectories": "Directorios",
       "systemIconsFiles": "Archivos",
       "sortBy": "Ordenar por",
+      "sorting": "Ordenación",
       "sortAscending": "Ascendente",
-      "sortDescending": "Descendente"
+      "sortDescending": "Descendente",
+      "settingsScope": "Ámbito",
+      "settingsScopeGlobal": "Global",
+      "settingsScopeThisFolder": "Esta carpeta",
+      "display": "Visualización",
+      "folderSettingsDifferFromGlobal": "Esta carpeta tiene sus propios ajustes",
+      "useGlobalSettings": "Usar ajustes globales"
     },
     "tabs": {
       "lastTabCloseBehavior": {

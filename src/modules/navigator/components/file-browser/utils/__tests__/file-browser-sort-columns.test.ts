@@ -42,6 +42,7 @@ function createNavigatorSettings(overrides: Partial<UserSettingsNavigator> = {})
       autoplayVideoPreview: false,
     },
     showHiddenFiles: false,
+    folderSettings: {},
     folderIconTheme: 'sigma',
     fileIconTheme: 'sigma',
     listColumnVisibility: {

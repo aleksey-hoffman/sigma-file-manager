@@ -373,8 +373,15 @@
       "systemIconsDirectories": "Thư mục",
       "systemIconsFiles": "Tệp",
       "sortBy": "Sắp xếp theo",
+      "sorting": "Sắp xếp",
       "sortAscending": "Tăng dần",
-      "sortDescending": "Giảm dần"
+      "sortDescending": "Giảm dần",
+      "settingsScope": "Phạm vi",
+      "settingsScopeGlobal": "Toàn cục",
+      "settingsScopeThisFolder": "Thư mục này",
+      "display": "Hiển thị",
+      "folderSettingsDifferFromGlobal": "Thư mục này có cài đặt riêng",
+      "useGlobalSettings": "Dùng cài đặt toàn cục"
     },
     "tabs": {
       "lastTabCloseBehavior": {

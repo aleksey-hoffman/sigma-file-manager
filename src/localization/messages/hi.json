@@ -402,8 +402,15 @@
       "systemIconsDirectories": "निर्देशिका",
       "systemIconsFiles": "फ़ाइलें",
       "sortBy": "क्रमबद्ध करें",
+      "sorting": "छँटाई",
       "sortAscending": "आरोही",
-      "sortDescending": "अवरोही"
+      "sortDescending": "अवरोही",
+      "settingsScope": "दायरा",
+      "settingsScopeGlobal": "वैश्विक",
+      "settingsScopeThisFolder": "यह फ़ोल्डर",
+      "display": "प्रदर्शन",
+      "folderSettingsDifferFromGlobal": "इस फ़ोल्डर की अपनी सेटिंग्स हैं",
+      "useGlobalSettings": "वैश्विक सेटिंग्स उपयोग करें"
     },
     "tabs": {
       "lastTabCloseBehavior": {

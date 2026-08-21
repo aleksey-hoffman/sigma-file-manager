@@ -28,7 +28,7 @@ const props = defineProps<TabsListProps>();
   justify-content: center;
   padding: 4px;
   border-radius: var(--radius-md);
-  background-color: hsl(var(--secondary));
+  background-color: hsl(var(--secondary) / 60%);
   color: hsl(var(--muted-foreground));
   scrollbar-color: hsl(var(--border)) transparent;
   scrollbar-width: thin;

@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 25;
+export const USER_SETTINGS_SCHEMA_VERSION = 26;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -467,6 +467,14 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
           ? storedLanguage.isHumanReviewed
           : isCorrected,
       });
+    }
+  }
+
+  if (fromVersion === 25 && toVersion === 26) {
+    const existingFolderSettings = await storage.get<unknown>('navigator.folderSettings');
+
+    if (!isRecord(existingFolderSettings)) {
+      await storage.set('navigator.folderSettings', {});
     }
   }
 

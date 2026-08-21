@@ -20,10 +20,9 @@ import {
   TriangleAlertIcon,
 } from '@lucide/vue';
 import type { ListSortColumn } from '@/types/user-settings';
-import {
-  getNavigatorSortSettingKeys,
-  getNextNavigatorSortDirection,
-} from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { getNextNavigatorSortDirection } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { persistAppliedNavigatorOptions } from '@/modules/navigator/utils/persist-navigator-folder-settings';
+import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -46,10 +45,14 @@ const { visibleOptionalListColumns, visibleListColumnOrderKey } = useFileBrowser
 const headerGridRef = ref<HTMLElement | null>(null);
 let headerResizeObserver: ResizeObserver | null = null;
 
+const appliedFolderSettings = computed(() => resolveNavigatorFolderSettings(
+  userSettingsStore.userSettings.navigator,
+  ctx.currentPath.value,
+));
 const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
 const listColumnFillWidth = computed(() => userSettingsStore.userSettings.navigator.listColumnFillWidth);
-const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
-const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
+const listSortColumn = computed(() => appliedFolderSettings.value.listSortColumn);
+const listSortDirection = computed(() => appliedFolderSettings.value.listSortDirection);
 const showLinkColumnPerformanceWarning = computed(() => ctx.directoryEntryCount.value >= LINK_COLUMN_WARNING_MIN_ITEMS);
 const showCheckedLinkColumnPerformanceWarning = computed(() => {
   const visibility = columnVisibility.value;
@@ -59,18 +62,17 @@ const showCheckedLinkColumnPerformanceWarning = computed(() => {
 });
 
 function handleColumnHeaderClick(column: ListSortColumn) {
-  const settingKeys = getNavigatorSortSettingKeys('list');
-
   if (listSortColumn.value === column) {
-    userSettingsStore.set(
-      settingKeys.direction,
-      getNextNavigatorSortDirection(listSortDirection.value),
-    );
+    persistAppliedNavigatorOptions(ctx.currentPath.value, {
+      listSortDirection: getNextNavigatorSortDirection(listSortDirection.value),
+    });
     return;
   }
 
-  userSettingsStore.set(settingKeys.column, column);
-  userSettingsStore.set(settingKeys.direction, 'asc');
+  persistAppliedNavigatorOptions(ctx.currentPath.value, {
+    listSortColumn: column,
+    listSortDirection: 'asc',
+  });
 }
 
 const headerScrollRef = ref<HTMLElement | null>(null);

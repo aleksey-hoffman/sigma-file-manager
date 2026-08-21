@@ -373,8 +373,15 @@
       "systemIconsDirectories": "フォルダー",
       "systemIconsFiles": "ファイル",
       "sortBy": "並べ替え",
+      "sorting": "並べ替え",
       "sortAscending": "昇順",
-      "sortDescending": "降順"
+      "sortDescending": "降順",
+      "settingsScope": "範囲",
+      "settingsScopeGlobal": "グローバル",
+      "settingsScopeThisFolder": "このフォルダー",
+      "display": "表示",
+      "folderSettingsDifferFromGlobal": "このフォルダーには独自の設定があります",
+      "useGlobalSettings": "グローバル設定を使用"
     },
     "tabs": {
       "lastTabCloseBehavior": {

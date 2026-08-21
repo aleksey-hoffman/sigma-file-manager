@@ -373,8 +373,15 @@
       "systemIconsDirectories": "文件夹",
       "systemIconsFiles": "文件",
       "sortBy": "排序依据",
+      "sorting": "排序",
       "sortAscending": "升序",
-      "sortDescending": "降序"
+      "sortDescending": "降序",
+      "settingsScope": "范围",
+      "settingsScopeGlobal": "全局",
+      "settingsScopeThisFolder": "此文件夹",
+      "display": "显示",
+      "folderSettingsDifferFromGlobal": "此文件夹有自己的设置",
+      "useGlobalSettings": "使用全局设置"
     },
     "tabs": {
       "lastTabCloseBehavior": {

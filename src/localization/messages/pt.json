@@ -373,8 +373,15 @@
       "systemIconsDirectories": "Pastas",
       "systemIconsFiles": "Arquivos",
       "sortBy": "Ordenar por",
+      "sorting": "Ordenação",
       "sortAscending": "Ascendente",
-      "sortDescending": "Descendente"
+      "sortDescending": "Descendente",
+      "settingsScope": "Escopo",
+      "settingsScopeGlobal": "Global",
+      "settingsScopeThisFolder": "Esta pasta",
+      "display": "Exibição",
+      "folderSettingsDifferFromGlobal": "Esta pasta tem as suas próprias configurações",
+      "useGlobalSettings": "Usar configurações globais"
     },
     "tabs": {
       "lastTabCloseBehavior": {

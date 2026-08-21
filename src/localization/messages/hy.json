@@ -402,8 +402,15 @@
       "systemIconsDirectories": "Պանակներ",
       "systemIconsFiles": "Ֆայլեր",
       "sortBy": "Դասավորել ըստ",
+      "sorting": "Դասավորում",
       "sortAscending": "Մեծացմամբ",
-      "sortDescending": "Փոքրացմամբ"
+      "sortDescending": "Փոքրացմամբ",
+      "settingsScope": "Շրջանակ",
+      "settingsScopeGlobal": "Գլոբալ",
+      "settingsScopeThisFolder": "Այս թղթապանակ",
+      "display": "Ցուցադրում",
+      "folderSettingsDifferFromGlobal": "Այս թղթապանակն ունի իր կարգավորումները",
+      "useGlobalSettings": "Օգտագործել գլոբալ կարգավորումները"
     },
     "tabs": {
       "lastTabCloseBehavior": {

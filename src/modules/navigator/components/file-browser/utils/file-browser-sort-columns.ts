@@ -6,7 +6,6 @@ import type { ReadDirOptions } from '@/types/dir-entry';
 import type {
   ListSortColumn,
   ListSortDirection,
-  UserSettingsNavigator,
 } from '@/types/user-settings';
 
 export const FILE_BROWSER_SORT_COLUMNS: readonly ListSortColumn[] = [
@@ -47,6 +46,21 @@ export type NavigatorSortSettings = {
   direction: ListSortDirection;
 };
 
+export type NavigatorSortSource = {
+  listSortColumn: ListSortColumn | null;
+  listSortDirection: ListSortDirection;
+  gridSortColumn: ListSortColumn | null;
+  gridSortDirection: ListSortDirection;
+  showHiddenFiles: boolean;
+};
+
+export type NavigatorSortSettingsPatch = {
+  listSortColumn?: ListSortColumn | null;
+  listSortDirection?: ListSortDirection;
+  gridSortColumn?: ListSortColumn | null;
+  gridSortDirection?: ListSortDirection;
+};
+
 export function isListSortColumn(value: string): value is ListSortColumn {
   return FILE_BROWSER_SORT_COLUMNS.includes(value as ListSortColumn);
 }
@@ -71,40 +85,40 @@ export function getFileBrowserListColumnLabel(
 }
 
 export function getNavigatorSortSettingsForLayout(
-  navigator: UserSettingsNavigator,
+  source: NavigatorSortSource,
   layout: NavigatorSortLayout,
 ): NavigatorSortSettings {
   if (layout === 'grid') {
     return {
-      column: navigator.gridSortColumn,
-      direction: navigator.gridSortDirection,
+      column: source.gridSortColumn,
+      direction: source.gridSortDirection,
     };
   }
 
   return {
-    column: navigator.listSortColumn,
-    direction: navigator.listSortDirection,
+    column: source.listSortColumn,
+    direction: source.listSortDirection,
   };
 }
 
 export function getResolvedNavigatorSortColumn(
-  navigator: UserSettingsNavigator,
+  source: NavigatorSortSource,
   layout: NavigatorSortLayout,
 ): ListSortColumn {
-  return getNavigatorSortSettingsForLayout(navigator, layout).column ?? 'name';
+  return getNavigatorSortSettingsForLayout(source, layout).column ?? 'name';
 }
 
 export function getFileBrowserSortReadDirOptions(
-  navigator: UserSettingsNavigator,
+  source: NavigatorSortSource,
   layout: NavigatorSortLayout,
 ): ReadDirOptions {
-  const activeSortColumn = getNavigatorSortSettingsForLayout(navigator, layout).column;
+  const activeSortColumn = getNavigatorSortSettingsForLayout(source, layout).column;
 
   return {
     includeShortcutTargets: activeSortColumn === 'linkStatus',
     includeHardLinkCounts: isLinkMetadataSortColumn(activeSortColumn),
     includeItemCounts: activeSortColumn === 'items',
-    includeHiddenItemCounts: navigator.showHiddenFiles,
+    includeHiddenItemCounts: source.showHiddenFiles,
   };
 }
 
@@ -126,30 +140,73 @@ export function getNextNavigatorSortDirection(direction: ListSortDirection): Lis
   return direction === 'asc' ? 'desc' : 'asc';
 }
 
+export function getNavigatorSortColumnChangePatch(
+  source: NavigatorSortSource,
+  layout: NavigatorSortLayout,
+  column: ListSortColumn,
+): NavigatorSortSettingsPatch {
+  const currentColumn = getNavigatorSortSettingsForLayout(source, layout).column;
+
+  if (layout === 'grid') {
+    return currentColumn === column
+      ? { gridSortColumn: column }
+      : { gridSortColumn: column, gridSortDirection: 'asc' };
+  }
+
+  return currentColumn === column
+    ? { listSortColumn: column }
+    : { listSortColumn: column, listSortDirection: 'asc' };
+}
+
+export function getNavigatorSortStoreUpdates(
+  patch: NavigatorSortSettingsPatch,
+): Array<{
+  key: NavigatorSortSettingKeys['column'] | NavigatorSortSettingKeys['direction'];
+  value: ListSortColumn | ListSortDirection;
+}> {
+  const updates: Array<{
+    key: NavigatorSortSettingKeys['column'] | NavigatorSortSettingKeys['direction'];
+    value: ListSortColumn | ListSortDirection;
+  }> = [];
+
+  if (patch.listSortColumn !== undefined && patch.listSortColumn !== null) {
+    updates.push({
+      key: 'navigator.listSortColumn',
+      value: patch.listSortColumn,
+    });
+  }
+
+  if (patch.listSortDirection !== undefined) {
+    updates.push({
+      key: 'navigator.listSortDirection',
+      value: patch.listSortDirection,
+    });
+  }
+
+  if (patch.gridSortColumn !== undefined && patch.gridSortColumn !== null) {
+    updates.push({
+      key: 'navigator.gridSortColumn',
+      value: patch.gridSortColumn,
+    });
+  }
+
+  if (patch.gridSortDirection !== undefined) {
+    updates.push({
+      key: 'navigator.gridSortDirection',
+      value: patch.gridSortDirection,
+    });
+  }
+
+  return updates;
+}
+
 export function getNavigatorSortColumnChangeUpdates(
-  navigator: UserSettingsNavigator,
+  source: NavigatorSortSource,
   layout: NavigatorSortLayout,
   column: ListSortColumn,
 ): Array<{
   key: NavigatorSortSettingKeys['column'] | NavigatorSortSettingKeys['direction'];
   value: ListSortColumn | ListSortDirection;
 }> {
-  const settingKeys = getNavigatorSortSettingKeys(layout);
-  const currentColumn = getNavigatorSortSettingsForLayout(navigator, layout).column;
-  const updates: Array<{
-    key: NavigatorSortSettingKeys['column'] | NavigatorSortSettingKeys['direction'];
-    value: ListSortColumn | ListSortDirection;
-  }> = [{
-    key: settingKeys.column,
-    value: column,
-  }];
-
-  if (currentColumn !== column) {
-    updates.push({
-      key: settingKeys.direction,
-      value: 'asc',
-    });
-  }
-
-  return updates;
+  return getNavigatorSortStoreUpdates(getNavigatorSortColumnChangePatch(source, layout, column));
 }

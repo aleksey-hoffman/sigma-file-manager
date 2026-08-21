@@ -18,7 +18,6 @@ import { useI18n } from 'vue-i18n';
 import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
-import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
@@ -46,8 +45,8 @@ import { NavigatorToolbarActions } from '@/modules/navigator/components/navigato
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
-import type { SplitViewMode } from '@/types/user-settings';
 import type { Tab } from '@/types/workspaces';
+import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
 
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
@@ -96,7 +95,6 @@ type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
 };
 
 const workspacesStore = useWorkspacesStore();
-const userSettingsStore = useUserSettingsStore();
 const clipboardStore = useClipboardStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const globalSearchStore = useGlobalSearchStore();
@@ -246,11 +244,6 @@ watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   }
 });
 
-const currentLayout = computed(() => {
-  const layoutName = userSettingsStore.userSettings.navigator.layout.type.name;
-  return layoutName === 'compact-list' ? 'list' : layoutName;
-});
-
 const infoPanelEntry = computed(() => {
   if (selectedEntries.value.length > 0) {
     return selectedEntries.value[selectedEntries.value.length - 1];
@@ -268,6 +261,43 @@ const trackNavigatorRelativeTime = computed(() => !globalSearchStore.isOpen);
 const currentActivePath = computed(() => {
   return currentDirEntry.value?.path;
 });
+
+const activeFolderSettingsPath = computed(() => {
+  if (isSplitView.value && activeTabId.value) {
+    const activeTab = workspacesStore.currentTabGroup?.find(tab => tab.id === activeTabId.value);
+
+    if (activeTab?.path) {
+      return activeTab.path;
+    }
+  }
+
+  return currentActivePath.value ?? workspacesStore.currentTabGroup?.[0]?.path;
+});
+
+const canUseFolderSettingsForActivePath = computed(() => {
+  if (!activeFolderSettingsPath.value) {
+    return false;
+  }
+
+  const activeTab = workspacesStore.currentTabGroup?.find(tab => tab.id === activeTabId.value)
+    ?? workspacesStore.currentTab;
+
+  return activeTab?.type !== 'search';
+});
+
+const {
+  activePath: folderSettingsActivePath,
+  applied: appliedFolderSettings,
+  canUseFolderSettings,
+  resolveForPath,
+} = useNavigatorFolderSettings(
+  () => activeFolderSettingsPath.value,
+  () => canUseFolderSettingsForActivePath.value,
+);
+
+function getLayoutForPath(path: string | undefined): 'list' | 'grid' {
+  return resolveForPath(path).layout;
+}
 
 const wasSplitViewBeforeSearch = ref(false);
 
@@ -308,17 +338,11 @@ function handleToggleSplitView() {
   workspacesStore.toggleSplitView();
 }
 
-const splitViewMode = computed(() => userSettingsStore.userSettings.navigator.splitViewMode);
+const splitViewMode = computed(() => appliedFolderSettings.value.splitViewMode);
 
 const isLinkedMode = computed(() => splitViewMode.value === 'linked' && isSplitView.value);
 
 const linkedPaneSyncQueue = createLinkedPaneSyncQueueState();
-
-async function handleSetSplitViewMode(mode: SplitViewMode) {
-  if (globalSearchStore.isOpen) return;
-
-  await userSettingsStore.set('navigator.splitViewMode', mode);
-}
 
 function syncLinkedPane(entries: DirEntry[], tabId: string) {
   const tabGroup = workspacesStore.currentTabGroup;
@@ -1142,9 +1166,10 @@ onUnmounted(() => {
     :is-split-view="isSplitView"
     :show-info-panel="showInfoPanel"
     :is-global-search-open="globalSearchStore.isOpen"
+    :active-path="folderSettingsActivePath"
+    :can-use-folder-settings="canUseFolderSettings"
     @toggle-split-view="handleToggleSplitView"
     @toggle-info-panel="handleToggleInfoPanel"
-    @set-split-view-mode="handleSetSplitViewMode"
   />
   <div class="navigator-page">
     <TabBar v-if="!isSmallScreen" />
@@ -1204,7 +1229,7 @@ onUnmounted(() => {
                         :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
                         :tab="tab"
                         :pane-index="index"
-                        :layout="currentLayout"
+                        :layout="getLayoutForPath(tab.path)"
                         :track-relative-time="trackNavigatorRelativeTime"
                         :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
                         :is-split-view="true"
@@ -1226,7 +1251,7 @@ onUnmounted(() => {
                       :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
                       :tab="workspacesStore.currentTabGroup[0]"
                       :pane-index="0"
-                      :layout="currentLayout"
+                      :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
                       :track-relative-time="trackNavigatorRelativeTime"
                       :is-active-pane="true"
                       class="navigator-page__pane"
@@ -1241,7 +1266,7 @@ onUnmounted(() => {
                 >
                   <FileBrowser
                     ref="singlePaneRef"
-                    :layout="currentLayout"
+                    :layout="getLayoutForPath(currentActivePath)"
                     :track-relative-time="trackNavigatorRelativeTime"
                     :is-active-pane="true"
                     class="navigator-page__pane"
@@ -1345,7 +1370,7 @@ onUnmounted(() => {
                     :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
                     :tab="tab"
                     :pane-index="index"
-                    :layout="currentLayout"
+                    :layout="getLayoutForPath(tab.path)"
                     :track-relative-time="trackNavigatorRelativeTime"
                     :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
                     :is-split-view="true"
@@ -1367,7 +1392,7 @@ onUnmounted(() => {
                   :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
                   :tab="workspacesStore.currentTabGroup[0]"
                   :pane-index="0"
-                  :layout="currentLayout"
+                  :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
                   :track-relative-time="trackNavigatorRelativeTime"
                   :is-active-pane="true"
                   class="navigator-page__pane"
@@ -1382,7 +1407,7 @@ onUnmounted(() => {
             >
               <FileBrowser
                 ref="singlePaneRef"
-                :layout="currentLayout"
+                :layout="getLayoutForPath(currentActivePath)"
                 :track-relative-time="trackNavigatorRelativeTime"
                 :is-active-pane="true"
                 class="navigator-page__pane"

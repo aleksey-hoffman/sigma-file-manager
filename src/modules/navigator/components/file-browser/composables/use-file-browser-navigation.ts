@@ -37,6 +37,7 @@ import {
 } from '@/utils/virtual-locations';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { getFileBrowserSortReadDirOptions } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -101,7 +102,6 @@ export function useFileBrowserNavigation(
   tab: () => Tab | undefined,
   onNavigationComplete?: (dirEntry: DirEntry | null) => void,
   onSelectionClear?: () => void,
-  layout: () => 'list' | 'grid' | undefined = () => undefined,
 ) {
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
@@ -171,8 +171,16 @@ export function useFileBrowserNavigation(
     includeItemCounts: false,
   };
 
-  function createReadDirOptions(): ReadDirOptions {
-    return getFileBrowserSortReadDirOptions(userSettingsStore.userSettings.navigator, layout());
+  function createReadDirOptions(path = currentPath.value): ReadDirOptions {
+    const appliedFolderSettings = resolveNavigatorFolderSettings(
+      userSettingsStore.userSettings.navigator,
+      path,
+    );
+
+    return getFileBrowserSortReadDirOptions(
+      appliedFolderSettings,
+      appliedFolderSettings.layout,
+    );
   }
 
   function getReadDirOptionsSignature(options: ReadDirOptions): string {
@@ -488,7 +496,7 @@ export function useFileBrowserNavigation(
     isRefreshing.value = true;
 
     try {
-      const readOptions = createReadDirOptions();
+      const readOptions = createReadDirOptions(refreshPath);
       const virtualDirectory = buildVirtualDirectoryFromDrives(refreshPath, sharedDrives.value);
       const result = virtualDirectory
         ? virtualDirectory
@@ -647,7 +655,7 @@ export function useFileBrowserNavigation(
 
     try {
       logDirWatcherDiag('readDir loading directory', { path: normalizedPath });
-      const readOptions = createReadDirOptions();
+      const readOptions = createReadDirOptions(normalizedPath);
       const [result] = await Promise.all([
         loadDirectoryContents(path, readOptions),
         stopWatcherPromise,

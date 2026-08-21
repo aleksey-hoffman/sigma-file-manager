@@ -373,8 +373,15 @@
       "systemIconsDirectories": "Klasörler",
       "systemIconsFiles": "Dosyalar",
       "sortBy": "Sıralama",
+      "sorting": "Sıralama",
       "sortAscending": "Artan",
-      "sortDescending": "Azalan"
+      "sortDescending": "Azalan",
+      "settingsScope": "Kapsam",
+      "settingsScopeGlobal": "Genel",
+      "settingsScopeThisFolder": "Bu klasör",
+      "display": "Görünüm",
+      "folderSettingsDifferFromGlobal": "Bu klasörün kendi ayarları var",
+      "useGlobalSettings": "Genel ayarları kullan"
     },
     "tabs": {
       "lastTabCloseBehavior": {

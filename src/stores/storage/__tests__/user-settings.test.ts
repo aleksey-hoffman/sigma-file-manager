@@ -13,7 +13,7 @@ import {
   useUserSettingsStore,
 } from '@/stores/storage/user-settings';
 import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup-storage-bootstrap';
-import type { Theme } from '@/types/user-settings';
+import type { NavigatorFolderSettingsMap, Theme } from '@/types/user-settings';
 
 type ThemeEventCallback = (event: { payload: { theme: Theme } }) => void;
 
@@ -148,5 +148,116 @@ describe('user settings theme sync', () => {
     expect(lazyStoreSetMock).not.toHaveBeenCalled();
     expect(lazyStoreSaveMock).not.toHaveBeenCalled();
     expect(emitMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('user settings folder settings path lifecycle', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    emitMock.mockReset().mockResolvedValue(undefined);
+    lazyStoreSaveMock.mockReset();
+    lazyStoreSetMock.mockReset();
+    webviewSetZoomMock.mockReset();
+    themeEventCallbacks.clear();
+    listenMock.mockReset().mockImplementation(async (
+      eventName: string,
+      callback: ThemeEventCallback,
+    ) => {
+      themeEventCallbacks.set(eventName, callback);
+
+      return vi.fn();
+    });
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+      })),
+    });
+  });
+
+  it('remaps folder settings when a directory is renamed', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+
+    const folderSettings = {
+      layout: 'grid' as const,
+      listSortColumn: 'modified' as const,
+      listSortDirection: 'desc' as const,
+      gridSortColumn: 'name' as const,
+      gridSortDirection: 'asc' as const,
+      showHiddenFiles: true,
+      splitViewMode: 'linked' as const,
+    };
+
+    await userSettingsStore.set('navigator.folderSettings', {
+      'C:/Users/aleks/Old': folderSettings,
+      'C:/Users/aleks/Old/Nested': folderSettings,
+    });
+
+    await userSettingsStore.handlePathRenamed('C:/Users/aleks/Old', 'C:/Users/aleks/New');
+
+    expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
+      'C:/Users/aleks/New': folderSettings,
+      'C:/Users/aleks/New/Nested': folderSettings,
+    });
+  });
+
+  it('removes folder settings when a directory is deleted', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+
+    const folderSettings = {
+      layout: 'list' as const,
+      listSortColumn: null,
+      listSortDirection: 'asc' as const,
+      gridSortColumn: 'name' as const,
+      gridSortDirection: 'asc' as const,
+      showHiddenFiles: false,
+      splitViewMode: 'split' as const,
+    };
+
+    await userSettingsStore.set('navigator.folderSettings', {
+      'C:/Users/aleks/Deleted': folderSettings,
+      'C:/Users/aleks/Keep': folderSettings,
+    });
+
+    await userSettingsStore.handlePathsDeleted(['C:/Users/aleks/Deleted']);
+
+    expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
+      'C:/Users/aleks/Keep': folderSettings,
+    });
+  });
+
+  it('does not fill other folder snapshots from current global values when remapping', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+
+    const partialSettings = {
+      layout: 'list',
+    };
+    const fullSettings = {
+      layout: 'grid' as const,
+      listSortColumn: 'modified' as const,
+      listSortDirection: 'desc' as const,
+      gridSortColumn: 'name' as const,
+      gridSortDirection: 'asc' as const,
+      showHiddenFiles: true,
+      splitViewMode: 'linked' as const,
+    };
+
+    await userSettingsStore.set('navigator.folderSettings', {
+      'C:/Users/aleks/Old': fullSettings,
+      'C:/Users/aleks/Keep': partialSettings,
+    } as unknown as NavigatorFolderSettingsMap);
+
+    await userSettingsStore.handlePathRenamed('C:/Users/aleks/Old', 'C:/Users/aleks/New');
+
+    expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
+      'C:/Users/aleks/New': fullSettings,
+      'C:/Users/aleks/Keep': partialSettings,
+    });
   });
 });

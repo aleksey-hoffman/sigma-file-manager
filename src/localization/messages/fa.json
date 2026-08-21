@@ -369,8 +369,15 @@
       "systemIconsDirectories": "پوشه‌ها",
       "systemIconsFiles": "فایل‌ها",
       "sortBy": "مرتب‌سازی بر اساس",
+      "sorting": "مرتب‌سازی",
       "sortAscending": "صعودی",
-      "sortDescending": "نزولی"
+      "sortDescending": "نزولی",
+      "settingsScope": "محدوده",
+      "settingsScopeGlobal": "سراسری",
+      "settingsScopeThisFolder": "این پوشه",
+      "display": "نمایش",
+      "folderSettingsDifferFromGlobal": "این پوشه تنظیمات خودش را دارد",
+      "useGlobalSettings": "استفاده از تنظیمات سراسری"
     },
     "tabs": {
       "lastTabCloseBehavior": {

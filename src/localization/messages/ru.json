@@ -402,8 +402,15 @@
       "systemIconsDirectories": "Папки",
       "systemIconsFiles": "Файлы",
       "sortBy": "Сортировать по",
+      "sorting": "Сортировка",
       "sortAscending": "По возрастанию",
-      "sortDescending": "По убыванию"
+      "sortDescending": "По убыванию",
+      "settingsScope": "Область",
+      "settingsScopeGlobal": "Глобальные",
+      "settingsScopeThisFolder": "Эта папка",
+      "display": "Отображение",
+      "folderSettingsDifferFromGlobal": "У этой папки свои настройки",
+      "useGlobalSettings": "Использовать глобальные настройки"
     },
     "tabs": {
       "lastTabCloseBehavior": {

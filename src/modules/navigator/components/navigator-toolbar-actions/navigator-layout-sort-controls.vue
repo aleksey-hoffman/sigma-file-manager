@@ -20,31 +20,35 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { ArrowUpIcon, ArrowDownIcon } from '@lucide/vue';
-import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import {
   FILE_BROWSER_SORT_COLUMNS,
   getFileBrowserListColumnLabel,
-  getNavigatorSortColumnChangeUpdates,
+  getNavigatorSortColumnChangePatch,
   getNavigatorSortSettingsForLayout,
   getNextNavigatorSortDirection,
-  getNavigatorSortSettingKeys,
   getResolvedNavigatorSortColumn,
   isListSortColumn,
+  type NavigatorSortSource,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import type { NavigatorFolderSettingsPatch } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 const props = defineProps<{
   sortLayout: 'list' | 'grid';
+  sortSource: NavigatorSortSource;
+}>();
+
+const emit = defineEmits<{
+  persist: [patch: NavigatorFolderSettingsPatch];
 }>();
 
 const { t } = useI18n();
-const userSettingsStore = useUserSettingsStore();
 
 const sortSettings = computed(() => getNavigatorSortSettingsForLayout(
-  userSettingsStore.userSettings.navigator,
+  props.sortSource,
   props.sortLayout,
 ));
 const activeSortColumn = computed(() => getResolvedNavigatorSortColumn(
-  userSettingsStore.userSettings.navigator,
+  props.sortSource,
   props.sortLayout,
 ));
 const activeSortDirection = computed(() => sortSettings.value.direction);
@@ -54,96 +58,74 @@ function handleSortColumnChange(value: unknown) {
     return;
   }
 
-  const updates = getNavigatorSortColumnChangeUpdates(
-    userSettingsStore.userSettings.navigator,
+  emit('persist', getNavigatorSortColumnChangePatch(
+    props.sortSource,
     props.sortLayout,
     value,
-  );
-
-  for (const update of updates) {
-    userSettingsStore.set(update.key, update.value);
-  }
+  ));
 }
 
 function toggleSortDirection() {
-  const settingKeys = getNavigatorSortSettingKeys(props.sortLayout);
-  userSettingsStore.set(
-    settingKeys.direction,
-    getNextNavigatorSortDirection(activeSortDirection.value),
-  );
+  const nextDirection = getNextNavigatorSortDirection(activeSortDirection.value);
+
+  emit('persist', props.sortLayout === 'grid'
+    ? { gridSortDirection: nextDirection }
+    : { listSortDirection: nextDirection });
 }
 </script>
 
 <template>
   <div class="navigator-layout-sort-controls">
-    <div class="navigator-layout-sort-controls__label">
-      {{ t('settings.navigator.sortBy') }}
-    </div>
-    <div class="navigator-layout-sort-controls__row">
-      <Select
-        :model-value="activeSortColumn"
-        @update:model-value="handleSortColumnChange"
-      >
-        <SelectTrigger class="navigator-layout-sort-controls__select">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem
-            v-for="column in FILE_BROWSER_SORT_COLUMNS"
-            :key="column"
-            :value="column"
-          >
-            <SelectItemText>{{ getFileBrowserListColumnLabel(t, column) }}</SelectItemText>
-          </SelectItem>
-        </SelectContent>
-      </Select>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <button
-            type="button"
-            class="navigator-layout-sort-controls__direction"
-            :aria-label="activeSortDirection === 'asc'
-              ? t('settings.navigator.sortAscending')
-              : t('settings.navigator.sortDescending')"
-            @click="toggleSortDirection"
-          >
-            <ArrowUpIcon
-              v-if="activeSortDirection === 'asc'"
-              :size="16"
-            />
-            <ArrowDownIcon
-              v-else
-              :size="16"
-            />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {{
-            activeSortDirection === 'asc'
-              ? t('settings.navigator.sortAscending')
-              : t('settings.navigator.sortDescending')
-          }}
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <Select
+      :model-value="activeSortColumn"
+      @update:model-value="handleSortColumnChange"
+    >
+      <SelectTrigger class="navigator-layout-sort-controls__select">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem
+          v-for="column in FILE_BROWSER_SORT_COLUMNS"
+          :key="column"
+          :value="column"
+        >
+          <SelectItemText>{{ getFileBrowserListColumnLabel(t, column) }}</SelectItemText>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <button
+          type="button"
+          class="navigator-layout-sort-controls__direction"
+          :aria-label="activeSortDirection === 'asc'
+            ? t('settings.navigator.sortAscending')
+            : t('settings.navigator.sortDescending')"
+          @click="toggleSortDirection"
+        >
+          <ArrowUpIcon
+            v-if="activeSortDirection === 'asc'"
+            :size="16"
+          />
+          <ArrowDownIcon
+            v-else
+            :size="16"
+          />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {{
+          activeSortDirection === 'asc'
+            ? t('settings.navigator.sortAscending')
+            : t('settings.navigator.sortDescending')
+        }}
+      </TooltipContent>
+    </Tooltip>
   </div>
 </template>
 
 <style>
 .navigator-layout-sort-controls {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  margin-top: 4px;
-  gap: 4px;
-}
-
-.navigator-layout-sort-controls__label {
-  color: hsl(var(--muted-foreground));
-  font-size: 11px;
-}
-
-.navigator-layout-sort-controls__row {
   display: flex;
   width: 100%;
   align-items: center;
@@ -153,7 +135,14 @@ function toggleSortDirection() {
 .navigator-layout-sort-controls__select.sigma-ui-select-trigger {
   height: 28px;
   flex: 1;
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--secondary) / 60%);
   font-size: 12px;
+}
+
+.navigator-layout-sort-controls__select.sigma-ui-select-trigger:hover {
+  background-color: hsl(var(--secondary));
 }
 
 .navigator-layout-sort-controls__direction {
@@ -163,9 +152,9 @@ function toggleSortDirection() {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid hsl(var(--border));
+  border: none;
   border-radius: var(--radius-sm);
-  background: transparent;
+  background-color: hsl(var(--secondary) / 60%);
   color: hsl(var(--foreground));
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;

@@ -224,6 +224,42 @@ describe('migrateUserSettingsStorage', () => {
     expect(storage.save).toHaveBeenCalledOnce();
   });
 
+  it('defaults navigator folder settings when migrating from schema version 25', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 25,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.folderSettings')).toEqual({});
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('preserves existing navigator folder settings when migrating from schema version 25', async () => {
+    const folderSettings = {
+      'C:/Users/aleks/Documents': {
+        layout: 'grid',
+        listSortColumn: 'modified',
+        listSortDirection: 'desc',
+        gridSortColumn: 'name',
+        gridSortDirection: 'asc',
+        showHiddenFiles: true,
+        splitViewMode: 'linked',
+        infoPanelDynamicSize: true,
+      },
+    };
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 25,
+      'navigator.folderSettings': folderSettings,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.folderSettings')).toEqual(folderSettings);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+  });
+
   it('renames stored language.isCorrected to isHumanReviewed', async () => {
     const storage = createStorageAdapter({
       [USER_SETTINGS_SCHEMA_VERSION_KEY]: 24,

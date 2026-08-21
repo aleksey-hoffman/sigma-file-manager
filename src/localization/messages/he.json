@@ -402,8 +402,15 @@
       "systemIconsDirectories": "תיקיות",
       "systemIconsFiles": "קבצים",
       "sortBy": "מיין לפי",
+      "sorting": "מיון",
       "sortAscending": "עולה",
-      "sortDescending": "יורד"
+      "sortDescending": "יורד",
+      "settingsScope": "היקף",
+      "settingsScopeGlobal": "גלובלי",
+      "settingsScopeThisFolder": "התיקייה הזו",
+      "display": "תצוגה",
+      "folderSettingsDifferFromGlobal": "לתיקייה הזו יש הגדרות משלה",
+      "useGlobalSettings": "השתמש בהגדרות גלובליות"
     },
     "tabs": {
       "lastTabCloseBehavior": {

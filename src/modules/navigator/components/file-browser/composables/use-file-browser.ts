@@ -26,7 +26,6 @@ import {
 import { useScrollRestoration } from '@/composables/use-scroll-restoration';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
-import type { UserSettingsNavigator } from '@/types/user-settings';
 import { useFileBrowserNavigation } from './use-file-browser-navigation';
 import { useFileBrowserSelection } from './use-file-browser-selection';
 import { useFileBrowserEntries } from './use-file-browser-entries';
@@ -45,13 +44,17 @@ import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
 import { useFileBrowserBoxSelection } from './use-file-browser-box-selection';
 import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
-import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import {
+  getNavigatorSortSettingsForLayout,
+  type NavigatorSortSource,
+} from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 function createNavigatorSortSettingsComputed(
-  getNavigator: () => UserSettingsNavigator,
+  getSource: () => NavigatorSortSource,
   layout: () => 'list' | 'grid' | undefined,
 ) {
-  return computed(() => getNavigatorSortSettingsForLayout(getNavigator(), layout()));
+  return computed(() => getNavigatorSortSettingsForLayout(getSource(), layout()));
 }
 
 function shouldApplyNavigatorSort(layout: 'list' | 'grid' | undefined) {
@@ -118,7 +121,6 @@ function setupNavigationDataSource(
     options.tab,
     dirEntry => options.onCurrentDirEntryChange(dirEntry),
     onNavigationCleanup,
-    options.layout,
   );
 
   const filter = useFileBrowserFilter({
@@ -130,9 +132,13 @@ function setupNavigationDataSource(
     isActivePane: options.isActivePane,
   });
 
-  const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
+  const appliedFolderSettings = computed(() => resolveNavigatorFolderSettings(
+    userSettingsStore.userSettings.navigator,
+    navigation.currentPath.value,
+  ));
+  const showHiddenFiles = computed(() => appliedFolderSettings.value.showHiddenFiles);
   const sortSettings = createNavigatorSortSettingsComputed(
-    () => userSettingsStore.userSettings.navigator,
+    () => appliedFolderSettings.value,
     options.layout,
   );
   const sortColumn = computed(() => sortSettings.value.column);

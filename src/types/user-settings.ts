@@ -311,6 +311,20 @@ export type LastTabCloseBehavior = 'createDefaultTab' | 'closeWindow' | 'navigat
 
 export type SplitViewMode = 'split' | 'linked';
 
+export type NavigatorFolderLayoutName = 'list' | 'grid';
+
+export type NavigatorFolderSettings = {
+  layout: NavigatorFolderLayoutName;
+  listSortColumn: ListSortColumn | null;
+  listSortDirection: ListSortDirection;
+  gridSortColumn: ListSortColumn | null;
+  gridSortDirection: ListSortDirection;
+  showHiddenFiles: boolean;
+  splitViewMode: SplitViewMode;
+};
+
+export type NavigatorFolderSettingsMap = Record<string, NavigatorFolderSettings>;
+
 export type UserSettingsNavigator = {
   lastTabCloseBehavior: LastTabCloseBehavior;
   boldActiveTabTitle: boolean;
@@ -318,6 +332,7 @@ export type UserSettingsNavigator = {
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;
   splitViewMode: SplitViewMode;
+  folderSettings: NavigatorFolderSettingsMap;
   folderIconTheme: NavigatorIconTheme;
   fileIconTheme: NavigatorIconTheme;
   listColumnVisibility: ListColumnVisibility;

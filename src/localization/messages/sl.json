@@ -402,8 +402,15 @@
       "systemIconsDirectories": "Mape",
       "systemIconsFiles": "Datoteke",
       "sortBy": "Razvrsti po",
+      "sorting": "Razvrščanje",
       "sortAscending": "Naraščajoče",
-      "sortDescending": "Padajoče"
+      "sortDescending": "Padajoče",
+      "settingsScope": "Obseg",
+      "settingsScopeGlobal": "Globalno",
+      "settingsScopeThisFolder": "Ta mapa",
+      "display": "Prikaz",
+      "folderSettingsDifferFromGlobal": "Ta mapa ima lastne nastavitve",
+      "useGlobalSettings": "Uporabi globalne nastavitve"
     },
     "tabs": {
       "lastTabCloseBehavior": {

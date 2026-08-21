@@ -402,8 +402,15 @@
       "systemIconsDirectories": "فولڈر",
       "systemIconsFiles": "فائلیں",
       "sortBy": "ترتیب دیں",
+      "sorting": "ترتیب",
       "sortAscending": "چڑھتی",
-      "sortDescending": "اترتی"
+      "sortDescending": "اترتی",
+      "settingsScope": "دائرہ",
+      "settingsScopeGlobal": "عالمی",
+      "settingsScopeThisFolder": "یہ فولڈر",
+      "display": "نمائش",
+      "folderSettingsDifferFromGlobal": "اس فولڈر کی اپنی سیٹنگز ہیں",
+      "useGlobalSettings": "عالمی سیٹنگز استعمال کریں"
     },
     "tabs": {
       "lastTabCloseBehavior": {

@@ -402,8 +402,15 @@
       "systemIconsDirectories": "Directories",
       "systemIconsFiles": "Files",
       "sortBy": "Sort by",
+      "sorting": "Sorting",
       "sortAscending": "Ascending",
-      "sortDescending": "Descending"
+      "sortDescending": "Descending",
+      "settingsScope": "Scope",
+      "settingsScopeGlobal": "Global",
+      "settingsScopeThisFolder": "This folder",
+      "display": "Display",
+      "folderSettingsDifferFromGlobal": "This folder has its own settings",
+      "useGlobalSettings": "Use global settings"
     },
     "tabs": {
       "lastTabCloseBehavior": {

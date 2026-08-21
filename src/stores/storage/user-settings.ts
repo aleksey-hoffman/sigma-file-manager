@@ -9,6 +9,7 @@ import { ref, computed, watch } from 'vue';
 import type {
   UserSettings,
   LocalizationLanguage,
+  NavigatorFolderSettingsMap,
   UserSettingsPath,
   UserSettingsValue,
   InfusionPageSettings,
@@ -44,6 +45,11 @@ import {
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
+import {
+  getStoredNavigatorFolderSettingsMap,
+  remapNavigatorFolderSettingsPaths,
+  removeNavigatorFolderSettingsPaths,
+} from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 export const USER_SETTINGS_THEME_CHANGED_EVENT = 'user-settings:theme-changed';
 
@@ -118,6 +124,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       },
       showHiddenFiles: false,
       splitViewMode: 'split',
+      folderSettings: {},
       folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
       fileIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
       listColumnVisibility: {
@@ -488,7 +495,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await setUserSettingsStorage('navigator.infoPanel.show', userSettings.value.navigator.infoPanel.show);
   }
 
-  async function set<P extends UserSettingsPath>(key: P, value: UserSettingsValue<P>) {
+  function applySettingValue(key: string, value: unknown) {
     const keys = key.split('.');
     let current: Record<string, unknown> = userSettings.value as Record<string, unknown>;
 
@@ -497,12 +504,70 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
 
     current[keys[keys.length - 1]] = value;
+  }
+
+  async function set<P extends UserSettingsPath>(key: P, value: UserSettingsValue<P>) {
+    applySettingValue(key, value);
 
     if (key === 'theme') {
       await broadcastThemeChange(value as Theme);
     }
 
     await setUserSettingsStorage(key, value);
+  }
+
+  async function setMany(entries: Array<{
+    key: UserSettingsPath;
+    value: unknown;
+  }>) {
+    if (entries.length === 0) {
+      return;
+    }
+
+    for (const entry of entries) {
+      applySettingValue(entry.key, entry.value);
+
+      if (entry.key === 'theme') {
+        await broadcastThemeChange(entry.value as Theme);
+      }
+    }
+
+    if (!userSettingsStorage.value) {
+      return;
+    }
+
+    for (const entry of entries) {
+      await userSettingsStorage.value.set(entry.key, entry.value);
+    }
+
+    await userSettingsStorage.value.save();
+  }
+
+  async function handlePathRenamed(oldPath: string, newPath: string) {
+    const remappedFolderSettings = remapNavigatorFolderSettingsPaths(
+      getStoredNavigatorFolderSettingsMap(userSettings.value.navigator),
+      oldPath,
+      newPath,
+    );
+
+    if (!remappedFolderSettings) {
+      return;
+    }
+
+    await set('navigator.folderSettings', remappedFolderSettings as NavigatorFolderSettingsMap);
+  }
+
+  async function handlePathsDeleted(deletedPaths: string[]) {
+    const remainingFolderSettings = removeNavigatorFolderSettingsPaths(
+      getStoredNavigatorFolderSettingsMap(userSettings.value.navigator),
+      deletedPaths,
+    );
+
+    if (!remainingFolderSettings) {
+      return;
+    }
+
+    await set('navigator.folderSettings', remainingFolderSettings as NavigatorFolderSettingsMap);
   }
 
   function hydrateUserSettingsFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): boolean {
@@ -550,9 +615,12 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     defaultFontFamily,
     init,
     set,
+    setMany,
     setUserSettingsStorage,
     setLanguage,
     setThemeTransitionOrigin,
     toggleInfoPanel,
+    handlePathRenamed,
+    handlePathsDeleted,
   };
 });

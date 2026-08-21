@@ -44,12 +44,19 @@ const iconComponent = computed(() => {
         {{ description }}
       </p>
     </div>
+    <div
+      v-if="$slots.default"
+      class="sigma-ui-alert__actions"
+    >
+      <slot />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .sigma-ui-alert {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   padding: 12px 14px;
   border: 1px solid hsl(var(--border));
@@ -106,5 +113,10 @@ const iconComponent = computed(() => {
   font-size: 0.8125rem;
   line-height: 1.5;
   opacity: 0.92;
+}
+
+.sigma-ui-alert__actions {
+  width: 100%;
+  flex: 1 1 100%;
 }
 </style>
