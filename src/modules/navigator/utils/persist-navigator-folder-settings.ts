@@ -3,24 +3,28 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { canonicalizePath } from '@/utils/normalize-path';
-import type { NavigatorFolderSettingsMap, UserSettingsPath } from '@/types/user-settings';
+import { normalizePathForComparison } from '@/utils/file-operation-paths';
+import type { UserSettingsPath } from '@/types/user-settings';
 import type {
   NavigatorFolderSettingsPatch,
   NavigatorOptionsTarget,
-  StoredNavigatorFolderSettingsMap,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 import {
   createNavigatorFolderSettingsWriteSnapshot,
-  getStoredNavigatorFolderSettingsMap,
   hasNavigatorFolderSettings,
   toNavigatorFolderLayoutType,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 function getGlobalNavigatorOptionEntries(
   patch: NavigatorFolderSettingsPatch,
-): Array<{ key: UserSettingsPath; value: unknown }> {
-  const entries: Array<{ key: UserSettingsPath; value: unknown }> = [];
+): Array<{
+  key: UserSettingsPath;
+  value: unknown;
+}> {
+  const entries: Array<{
+    key: UserSettingsPath;
+    value: unknown;
+  }> = [];
 
   if (patch.layout !== undefined) {
     entries.push({
@@ -64,19 +68,7 @@ function getGlobalNavigatorOptionEntries(
     });
   }
 
-  if (patch.splitViewMode !== undefined) {
-    entries.push({
-      key: 'navigator.splitViewMode',
-      value: patch.splitViewMode,
-    });
-  }
-
   return entries;
-}
-
-async function persistFolderSettingsMap(nextMap: StoredNavigatorFolderSettingsMap) {
-  const userSettingsStore = useUserSettingsStore();
-  await userSettingsStore.set('navigator.folderSettings', nextMap as NavigatorFolderSettingsMap);
 }
 
 async function persistNavigatorFolderSettingsPatch(
@@ -84,19 +76,20 @@ async function persistNavigatorFolderSettingsPatch(
   patch: NavigatorFolderSettingsPatch,
 ) {
   const userSettingsStore = useUserSettingsStore();
-  const navigator = userSettingsStore.userSettings.navigator;
-  const canonicalPath = canonicalizePath(path);
+  const comparisonPath = normalizePathForComparison(path);
 
-  if (!canonicalPath) {
+  if (!comparisonPath) {
     return;
   }
 
-  const currentMap = getStoredNavigatorFolderSettingsMap(navigator);
-
-  await persistFolderSettingsMap({
+  await userSettingsStore.updateFolderSettings(currentMap => ({
     ...currentMap,
-    [canonicalPath]: createNavigatorFolderSettingsWriteSnapshot(navigator, canonicalPath, patch),
-  });
+    [comparisonPath]: createNavigatorFolderSettingsWriteSnapshot(
+      userSettingsStore.userSettings.navigator,
+      comparisonPath,
+      patch,
+    ),
+  }));
 }
 
 async function persistNavigatorOptionsGlobalPatch(patch: NavigatorFolderSettingsPatch) {
@@ -114,12 +107,16 @@ export async function persistNavigatorOptions(
   target: NavigatorOptionsTarget,
   patch: NavigatorFolderSettingsPatch,
 ) {
-  if (target !== 'global' && canonicalizePath(target.folder)) {
-    await persistNavigatorFolderSettingsPatch(target.folder, patch);
+  if (target === 'global') {
+    await persistNavigatorOptionsGlobalPatch(patch);
     return;
   }
 
-  await persistNavigatorOptionsGlobalPatch(patch);
+  if (!normalizePathForComparison(target.folder)) {
+    return;
+  }
+
+  await persistNavigatorFolderSettingsPatch(target.folder, patch);
 }
 
 export async function persistAppliedNavigatorOptions(
@@ -135,24 +132,25 @@ export async function persistAppliedNavigatorOptions(
 }
 
 export async function clearNavigatorFolderSettings(path: string) {
-  const userSettingsStore = useUserSettingsStore();
-  const navigator = userSettingsStore.userSettings.navigator;
-  const canonicalPath = canonicalizePath(path);
+  const comparisonPath = normalizePathForComparison(path);
 
-  if (!canonicalPath) {
+  if (!comparisonPath) {
     return;
   }
 
-  const currentMap = getStoredNavigatorFolderSettingsMap(navigator);
-  const nextMap: StoredNavigatorFolderSettingsMap = {};
+  const userSettingsStore = useUserSettingsStore();
 
-  for (const [storedPath, settings] of Object.entries(currentMap)) {
-    if (canonicalizePath(storedPath) === canonicalPath) {
-      continue;
+  await userSettingsStore.updateFolderSettings((currentMap) => {
+    const nextMap = { ...currentMap };
+    let didChange = false;
+
+    for (const storedPath of Object.keys(nextMap)) {
+      if (normalizePathForComparison(storedPath) === comparisonPath) {
+        delete nextMap[storedPath];
+        didChange = true;
+      }
     }
 
-    nextMap[storedPath] = settings;
-  }
-
-  await persistFolderSettingsMap(nextMap);
+    return didChange ? nextMap : null;
+  });
 }

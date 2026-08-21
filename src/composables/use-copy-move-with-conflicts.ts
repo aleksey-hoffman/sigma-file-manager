@@ -12,6 +12,7 @@ import type {
   PathResolutionEntry,
 } from '@/stores/runtime/clipboard';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { useTopLevelNameConflictDialog } from '@/composables/use-top-level-name-conflict-dialog';
 import {
@@ -167,6 +168,17 @@ export function useCopyMoveWithConflicts() {
 
       const copiedCount = (normalResult?.copied_count ?? 0) + (samePathCopyResult?.copied_count ?? 0);
       const success = Boolean(normalResult?.success || samePathCopyResult?.success);
+      const movedPaths = operation === 'move'
+        ? (normalResult?.moved_paths ?? [])
+        : [];
+
+      if (movedPaths.length > 0) {
+        const userSettingsStore = useUserSettingsStore();
+
+        for (const movedPath of movedPaths) {
+          await userSettingsStore.handlePathRenamed(movedPath.from, movedPath.to);
+        }
+      }
 
       return {
         success,

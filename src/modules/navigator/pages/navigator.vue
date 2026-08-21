@@ -18,6 +18,7 @@ import { useI18n } from 'vue-i18n';
 import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
@@ -287,7 +288,6 @@ const canUseFolderSettingsForActivePath = computed(() => {
 
 const {
   activePath: folderSettingsActivePath,
-  applied: appliedFolderSettings,
   canUseFolderSettings,
   resolveForPath,
 } = useNavigatorFolderSettings(
@@ -338,7 +338,8 @@ function handleToggleSplitView() {
   workspacesStore.toggleSplitView();
 }
 
-const splitViewMode = computed(() => appliedFolderSettings.value.splitViewMode);
+const userSettingsStore = useUserSettingsStore();
+const splitViewMode = computed(() => userSettingsStore.userSettings.navigator.splitViewMode);
 
 const isLinkedMode = computed(() => splitViewMode.value === 'linked' && isSplitView.value);
 

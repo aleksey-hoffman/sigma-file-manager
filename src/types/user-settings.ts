@@ -320,7 +320,6 @@ export type NavigatorFolderSettings = {
   gridSortColumn: ListSortColumn | null;
   gridSortDirection: ListSortDirection;
   showHiddenFiles: boolean;
-  splitViewMode: SplitViewMode;
 };
 
 export type NavigatorFolderSettingsMap = Record<string, NavigatorFolderSettings>;

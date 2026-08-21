@@ -49,6 +49,7 @@ import {
   getStoredNavigatorFolderSettingsMap,
   remapNavigatorFolderSettingsPaths,
   removeNavigatorFolderSettingsPaths,
+  type StoredNavigatorFolderSettingsMap,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 export const USER_SETTINGS_THEME_CHANGED_EVENT = 'user-settings:theme-changed';
@@ -543,31 +544,35 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await userSettingsStorage.value.save();
   }
 
+  let folderSettingsWriteQueue: Promise<void> = Promise.resolve();
+
+  async function updateFolderSettings(
+    mutator: (currentMap: StoredNavigatorFolderSettingsMap) => StoredNavigatorFolderSettingsMap | null,
+  ) {
+    const run = folderSettingsWriteQueue.then(async () => {
+      const nextMap = mutator(getStoredNavigatorFolderSettingsMap(userSettings.value.navigator));
+
+      if (!nextMap) {
+        return;
+      }
+
+      await set('navigator.folderSettings', nextMap as NavigatorFolderSettingsMap);
+    });
+
+    folderSettingsWriteQueue = run.then(() => undefined, () => undefined);
+    await run;
+  }
+
   async function handlePathRenamed(oldPath: string, newPath: string) {
-    const remappedFolderSettings = remapNavigatorFolderSettingsPaths(
-      getStoredNavigatorFolderSettingsMap(userSettings.value.navigator),
-      oldPath,
-      newPath,
-    );
-
-    if (!remappedFolderSettings) {
-      return;
-    }
-
-    await set('navigator.folderSettings', remappedFolderSettings as NavigatorFolderSettingsMap);
+    await updateFolderSettings(currentMap => (
+      remapNavigatorFolderSettingsPaths(currentMap, oldPath, newPath)
+    ));
   }
 
   async function handlePathsDeleted(deletedPaths: string[]) {
-    const remainingFolderSettings = removeNavigatorFolderSettingsPaths(
-      getStoredNavigatorFolderSettingsMap(userSettings.value.navigator),
-      deletedPaths,
-    );
-
-    if (!remainingFolderSettings) {
-      return;
-    }
-
-    await set('navigator.folderSettings', remainingFolderSettings as NavigatorFolderSettingsMap);
+    await updateFolderSettings(currentMap => (
+      removeNavigatorFolderSettingsPaths(currentMap, deletedPaths)
+    ));
   }
 
   function hydrateUserSettingsFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): boolean {
@@ -616,6 +621,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     init,
     set,
     setMany,
+    updateFolderSettings,
     setUserSettingsStorage,
     setLanguage,
     setThemeTransitionOrigin,

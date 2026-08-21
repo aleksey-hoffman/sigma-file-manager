@@ -41,6 +41,11 @@ export interface ClipboardState {
   items: DirEntry[];
 }
 
+export type MovedPathPair = {
+  from: string;
+  to: string;
+};
+
 export interface FileOperationResult {
   success: boolean;
   cancelled?: boolean;
@@ -48,6 +53,7 @@ export interface FileOperationResult {
   copied_count?: number;
   failed_count?: number;
   skipped_count?: number;
+  moved_paths?: MovedPathPair[];
   fromStatusCenterJob?: boolean;
 }
 

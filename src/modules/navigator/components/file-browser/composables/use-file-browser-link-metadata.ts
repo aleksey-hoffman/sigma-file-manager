@@ -13,6 +13,7 @@ import {
   getNavigatorSortSettingsForLayout,
   isLinkMetadataSortColumn,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 interface UseFileBrowserLinkMetadataOptions {
   enabled: boolean;
@@ -33,10 +34,14 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
   const isHydratingDirectoryLinkMetadata = ref(false);
   let hydrationGeneration = 0;
 
+  const appliedFolderSettings = computed(() => resolveNavigatorFolderSettings(
+    userSettingsStore.userSettings.navigator,
+    options.currentPath.value,
+  ));
   const metadataOptions = computed<ReadDirOptions>(() => {
     const columnVisibility = userSettingsStore.userSettings.navigator.listColumnVisibility;
     const activeSortColumn = getNavigatorSortSettingsForLayout(
-      userSettingsStore.userSettings.navigator,
+      appliedFolderSettings.value,
       options.layout(),
     ).column;
     const includeShortcutTargets = columnVisibility.linkTarget
@@ -65,7 +70,7 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
   });
   const shouldHydrateDirectoryMetadata = computed(() => {
     const activeSortColumn = getNavigatorSortSettingsForLayout(
-      userSettingsStore.userSettings.navigator,
+      appliedFolderSettings.value,
       options.layout(),
     ).column;
 

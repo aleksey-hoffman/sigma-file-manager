@@ -8,6 +8,7 @@ import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { FileBrowserVirtualRow } from './use-file-browser-virtual-layout';
 import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 interface UseFileBrowserItemCountsOptions {
   enabled: boolean;
@@ -27,10 +28,14 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
   const itemCountsStore = useItemCountsStore();
   let hydrationGeneration = 0;
 
+  const appliedFolderSettings = computed(() => resolveNavigatorFolderSettings(
+    userSettingsStore.userSettings.navigator,
+    options.currentPath.value,
+  ));
   const shouldHydrateItemCounts = computed(() => {
     const navigatorSettings = userSettingsStore.userSettings.navigator;
     const activeSortColumn = getNavigatorSortSettingsForLayout(
-      navigatorSettings,
+      appliedFolderSettings.value,
       options.layout(),
     ).column;
 
@@ -40,14 +45,14 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
   });
   const shouldHydrateDirectoryItemCountsForSort = computed(() => {
     const activeSortColumn = getNavigatorSortSettingsForLayout(
-      userSettingsStore.userSettings.navigator,
+      appliedFolderSettings.value,
       options.layout(),
     ).column;
 
     return (options.layout() === 'list' || options.layout() === 'grid')
       && activeSortColumn === 'items';
   });
-  const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
+  const showHiddenFiles = computed(() => appliedFolderSettings.value.showHiddenFiles);
   const itemCountRequestOptions = computed(() => ({
     includeHiddenFiles: showHiddenFiles.value,
   }));

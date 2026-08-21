@@ -14,6 +14,7 @@ import {
 } from '@/stores/storage/user-settings';
 import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup-storage-bootstrap';
 import type { NavigatorFolderSettingsMap, Theme } from '@/types/user-settings';
+import { normalizePathForComparison } from '@/utils/file-operation-paths';
 
 type ThemeEventCallback = (event: { payload: { theme: Theme } }) => void;
 
@@ -189,7 +190,6 @@ describe('user settings folder settings path lifecycle', () => {
       gridSortColumn: 'name' as const,
       gridSortDirection: 'asc' as const,
       showHiddenFiles: true,
-      splitViewMode: 'linked' as const,
     };
 
     await userSettingsStore.set('navigator.folderSettings', {
@@ -200,8 +200,8 @@ describe('user settings folder settings path lifecycle', () => {
     await userSettingsStore.handlePathRenamed('C:/Users/aleks/Old', 'C:/Users/aleks/New');
 
     expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
-      'C:/Users/aleks/New': folderSettings,
-      'C:/Users/aleks/New/Nested': folderSettings,
+      [normalizePathForComparison('C:/Users/aleks/New')]: folderSettings,
+      [normalizePathForComparison('C:/Users/aleks/New/Nested')]: folderSettings,
     });
   });
 
@@ -216,7 +216,6 @@ describe('user settings folder settings path lifecycle', () => {
       gridSortColumn: 'name' as const,
       gridSortDirection: 'asc' as const,
       showHiddenFiles: false,
-      splitViewMode: 'split' as const,
     };
 
     await userSettingsStore.set('navigator.folderSettings', {
@@ -227,7 +226,7 @@ describe('user settings folder settings path lifecycle', () => {
     await userSettingsStore.handlePathsDeleted(['C:/Users/aleks/Deleted']);
 
     expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
-      'C:/Users/aleks/Keep': folderSettings,
+      [normalizePathForComparison('C:/Users/aleks/Keep')]: folderSettings,
     });
   });
 
@@ -245,7 +244,6 @@ describe('user settings folder settings path lifecycle', () => {
       gridSortColumn: 'name' as const,
       gridSortDirection: 'asc' as const,
       showHiddenFiles: true,
-      splitViewMode: 'linked' as const,
     };
 
     await userSettingsStore.set('navigator.folderSettings', {
@@ -256,8 +254,8 @@ describe('user settings folder settings path lifecycle', () => {
     await userSettingsStore.handlePathRenamed('C:/Users/aleks/Old', 'C:/Users/aleks/New');
 
     expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
-      'C:/Users/aleks/New': fullSettings,
-      'C:/Users/aleks/Keep': partialSettings,
+      [normalizePathForComparison('C:/Users/aleks/New')]: fullSettings,
+      [normalizePathForComparison('C:/Users/aleks/Keep')]: partialSettings,
     });
   });
 });

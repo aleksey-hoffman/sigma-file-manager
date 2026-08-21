@@ -3,20 +3,24 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { NavigatorFolderSettings, UserSettingsNavigator } from '@/types/user-settings';
+import type { NavigatorFolderSettings, NavigatorFolderSettingsMap, UserSettingsNavigator } from '@/types/user-settings';
+import { normalizePathForComparison } from '@/utils/file-operation-paths';
 import {
   clearNavigatorFolderSettings,
   persistAppliedNavigatorOptions,
   persistNavigatorOptions,
 } from '../persist-navigator-folder-settings';
+import { getStoredNavigatorFolderSettingsMap } from '../resolve-navigator-folder-settings';
 
 const {
   setMock,
   setManyMock,
+  updateFolderSettingsMock,
   userSettings,
 } = vi.hoisted(() => ({
   setMock: vi.fn(),
   setManyMock: vi.fn(),
+  updateFolderSettingsMock: vi.fn(),
   userSettings: {
     navigator: {} as UserSettingsNavigator,
   },
@@ -27,6 +31,7 @@ vi.mock('@/stores/storage/user-settings', () => ({
     userSettings,
     set: setMock,
     setMany: setManyMock,
+    updateFolderSettings: updateFolderSettingsMock,
   }),
 }));
 
@@ -94,7 +99,6 @@ function createFolderSettings(
     gridSortColumn: 'size',
     gridSortDirection: 'asc',
     showHiddenFiles: true,
-    splitViewMode: 'linked',
     ...overrides,
   };
 }
@@ -103,10 +107,21 @@ describe('persist navigator folder settings', () => {
   beforeEach(() => {
     setMock.mockReset();
     setManyMock.mockReset();
+    updateFolderSettingsMock.mockReset();
+    updateFolderSettingsMock.mockImplementation(async (mutator) => {
+      const nextMap = mutator(getStoredNavigatorFolderSettingsMap(userSettings.navigator));
+
+      if (!nextMap) {
+        return;
+      }
+
+      userSettings.navigator.folderSettings = nextMap as NavigatorFolderSettingsMap;
+      setMock('navigator.folderSettings', nextMap);
+    });
     userSettings.navigator = createNavigator();
   });
 
-  it('writes a folder snapshot without rewriting other stored folders', async () => {
+  it('writes a sparse folder snapshot without rewriting other stored folders', async () => {
     const otherSettings = { layout: 'list' };
     userSettings.navigator = createNavigator({
       folderSettings: {
@@ -120,15 +135,9 @@ describe('persist navigator folder settings', () => {
 
     expect(setManyMock).not.toHaveBeenCalled();
     expect(setMock).toHaveBeenCalledWith('navigator.folderSettings', {
-      'C:/Users/aleks/Other': otherSettings,
-      'C:/Users/aleks/Documents': {
-        layout: 'list',
-        listSortColumn: null,
-        listSortDirection: 'asc',
-        gridSortColumn: 'name',
-        gridSortDirection: 'asc',
+      [normalizePathForComparison('C:/Users/aleks/Other')]: otherSettings,
+      [normalizePathForComparison('C:/Users/aleks/Documents')]: {
         showHiddenFiles: true,
-        splitViewMode: 'split',
       },
     });
   });
@@ -137,7 +146,6 @@ describe('persist navigator folder settings', () => {
     await persistNavigatorOptions('global', {
       layout: 'grid',
       showHiddenFiles: true,
-      splitViewMode: 'linked',
     });
 
     expect(setMock).not.toHaveBeenCalled();
@@ -152,10 +160,6 @@ describe('persist navigator folder settings', () => {
       {
         key: 'navigator.showHiddenFiles',
         value: true,
-      },
-      {
-        key: 'navigator.splitViewMode',
-        value: 'linked',
       },
     ]);
   });
@@ -175,7 +179,7 @@ describe('persist navigator folder settings', () => {
     expect(setMock).toHaveBeenCalledWith(
       'navigator.folderSettings',
       expect.objectContaining({
-        'C:/Users/aleks/Documents': expect.objectContaining({
+        [normalizePathForComparison('C:/Users/aleks/Documents')]: expect.objectContaining({
           layout: 'grid',
           listSortColumn: 'size',
           showHiddenFiles: true,
@@ -189,13 +193,22 @@ describe('persist navigator folder settings', () => {
       listSortColumn: 'size',
     });
 
-    expect(setMock).not.toHaveBeenCalled();
+    expect(updateFolderSettingsMock).not.toHaveBeenCalled();
     expect(setManyMock).toHaveBeenCalledWith([
       {
         key: 'navigator.listSortColumn',
         value: 'size',
       },
     ]);
+  });
+
+  it('does not write global settings when the folder target is empty', async () => {
+    await persistNavigatorOptions({ folder: '' }, {
+      showHiddenFiles: true,
+    });
+
+    expect(updateFolderSettingsMock).not.toHaveBeenCalled();
+    expect(setManyMock).not.toHaveBeenCalled();
   });
 
   it('clears a folder snapshot without touching other folders', async () => {
@@ -210,7 +223,7 @@ describe('persist navigator folder settings', () => {
     await clearNavigatorFolderSettings('C:/Users/aleks/Documents/');
 
     expect(setMock).toHaveBeenCalledWith('navigator.folderSettings', {
-      'C:/Users/aleks/Keep': keepSettings,
+      [normalizePathForComparison('C:/Users/aleks/Keep')]: keepSettings,
     });
   });
 });

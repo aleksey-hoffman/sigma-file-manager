@@ -29,6 +29,7 @@ interface CopyMoveJobFinishedPayload {
   copiedCount?: number;
   failedCount?: number;
   skippedCount?: number;
+  movedPaths?: FileOperationResult['moved_paths'];
 }
 
 function localizeCopyMoveProgressDetail(detail: string): string {
@@ -55,6 +56,7 @@ function finishedPayloadToResult(payload: CopyMoveJobFinishedPayload): FileOpera
     copied_count: payload.copiedCount,
     failed_count: payload.failedCount,
     skipped_count: payload.skippedCount,
+    moved_paths: payload.movedPaths,
     fromStatusCenterJob: true,
   };
 }

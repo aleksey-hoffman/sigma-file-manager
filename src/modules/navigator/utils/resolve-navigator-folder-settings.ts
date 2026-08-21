@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { canonicalizePath } from '@/utils/normalize-path';
+import { normalizePathForComparison } from '@/utils/file-operation-paths';
 import { isRecord } from '@/stores/schemas/schema-utils';
 import { isListSortColumn } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import type {
@@ -11,7 +11,6 @@ import type {
   NavigatorFolderLayoutName,
   NavigatorFolderSettings,
   NavigatorLayout,
-  SplitViewMode,
   UserSettingsNavigator,
 } from '@/types/user-settings';
 
@@ -40,10 +39,6 @@ export function toNavigatorFolderLayoutType(
 
 function isListSortDirection(value: unknown): value is ListSortDirection {
   return value === 'asc' || value === 'desc';
-}
-
-function isSplitViewMode(value: unknown): value is SplitViewMode {
-  return value === 'split' || value === 'linked';
 }
 
 function isNavigatorFolderLayoutName(value: unknown): value is NavigatorFolderLayoutName {
@@ -89,10 +84,6 @@ function resolveBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback;
 }
 
-function resolveSplitViewMode(value: unknown, fallback: SplitViewMode): SplitViewMode {
-  return isSplitViewMode(value) ? value : fallback;
-}
-
 export function createNavigatorFolderSettingsSnapshot(
   navigator: UserSettingsNavigator,
 ): NavigatorFolderSettings {
@@ -103,7 +94,6 @@ export function createNavigatorFolderSettingsSnapshot(
     gridSortColumn: navigator.gridSortColumn,
     gridSortDirection: navigator.gridSortDirection,
     showHiddenFiles: navigator.showHiddenFiles,
-    splitViewMode: navigator.splitViewMode,
   };
 }
 
@@ -120,7 +110,6 @@ function mergeFolderSettingsWithGlobal(
     gridSortColumn: resolveSortColumn(folderSettings.gridSortColumn, globalSnapshot.gridSortColumn),
     gridSortDirection: resolveSortDirection(folderSettings.gridSortDirection, globalSnapshot.gridSortDirection),
     showHiddenFiles: resolveBoolean(folderSettings.showHiddenFiles, globalSnapshot.showHiddenFiles),
-    splitViewMode: resolveSplitViewMode(folderSettings.splitViewMode, globalSnapshot.splitViewMode),
   };
 }
 
@@ -138,13 +127,13 @@ export function getStoredNavigatorFolderSettingsMap(
       continue;
     }
 
-    const canonicalPath = canonicalizePath(path);
+    const comparisonPath = normalizePathForComparison(path);
 
-    if (!canonicalPath) {
+    if (!comparisonPath) {
       continue;
     }
 
-    storedMap[canonicalPath] = folderSettings;
+    storedMap[comparisonPath] = folderSettings;
   }
 
   return storedMap;
@@ -154,13 +143,13 @@ function lookupStoredNavigatorFolderSettings(
   navigator: UserSettingsNavigator,
   path: string,
 ): Record<string, unknown> | null {
-  const canonicalPath = canonicalizePath(path);
+  const comparisonPath = normalizePathForComparison(path);
 
-  if (!canonicalPath || !isRecord(navigator.folderSettings)) {
+  if (!comparisonPath || !isRecord(navigator.folderSettings)) {
     return null;
   }
 
-  const directMatch = navigator.folderSettings[canonicalPath];
+  const directMatch = navigator.folderSettings[comparisonPath];
 
   if (isRecord(directMatch)) {
     return directMatch;
@@ -171,7 +160,7 @@ function lookupStoredNavigatorFolderSettings(
       continue;
     }
 
-    if (canonicalizePath(storedPath) === canonicalPath) {
+    if (normalizePathForComparison(storedPath) === comparisonPath) {
       return folderSettings;
     }
   }
@@ -203,28 +192,48 @@ export function createNavigatorFolderSettingsWriteSnapshot(
   navigator: UserSettingsNavigator,
   path: string,
   patch: NavigatorFolderSettingsPatch,
-): NavigatorFolderSettings {
-  const storedSettings = lookupStoredNavigatorFolderSettings(navigator, path);
-  const baseSettings = storedSettings
-    ? mergeFolderSettingsWithGlobal(storedSettings, navigator)
-    : createNavigatorFolderSettingsSnapshot(navigator);
+): Record<string, unknown> {
+  const storedSettings = lookupStoredNavigatorFolderSettings(navigator, path) ?? {};
 
   return {
-    ...baseSettings,
+    ...storedSettings,
     ...patch,
   };
 }
 
 function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
-  if (path === oldPrefix) {
-    return newPrefix;
+  const comparablePath = normalizePathForComparison(path);
+  const comparableOldPrefix = normalizePathForComparison(oldPrefix);
+  const comparableNewPrefix = normalizePathForComparison(newPrefix);
+
+  if (!comparablePath || !comparableOldPrefix || !comparableNewPrefix) {
+    return null;
   }
 
-  if (path.startsWith(`${oldPrefix}/`)) {
-    return newPrefix + path.slice(oldPrefix.length);
+  if (comparablePath === comparableOldPrefix) {
+    return comparableNewPrefix;
+  }
+
+  if (comparablePath.startsWith(`${comparableOldPrefix}/`)) {
+    return comparableNewPrefix + comparablePath.slice(comparableOldPrefix.length);
   }
 
   return null;
+}
+
+function folderSettingsKeyExists(
+  folderSettings: StoredNavigatorFolderSettingsMap,
+  path: string,
+  excludedPath: string,
+): boolean {
+  const comparablePath = normalizePathForComparison(path);
+  const comparableExcludedPath = normalizePathForComparison(excludedPath);
+
+  return Object.keys(folderSettings).some((existingPath) => {
+    const comparableExistingPath = normalizePathForComparison(existingPath);
+    return comparableExistingPath === comparablePath
+      && comparableExistingPath !== comparableExcludedPath;
+  });
 }
 
 export function remapNavigatorFolderSettingsPaths(
@@ -232,8 +241,8 @@ export function remapNavigatorFolderSettingsPaths(
   oldPath: string,
   newPath: string,
 ): StoredNavigatorFolderSettingsMap | null {
-  const oldPrefix = canonicalizePath(oldPath);
-  const newPrefix = canonicalizePath(newPath);
+  const oldPrefix = normalizePathForComparison(oldPath);
+  const newPrefix = normalizePathForComparison(newPath);
 
   if (!oldPrefix || !newPrefix || oldPrefix === newPrefix) {
     return null;
@@ -243,15 +252,20 @@ export function remapNavigatorFolderSettingsPaths(
   const nextMap: StoredNavigatorFolderSettingsMap = {};
 
   for (const [path, settings] of Object.entries(folderSettings)) {
-    const remappedPath = replacePathPrefix(canonicalizePath(path), oldPrefix, newPrefix);
+    const remappedPath = replacePathPrefix(path, oldPrefix, newPrefix);
 
     if (remappedPath === null) {
       nextMap[path] = settings;
       continue;
     }
 
-    nextMap[remappedPath] = settings;
     didChange = true;
+
+    if (folderSettingsKeyExists(folderSettings, remappedPath, path)) {
+      continue;
+    }
+
+    nextMap[remappedPath] = settings;
   }
 
   return didChange ? nextMap : null;
@@ -262,7 +276,7 @@ export function removeNavigatorFolderSettingsPaths(
   deletedPaths: string[],
 ): StoredNavigatorFolderSettingsMap | null {
   const deletedPrefixes = deletedPaths
-    .map(path => canonicalizePath(path))
+    .map(path => normalizePathForComparison(path))
     .filter(path => path.length > 0);
 
   if (deletedPrefixes.length === 0) {
@@ -273,9 +287,9 @@ export function removeNavigatorFolderSettingsPaths(
   const nextMap: StoredNavigatorFolderSettingsMap = {};
 
   for (const [path, settings] of Object.entries(folderSettings)) {
-    const canonicalPath = canonicalizePath(path);
+    const comparisonPath = normalizePathForComparison(path);
     const isDeleted = deletedPrefixes.some(deletedPath => (
-      canonicalPath === deletedPath || canonicalPath.startsWith(`${deletedPath}/`)
+      comparisonPath === deletedPath || comparisonPath.startsWith(`${deletedPath}/`)
     ));
 
     if (isDeleted) {
@@ -288,4 +302,3 @@ export function removeNavigatorFolderSettingsPaths(
 
   return didChange ? nextMap : null;
 }
-

@@ -14,6 +14,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MovedPathPair {
+    pub from: String,
+    pub to: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileOperationResult {
     pub success: bool,
@@ -21,6 +28,8 @@ pub struct FileOperationResult {
     pub copied_count: Option<u32>,
     pub failed_count: Option<u32>,
     pub skipped_count: Option<u32>,
+    #[serde(default)]
+    pub moved_paths: Vec<MovedPathPair>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -798,17 +807,28 @@ fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
     }
 }
 
+fn moved_path_pair(from: &Path, to: &Path) -> MovedPathPair {
+    MovedPathPair {
+        from: normalize_path(&from.to_string_lossy()),
+        to: normalize_path(&to.to_string_lossy()),
+    }
+}
+
 fn record_completed_move_after_copy_delete(
     source: &Path,
     moved_count: &mut u32,
     failed_count: &mut u32,
     last_error: &mut Option<String>,
-) {
+) -> bool {
     match remove_dir_or_file(source) {
-        Ok(()) => *moved_count += 1,
+        Ok(()) => {
+            *moved_count += 1;
+            true
+        }
         Err(error) => {
             *failed_count += 1;
             *last_error = Some(error);
+            false
         }
     }
 }
@@ -1134,6 +1154,7 @@ pub(crate) fn copy_items_impl(
                 copied_count: None,
                 failed_count: None,
                 skipped_count: None,
+                moved_paths: Vec::new(),
             },
             false,
         );
@@ -1150,6 +1171,7 @@ pub(crate) fn copy_items_impl(
                 copied_count: None,
                 failed_count: None,
                 skipped_count: None,
+                moved_paths: Vec::new(),
             },
             false,
         );
@@ -1411,6 +1433,7 @@ pub(crate) fn copy_items_impl(
             copied_count: Some(copied_count),
             failed_count: Some(failed_count),
             skipped_count: Some(skipped_count),
+            moved_paths: Vec::new(),
         },
         cancelled,
     )
@@ -1462,6 +1485,7 @@ pub(crate) fn move_items_impl(
                 copied_count: None,
                 failed_count: None,
                 skipped_count: None,
+                moved_paths: Vec::new(),
             },
             false,
         );
@@ -1478,6 +1502,7 @@ pub(crate) fn move_items_impl(
                 copied_count: None,
                 failed_count: None,
                 skipped_count: None,
+                moved_paths: Vec::new(),
             },
             false,
         );
@@ -1486,6 +1511,7 @@ pub(crate) fn move_items_impl(
     let mut moved_count: u32 = 0;
     let mut failed_count: u32 = 0;
     let mut skipped_count: u32 = 0;
+    let mut moved_paths: Vec<MovedPathPair> = Vec::new();
     let mut last_error: Option<String> = None;
     let mut cancelled = false;
     let total = source_paths.len().max(1) as u32;
@@ -1538,6 +1564,7 @@ pub(crate) fn move_items_impl(
                 Ok(()) => {
                     moved_count += 1;
                     skipped_count += merge_skipped;
+                    moved_paths.push(moved_path_pair(source, &dest_path));
                 }
                 Err(error) => {
                     failed_count += 1;
@@ -1580,7 +1607,10 @@ pub(crate) fn move_items_impl(
         let mut skip_end_progress_report = false;
 
         match result {
-            Ok(()) => moved_count += 1,
+            Ok(()) => {
+                moved_count += 1;
+                moved_paths.push(moved_path_pair(source, &final_dest_path));
+            }
             Err(error) => {
                 if should_fallback_to_copy_delete(&error, source, &final_dest_path) {
                     let mut weighted_local_total = 1u64;
@@ -1721,12 +1751,14 @@ pub(crate) fn move_items_impl(
                     match copy_result {
                         Ok(()) => {
                             if inner_failed == 0 {
-                                record_completed_move_after_copy_delete(
+                                if record_completed_move_after_copy_delete(
                                     source,
                                     &mut moved_count,
                                     &mut failed_count,
                                     &mut last_error,
-                                );
+                                ) {
+                                    moved_paths.push(moved_path_pair(source, &final_dest_path));
+                                }
                             } else {
                                 failed_count += inner_failed;
                                 if inner_last_error.is_some() {
@@ -1767,6 +1799,7 @@ pub(crate) fn move_items_impl(
             copied_count: Some(moved_count),
             failed_count: Some(failed_count),
             skipped_count: Some(skipped_count),
+            moved_paths,
         },
         cancelled,
     )
@@ -1802,6 +1835,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1814,6 +1848,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
                 copied_count: None,
                 failed_count: None,
                 skipped_count: None,
+                moved_paths: Vec::new(),
             };
         }
     };
@@ -1830,6 +1865,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1840,6 +1876,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             copied_count: Some(1),
             failed_count: Some(0),
             skipped_count: Some(0),
+            moved_paths: Vec::new(),
         },
         Err(error) => FileOperationResult {
             success: false,
@@ -1847,6 +1884,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             copied_count: None,
             failed_count: Some(1),
             skipped_count: None,
+            moved_paths: Vec::new(),
         },
     }
 }
@@ -1861,6 +1899,7 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1909,6 +1948,7 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
         copied_count: Some(deleted_count),
         failed_count: Some(failed_count),
         skipped_count: Some(0),
+        moved_paths: Vec::new(),
     }
 }
 
@@ -1923,6 +1963,7 @@ pub fn ensure_directory(directory_path: String) -> FileOperationResult {
             copied_count: Some(1),
             failed_count: Some(0),
             skipped_count: Some(0),
+            moved_paths: Vec::new(),
         },
         Err(error) => FileOperationResult {
             success: false,
@@ -1930,6 +1971,7 @@ pub fn ensure_directory(directory_path: String) -> FileOperationResult {
             copied_count: None,
             failed_count: Some(1),
             skipped_count: None,
+            moved_paths: Vec::new(),
         },
     }
 }
@@ -1949,6 +1991,7 @@ pub fn create_item(
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1959,6 +2002,7 @@ pub fn create_item(
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1971,6 +2015,7 @@ pub fn create_item(
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1981,6 +2026,7 @@ pub fn create_item(
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -1993,6 +2039,7 @@ pub fn create_item(
             copied_count: None,
             failed_count: None,
             skipped_count: None,
+            moved_paths: Vec::new(),
         };
     }
 
@@ -2014,6 +2061,7 @@ pub fn create_item(
             copied_count: Some(1),
             failed_count: Some(0),
             skipped_count: Some(0),
+            moved_paths: Vec::new(),
         },
         Err(error) => FileOperationResult {
             success: false,
@@ -2021,6 +2069,7 @@ pub fn create_item(
             copied_count: None,
             failed_count: Some(1),
             skipped_count: None,
+            moved_paths: Vec::new(),
         },
     }
 }

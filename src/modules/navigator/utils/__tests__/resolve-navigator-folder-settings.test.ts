@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { NavigatorFolderSettings, UserSettingsNavigator } from '@/types/user-settings';
+import { normalizePathForComparison } from '@/utils/file-operation-paths';
 import {
   createNavigatorFolderSettingsSnapshot,
   createNavigatorFolderSettingsWriteSnapshot,
@@ -78,7 +79,6 @@ function createFolderSettings(
     gridSortColumn: 'size',
     gridSortDirection: 'asc',
     showHiddenFiles: true,
-    splitViewMode: 'linked',
     ...overrides,
   };
 }
@@ -97,7 +97,6 @@ describe('resolve navigator folder settings', () => {
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
       showHiddenFiles: true,
-      splitViewMode: 'split',
     });
     expect(hasNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents')).toBe(false);
   });
@@ -117,7 +116,6 @@ describe('resolve navigator folder settings', () => {
       gridSortColumn: 'size',
       gridSortDirection: 'asc',
       showHiddenFiles: true,
-      splitViewMode: 'linked',
     });
   });
 
@@ -139,7 +137,6 @@ describe('resolve navigator folder settings', () => {
 
     expect(resolved.layout).toBe('list');
     expect(resolved.showHiddenFiles).toBe(true);
-    expect(resolved.splitViewMode).toBe('linked');
     expect(resolved.listSortColumn).toBe('modified');
   });
 
@@ -163,7 +160,9 @@ describe('resolve navigator folder settings', () => {
       } as unknown as UserSettingsNavigator['folderSettings'],
     });
 
-    expect(Object.keys(getStoredNavigatorFolderSettingsMap(navigator))).toEqual(['C:/valid']);
+    expect(Object.keys(getStoredNavigatorFolderSettingsMap(navigator))).toEqual([
+      normalizePathForComparison('C:/valid'),
+    ]);
   });
 
   it('does not fill stored maps from current global values', () => {
@@ -177,16 +176,27 @@ describe('resolve navigator folder settings', () => {
     });
 
     expect(getStoredNavigatorFolderSettingsMap(navigator)).toEqual({
-      'C:/Users/aleks/Documents': {
+      [normalizePathForComparison('C:/Users/aleks/Documents')]: {
         layout: 'grid',
       },
     });
   });
 
+  it('matches folder settings when only the Windows path case differs', () => {
+    const folderSettings = createFolderSettings({ layout: 'grid' });
+    const navigator = createNavigator({
+      folderSettings: {
+        'C:/Users/aleks/Documents': folderSettings,
+      },
+    });
+
+    expect(resolveNavigatorFolderSettings(navigator, 'c:/users/aleks/documents').layout).toBe('grid');
+    expect(hasNavigatorFolderSettings(navigator, 'c:\\USERS\\aleks\\Documents')).toBe(true);
+  });
+
   it('creates a snapshot from the current global folder fields', () => {
     const navigator = createNavigator({
       showHiddenFiles: true,
-      splitViewMode: 'linked',
       listSortColumn: 'size',
       layout: {
         type: {
@@ -208,7 +218,30 @@ describe('resolve navigator folder settings', () => {
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
       showHiddenFiles: true,
-      splitViewMode: 'linked',
+    });
+  });
+
+  it('keeps compact-list inheriting by writing only the patched fields', () => {
+    const navigator = createNavigator({
+      layout: {
+        type: {
+          title: 'compactListLayout',
+          name: 'compact-list',
+        },
+        dirItemOptions: {
+          title: { height: 32 },
+          directory: { height: 48 },
+          file: { height: 48 },
+        },
+      },
+    });
+
+    expect(createNavigatorFolderSettingsWriteSnapshot(
+      navigator,
+      'C:/Users/aleks/Documents',
+      { showHiddenFiles: true },
+    )).toEqual({
+      showHiddenFiles: true,
     });
   });
 
@@ -226,15 +259,11 @@ describe('resolve navigator folder settings', () => {
     expect(createNavigatorFolderSettingsWriteSnapshot(
       navigator,
       'C:/Users/aleks/Documents',
-      { splitViewMode: 'linked' },
+      { listSortColumn: 'size' },
     )).toEqual({
       layout: 'grid',
-      listSortColumn: null,
-      listSortDirection: 'asc',
-      gridSortColumn: 'name',
-      gridSortDirection: 'asc',
       showHiddenFiles: true,
-      splitViewMode: 'linked',
+      listSortColumn: 'size',
     });
   });
 
@@ -253,9 +282,26 @@ describe('resolve navigator folder settings', () => {
     );
 
     expect(remapped).toEqual({
-      'C:/Users/aleks/New': documentsSettings,
-      'C:/Users/aleks/New/Nested': nestedSettings,
+      [normalizePathForComparison('C:/Users/aleks/New')]: documentsSettings,
+      [normalizePathForComparison('C:/Users/aleks/New/Nested')]: nestedSettings,
       'C:/Users/aleks/Other': otherSettings,
+    });
+  });
+
+  it('skips remapping onto a path that already has folder settings', () => {
+    const sourceSettings = createFolderSettings({ layout: 'list' });
+    const destinationSettings = createFolderSettings({ layout: 'grid' });
+    const remapped = remapNavigatorFolderSettingsPaths(
+      {
+        'C:/Users/aleks/Old': sourceSettings,
+        'C:/Users/aleks/New': destinationSettings,
+      },
+      'C:/Users/aleks/Old',
+      'C:/Users/aleks/New',
+    );
+
+    expect(remapped).toEqual({
+      'C:/Users/aleks/New': destinationSettings,
     });
   });
 

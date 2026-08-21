@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::file_operations::{
-    copy_items_impl, move_items_impl, FileOperationResult, PathResolution,
+    copy_items_impl, move_items_impl, FileOperationResult, MovedPathPair, PathResolution,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -44,6 +44,7 @@ pub struct CopyMoveJobFinishedPayload {
     pub copied_count: Option<u32>,
     pub failed_count: Option<u32>,
     pub skipped_count: Option<u32>,
+    pub moved_paths: Vec<MovedPathPair>,
 }
 
 static COPY_MOVE_JOBS: LazyLock<Mutex<HashMap<String, Arc<AtomicBool>>>> =
@@ -125,6 +126,7 @@ pub async fn start_copy_move_job(
                         copied_count: None,
                         failed_count: None,
                         skipped_count: None,
+                        moved_paths: Vec::new(),
                     },
                     false,
                 ),
@@ -143,6 +145,7 @@ pub async fn start_copy_move_job(
                 copied_count: result.copied_count,
                 failed_count: result.failed_count,
                 skipped_count: result.skipped_count,
+                moved_paths: result.moved_paths,
             },
             Err(join_error) => CopyMoveJobFinishedPayload {
                 job_id: job_id_done.clone(),
@@ -152,6 +155,7 @@ pub async fn start_copy_move_job(
                 copied_count: None,
                 failed_count: None,
                 skipped_count: None,
+                moved_paths: Vec::new(),
             },
         };
 
