@@ -564,6 +564,8 @@
     "uiZoomDecrease": "UI zoom decrease",
     "closeCurrentTab": "Close current tab / close app window",
     "restoreLastClosedTab": "Restore last closed tab",
+    "switchToNextTab": "Switch to next tab",
+    "switchToPreviousTab": "Switch to previous tab",
     "toggleAddressBar": "Open address editor with the current path",
     "openEntry": "Open address editor",
     "copyCurrentDirectoryPathToClipboard": "Copy current directory path to clipboard",

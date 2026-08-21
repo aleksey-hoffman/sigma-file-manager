@@ -564,6 +564,8 @@
     "uiZoomDecrease": "Մասշտաբի իջեցում",
     "closeCurrentTab": "Փակել ընթացիկ թաբը/փակել ծրագիրը",
     "restoreLastClosedTab": "Վերաբացել վերջին փակված թաբը",
+    "switchToNextTab": "Անցնել հաջորդ թաբ",
+    "switchToPreviousTab": "Անցնել նախորդ թաբ",
     "toggleAddressBar": "Բացել այս հասցեի փոփոխման էջը",
     "openEntry": "Փոփոխել հասցեն",
     "copyCurrentDirectoryPathToClipboard": "Պատճենել ընտրված պանակի ուղին",

@@ -564,6 +564,8 @@
     "uiZoomDecrease": "Zmanjšaj UI povečavo",
     "closeCurrentTab": "Zapri trenutni zavihek / zapri okno aplikacije",
     "restoreLastClosedTab": "Obnovi zadnji zaprti zavihek",
+    "switchToNextTab": "Preklopi na naslednji zavihek",
+    "switchToPreviousTab": "Preklopi na prejšnji zavihek",
     "toggleAddressBar": "Odpri urejevalnik naslova s trenutno potjo",
     "openEntry": "Odpri urejevalnik naslova",
     "copyCurrentDirectoryPathToClipboard": "Kopiraj pot trenutne mape v odložišče",

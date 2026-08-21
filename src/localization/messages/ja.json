@@ -535,6 +535,8 @@
     "uiZoomDecrease": "UIズーム減少",
     "closeCurrentTab": "現在のタブを閉じる / アプリ ウィンドウを閉じる",
     "restoreLastClosedTab": "最後に閉じたタブを復元",
+    "switchToNextTab": "次のタブに切り替え",
+    "switchToPreviousTab": "前のタブに切り替え",
     "toggleAddressBar": "現在のパスでアドレスエディターを開く",
     "openEntry": "アドレスエディターを開く",
     "copyCurrentDirectoryPathToClipboard": "現在のディレクトリパスをクリップボードにコピー",

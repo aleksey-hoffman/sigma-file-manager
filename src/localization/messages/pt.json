@@ -535,6 +535,8 @@
     "uiZoomDecrease": "Diminuir zoom da interface do usuário",
     "closeCurrentTab": "Fechar aba atual/fechar janela do aplicativo",
     "restoreLastClosedTab": "Restaurar última aba fechada",
+    "switchToNextTab": "Mudar para a aba seguinte",
+    "switchToPreviousTab": "Mudar para a aba anterior",
     "toggleAddressBar": "Abrir editor de endereço com o caminho atual",
     "openEntry": "Abrir editor de endereço",
     "copyCurrentDirectoryPathToClipboard": "Copiar caminho do diretório atual para a área de transferência",

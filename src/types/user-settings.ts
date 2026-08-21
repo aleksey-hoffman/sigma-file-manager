@@ -123,6 +123,8 @@ export type ShortcutId
     | 'openNewTab'
     | 'closeCurrentTab'
     | 'restoreLastClosedTab'
+    | 'switchToNextTab'
+    | 'switchToPreviousTab'
     | 'openTerminal'
     | 'openTerminalAdmin'
     | 'navigateUp'

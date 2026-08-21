@@ -535,6 +535,8 @@
     "uiZoomDecrease": "用户界面缩放减少",
     "closeCurrentTab": "关闭当前选项卡/关闭应用程序窗口",
     "restoreLastClosedTab": "恢复上次关闭的标签页",
+    "switchToNextTab": "切换到下一个标签页",
+    "switchToPreviousTab": "切换到上一个标签页",
     "toggleAddressBar": "使用当前路径打开地址编辑器",
     "openEntry": "打开地址编辑器",
     "copyCurrentDirectoryPathToClipboard": "复制当前目录路径到剪贴板",

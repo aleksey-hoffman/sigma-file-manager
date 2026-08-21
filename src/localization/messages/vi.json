@@ -535,6 +535,8 @@
     "uiZoomDecrease": "Giảm thu phóng giao diện người dùng",
     "closeCurrentTab": "Đóng thẻ hiện tại / đóng cửa sổ ứng dụng",
     "restoreLastClosedTab": "Khôi phục thẻ đã đóng gần nhất",
+    "switchToNextTab": "Chuyển sang thẻ tiếp theo",
+    "switchToPreviousTab": "Chuyển sang thẻ trước",
     "toggleAddressBar": "Chuyển đổi thanh địa chỉ",
     "openEntry": "Mở trình chỉnh sửa địa chỉ",
     "copyCurrentDirectoryPathToClipboard": "Sao chép đường dẫn thư mục hiện tại vào clipboard",

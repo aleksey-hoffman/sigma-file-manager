@@ -535,6 +535,8 @@
     "uiZoomDecrease": "diminution du zoom de l'interface utilisateur",
     "closeCurrentTab": "Fermer l'onglet actuel / fermer la fenêtre de l'application",
     "restoreLastClosedTab": "Restaurer le dernier onglet fermé",
+    "switchToNextTab": "Passer à l'onglet suivant",
+    "switchToPreviousTab": "Passer à l'onglet précédent",
     "toggleAddressBar": "Ouvrir l'éditeur d'adresse avec le chemin actuel",
     "openEntry": "Ouvrir l'éditeur d'adresse",
     "copyCurrentDirectoryPathToClipboard": "Copier le chemin du répertoire actuel dans le presse-papiers",

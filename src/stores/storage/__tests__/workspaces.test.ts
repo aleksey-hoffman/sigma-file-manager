@@ -323,6 +323,52 @@ describe('workspaces storage duplicate tabs', () => {
     expect(workspacesStore.currentTabGroup?.[0]?.id).not.toBe(secondTab.id);
   });
 
+  it('switches to the next and previous opened tab groups and wraps around', async () => {
+    mockDirectoryReadResponses();
+
+    const firstTab = createTab('first-tab', 'C:/Users/aleks/First');
+    const secondTab = createTab('second-tab', 'C:/Users/aleks/Second');
+    const thirdTab = createTab('third-tab', 'C:/Users/aleks/Third');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [firstTab],
+        [secondTab],
+        [thirdTab],
+      ]),
+    ];
+
+    await expect(workspacesStore.switchToAdjacentTabGroup('next')).resolves.toBe(true);
+    expect(workspacesStore.currentWorkspace?.currentTabGroupIndex).toBe(1);
+    expect(workspacesStore.currentTabGroup?.[0]?.id).toBe('second-tab');
+
+    await expect(workspacesStore.switchToAdjacentTabGroup('next')).resolves.toBe(true);
+    await expect(workspacesStore.switchToAdjacentTabGroup('next')).resolves.toBe(true);
+    expect(workspacesStore.currentWorkspace?.currentTabGroupIndex).toBe(0);
+    expect(workspacesStore.currentTabGroup?.[0]?.id).toBe('first-tab');
+
+    await expect(workspacesStore.switchToAdjacentTabGroup('previous')).resolves.toBe(true);
+    expect(workspacesStore.currentWorkspace?.currentTabGroupIndex).toBe(2);
+    expect(workspacesStore.currentTabGroup?.[0]?.id).toBe('third-tab');
+  });
+
+  it('keeps the current tab when only one tab group is open', async () => {
+    mockDirectoryReadResponses();
+
+    const onlyTab = createTab('only-tab', 'C:/Users/aleks/Only');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [onlyTab],
+      ]),
+    ];
+
+    await expect(workspacesStore.switchToAdjacentTabGroup('next')).resolves.toBe(true);
+    await expect(workspacesStore.switchToAdjacentTabGroup('previous')).resolves.toBe(true);
+    expect(workspacesStore.currentWorkspace?.currentTabGroupIndex).toBe(0);
+    expect(workspacesStore.currentTabGroup?.[0]?.id).toBe('only-tab');
+  });
+
   it('shows the restored path when restoring a closed tab group', async () => {
     mockDirectoryReadResponses();
 

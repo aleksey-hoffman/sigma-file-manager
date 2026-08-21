@@ -564,6 +564,8 @@
     "uiZoomDecrease": "уменьшение масштаба интерфейса",
     "closeCurrentTab": "Закрыть текущую вкладку/закрыть окно приложения",
     "restoreLastClosedTab": "Восстановить последнюю закрытую вкладку",
+    "switchToNextTab": "Переключиться на следующую вкладку",
+    "switchToPreviousTab": "Переключиться на предыдущую вкладку",
     "toggleAddressBar": "Открыть редактор адреса с текущим путём",
     "openEntry": "Открыть редактор адреса",
     "copyCurrentDirectoryPathToClipboard": "Скопировать текущий путь к папке в буфер обмена",

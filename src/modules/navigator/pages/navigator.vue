@@ -981,6 +981,14 @@ async function handleRestoreLastClosedTabShortcut() {
   return workspacesStore.restoreLastClosedTabGroup();
 }
 
+async function handleSwitchToNextTabShortcut() {
+  return workspacesStore.switchToAdjacentTabGroup('next');
+}
+
+async function handleSwitchToPreviousTabShortcut() {
+  return workspacesStore.switchToAdjacentTabGroup('previous');
+}
+
 async function handleOpenTerminalShortcut() {
   await openTerminalWithOptions(false);
 }
@@ -1113,6 +1121,8 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
   shortcutsStore.registerHandler('closeCurrentTab', handleCloseCurrentTabShortcut);
   shortcutsStore.registerHandler('restoreLastClosedTab', handleRestoreLastClosedTabShortcut);
+  shortcutsStore.registerHandler('switchToNextTab', handleSwitchToNextTabShortcut);
+  shortcutsStore.registerHandler('switchToPreviousTab', handleSwitchToPreviousTabShortcut);
   shortcutsStore.registerHandler('openTerminal', handleOpenTerminalShortcut);
   shortcutsStore.registerHandler('openTerminalAdmin', handleOpenTerminalAdminShortcut);
   shortcutsStore.registerHandler('navigateUp', () => callActivePaneMethod('navigateUp'));

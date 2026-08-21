@@ -598,6 +598,71 @@ describe('shortcuts store', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it('matches Ctrl+Tab and Ctrl+Shift+Tab for switching opened tabs', async () => {
+    const shortcutsStore = useShortcutsStore();
+    const switchToNextTabHandler = vi.fn();
+    const switchToPreviousTabHandler = vi.fn();
+
+    shortcutsStore.registerHandler('switchToNextTab', switchToNextTabHandler);
+    shortcutsStore.registerHandler('switchToPreviousTab', switchToPreviousTabHandler);
+
+    expect(shortcutsStore.getShortcutLabel('switchToNextTab')).toBe('Ctrl+Tab');
+    expect(shortcutsStore.getShortcutLabel('switchToPreviousTab')).toBe('Ctrl+Shift+Tab');
+
+    const nextTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      code: 'Tab',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    const previousTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      code: 'Tab',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(nextTabEvent)).resolves.toBe(true);
+    await expect(shortcutsStore.handleKeydown(previousTabEvent)).resolves.toBe(true);
+    expect(switchToNextTabHandler).toHaveBeenCalledTimes(1);
+    expect(switchToPreviousTabHandler).toHaveBeenCalledTimes(1);
+    expect(nextTabEvent.defaultPrevented).toBe(true);
+    expect(previousTabEvent.defaultPrevented).toBe(true);
+  });
+
+  it('prevents Ctrl+Tab default behavior before async shortcut handlers finish', async () => {
+    const shortcutsStore = useShortcutsStore();
+
+    let resolveHandler: (value: boolean) => void = () => {};
+
+    const switchToNextTabHandler = vi.fn(() => new Promise<boolean>((resolve) => {
+      resolveHandler = resolve;
+    }));
+
+    shortcutsStore.registerHandler('switchToNextTab', switchToNextTabHandler);
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      code: 'Tab',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    const handledPromise = shortcutsStore.handleKeydown(event);
+
+    expect(event.defaultPrevented).toBe(true);
+
+    await Promise.resolve();
+    expect(switchToNextTabHandler).toHaveBeenCalledTimes(1);
+
+    resolveHandler(true);
+    await expect(handledPromise).resolves.toBe(true);
+  });
+
   it('prevents default when an async shortcut handler resolves true', async () => {
     const shortcutsStore = useShortcutsStore();
     const restoreLastClosedTabHandler = vi.fn(() => Promise.resolve(true));

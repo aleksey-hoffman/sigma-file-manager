@@ -59,6 +59,17 @@ watch(tabGroupCount, (newCount, previousCount) => {
   });
 });
 
+watch(
+  () => workspacesStore.currentTabGroup?.[0]?.id,
+  (currentTabId, previousTabId) => {
+    if (!currentTabId || currentTabId === previousTabId) {
+      return;
+    }
+
+    scrollSelectedTabGroupIntoView();
+  },
+);
+
 function handleScrollActivity() {
   previewEnabled.value = false;
 

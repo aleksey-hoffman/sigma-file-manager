@@ -64,6 +64,8 @@ import {
   HomeIcon,
   FolderClosedIcon,
   BookmarkIcon,
+  ChevronsRightIcon,
+  ChevronsLeftIcon,
 } from '@lucide/vue';
 import type { Component } from 'vue';
 import {
@@ -127,6 +129,8 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   openNewTab: PlusIcon,
   closeCurrentTab: XIcon,
   restoreLastClosedTab: RotateCcwIcon,
+  switchToNextTab: ChevronsRightIcon,
+  switchToPreviousTab: ChevronsLeftIcon,
   openTerminal: TerminalSquareIcon,
   openTerminalAdmin: TerminalSquareIcon,
   navigateUp: ArrowUpIcon,
@@ -164,8 +168,16 @@ let recordCaptureKeyDown: ((event: KeyboardEvent) => void) | null = null;
 let recordCaptureKeyUp: ((event: KeyboardEvent) => void) | null = null;
 let recordCaptureMouseDown: ((event: MouseEvent) => void) | null = null;
 
-function shouldIgnorePhysicalCodeForCaptureTracking(code: string): boolean {
-  return code === 'Tab' || code === 'Enter';
+function isBareTabKey(event: KeyboardEvent): boolean {
+  return event.key === 'Tab' && !event.ctrlKey && !event.altKey && !event.metaKey;
+}
+
+function shouldIgnorePhysicalCodeForCaptureTracking(event: KeyboardEvent): boolean {
+  if (event.code === 'Enter') {
+    return true;
+  }
+
+  return isBareTabKey(event);
 }
 
 function updateCaptureDisplayLabel() {
@@ -301,8 +313,24 @@ function attachRecordCaptureListeners() {
       recordedKeys.value = null;
     }
 
-    if (!shouldIgnorePhysicalCodeForCaptureTracking(event.code)) {
+    if (!shouldIgnorePhysicalCodeForCaptureTracking(event)) {
       pressedPhysicalCodes.add(event.code);
+    }
+
+    if (event.key === 'Tab' && !isBareTabKey(event) && !event.repeat) {
+      const mainKey = resolveShortcutKeyFromKeyboardEvent(event, {
+        preferPhysicalMainKey: true,
+      });
+
+      if (mainKey !== null) {
+        recordedKeys.value = {
+          key: mainKey,
+          ctrl: event.ctrlKey,
+          alt: event.altKey,
+          shift: event.shiftKey,
+          meta: event.metaKey,
+        };
+      }
     }
 
     lastCaptureKeyboardEvent.value = event;
@@ -681,7 +709,7 @@ function handleRecordKeyDown(event: KeyboardEvent) {
     return;
   }
 
-  if (key === 'Tab') {
+  if (isBareTabKey(event)) {
     return;
   }
 

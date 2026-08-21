@@ -550,6 +550,31 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     ) ?? -1;
   }
 
+  async function switchToAdjacentTabGroup(direction: 'next' | 'previous'): Promise<boolean> {
+    if (!currentWorkspace.value) {
+      return false;
+    }
+
+    const tabGroups = currentWorkspace.value.tabGroups;
+    const tabGroupTotal = tabGroups.length;
+
+    if (tabGroupTotal < 2) {
+      return true;
+    }
+
+    const currentIndex = currentWorkspace.value.currentTabGroupIndex || 0;
+    const offset = direction === 'next' ? 1 : -1;
+    const nextIndex = (currentIndex + offset + tabGroupTotal) % tabGroupTotal;
+    const nextTabGroup = tabGroups[nextIndex];
+
+    if (!nextTabGroup) {
+      return false;
+    }
+
+    await openTabGroup(nextTabGroup);
+    return true;
+  }
+
   async function openOrFocusTabGroup(path: string) {
     const existingIndex = findTabGroupIndexByPath(path);
 
@@ -958,6 +983,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     openPathInCurrentTab,
     consumeCurrentTabPathNavigationRequest,
     restoreLastClosedTabGroup,
+    switchToAdjacentTabGroup,
     openOrFocusTabGroup,
     preloadDefaultTab,
     getDirEntry,

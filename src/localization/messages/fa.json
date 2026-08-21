@@ -531,6 +531,8 @@
     "uiZoomDecrease": "کاهش زوم UI",
     "closeCurrentTab": "بستن برگه فعلی / بستن پنجره برنامه",
     "restoreLastClosedTab": "بازگرداندن آخرین برگه بسته شده",
+    "switchToNextTab": "رفتن به برگه بعدی",
+    "switchToPreviousTab": "رفتن به برگه قبلی",
     "toggleAddressBar": "باز کردن ویرایشگر آدرس با مسیر فعلی",
     "openEntry": "باز کردن ویرایشگر آدرس",
     "copyCurrentDirectoryPathToClipboard": "کپی مسیر دایرکتوری فعلی در کلیپ بورد",

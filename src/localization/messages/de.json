@@ -535,6 +535,8 @@
     "uiZoomDecrease": "UI-Zoom verringern",
     "closeCurrentTab": "Aktuellen Tab schließen / App-Fenster schließen",
     "restoreLastClosedTab": "Zuletzt geschlossenen Tab wiederherstellen",
+    "switchToNextTab": "Zum nächsten Tab wechseln",
+    "switchToPreviousTab": "Zum vorherigen Tab wechseln",
     "toggleAddressBar": "Adresseditor mit aktuellem Pfad öffnen",
     "openEntry": "Adresseditor öffnen",
     "copyCurrentDirectoryPathToClipboard": "Aktuellen Verzeichnispfad in die Zwischenablage kopieren",

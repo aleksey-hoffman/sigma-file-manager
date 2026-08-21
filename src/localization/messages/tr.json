@@ -535,6 +535,8 @@
     "uiZoomDecrease": "UI yakınlaştırma azaltma",
     "closeCurrentTab": "Geçerli sekmeyi kapat / uygulama penceresini kapat",
     "restoreLastClosedTab": "Son kapatılan sekmeyi geri yükle",
+    "switchToNextTab": "Sonraki sekmeye geç",
+    "switchToPreviousTab": "Önceki sekmeye geç",
     "toggleAddressBar": "Geçerli yolla adres düzenleyiciyi aç",
     "openEntry": "Adres düzenleyiciyi aç",
     "copyCurrentDirectoryPathToClipboard": "Geçerli dizin yolunu panoya kopyala",

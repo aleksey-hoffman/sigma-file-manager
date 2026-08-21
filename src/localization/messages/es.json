@@ -535,6 +535,8 @@
     "uiZoomDecrease": "Disminución del zoom de la interfaz de usuario",
     "closeCurrentTab": "Cerrar pestaña actual/cerrar ventana de aplicación",
     "restoreLastClosedTab": "Restaurar la última pestaña cerrada",
+    "switchToNextTab": "Cambiar a la pestaña siguiente",
+    "switchToPreviousTab": "Cambiar a la pestaña anterior",
     "toggleAddressBar": "Abrir editor de dirección con la ruta actual",
     "openEntry": "Abrir editor de dirección",
     "copyCurrentDirectoryPathToClipboard": "Copiar la ruta del directorio actual al portapapeles",

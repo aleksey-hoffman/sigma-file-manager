@@ -535,6 +535,8 @@
     "uiZoomDecrease": "Diminuzione zoom della UI",
     "closeCurrentTab": "Chiudi la scheda attuale / chiudi la finestra dell'app",
     "restoreLastClosedTab": "Ripristina l'ultima scheda chiusa",
+    "switchToNextTab": "Passa alla scheda successiva",
+    "switchToPreviousTab": "Passa alla scheda precedente",
     "toggleAddressBar": "Apri l'editor dell'indirizzo con il percorso corrente",
     "openEntry": "Apri l'editor dell'indirizzo",
     "copyCurrentDirectoryPathToClipboard": "Copia il percorso della directory corrente negli appunti",

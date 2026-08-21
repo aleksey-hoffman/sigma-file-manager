@@ -564,6 +564,8 @@
     "uiZoomDecrease": "UI زوم کم کریں",
     "closeCurrentTab": "موجودہ ٹیب بند کریں / ایپ ونڈو بند کریں",
     "restoreLastClosedTab": "آخری بند ٹیب بحال کریں",
+    "switchToNextTab": "اگلے ٹیب پر جائیں",
+    "switchToPreviousTab": "پچھلے ٹیب پر جائیں",
     "toggleAddressBar": "موجودہ راستے کے ساتھ پتہ ایڈیٹر کھولیں",
     "openEntry": "پتہ ایڈیٹر کھولیں",
     "copyCurrentDirectoryPathToClipboard": "موجودہ فولڈر کا راستہ کلپ بورڈ پر کاپی کریں",

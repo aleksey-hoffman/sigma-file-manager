@@ -564,6 +564,8 @@
     "uiZoomDecrease": "यूआई ज़ूम में कमी",
     "closeCurrentTab": "वर्तमान टैब बंद करें / ऐप विंडो बंद करें",
     "restoreLastClosedTab": "अंतिम बंद टैब पुनर्स्थापित करें",
+    "switchToNextTab": "अगले टैब पर स्विच करें",
+    "switchToPreviousTab": "पिछले टैब पर स्विच करें",
     "toggleAddressBar": "वर्तमान पथ के साथ पता संपादक खोलें",
     "openEntry": "पता संपादक खोलें",
     "copyCurrentDirectoryPathToClipboard": "वर्तमान निर्देशिका पथ को क्लिपबोर्ड पर कॉपी करें",

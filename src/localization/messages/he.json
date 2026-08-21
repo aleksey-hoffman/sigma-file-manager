@@ -564,6 +564,8 @@
     "uiZoomDecrease": "הקטן את זום הממשק",
     "closeCurrentTab": "סגור את הלשונית הנוכחית / סגור את חלון היישום",
     "restoreLastClosedTab": "שחזר את הלשונית האחרונה שנסגרה",
+    "switchToNextTab": "עבור ללשונית הבאה",
+    "switchToPreviousTab": "עבור ללשונית הקודמת",
     "toggleAddressBar": "פתח את עורך הכתובת עם הנתיב הנוכחי",
     "openEntry": "פתח את עורך הכתובת",
     "copyCurrentDirectoryPathToClipboard": "העתק את נתיב התיקייה הנוכחית ללוח",

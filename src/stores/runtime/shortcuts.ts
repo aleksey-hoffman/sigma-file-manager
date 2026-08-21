@@ -494,6 +494,35 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'switchToNextTab',
+    labelKey: 'shortcuts.switchToNextTab',
+    defaultKeys: {
+      ctrl: true,
+      key: 'Tab',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'switchToPreviousTab',
+    labelKey: 'shortcuts.switchToPreviousTab',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'Tab',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'openTerminal',
     labelKey: 'shortcuts.openCurrentDirInTerminal',
     defaultKeys: {
@@ -1157,6 +1186,8 @@ const ADDRESS_BAR_PATH_EDITOR_YIELD_NAVIGATOR_IDS: ReadonlySet<ShortcutId> = new
 
 const EARLY_PREVENT_DEFAULT_SHORTCUT_IDS: ReadonlySet<ShortcutId> = new Set([
   'copyCurrentDirectoryPath',
+  'switchToNextTab',
+  'switchToPreviousTab',
 ]);
 
 function keyboardEventTouchesAddressBarPathEditor(event: KeyboardEvent): boolean {
