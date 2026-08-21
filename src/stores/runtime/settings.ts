@@ -10,10 +10,20 @@ import {
   markRaw,
   type Component,
 } from 'vue';
-import { messages } from '@/localization/data';
 import { i18n } from '@/localization';
+import { formatKeybindingKeys } from '@/modules/extensions/api';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import {
+  formatShortcutKeys,
+  useShortcutsStore,
+} from '@/stores/runtime/shortcuts';
+import { useGlobalShortcutsStore } from '@/stores/runtime/global-shortcuts';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
+import {
+  filterSettingsSections,
+  shortcutSearchItemMatches,
+} from '@/modules/settings/utils/settings-search';
 
 export interface SettingsSection {
   key: string;
@@ -71,39 +81,76 @@ function normalizeSettingsTabName(tabName: string): string {
   return settingsTabs.some(tab => tab.name === tabName) ? tabName : 'general';
 }
 
-function getNestedValue(obj: Record<string, unknown>, path: string): string | undefined {
-  const keys = path.split('.');
-  let current: unknown = obj;
+function getExtensionCommandSearchTitles(extensionId: string, commandId: string): string[] {
+  const extensionsStore = useExtensionsStore();
+  const titles = [commandId];
+  const command = extensionsStore.commands.find(registeredCommand => registeredCommand.command.id === commandId);
 
-  for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== 'object') {
-      return undefined;
-    }
-
-    current = (current as Record<string, unknown>)[key];
+  if (command?.command.title) {
+    titles.push(command.command.title);
   }
 
-  return typeof current === 'string' ? current : undefined;
-}
+  const contextMenuItem = extensionsStore.contextMenuItems.find(
+    item => item.extensionId === extensionId && item.item.id === commandId,
+  );
 
-function getAllTranslations(key: string): string[] {
-  const translations: string[] = [];
-
-  for (const locale of Object.keys(messages)) {
-    const localeMessages = messages[locale as keyof typeof messages];
-    const value = getNestedValue(localeMessages as Record<string, unknown>, key);
-
-    if (value) {
-      translations.push(value.toLowerCase());
-    }
+  if (contextMenuItem?.item.title) {
+    titles.push(contextMenuItem.item.title);
   }
 
-  return translations;
+  return titles;
 }
 
-function matchesAnyLocale(key: string, searchTerm: string): boolean {
-  const translations = getAllTranslations(key);
-  return translations.some(translation => translation.includes(searchTerm));
+function shortcutsSectionMatchesSearch(searchTerm: string): boolean {
+  const shortcutsStore = useShortcutsStore();
+  const globalShortcutsStore = useGlobalShortcutsStore();
+  const extensionsStore = useExtensionsStore();
+
+  const appShortcutMatches = shortcutsStore.definitions.some(definition =>
+    shortcutSearchItemMatches({
+      labelKey: definition.labelKey,
+      combinations: [shortcutsStore.getShortcutBindingLabel(definition)],
+    }, searchTerm),
+  );
+
+  if (appShortcutMatches) {
+    return true;
+  }
+
+  const globalShortcutMatches = globalShortcutsStore.definitions.some(definition =>
+    shortcutSearchItemMatches({
+      labelKey: definition.labelKey,
+      combinations: [globalShortcutsStore.getShortcutLabel(definition.id)],
+    }, searchTerm),
+  );
+
+  if (globalShortcutMatches) {
+    return true;
+  }
+
+  const extensionLocalMatches = extensionsStore.keybindings.some(keybinding =>
+    shortcutSearchItemMatches({
+      titles: getExtensionCommandSearchTitles(keybinding.extensionId, keybinding.commandId),
+      combinations: [
+        formatKeybindingKeys(keybinding.keys),
+        formatShortcutKeys(keybinding.keys),
+      ],
+    }, searchTerm),
+  );
+
+  if (extensionLocalMatches) {
+    return true;
+  }
+
+  return globalShortcutsStore.extensionDefinitions.some(shortcut =>
+    shortcutSearchItemMatches({
+      titles: [shortcut.commandTitle],
+      combinations: [
+        formatKeybindingKeys(shortcut.keys),
+        formatShortcutKeys(shortcut.keys),
+      ],
+    }, searchTerm),
+  );
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -439,20 +486,14 @@ export const useSettingsStore = defineStore('settings', () => {
     return sections.value.filter(section => section.category === category);
   }
 
-  const filteredSections = computed(() => {
-    if (!search.value) {
-      return sections.value.filter(section => section.category === currentTab.value);
-    }
-
-    const searchTerm = search.value.toLowerCase();
-
-    return sections.value.filter((section) => {
-      const titleMatches = matchesAnyLocale(section.titleKey, searchTerm);
-      const tagsMatch = matchesAnyLocale(section.tags, searchTerm);
-
-      return titleMatches || tagsMatch;
-    });
-  });
+  const filteredSections = computed(() => filterSettingsSections(
+    sections.value,
+    search.value,
+    currentTab.value,
+    {
+      shortcuts: shortcutsSectionMatchesSearch,
+    },
+  ));
 
   const currentTabSections = computed(() => filteredSections.value);
 

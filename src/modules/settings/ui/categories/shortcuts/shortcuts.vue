@@ -89,8 +89,14 @@ import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { BlocksIcon } from '@lucide/vue';
 import type { ExtensionKeybindingOverride } from '@/types/extension';
 import { SettingsItem } from '@/modules/settings';
+import { useSettingsStore } from '@/stores/runtime/settings';
+import {
+  filterItemsForSettingsSearch,
+  shortcutSearchItemMatches,
+} from '@/modules/settings/utils/settings-search';
 
 const { t } = useI18n();
+const settingsStore = useSettingsStore();
 const shortcutsStore = useShortcutsStore();
 const globalShortcutsStore = useGlobalShortcutsStore();
 const unassignedShortcutLabel = '—';
@@ -1151,6 +1157,64 @@ const globalExtensionShortcuts = computed(() => {
     keybindingLabel: formatKeybindingKeys(shortcut.keys),
   }));
 });
+
+function filterShortcutRows<T>(
+  rows: T[],
+  rowMatches: (row: T) => boolean,
+): T[] {
+  return filterItemsForSettingsSearch(
+    rows,
+    settingsStore.search,
+    rowMatches,
+  );
+}
+
+const visibleGlobalAppShortcuts = computed(() =>
+  filterShortcutRows(
+    globalShortcutsStore.definitions,
+    definition => shortcutSearchItemMatches({
+      labelKey: definition.labelKey,
+      combinations: [globalShortcutsStore.getShortcutLabel(definition.id)],
+    }, settingsStore.search),
+  ),
+);
+
+const visibleGlobalExtensionShortcuts = computed(() =>
+  filterShortcutRows(
+    globalExtensionShortcuts.value,
+    shortcut => shortcutSearchItemMatches({
+      titles: [shortcut.commandTitle],
+      combinations: [shortcut.keybindingLabel, formatShortcutKeys(shortcut.keys)],
+    }, settingsStore.search),
+  ),
+);
+
+const visibleLocalShortcuts = computed(() =>
+  filterShortcutRows(
+    shortcutsStore.definitions,
+    definition => shortcutSearchItemMatches({
+      labelKey: definition.labelKey,
+      combinations: [shortcutsStore.getShortcutBindingLabel(definition)],
+    }, settingsStore.search),
+  ),
+);
+
+const visibleExtensionKeybindings = computed(() =>
+  filterShortcutRows(
+    extensionKeybindings.value,
+    keybinding => shortcutSearchItemMatches({
+      titles: [keybinding.commandTitle],
+      combinations: [keybinding.keybindingLabel, formatShortcutKeys(keybinding.keys)],
+    }, settingsStore.search),
+  ),
+);
+
+const hasVisibleGlobalShortcuts = computed(() =>
+  visibleGlobalAppShortcuts.value.length > 0
+  || visibleGlobalExtensionShortcuts.value.length > 0,
+);
+
+const hasVisibleLocalShortcuts = computed(() => visibleLocalShortcuts.value.length > 0);
 </script>
 
 <template>
@@ -1172,7 +1236,10 @@ const globalExtensionShortcuts = computed(() => {
     </template>
 
     <div class="shortcuts-section">
-      <div class="shortcuts-section__group">
+      <div
+        v-if="hasVisibleGlobalShortcuts"
+        class="shortcuts-section__group"
+      >
         <div class="shortcuts-section__group-header">
           <div class="shortcuts-section__group-info">
             <h4 class="shortcuts-section__group-title">
@@ -1200,7 +1267,7 @@ const globalExtensionShortcuts = computed(() => {
 
           <div class="shortcuts-table__body">
             <ContextMenu
-              v-for="definition in globalShortcutsStore.definitions"
+              v-for="definition in visibleGlobalAppShortcuts"
               :key="definition.id"
             >
               <ContextMenuTrigger as-child>
@@ -1273,7 +1340,7 @@ const globalExtensionShortcuts = computed(() => {
             </ContextMenu>
 
             <ContextMenu
-              v-for="shortcut in globalExtensionShortcuts"
+              v-for="shortcut in visibleGlobalExtensionShortcuts"
               :key="`${shortcut.extensionId}-${shortcut.commandId}`"
             >
               <ContextMenuTrigger as-child>
@@ -1351,7 +1418,10 @@ const globalExtensionShortcuts = computed(() => {
         </div>
       </div>
 
-      <div class="shortcuts-section__group">
+      <div
+        v-if="hasVisibleLocalShortcuts"
+        class="shortcuts-section__group"
+      >
         <div class="shortcuts-section__group-header">
           <div class="shortcuts-section__group-info">
             <h4 class="shortcuts-section__group-title">
@@ -1378,7 +1448,7 @@ const globalExtensionShortcuts = computed(() => {
 
           <div class="shortcuts-table__body">
             <ContextMenu
-              v-for="definition in shortcutsStore.definitions"
+              v-for="definition in visibleLocalShortcuts"
               :key="`${definition.id}-${definition.bindingSlot ?? 0}`"
             >
               <ContextMenuTrigger
@@ -1489,7 +1559,7 @@ const globalExtensionShortcuts = computed(() => {
         </div>
       </div>
 
-      <template v-if="extensionKeybindings.length > 0">
+      <template v-if="visibleExtensionKeybindings.length > 0">
         <div class="shortcuts-table shortcuts-table--extensions">
           <div class="shortcuts-table__section-header">
             <BlocksIcon :size="16" />
@@ -1512,7 +1582,7 @@ const globalExtensionShortcuts = computed(() => {
 
           <div class="shortcuts-table__body">
             <ContextMenu
-              v-for="keybinding in extensionKeybindings"
+              v-for="keybinding in visibleExtensionKeybindings"
               :key="`${keybinding.extensionId}-${keybinding.commandId}`"
             >
               <ContextMenuTrigger as-child>

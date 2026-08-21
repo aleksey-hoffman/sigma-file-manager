@@ -50,7 +50,7 @@ watch(
   >
     <SettingsActions />
     <SettingsSearch />
-    <SettingsHeader />
+    <SettingsHeader v-if="!settingsStore.search" />
     <SettingsContent />
   </PageDefaultLayout>
 </template>

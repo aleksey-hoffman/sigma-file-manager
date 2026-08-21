@@ -25,6 +25,7 @@ import StorageCategory from './categories/storage/index.vue';
 import TabsCategory from './categories/tabs/index.vue';
 
 import { Button } from '@/components/ui/button';
+import { DeleteIcon } from '@lucide/vue';
 
 const settingsStore = useSettingsStore();
 const scrollStore = useScrollRestorationStore();
@@ -85,11 +86,12 @@ watch(
         </div>
         <Button
           v-if="settingsStore.search"
-          variant="tertiary"
+          variant="outline"
           class="settings-view__clear-search"
           @click="settingsStore.clearSearch"
         >
           {{ t('globalSearch.clearSearchField') }}
+          <DeleteIcon :size="18" />
         </Button>
       </div>
     </div>
