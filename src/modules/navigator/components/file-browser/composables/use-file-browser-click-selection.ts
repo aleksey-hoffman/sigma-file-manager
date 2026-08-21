@@ -43,7 +43,7 @@ export function useFileBrowserClickSelection(options: {
   selectedEntries: Ref<DirEntry[]>;
   lastSelectedEntry: Ref<DirEntry | null>;
   isEntrySelected: (entry: DirEntry) => boolean;
-  selectRange: (fromEntry: DirEntry, toEntry: DirEntry) => void;
+  selectRange: (fromEntry: DirEntry, toEntry: DirEntry, additive?: boolean) => void;
   addToSelection: (entry: DirEntry) => void;
   removeFromSelection: (entry: DirEntry) => void;
   replaceSelection: (entry: DirEntry) => void;
@@ -92,7 +92,7 @@ export function useFileBrowserClickSelection(options: {
     mouseDownState.value.shiftKey = shiftKey;
 
     if (shiftKey && options.lastSelectedEntry.value) {
-      options.selectRange(options.lastSelectedEntry.value, entry);
+      options.selectRange(options.lastSelectedEntry.value, entry, ctrlKey);
     }
     else if (!ctrlKey && !wasSelected) {
       options.replaceSelection(entry);

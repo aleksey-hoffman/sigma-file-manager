@@ -7,6 +7,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import { UI_CONSTANTS } from '@/constants';
 import {
+  applyRangeSelection,
+  getEntriesInInclusiveRange,
+} from '../../utils/file-browser-range-selection';
+import {
   isDoubleClick,
   useFileBrowserClickSelection,
 } from '../use-file-browser-click-selection';
@@ -49,14 +53,13 @@ function createMouseEvent(overrides: Partial<MouseEvent> = {}): MouseEvent {
 
 function createClickSelectionHarness(options: {
   getCurrentTime?: () => number;
+  entries?: DirEntry[];
 } = {}) {
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
+  const orderedEntries = options.entries ?? [];
   const onSelect = vi.fn((entries: DirEntry[]) => {
     selectedEntries.value = entries;
-    lastSelectedEntry.value = entries.length > 0
-      ? entries[entries.length - 1]
-      : null;
   });
   const onOpen = vi.fn();
   const onOpenProperties = vi.fn();
@@ -96,8 +99,14 @@ function createClickSelectionHarness(options: {
     onSelect(selectedEntries.value);
   }
 
-  function selectRange(fromEntry: DirEntry, toEntry: DirEntry) {
-    replaceSelection(toEntry);
+  function selectRange(fromEntry: DirEntry, toEntry: DirEntry, additive = false) {
+    const rangeEntries = getEntriesInInclusiveRange(
+      orderedEntries.length > 0 ? orderedEntries : [fromEntry, toEntry],
+      fromEntry,
+      toEntry,
+    );
+    selectedEntries.value = applyRangeSelection(selectedEntries.value, rangeEntries, additive);
+    onSelect(selectedEntries.value);
   }
 
   const clickSelection = useFileBrowserClickSelection({
@@ -261,5 +270,153 @@ describe('useFileBrowserClickSelection', () => {
     harness.clickEntry(entry);
 
     expect(harness.onOpen).not.toHaveBeenCalled();
+  });
+
+  it('extends a Shift range from the original anchor', () => {
+    const entries = [
+      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
+      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
+      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
+      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+      createEntry({ path: 'C:/Dir/e.txt', name: 'e.txt' }),
+    ];
+    const harness = createClickSelectionHarness({ entries });
+
+    harness.handleEntryMouseDown(entries[0], createMouseEvent());
+    harness.handleEntryMouseUp(entries[0], createMouseEvent());
+    harness.handleEntryMouseDown(entries[2], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseUp(entries[2], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseDown(entries[4], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseUp(entries[4], createMouseEvent({ shiftKey: true }));
+
+    expect(harness.selectedEntries.value.map(entry => entry.name)).toEqual([
+      'a.txt',
+      'b.txt',
+      'c.txt',
+      'd.txt',
+      'e.txt',
+    ]);
+  });
+
+  it('replaces a previous selection when Shift selects a range without Ctrl', () => {
+    const entries = [
+      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
+      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
+      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
+      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+      createEntry({ path: 'C:/Dir/e.txt', name: 'e.txt' }),
+    ];
+    const harness = createClickSelectionHarness({ entries });
+
+    harness.handleEntryMouseDown(entries[0], createMouseEvent());
+    harness.handleEntryMouseUp(entries[0], createMouseEvent());
+    harness.handleEntryMouseDown(entries[2], createMouseEvent({ ctrlKey: true }));
+    harness.handleEntryMouseUp(entries[2], createMouseEvent({ ctrlKey: true }));
+    harness.handleEntryMouseDown(entries[4], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseUp(entries[4], createMouseEvent({ shiftKey: true }));
+
+    expect(harness.selectedEntries.value.map(entry => entry.name)).toEqual([
+      'c.txt',
+      'd.txt',
+      'e.txt',
+    ]);
+  });
+
+  it('keeps the first Shift range when Ctrl+Shift extends from the same anchor', () => {
+    const entries = [
+      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
+      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
+      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
+      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+    ];
+    const harness = createClickSelectionHarness({ entries });
+
+    harness.handleEntryMouseDown(entries[0], createMouseEvent());
+    harness.handleEntryMouseUp(entries[0], createMouseEvent());
+    harness.handleEntryMouseDown(entries[1], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseUp(entries[1], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseDown(entries[3], createMouseEvent({
+      ctrlKey: true,
+      shiftKey: true,
+    }));
+    harness.handleEntryMouseUp(entries[3], createMouseEvent({
+      ctrlKey: true,
+      shiftKey: true,
+    }));
+
+    expect(harness.selectedEntries.value.map(entry => entry.name)).toEqual([
+      'a.txt',
+      'b.txt',
+      'c.txt',
+      'd.txt',
+    ]);
+  });
+
+  it('adds a second range with Ctrl+Shift without clearing the first range', () => {
+    const entries = [
+      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
+      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
+      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
+      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+      createEntry({ path: 'C:/Dir/e.txt', name: 'e.txt' }),
+      createEntry({ path: 'C:/Dir/f.txt', name: 'f.txt' }),
+    ];
+    const harness = createClickSelectionHarness({ entries });
+
+    harness.handleEntryMouseDown(entries[0], createMouseEvent());
+    harness.handleEntryMouseUp(entries[0], createMouseEvent());
+    harness.handleEntryMouseDown(entries[1], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseUp(entries[1], createMouseEvent({ shiftKey: true }));
+    harness.handleEntryMouseDown(entries[3], createMouseEvent({ ctrlKey: true }));
+    harness.handleEntryMouseUp(entries[3], createMouseEvent({ ctrlKey: true }));
+    harness.handleEntryMouseDown(entries[5], createMouseEvent({
+      ctrlKey: true,
+      shiftKey: true,
+    }));
+    harness.handleEntryMouseUp(entries[5], createMouseEvent({
+      ctrlKey: true,
+      shiftKey: true,
+    }));
+
+    expect(harness.selectedEntries.value.map(entry => entry.name)).toEqual([
+      'a.txt',
+      'b.txt',
+      'd.txt',
+      'e.txt',
+      'f.txt',
+    ]);
+  });
+
+  it('adds a second range with Meta+Shift the same way as Ctrl+Shift', () => {
+    const entries = [
+      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
+      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
+      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
+      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+    ];
+    const harness = createClickSelectionHarness({ entries });
+
+    harness.handleEntryMouseDown(entries[0], createMouseEvent());
+    harness.handleEntryMouseUp(entries[0], createMouseEvent());
+    harness.handleEntryMouseDown(entries[2], createMouseEvent({
+      metaKey: true,
+    }));
+    harness.handleEntryMouseUp(entries[2], createMouseEvent({
+      metaKey: true,
+    }));
+    harness.handleEntryMouseDown(entries[3], createMouseEvent({
+      metaKey: true,
+      shiftKey: true,
+    }));
+    harness.handleEntryMouseUp(entries[3], createMouseEvent({
+      metaKey: true,
+      shiftKey: true,
+    }));
+
+    expect(harness.selectedEntries.value.map(entry => entry.name)).toEqual([
+      'a.txt',
+      'c.txt',
+      'd.txt',
+    ]);
   });
 });

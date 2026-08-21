@@ -37,6 +37,10 @@ import { applyBackgroundContextMenu } from '@/modules/navigator/components/file-
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
+import {
+  applyRangeSelection,
+  getEntriesInInclusiveRange,
+} from '../utils/file-browser-range-selection';
 import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
 import { refreshDrives } from '@/modules/home/composables/use-drives';
 
@@ -168,23 +172,14 @@ export function useFileBrowserSelection(
     return getFileBrowserVisualEntryOrder(entriesRef.value, layout?.());
   }
 
-  function getEntryIndex(entry: DirEntry): number {
-    return getOrderedEntries().findIndex(item => item.path === entry.path);
-  }
+  function selectRange(fromEntry: DirEntry, toEntry: DirEntry, additive = false) {
+    const rangeEntries = getEntriesInInclusiveRange(getOrderedEntries(), fromEntry, toEntry);
 
-  function selectRange(fromEntry: DirEntry, toEntry: DirEntry) {
-    const entries = getOrderedEntries();
-    let startIndex = getEntryIndex(fromEntry);
-    let endIndex = getEntryIndex(toEntry);
-
-    if (startIndex === -1 || endIndex === -1) return;
-
-    if (startIndex > endIndex) {
-      [startIndex, endIndex] = [endIndex, startIndex];
+    if (rangeEntries.length === 0) {
+      return;
     }
 
-    const rangeEntries = entries.slice(startIndex, endIndex + 1);
-    selectedEntries.value = rangeEntries;
+    selectedEntries.value = applyRangeSelection(selectedEntries.value, rangeEntries, additive);
     onSelect(selectedEntries.value);
   }
 
