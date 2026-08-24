@@ -159,7 +159,7 @@ describe('openNavigatorPathInNewTab', () => {
     openPathInCurrentTabMock.mockReset().mockResolvedValue(undefined);
   });
 
-  it('opens a background tab group and navigates to navigator', async () => {
+  it('opens and activates a tab group and navigates to navigator', async () => {
     const router = createRouter('home');
 
     openNavigatorPathInNewTab(router, 'D:/');
@@ -167,13 +167,13 @@ describe('openNavigatorPathInNewTab', () => {
     expect(router.push).toHaveBeenCalledWith({ name: 'navigator' });
 
     await vi.waitFor(() => {
-      expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/', { activate: false });
+      expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/');
     });
 
     expect(openPathInCurrentTabMock).not.toHaveBeenCalled();
   });
 
-  it('opens a background tab group without navigating when already on navigator', async () => {
+  it('opens and activates a tab group without navigating when already on navigator', async () => {
     const router = createRouter('navigator');
 
     openNavigatorPathInNewTab(router, 'D:/');
@@ -181,7 +181,7 @@ describe('openNavigatorPathInNewTab', () => {
     expect(router.push).not.toHaveBeenCalled();
 
     await vi.waitFor(() => {
-      expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/', { activate: false });
+      expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/');
     });
   });
 });

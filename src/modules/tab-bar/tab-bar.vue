@@ -19,6 +19,7 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useHorizontalScrollFade } from '@/composables/use-horizontal-scroll-fade';
+import { getScrollLeftToRevealInFadedContainer } from '@/composables/get-scroll-left-to-reveal-in-faded-container';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
 import { PlusIcon } from '@lucide/vue';
 
@@ -44,7 +45,7 @@ const previewEnabled = ref(true);
 const scrollContainerRef = ref<HTMLElement | null>(null);
 const scrollContentRef = ref<HTMLElement | null>(null);
 let scrollDisableTimeoutId: number | null = null;
-const { scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScrollFade(scrollContainerRef, {
+const { fadeWidth, scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScrollFade(scrollContainerRef, {
   scrollContentRef,
 });
 
@@ -110,15 +111,28 @@ function scrollTabBarToEnd() {
 
 function scrollSelectedTabGroupIntoView() {
   nextTick(() => {
-    const selectedTab = document.querySelector('.tab[is-active="true"]');
+    const container = scrollContainerRef.value;
+    const selectedTab = container?.querySelector('.tab[is-active="true"]');
 
-    if (selectedTab) {
-      selectedTab.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-        behavior: 'instant',
-      });
+    if (!container || !(selectedTab instanceof HTMLElement)) {
+      return;
     }
+
+    const elementOffsetLeft = selectedTab.getBoundingClientRect().left
+      - container.getBoundingClientRect().left
+      + container.scrollLeft;
+
+    container.scrollTo({
+      left: getScrollLeftToRevealInFadedContainer({
+        containerScrollLeft: container.scrollLeft,
+        containerClientWidth: container.clientWidth,
+        containerScrollWidth: container.scrollWidth,
+        elementOffsetLeft,
+        elementWidth: selectedTab.offsetWidth,
+        fadeWidth,
+      }),
+      behavior: 'instant',
+    });
 
     updateScrollFade();
   });

@@ -14,7 +14,7 @@ interface HorizontalScrollFadeOptions {
 
 const DEFAULT_ANIMATION_DURATION_MS = 150;
 const DEFAULT_EDGE_THRESHOLD = 1;
-const DEFAULT_FADE_WIDTH = 24;
+export const DEFAULT_HORIZONTAL_SCROLL_FADE_WIDTH = 24;
 const HORIZONTAL_SCROLL_FADE_CLASS = 'horizontal-scroll-fade';
 
 export function useHorizontalScrollFade(
@@ -27,7 +27,7 @@ export function useHorizontalScrollFade(
   const rightFadeWidth = ref(0);
   const animationDurationMs = options.animationDurationMs ?? DEFAULT_ANIMATION_DURATION_MS;
   const edgeThreshold = options.edgeThreshold ?? DEFAULT_EDGE_THRESHOLD;
-  const fadeWidth = options.fadeWidth ?? DEFAULT_FADE_WIDTH;
+  const fadeWidth = options.fadeWidth ?? DEFAULT_HORIZONTAL_SCROLL_FADE_WIDTH;
   let animationFrameId: number | null = null;
   let animationStartTime: number | null = null;
   let startLeftFadeWidth = 0;
@@ -134,6 +134,7 @@ export function useHorizontalScrollFade(
   return {
     canScrollLeft,
     canScrollRight,
+    fadeWidth,
     scrollFadeClass: HORIZONTAL_SCROLL_FADE_CLASS,
     scrollFadeStyle,
     updateScrollFade,

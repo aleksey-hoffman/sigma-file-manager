@@ -89,7 +89,7 @@ export function openNavigatorPathInNewTab(router: Router, path: string): void {
   ensureNavigatorRoute(router);
 
   runNavigatorOpenTask(async () => {
-    await useWorkspacesStore().openNewTabGroup(path, { activate: false });
+    await useWorkspacesStore().openNewTabGroup(path);
   });
 }
 
