@@ -452,9 +452,24 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
   },
   {
     id: 'openNewTab',
-    labelKey: 'shortcuts.openCurrentDirInNewTab',
+    labelKey: 'shortcuts.openNewTab',
     defaultKeys: {
       ctrl: true,
+      key: 't',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'duplicateCurrentTab',
+    labelKey: 'shortcuts.duplicateCurrentTab',
+    defaultKeys: {
+      ctrl: true,
+      alt: true,
       key: 't',
     },
     scope: 'navigator',

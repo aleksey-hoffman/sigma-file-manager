@@ -121,6 +121,7 @@ export type ShortcutId
     | 'print'
     | 'properties'
     | 'openNewTab'
+    | 'duplicateCurrentTab'
     | 'closeCurrentTab'
     | 'restoreLastClosedTab'
     | 'switchToNextTab'

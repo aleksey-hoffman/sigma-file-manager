@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Nov zavihek",
+    "duplicateTab": "Podvoji zavihek",
     "closeOtherTabs": "Zapri druge zavihke",
     "closeDuplicateTabs": "Zapri vse podvojene",
     "closeAllTabs": "Zapri vse zavihke",
@@ -585,6 +586,8 @@
     "openEntry": "Odpri urejevalnik naslova",
     "copyCurrentDirectoryPathToClipboard": "Kopiraj pot trenutne mape v odložišče",
     "openCopiedPath": "Odpri kopirano pot",
+    "openNewTab": "Odpri nov zavihek",
+    "duplicateCurrentTab": "Podvoji trenutni zavihek",
     "openCurrentDirInNewTab": "Odpri trenutno mapo v novem zavihku",
     "openCurrentDirInTerminal": "Odpri trenutno mapo v terminalu",
     "openCurrentDirInTerminalAsAdmin": "Odpri trenutno mapo v terminalu kot admin",

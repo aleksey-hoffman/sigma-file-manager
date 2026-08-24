@@ -201,9 +201,15 @@ onBeforeUnmount(() => {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <div class="tab-bar__tooltip-row">
-            {{ t('tabs.newTab') }}
-            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('openNewTab') }}</ContextMenuShortcut>
+          <div class="tab-bar__tooltip">
+            <div class="tab-bar__tooltip-row">
+              {{ t('tabs.newTab') }}
+              <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('openNewTab') }}</ContextMenuShortcut>
+            </div>
+            <div class="tab-bar__tooltip-row">
+              {{ t('shortcuts.duplicateCurrentTab') }}
+              <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('duplicateCurrentTab') }}</ContextMenuShortcut>
+            </div>
           </div>
         </TooltipContent>
       </Tooltip>
@@ -242,6 +248,12 @@ onBeforeUnmount(() => {
 
 .tab-bar__add-tab-button {
   color: hsl(var(--muted-foreground));
+}
+
+.tab-bar__tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .tab-bar__tooltip-row {

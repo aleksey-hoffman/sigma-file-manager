@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Thẻ mới",
+    "duplicateTab": "Nhân bản thẻ",
     "closeOtherTabs": "Đóng các thẻ khác",
     "closeDuplicateTabs": "Đóng tất cả bản trùng",
     "closeAllTabs": "Đóng tất cả thẻ",
@@ -556,6 +557,8 @@
     "openEntry": "Mở trình chỉnh sửa địa chỉ",
     "copyCurrentDirectoryPathToClipboard": "Sao chép đường dẫn thư mục hiện tại vào clipboard",
     "openCopiedPath": "Mở đường dẫn đã sao chép",
+    "openNewTab": "Mở tab mới",
+    "duplicateCurrentTab": "Nhân bản tab hiện tại",
     "openCurrentDirInNewTab": "Mở thư mục hiện tại trong tab mới",
     "openCurrentDirInTerminal": "Mở thư mục hiện tại trong thiết bị đầu cuối",
     "openCurrentDirInTerminalAsAdmin": "Mở thư mục hiện tại trong thiết bị đầu cuối với tư cách quản trị viên",

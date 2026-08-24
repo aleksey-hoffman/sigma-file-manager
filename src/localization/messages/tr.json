@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Yeni sekme",
+    "duplicateTab": "Sekmeyi çoğalt",
     "closeOtherTabs": "Diğer sekmeleri kapat",
     "closeDuplicateTabs": "Tüm yinelenenleri kapat",
     "closeAllTabs": "Tüm sekmeleri kapat",
@@ -556,6 +557,8 @@
     "openEntry": "Adres düzenleyiciyi aç",
     "copyCurrentDirectoryPathToClipboard": "Geçerli dizin yolunu panoya kopyala",
     "openCopiedPath": "Kopyalanan yolu aç",
+    "openNewTab": "Yeni sekme aç",
+    "duplicateCurrentTab": "Geçerli sekmeyi çoğalt",
     "openCurrentDirInNewTab": "Geçerli dizini yeni sekmede aç",
     "openCurrentDirInTerminal": "Geçerli dizini terminalde aç",
     "openCurrentDirInTerminalAsAdmin": "Geçerli dizini terminalde yönetici olarak aç",

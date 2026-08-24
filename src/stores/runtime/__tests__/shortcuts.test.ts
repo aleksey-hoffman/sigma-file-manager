@@ -578,6 +578,41 @@ describe('shortcuts store', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it('matches Ctrl+T for opening a new tab and Ctrl+Alt+T for duplicating the current tab', async () => {
+    const shortcutsStore = useShortcutsStore();
+    const openNewTabHandler = vi.fn();
+    const duplicateCurrentTabHandler = vi.fn();
+
+    shortcutsStore.registerHandler('openNewTab', openNewTabHandler);
+    shortcutsStore.registerHandler('duplicateCurrentTab', duplicateCurrentTabHandler);
+
+    expect(shortcutsStore.getShortcutLabel('openNewTab')).toBe('Ctrl+T');
+    expect(shortcutsStore.getShortcutLabel('duplicateCurrentTab')).toBe('Ctrl+Alt+T');
+
+    const openNewTabEvent = new KeyboardEvent('keydown', {
+      key: 't',
+      code: 'KeyT',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    const duplicateCurrentTabEvent = new KeyboardEvent('keydown', {
+      key: 't',
+      code: 'KeyT',
+      ctrlKey: true,
+      altKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(openNewTabEvent)).resolves.toBe(true);
+    await expect(shortcutsStore.handleKeydown(duplicateCurrentTabEvent)).resolves.toBe(true);
+    expect(openNewTabHandler).toHaveBeenCalledTimes(1);
+    expect(duplicateCurrentTabHandler).toHaveBeenCalledTimes(1);
+    expect(openNewTabEvent.defaultPrevented).toBe(true);
+    expect(duplicateCurrentTabEvent.defaultPrevented).toBe(true);
+  });
+
   it('matches Ctrl+Shift+T for restoring the last closed tab', async () => {
     const shortcutsStore = useShortcutsStore();
     const restoreLastClosedTabHandler = vi.fn();

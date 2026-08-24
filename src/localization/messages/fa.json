@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "برگه جدید",
+    "duplicateTab": "تکرار برگه",
     "closeOtherTabs": "بستن سایر برگه ها",
     "closeDuplicateTabs": "بستن همه تکراری‌ها",
     "closeAllTabs": "بستن همه برگه ها",
@@ -552,6 +553,8 @@
     "openEntry": "باز کردن ویرایشگر آدرس",
     "copyCurrentDirectoryPathToClipboard": "کپی مسیر دایرکتوری فعلی در کلیپ بورد",
     "openCopiedPath": "باز کردن مسیر کپی شده",
+    "openNewTab": "باز کردن برگه جدید",
+    "duplicateCurrentTab": "تکرار برگه فعلی",
     "openCurrentDirInNewTab": "باز کردن مسیر فعلی در تب جدید",
     "openCurrentDirInTerminal": "باز کردن مسیر فعلی در ترمینال",
     "openCurrentDirInTerminalAsAdmin": "باز کردن dir فعلی در ترمینال به عنوان مدیر",

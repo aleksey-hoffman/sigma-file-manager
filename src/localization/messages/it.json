@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Nuova scheda",
+    "duplicateTab": "Duplica scheda",
     "closeOtherTabs": "Chiudi altre schede",
     "closeDuplicateTabs": "Chiudi tutti i duplicati",
     "closeAllTabs": "Chiudi tutte le schede",
@@ -556,6 +557,8 @@
     "openEntry": "Apri l'editor dell'indirizzo",
     "copyCurrentDirectoryPathToClipboard": "Copia il percorso della directory corrente negli appunti",
     "openCopiedPath": "Apri il percorso copiato",
+    "openNewTab": "Apri una nuova scheda",
+    "duplicateCurrentTab": "Duplica la scheda attuale",
     "openCurrentDirInNewTab": "Apri la cartella attuale in una nuova scheda",
     "openCurrentDirInTerminal": "Apri la cartella attuale nel terminale",
     "openCurrentDirInTerminalAsAdmin": "Apri la cartella attuale nel terminale come amministratore",

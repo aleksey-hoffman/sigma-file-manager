@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "新しいタブ",
+    "duplicateTab": "タブを複製",
     "closeOtherTabs": "他のタブを閉じる",
     "closeDuplicateTabs": "すべての重複を閉じる",
     "closeAllTabs": "すべてのタブを閉じる",
@@ -556,6 +557,8 @@
     "openEntry": "アドレスエディターを開く",
     "copyCurrentDirectoryPathToClipboard": "現在のディレクトリパスをクリップボードにコピー",
     "openCopiedPath": "コピーしたパスを開く",
+    "openNewTab": "新しいタブを開く",
+    "duplicateCurrentTab": "現在のタブを複製",
     "openCurrentDirInNewTab": "現在のディレクトリを新しいタブで開く",
     "openCurrentDirInTerminal": "ターミナルで現在のディレクトリを開く",
     "openCurrentDirInTerminalAsAdmin": "ターミナルで現在のディレクトリを管理者として開く",

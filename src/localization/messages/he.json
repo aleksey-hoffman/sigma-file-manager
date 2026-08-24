@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "לשונית חדשה",
+    "duplicateTab": "שכפל לשונית",
     "closeOtherTabs": "סגור לשוניות אחרות",
     "closeDuplicateTabs": "סגור את כל הכפילויות",
     "closeAllTabs": "סגור את כל הלשוניות",
@@ -585,6 +586,8 @@
     "openEntry": "פתח את עורך הכתובת",
     "copyCurrentDirectoryPathToClipboard": "העתק את נתיב התיקייה הנוכחית ללוח",
     "openCopiedPath": "פתח את הנתיב שהועתק",
+    "openNewTab": "פתח לשונית חדשה",
+    "duplicateCurrentTab": "שכפל את הלשונית הנוכחית",
     "openCurrentDirInNewTab": "פתח את התיקייה הנוכחית בלשונית חדשה",
     "openCurrentDirInTerminal": "פתח את התיקייה הנוכחית במסוף",
     "openCurrentDirInTerminalAsAdmin": "פתח את התיקייה הנוכחית במסוף כמנהל",

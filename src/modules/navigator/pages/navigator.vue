@@ -24,7 +24,10 @@ import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore, getSelectedTextForCopy } from '@/stores/runtime/shortcuts';
 import { toast, ToastStatic } from '@/components/ui/toaster';
-import { getVirtualLocationActionContext } from '@/utils/virtual-location-action-target';
+import {
+  getVirtualLocationActionContext,
+  resolveDuplicateCurrentTabShortcutTarget,
+} from '@/utils/virtual-location-action-target';
 import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-entry';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
@@ -950,23 +953,32 @@ async function openTerminalWithOptions(asAdmin: boolean) {
 }
 
 async function handleOpenNewTabShortcut() {
-  const actionContext = getNavigatorActionContext();
+  await workspacesStore.openNewTabGroup();
+}
 
-  if (actionContext.isBrowsingVirtualLocations) {
-    if (actionContext.actionTargetEntries.length > 0) {
-      getActivePaneRef()?.performSelectionAction?.('open-in-new-tab');
-    }
-
-    return;
-  }
-
+async function handleDuplicateCurrentTabShortcut() {
   const currentPath = getActiveCurrentPath();
+  const target = resolveDuplicateCurrentTabShortcutTarget(
+    currentPath,
+    getNavigatorActionContext(currentPath),
+  );
 
-  if (!currentPath) {
+  if (!target) {
     return;
   }
 
-  await workspacesStore.openNewTabGroup(currentPath);
+  switch (target.kind) {
+    case 'open-selection':
+      getActivePaneRef()?.performSelectionAction?.('open-in-new-tab');
+      return;
+    case 'clone-path':
+      await workspacesStore.openNewTabGroup(target.path);
+      return;
+    default: {
+      const exhaustiveCheck: never = target;
+      return exhaustiveCheck;
+    }
+  }
 }
 
 async function handleCloseCurrentTabShortcut() {
@@ -1119,6 +1131,7 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('print', handlePrintShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('properties', handlePropertiesShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
+  shortcutsStore.registerHandler('duplicateCurrentTab', handleDuplicateCurrentTabShortcut);
   shortcutsStore.registerHandler('closeCurrentTab', handleCloseCurrentTabShortcut);
   shortcutsStore.registerHandler('restoreLastClosedTab', handleRestoreLastClosedTabShortcut);
   shortcutsStore.registerHandler('switchToNextTab', handleSwitchToNextTabShortcut);

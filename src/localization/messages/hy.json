@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Նոր թաբ",
+    "duplicateTab": "Կրկնօրինակել թաբը",
     "closeOtherTabs": "Փակել այլ թաբերը",
     "closeDuplicateTabs": "Փակել կրկնվող թաբերը",
     "closeAllTabs": "Փակել բոլոր թաբերը",
@@ -585,6 +586,8 @@
     "openEntry": "Փոփոխել հասցեն",
     "copyCurrentDirectoryPathToClipboard": "Պատճենել ընտրված պանակի ուղին",
     "openCopiedPath": "Բացել պատճենված ուղին",
+    "openNewTab": "Բացել նոր թաբ",
+    "duplicateCurrentTab": "Կրկնօրինակել ընթացիկ թաբը",
     "openCurrentDirInNewTab": "Բացել ընտրված պանակը նոր թաբում",
     "openCurrentDirInTerminal": "Բացել ընտրված պանակը տերմինալում",
     "openCurrentDirInTerminalAsAdmin": "Բացել ընտրված պանակը ադմինի անունից՝ տերմինալում",

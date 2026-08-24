@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "नया टैब",
+    "duplicateTab": "टैब डुप्लिकेट करें",
     "closeOtherTabs": "अन्य टैब बंद करें",
     "closeDuplicateTabs": "सभी डुप्लिकेट बंद करें",
     "closeAllTabs": "सभी टैब को बंद करें",
@@ -585,6 +586,8 @@
     "openEntry": "पता संपादक खोलें",
     "copyCurrentDirectoryPathToClipboard": "वर्तमान निर्देशिका पथ को क्लिपबोर्ड पर कॉपी करें",
     "openCopiedPath": "कॉपी किया गया पथ खोलें",
+    "openNewTab": "नया टैब खोलें",
+    "duplicateCurrentTab": "वर्तमान टैब डुप्लिकेट करें",
     "openCurrentDirInNewTab": "वर्तमान डीआईआर को नए टैब में खोलें",
     "openCurrentDirInTerminal": "टर्मिनल में वर्तमान डीआईआर खोलें",
     "openCurrentDirInTerminalAsAdmin": "टर्मिनल में वर्तमान डीआईआर को व्यवस्थापक के रूप में खोलें",

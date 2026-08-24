@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Новая вкладка",
+    "duplicateTab": "Дублировать вкладку",
     "closeOtherTabs": "Закрыть другие вкладки",
     "closeDuplicateTabs": "Закрыть все дубликаты",
     "closeAllTabs": "Закрыть все вкладки",
@@ -585,6 +586,8 @@
     "openEntry": "Открыть редактор адреса",
     "copyCurrentDirectoryPathToClipboard": "Скопировать текущий путь к папке в буфер обмена",
     "openCopiedPath": "Открыть скопированный путь",
+    "openNewTab": "Открыть новую вкладку",
+    "duplicateCurrentTab": "Дублировать текущую вкладку",
     "openCurrentDirInNewTab": "Открыть текущую папку в новой вкладке",
     "openCurrentDirInTerminal": "Открыть текущую папку в терминале",
     "openCurrentDirInTerminalAsAdmin": "Открыть текущую папку в терминале от имени администратора",

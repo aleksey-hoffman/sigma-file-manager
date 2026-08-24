@@ -99,3 +99,22 @@ export function getVirtualLocationActionContext(
     actionTargetPathsText: actionTargetEntries.map(entry => entry.path).join('\n'),
   };
 }
+
+export type DuplicateCurrentTabShortcutTarget =
+  | { kind: 'open-selection' }
+  | { kind: 'clone-path'; path: string };
+
+export function resolveDuplicateCurrentTabShortcutTarget(
+  currentDirectoryPath: string | null | undefined,
+  actionContext: VirtualLocationActionContext,
+): DuplicateCurrentTabShortcutTarget | null {
+  if (actionContext.isBrowsingVirtualLocations && actionContext.actionTargetEntries.length > 0) {
+    return { kind: 'open-selection' };
+  }
+
+  if (!currentDirectoryPath) {
+    return null;
+  }
+
+  return { kind: 'clone-path', path: currentDirectoryPath };
+}

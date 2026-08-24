@@ -10,7 +10,7 @@ import { useTimeoutFn, useEventListener } from '@vueuse/core';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { Tab } from '@/types/workspaces';
-import { Layers, XIcon, XLineTopIcon } from '@lucide/vue';
+import { CopyPlusIcon, Layers, XIcon, XLineTopIcon } from '@lucide/vue';
 import { getPathDisplayName, getPathDisplayValue } from '@/utils/normalize-path';
 import {
   Tooltip,
@@ -21,8 +21,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useFileBrowserDragSession } from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag-session';
 
 interface Props {
@@ -42,6 +44,7 @@ const emit = defineEmits<Emits>();
 
 const { t } = useI18n();
 const workspacesStore = useWorkspacesStore();
+const shortcutsStore = useShortcutsStore();
 const userSettingsStore = useUserSettingsStore();
 const dragSession = useFileBrowserDragSession();
 const activeFileBrowserDragState = dragSession.dragState;
@@ -192,6 +195,16 @@ function handleTabMouseUp(event: MouseEvent) {
   dragSession.dropOn(dropTargetTab.value.path, event.shiftKey ? 'copy' : undefined);
 }
 
+async function duplicateTab() {
+  const path = props.tabGroup[0]?.path;
+
+  if (!path) {
+    return;
+  }
+
+  await workspacesStore.openNewTabGroup(path);
+}
+
 function closeOtherTabs() {
   workspacesStore.closeOtherTabGroups(props.tabGroup);
 }
@@ -265,6 +278,19 @@ onBeforeUnmount(() => {
         align="start"
         class="tab__dropdown-menu"
       >
+        <DropdownMenuItem
+          class="tab__menu-item-with-shortcut"
+          @select="duplicateTab"
+        >
+          <CopyPlusIcon
+            class="tab__menu-button-icon"
+            :size="14"
+          />
+          {{ t('tabs.duplicateTab') }}
+          <DropdownMenuShortcut v-if="shortcutsStore.getShortcutLabel('duplicateCurrentTab')">
+            {{ shortcutsStore.getShortcutLabel('duplicateCurrentTab') }}
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
         <DropdownMenuItem @select="closeOtherTabs">
           <XLineTopIcon
             class="tab__menu-button-icon"
@@ -422,7 +448,11 @@ onBeforeUnmount(() => {
 }
 
 .tab__dropdown-menu {
-  min-width: 160px;
+  min-width: 220px;
+}
+
+.tab__menu-item-with-shortcut {
+  gap: 8px;
 }
 
 .tab__menu-button {

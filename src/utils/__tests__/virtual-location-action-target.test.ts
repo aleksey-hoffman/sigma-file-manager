@@ -10,6 +10,7 @@ import {
   getVirtualLocationActionContext,
   isBrowsingVirtualLocations,
   resolveActionDirectoryPath,
+  resolveDuplicateCurrentTabShortcutTarget,
 } from '@/utils/virtual-location-action-target';
 import { LOCATIONS_VIRTUAL_PATH, WSL_HOST_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
 
@@ -154,6 +155,45 @@ describe('virtual-location-action-target', () => {
         actionTargetEntries: [],
         actionTargetPathsText: '',
       });
+    });
+  });
+
+  describe('resolveDuplicateCurrentTabShortcutTarget', () => {
+    it('clones the current path for a normal directory', () => {
+      expect(resolveDuplicateCurrentTabShortcutTarget(
+        'C:/Users',
+        getVirtualLocationActionContext([], 'C:/Users'),
+      )).toEqual({ kind: 'clone-path', path: 'C:/Users' });
+    });
+
+    it('clones the locations virtual path when nothing is selected', () => {
+      expect(resolveDuplicateCurrentTabShortcutTarget(
+        LOCATIONS_VIRTUAL_PATH,
+        getVirtualLocationActionContext([], LOCATIONS_VIRTUAL_PATH),
+      )).toEqual({ kind: 'clone-path', path: LOCATIONS_VIRTUAL_PATH });
+    });
+
+    it('clones the wsl host virtual path when nothing is selected', () => {
+      expect(resolveDuplicateCurrentTabShortcutTarget(
+        WSL_HOST_VIRTUAL_PATH,
+        getVirtualLocationActionContext([], WSL_HOST_VIRTUAL_PATH),
+      )).toEqual({ kind: 'clone-path', path: WSL_HOST_VIRTUAL_PATH });
+    });
+
+    it('opens the selected location when browsing virtual locations', () => {
+      const selectedEntries = [createEntry({ path: 'D:/' })];
+
+      expect(resolveDuplicateCurrentTabShortcutTarget(
+        LOCATIONS_VIRTUAL_PATH,
+        getVirtualLocationActionContext(selectedEntries, LOCATIONS_VIRTUAL_PATH),
+      )).toEqual({ kind: 'open-selection' });
+    });
+
+    it('returns null when there is no current path', () => {
+      expect(resolveDuplicateCurrentTabShortcutTarget(
+        undefined,
+        getVirtualLocationActionContext([], undefined),
+      )).toBeNull();
     });
   });
 });

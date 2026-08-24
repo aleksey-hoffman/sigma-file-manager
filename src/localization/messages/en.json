@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "New tab",
+    "duplicateTab": "Duplicate tab",
     "closeOtherTabs": "Close other tabs",
     "closeDuplicateTabs": "Close all duplicates",
     "closeAllTabs": "Close all tabs",
@@ -585,6 +586,8 @@
     "openEntry": "Open address editor",
     "copyCurrentDirectoryPathToClipboard": "Copy current directory path to clipboard",
     "openCopiedPath": "Open copied path",
+    "openNewTab": "Open new tab",
+    "duplicateCurrentTab": "Duplicate current tab",
     "openCurrentDirInNewTab": "Open current dir in new tab",
     "openCurrentDirInTerminal": "Open current dir in terminal",
     "openCurrentDirInTerminalAsAdmin": "Open current dir in terminal as admin",

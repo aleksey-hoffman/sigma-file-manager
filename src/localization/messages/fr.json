@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Nouvel onglet",
+    "duplicateTab": "Dupliquer l'onglet",
     "closeOtherTabs": "Fermer les autres onglets",
     "closeDuplicateTabs": "Fermer tous les doublons",
     "closeAllTabs": "Fermer tous les onglets",
@@ -556,6 +557,8 @@
     "openEntry": "Ouvrir l'éditeur d'adresse",
     "copyCurrentDirectoryPathToClipboard": "Copier le chemin du répertoire actuel dans le presse-papiers",
     "openCopiedPath": "Ouvrir le chemin copié",
+    "openNewTab": "Ouvrir un nouvel onglet",
+    "duplicateCurrentTab": "Dupliquer l'onglet actuel",
     "openCurrentDirInNewTab": "Ouvrir le répertoire actuel dans un nouvel onglet",
     "openCurrentDirInTerminal": "Ouvrir le répertoire actuel dans le terminal",
     "openCurrentDirInTerminalAsAdmin": "Ouvrir le répertoire actuel dans le terminal en tant qu'administrateur",

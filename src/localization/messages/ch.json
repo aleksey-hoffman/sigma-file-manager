@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "新标签页",
+    "duplicateTab": "复制标签页",
     "closeOtherTabs": "关闭其他标签",
     "closeDuplicateTabs": "关闭所有重复标签",
     "closeAllTabs": "关闭所有标签",
@@ -556,6 +557,8 @@
     "openEntry": "打开地址编辑器",
     "copyCurrentDirectoryPathToClipboard": "复制当前目录路径到剪贴板",
     "openCopiedPath": "打开复制的路径",
+    "openNewTab": "打开新标签页",
+    "duplicateCurrentTab": "复制当前标签页",
     "openCurrentDirInNewTab": "在新标签页中打开当前目录",
     "openCurrentDirInTerminal": "在终端打开当前目录",
     "openCurrentDirInTerminalAsAdmin": "以管理员身份在终端中打开当前目录",

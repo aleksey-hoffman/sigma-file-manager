@@ -391,14 +391,10 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   <component
     :is="menuItemComponent"
     v-if="isActionVisible('open-in-new-tab')"
-    class="file-browser-actions-menu__item-with-shortcut"
     @select="emitAction('open-in-new-tab')"
   >
     <SquarePlusIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
-    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openNewTab')">
-      {{ shortcutsStore.getShortcutLabel('openNewTab') }}
-    </ContextMenuShortcut>
   </component>
   <component
     :is="menuItemComponent"

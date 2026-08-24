@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Nueva pestaña",
+    "duplicateTab": "Duplicar pestaña",
     "closeOtherTabs": "Cerrar otras pestañas",
     "closeDuplicateTabs": "Cerrar todos los duplicados",
     "closeAllTabs": "Cerrar todas las pestañas",
@@ -556,6 +557,8 @@
     "openEntry": "Abrir editor de dirección",
     "copyCurrentDirectoryPathToClipboard": "Copiar la ruta del directorio actual al portapapeles",
     "openCopiedPath": "Abrir ruta copiada",
+    "openNewTab": "Abrir una nueva pestaña",
+    "duplicateCurrentTab": "Duplicar la pestaña actual",
     "openCurrentDirInNewTab": "Abrir el directorio actual en una nueva pestaña",
     "openCurrentDirInTerminal": "Abrir el directorio actual en la terminal",
     "openCurrentDirInTerminalAsAdmin": "Abrir el directorio actual en la terminal como administrador",

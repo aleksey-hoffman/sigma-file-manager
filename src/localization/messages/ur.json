@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "نیا ٹیب",
+    "duplicateTab": "ٹیب نقل کریں",
     "closeOtherTabs": "دوسرے ٹیب بند کریں",
     "closeDuplicateTabs": "تمام ڈپلیکیٹ بند کریں",
     "closeAllTabs": "تمام ٹیب بند کریں",
@@ -585,6 +586,8 @@
     "openEntry": "پتہ ایڈیٹر کھولیں",
     "copyCurrentDirectoryPathToClipboard": "موجودہ فولڈر کا راستہ کلپ بورڈ پر کاپی کریں",
     "openCopiedPath": "کاپی شدہ راستہ کھولیں",
+    "openNewTab": "نیا ٹیب کھولیں",
+    "duplicateCurrentTab": "موجودہ ٹیب نقل کریں",
     "openCurrentDirInNewTab": "موجودہ فولڈر نئے ٹیب میں کھولیں",
     "openCurrentDirInTerminal": "موجودہ فولڈر ٹرمینل میں کھولیں",
     "openCurrentDirInTerminalAsAdmin": "موجودہ فولڈر ایڈمن ٹرمینل میں کھولیں",

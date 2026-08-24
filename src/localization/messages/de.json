@@ -77,6 +77,7 @@
   },
   "tabs": {
     "newTab": "Neuer Tab",
+    "duplicateTab": "Tab duplizieren",
     "closeOtherTabs": "Andere Tabs schließen",
     "closeDuplicateTabs": "Alle Duplikate schließen",
     "closeAllTabs": "Alle Tabs schließen",
@@ -556,6 +557,8 @@
     "openEntry": "Adresseditor öffnen",
     "copyCurrentDirectoryPathToClipboard": "Aktuellen Verzeichnispfad in die Zwischenablage kopieren",
     "openCopiedPath": "Kopierpfad öffnen",
+    "openNewTab": "Neuen Tab öffnen",
+    "duplicateCurrentTab": "Aktuellen Tab duplizieren",
     "openCurrentDirInNewTab": "Aktuelles Verzeichnis in neuem Tab öffnen",
     "openCurrentDirInTerminal": "Aktuelles Verzeichnis im Terminal öffnen",
     "openCurrentDirInTerminalAsAdmin": "Aktuelles Verzeichnis im Terminal als Administrator öffnen",
