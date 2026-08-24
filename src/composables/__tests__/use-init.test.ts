@@ -39,6 +39,8 @@ const {
   userStatsRunDeferredMaintenanceMock,
   workspacesInitMock,
   workspacesLoadCurrentTabGroupMock,
+  userSettingsMock,
+  userSettingsSetMock,
 } = vi.hoisted(() => ({
   appWindowInitMainWindowStateListenersMock: vi.fn(),
   applyLaunchAtStartupPreferenceMock: vi.fn(),
@@ -72,6 +74,16 @@ const {
   userStatsRunDeferredMaintenanceMock: vi.fn(),
   workspacesInitMock: vi.fn(),
   workspacesLoadCurrentTabGroupMock: vi.fn(),
+  userSettingsMock: {
+    launchAtStartup: false,
+    launchAtStartupHidden: false,
+    startupPage: 'home' as 'last' | 'home' | 'dashboard' | 'navigator',
+    lastRoute: {
+      name: 'home' as 'home' | 'navigator' | 'dashboard' | 'settings' | 'extensions' | 'extension-page',
+      fullPageId: '',
+    },
+  },
+  userSettingsSetMock: vi.fn(),
 }));
 
 vi.mock('vue', async () => {
@@ -90,6 +102,13 @@ vi.mock('vue-router', async (importOriginal) => {
     ...actual,
     useRouter: () => ({
       push: routerPushMock,
+      afterEach: vi.fn(),
+      currentRoute: {
+        value: {
+          name: 'home',
+          params: {},
+        },
+      },
     }),
   };
 });
@@ -132,10 +151,8 @@ vi.mock('@/stores/storage/user-paths', () => ({
 vi.mock('@/stores/storage/user-settings', () => ({
   useUserSettingsStore: () => ({
     init: userSettingsInitMock,
-    userSettings: {
-      launchAtStartup: false,
-      launchAtStartupHidden: false,
-    },
+    userSettings: userSettingsMock,
+    set: userSettingsSetMock,
   }),
 }));
 
@@ -287,9 +304,13 @@ vi.mock('@/utils/auxiliary-windows', () => ({
   acquireAuxiliaryWindow: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock('@/utils/launch-directories', () => ({
-  resolveLaunchTargetsFromArgs: resolveLaunchTargetsFromArgsMock,
-}));
+vi.mock('@/utils/launch-directories', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/launch-directories')>();
+  return {
+    ...actual,
+    resolveLaunchTargetsFromArgs: resolveLaunchTargetsFromArgsMock,
+  };
+});
 
 vi.mock('@/utils/ui-zoom', () => ({
   applyUiZoomStep: vi.fn(),
@@ -346,6 +367,14 @@ describe('useInit startup restoration', () => {
     userStatsRunDeferredMaintenanceMock.mockReset().mockResolvedValue(undefined);
     workspacesInitMock.mockReset().mockResolvedValue(undefined);
     workspacesLoadCurrentTabGroupMock.mockReset().mockResolvedValue(undefined);
+    userSettingsSetMock.mockReset().mockResolvedValue(undefined);
+    userSettingsMock.launchAtStartup = false;
+    userSettingsMock.launchAtStartupHidden = false;
+    userSettingsMock.startupPage = 'home';
+    userSettingsMock.lastRoute = {
+      name: 'home',
+      fullPageId: '',
+    };
     vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
       { type: 'navigate' } as PerformanceNavigationTiming,
     ]);
@@ -632,6 +661,111 @@ describe('useInit startup restoration', () => {
     await backgroundTasksPromise;
 
     expect(callOrder).toContain('globalSearch');
+  });
+
+  it('does not change the route when the startup page is Home', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+
+    await completeInit(init);
+
+    expect(routerPushMock).not.toHaveBeenCalled();
+  });
+
+  it('opens the configured startup page before the first window show', async () => {
+    userSettingsMock.startupPage = 'dashboard';
+    const callOrder: string[] = [];
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    routerPushMock.mockImplementation(async () => {
+      callOrder.push('routerPush');
+    });
+
+    showWindowMock.mockImplementation(async () => {
+      callOrder.push('showMainWindow');
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+
+    await completeInit(init);
+
+    expect(routerPushMock).toHaveBeenCalledWith({ name: 'dashboard' });
+    expect(callOrder.indexOf('routerPush')).toBeLessThan(callOrder.indexOf('showMainWindow'));
+  });
+
+  it('does not apply the startup page when launch args open a folder', async () => {
+    userSettingsMock.startupPage = 'dashboard';
+    userSettingsMock.lastRoute = {
+      name: 'settings',
+      fullPageId: '',
+    };
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({
+          args: ['sigma-file-manager.exe', 'C:/Launch'],
+        });
+      }
+
+      return null;
+    });
+
+    resolveLaunchTargetsFromArgsMock.mockResolvedValue([
+      {
+        directoryPath: 'C:/Launch',
+        focusPath: null,
+      },
+    ]);
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+
+    await completeInit(init);
+
+    expect(routerPushMock).not.toHaveBeenCalledWith({ name: 'dashboard' });
+    expect(userSettingsSetMock).not.toHaveBeenCalledWith('lastRoute', {
+      name: 'home',
+      fullPageId: '',
+    });
+  });
+
+  it('restores the last page when that startup option is selected', async () => {
+    userSettingsMock.startupPage = 'last';
+    userSettingsMock.lastRoute = {
+      name: 'settings',
+      fullPageId: '',
+    };
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+
+    await completeInit(init);
+
+    expect(routerPushMock).toHaveBeenCalledWith({ name: 'settings' });
   });
 });
 

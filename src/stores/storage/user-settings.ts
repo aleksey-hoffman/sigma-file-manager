@@ -96,6 +96,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     navigator: {
       lastTabCloseBehavior: 'createDefaultTab',
+      defaultDirectory: {
+        kind: 'userHome',
+        customPath: '',
+      },
       boldActiveTabTitle: false,
       layout: {
         type: {
@@ -205,6 +209,11 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     tooltipDelayMs: 0,
     launchAtStartup: false,
     launchAtStartupHidden: false,
+    startupPage: 'home',
+    lastRoute: {
+      name: 'home',
+      fullPageId: '',
+    },
     performance: {
       prelaunchQuickViewWindow: true,
       prelaunchPrintViewWindow: false,

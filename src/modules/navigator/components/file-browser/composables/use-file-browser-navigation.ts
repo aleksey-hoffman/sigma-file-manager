@@ -18,6 +18,7 @@ import type { Tab } from '@/types/workspaces';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorIconsStore } from '@/stores/runtime/navigator-icons';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
@@ -38,6 +39,10 @@ import {
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { getFileBrowserSortReadDirOptions } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
+import {
+  createDefaultDirectoryResolveInput,
+  resolveDefaultDirectory,
+} from '@/utils/resolve-default-directory';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -106,6 +111,7 @@ export function useFileBrowserNavigation(
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const userSettingsStore = useUserSettingsStore();
+  const userPathsStore = useUserPathsStore();
   const dirSizesStore = useDirSizesStore();
   const navigatorIconsStore = useNavigatorIconsStore();
   const linkMetadataStore = useLinkMetadataStore();
@@ -576,7 +582,7 @@ export function useFileBrowserNavigation(
       pathToTry = getParentOfPath(pathToTry);
     }
 
-    await navigateToHome();
+    await navigateToDefaultDirectory();
   }
 
   async function validateCurrentPath(): Promise<void> {
@@ -731,11 +737,27 @@ export function useFileBrowserNavigation(
     schedulePendingDirectoryRecordIfCurrent(targetPath);
   }
 
-  async function navigateToHome() {
+  async function navigateToResolvedPath(targetPath: string) {
     cancelPendingDirectoryRecord();
-    const homePath = normalizePath(await homeDir());
-    await readDir(homePath);
-    schedulePendingDirectoryRecordIfCurrent(homePath);
+    await readDir(targetPath);
+    schedulePendingDirectoryRecordIfCurrent(targetPath);
+  }
+
+  async function navigateToDefaultDirectory() {
+    const defaultPath = await resolveDefaultDirectory({
+      ...createDefaultDirectoryResolveInput(
+        userSettingsStore.userSettings.navigator?.defaultDirectory,
+        userPathsStore.userPaths.homeDir || normalizePath(await homeDir()),
+      ),
+      pathExists: candidatePath => invoke<boolean>('path_exists', { path: candidatePath }),
+    });
+    await navigateToResolvedPath(defaultPath);
+  }
+
+  async function navigateToHome() {
+    await navigateToResolvedPath(
+      userPathsStore.userPaths.homeDir || normalizePath(await homeDir()),
+    );
   }
 
   async function goBack() {
@@ -794,14 +816,14 @@ export function useFileBrowserNavigation(
       await readDir(currentTab.path);
 
       if (error.value) {
-        await navigateToHome();
+        await navigateToDefaultDirectory();
       }
       else {
         schedulePendingDirectoryRecordIfCurrent(currentTab.path);
       }
     }
     else {
-      await navigateToHome();
+      await navigateToDefaultDirectory();
     }
   }
 
@@ -827,7 +849,7 @@ export function useFileBrowserNavigation(
     );
 
     if (isAffected) {
-      await navigateToHome();
+      await navigateToDefaultDirectory();
     }
   });
 

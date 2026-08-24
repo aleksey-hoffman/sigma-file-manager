@@ -23,6 +23,11 @@ import {
   resolveDirectoryContents,
 } from '@/utils/virtual-locations';
 import { getPathReadTimeoutMs } from '@/utils/path-slowness';
+import {
+  createDefaultDirectoryResolveInput,
+  resolveDefaultDirectory,
+  resolveDefaultDirectoryPath,
+} from '@/utils/resolve-default-directory';
 import uniqueId from '@/utils/unique-id';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
@@ -126,7 +131,13 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   }
 
   async function createNewTab(path?: string): Promise<Tab> {
-    const tabPath = path || userPathsStore.userPaths.homeDir;
+    const tabPath = path || await resolveDefaultDirectory({
+      ...createDefaultDirectoryResolveInput(
+        userSettingsStore.userSettings.navigator?.defaultDirectory,
+        userPathsStore.userPaths.homeDir,
+      ),
+      pathExists: candidatePath => invoke<boolean>('path_exists', { path: candidatePath }),
+    });
     const tabName = getPathDisplayName(tabPath) || tabPath;
 
     return {
@@ -285,7 +296,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
     if (behavior === 'navigateToHomePage') {
       recordClosedTabGroups(closedTabGroups);
-      const newTab = await createNewTab(userPathsStore.userPaths.homeDir);
+      const newTab = await createNewTab();
       const newTabGroup = [newTab];
       currentWorkspace.value.tabGroups = [newTabGroup];
       currentWorkspace.value.currentTabGroupIndex = 0;
@@ -804,16 +815,21 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   }
 
   function handlePathsDeleted(paths: string[]) {
-    const homePath = userPathsStore.userPaths.homeDir;
+    const defaultDirectoryPath = resolveDefaultDirectoryPath(
+      createDefaultDirectoryResolveInput(
+        userSettingsStore.userSettings.navigator?.defaultDirectory,
+        userPathsStore.userPaths.homeDir,
+      ),
+    );
 
     for (const workspace of workspaces.value) {
       for (const tabGroup of workspace.tabGroups) {
-        updateTabGroupPathsAfterDelete(tabGroup, paths, homePath);
+        updateTabGroupPathsAfterDelete(tabGroup, paths, defaultDirectoryPath);
       }
     }
 
     for (const historyEntry of closedTabGroupHistory.value) {
-      updateTabGroupPathsAfterDelete(historyEntry.tabGroup, paths, homePath);
+      updateTabGroupPathsAfterDelete(historyEntry.tabGroup, paths, defaultDirectoryPath);
     }
 
     lastDeletedPaths.value = paths;

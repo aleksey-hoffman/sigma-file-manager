@@ -215,6 +215,11 @@
         "enableBoxSelectionDescription": "روی فضای خالی بکشید تا چند مورد را با کادر انتخاب کنید. Ctrl یا Shift را نگه دارید تا به انتخاب اضافه شود؛ Alt برای معکوس کردن.",
         "increaseFileViewGaps": "افزایش فاصله‌ها در نمای فایل",
         "increaseFileViewGapsDescription": "padding کناری در نمای فهرست اضافه می‌کند و فاصله‌ها در نمای شبکه‌ای را برای هدف‌گیری آسان‌تر افزایش می‌دهد."
+      },
+      "startupPage": {
+        "title": "صفحه راه‌اندازی",
+        "description": "صفحه‌ای را که هنگام شروع برنامه نشان داده می‌شود انتخاب کنید.",
+        "last": "آخرین صفحه"
       }
     },
     "actions": {
@@ -382,7 +387,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "وقتی آخرین برگه بسته می‌شود",
-        "createDefaultTab": "ایجاد برگه پیش‌فرض",
+        "createDefaultTab": "ایجاد برگه در پوشه پیش‌فرض",
         "closeWindow": "بستن پنجره",
         "navigateToHomePage": "رفتن به صفحه اصلی"
       },
@@ -390,6 +395,13 @@
         "title": "ظاهر برگه‌ها",
         "description": "نحوه نمایش برگه‌های ناوبر را سفارشی کنید.",
         "boldActiveTabTitle": "متن برگه فعال را پررنگ کنید"
+      },
+      "defaultDirectory": {
+        "title": "پوشه پیش‌فرض",
+        "description": "برای برگه‌های جدید و هر زمان که برنامه به یک پوشه نیاز دارد و مسیری مشخص نشده استفاده می‌شود.",
+        "userHome": "پوشه کاربر",
+        "custom": "پوشه سفارشی",
+        "customPath": "مسیر پوشه"
       }
     },
     "globalSearch": {
@@ -478,7 +490,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding"
+    "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding",
+    "tabsWorkspaces": "برگه، فضای کاری، بستن، آخرین برگه، برگه پیش‌فرض",
+    "defaultDirectory": "خانه، locations، این رایانه، درایو، پوشه پیش‌فرض، برگه جدید، مسیر سفارشی",
+    "startupPage": "صفحه راه‌اندازی، راه‌اندازی، باز کردن هنگام راه‌اندازی، خانه، داشبورد، ناوبری، آخرین صفحه، بازیابی، صفحه"
   },
   "drag": {
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",

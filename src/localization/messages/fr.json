@@ -203,6 +203,11 @@
       "startupBehavior": "Comportement au démarrage",
       "launchAppOnSystemLogin": "Lancer l'application lors de la connexion au système",
       "launchAppInHiddenState": "Lancer l'application à l'état caché",
+      "startupPage": {
+        "title": "Page de démarrage",
+        "description": "Choisissez la page à afficher au démarrage de l'application.",
+        "last": "Dernière page"
+      },
       "decreaseZoomLevel": "Diminuer le niveau de zoom",
       "increaseZoomLevel": "Augmenter le niveau de zoom",
       "resetZoomLevel": "Réinitialiser le niveau de zoom",
@@ -386,7 +391,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Lorsque le dernier onglet est fermé",
-        "createDefaultTab": "Créer un onglet par défaut",
+        "createDefaultTab": "Créer un onglet dans le dossier par défaut",
         "closeWindow": "Fermer la fenêtre",
         "navigateToHomePage": "Accéder à la page d'accueil"
       },
@@ -394,6 +399,13 @@
         "title": "Apparence des onglets",
         "description": "Personnalisez l'affichage des onglets du navigateur.",
         "boldActiveTabTitle": "Texte de l'onglet actif en gras"
+      },
+      "defaultDirectory": {
+        "title": "Dossier par défaut",
+        "description": "Utilisé pour les nouveaux onglets et chaque fois que l'application a besoin d'un dossier et qu'aucun n'est spécifié.",
+        "userHome": "Dossier utilisateur",
+        "custom": "Dossier personnalisé",
+        "customPath": "Chemin du dossier"
       }
     },
     "globalSearch": {
@@ -472,6 +484,9 @@
     "navigator": "conception, interface utilisateur, navigateur, séparateurs, titres, tri, vue, mise en page, liste, grille, élément, fichier, répertoire, survol, échelle, surbrillance, OCD",
     "shortcuts": "raccourcis",
     "tabAppearance": "onglets, onglet actif, gras, texte",
+    "tabsWorkspaces": "onglets, espaces de travail, fermer, dernier onglet, onglet par défaut",
+    "defaultDirectory": "accueil, locations, ce PC, ordinateur, lecteurs, dossier par défaut, nouveau onglet, chemin personnalisé",
+    "startupPage": "page de démarrage, démarrage, lancer, ouvrir au démarrage, accueil, tableau de bord, navigateur, dernière page, restaurer, page",
     "globalSearch": "global, chercher, trouver, regarder, filtrer, scanner",
     "stats": "statistiques, données, utilisateur, favoris, étiquettes, historique, récent, tableau de bord, stockage",
     "driveDetection": "lecteur, usb, stockage, disque, périphérique, détection, connexion",

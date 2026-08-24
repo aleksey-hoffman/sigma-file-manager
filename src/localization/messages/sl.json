@@ -248,6 +248,11 @@
         "enableBoxSelectionDescription": "Povlecite po praznem prostoru, da izberete več elementov s kvadratom izbire. Za dodajanje k izbiri držite Ctrl ali Shift; za obrat izbiro Alt.",
         "increaseFileViewGaps": "Povečaj razmike v pogledu datotek",
         "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje."
+      },
+      "startupPage": {
+        "title": "Stran ob zagonu",
+        "description": "Izberite, katera stran naj se prikaže ob zagonu aplikacije.",
+        "last": "Zadnja stran"
       }
     },
     "actions": {
@@ -415,7 +420,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Ko je zadnji zavihek zaprt",
-        "createDefaultTab": "Ustvari privzet zavihek",
+        "createDefaultTab": "Ustvari zavihek v privzeti mapi",
         "closeWindow": "Zapri okno",
         "navigateToHomePage": "Pojdi na domačo stran"
       },
@@ -423,6 +428,13 @@
         "title": "Videz zavihkov",
         "description": "Prilagodite prikaz zavihkov navigatorja.",
         "boldActiveTabTitle": "Krepko besedilo aktivnega zavihka"
+      },
+      "defaultDirectory": {
+        "title": "Privzeta mapa",
+        "description": "Uporablja se za nove zavihke in kadar aplikacija potrebuje mapo, pa nobena ni navedena.",
+        "userHome": "Uporabniška mapa",
+        "custom": "Mapa po meri",
+        "customPath": "Pot mape"
       }
     },
     "globalSearch": {
@@ -511,7 +523,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik"
+    "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik",
+    "tabsWorkspaces": "zavihki, delovni prostori, zapri, zadnji zavihek, privzet zavihek",
+    "defaultDirectory": "domov, locations, ta računalnik, pogoni, privzeta mapa, nov zavihek, pot po meri",
+    "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, nadzorna plošča, navigator, zadnja stran, obnovi, stran"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",

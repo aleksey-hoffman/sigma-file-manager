@@ -19,6 +19,10 @@ import type { UserSettingsNavigator } from '@/types/user-settings';
 function createNavigatorSettings(overrides: Partial<UserSettingsNavigator> = {}): UserSettingsNavigator {
   return {
     lastTabCloseBehavior: 'createDefaultTab',
+    defaultDirectory: {
+      kind: 'userHome',
+      customPath: '',
+    },
     boldActiveTabTitle: false,
     splitViewMode: 'split',
     layout: {

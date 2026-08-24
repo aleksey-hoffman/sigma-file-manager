@@ -219,6 +219,11 @@
         "enableBoxSelectionDescription": "Boş alanda sürükleyerek bir seçim kutusuyla birden fazla öğe seçin. Seçime eklemek için Ctrl veya Shift'i basılı tutun; tersine çevirmek için Alt.",
         "increaseFileViewGaps": "Dosya görünümü boşluklarını artır",
         "increaseFileViewGapsDescription": "Liste düzeninde yan dolgu ekler ve ızgara düzenindeki boşlukları artırarak hedeflemeyi kolaylaştırır."
+      },
+      "startupPage": {
+        "title": "Başlangıç sayfası",
+        "description": "Uygulama başladığında hangi sayfanın gösterileceğini seçin.",
+        "last": "Son sayfa"
       }
     },
     "actions": {
@@ -386,7 +391,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Son sekme kapatıldığında",
-        "createDefaultTab": "Varsayılan sekme oluştur",
+        "createDefaultTab": "Varsayılan dizinde sekme oluştur",
         "closeWindow": "Pencereyi kapat",
         "navigateToHomePage": "Ana sayfaya git"
       },
@@ -394,6 +399,13 @@
         "title": "Sekme görünümü",
         "description": "Gezgin sekmelerinin nasıl görüntüleneceğini özelleştirin.",
         "boldActiveTabTitle": "Etkin sekme metnini kalın yap"
+      },
+      "defaultDirectory": {
+        "title": "Varsayılan dizin",
+        "description": "Yeni sekmeler ve uygulama bir klasöre ihtiyaç duyup hiçbir yol belirtilmediğinde kullanılır.",
+        "userHome": "Kullanıcı klasörü",
+        "custom": "Özel klasör",
+        "customPath": "Klasör yolu"
       }
     },
     "globalSearch": {
@@ -482,7 +494,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu"
+    "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu",
+    "tabsWorkspaces": "sekmeler, çalışma alanları, kapat, son sekme, varsayılan sekme",
+    "defaultDirectory": "ana sayfa, locations, bu bilgisayar, sürücüler, varsayılan klasör, varsayılan dizin, yeni sekme, özel yol",
+    "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, pano, gezgin, son sayfa, geri yükle, sayfa"
   },
   "drag": {
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",

@@ -203,6 +203,11 @@
       "startupBehavior": "Comportamiento de inicio",
       "launchAppOnSystemLogin": "Iniciar aplicación al iniciar sesión en el sistema",
       "launchAppInHiddenState": "Iniciar aplicación en estado oculto",
+      "startupPage": {
+        "title": "Página de arranque",
+        "description": "Elige qué página mostrar al iniciar la aplicación.",
+        "last": "Última página"
+      },
       "decreaseZoomLevel": "Disminuir el nivel de zoom",
       "increaseZoomLevel": "Aumentar el nivel de zoom",
       "resetZoomLevel": "Restablecer nivel de zoom",
@@ -386,9 +391,16 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Cuando se cierra la última pestaña",
-        "createDefaultTab": "Crear pestaña predeterminada",
+        "createDefaultTab": "Crear una pestaña en el directorio predeterminado",
         "closeWindow": "Cerrar ventana",
         "navigateToHomePage": "Navegar a la página de inicio"
+      },
+      "defaultDirectory": {
+        "title": "Directorio predeterminado",
+        "description": "Se usa para pestañas nuevas y siempre que la aplicación necesite una carpeta y no se haya especificado ninguna.",
+        "userHome": "Carpeta de usuario",
+        "custom": "Carpeta personalizada",
+        "customPath": "Ruta de la carpeta"
       },
       "tabAppearance": {
         "title": "Apariencia de las pestañas",
@@ -472,6 +484,9 @@
     "navigator": "diseño, interfaz de usuario, navegador, divisores, títulos, clasificación, vista, diseño, lista, cuadrícula, elemento, archivo, directorio, desplazamiento, escala, resaltado, OCD",
     "shortcuts": "atajos",
     "tabAppearance": "pestañas, pestaña activa, negrita, texto",
+    "tabsWorkspaces": "pestañas, espacios de trabajo, cerrar, última pestaña, pestaña predeterminada",
+    "defaultDirectory": "inicio, locations, este equipo, equipo, unidades, carpeta predeterminada, directorio predeterminado, nueva pestaña, ruta personalizada",
+    "startupPage": "página de arranque, inicio, arranque, abrir al iniciar, página de inicio, dashboard, navigator, última página, restaurar, página",
     "globalSearch": "global, buscar, encontrar, buscar, filtrar, escanear",
     "stats": "estadísticas, datos, usuario, favoritos, etiquetas, historial, reciente, panel, almacenamiento",
     "driveDetection": "unidad, usb, almacenamiento, disco, dispositivo, detección, conexión",

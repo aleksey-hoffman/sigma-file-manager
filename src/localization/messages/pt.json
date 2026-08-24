@@ -219,6 +219,11 @@
         "enableBoxSelectionDescription": "Arraste em um espaço vazio para selecionar vários itens com uma caixa de seleção. Mantenha Ctrl ou Shift pressionado para adicionar à seleção; Alt para inverter.",
         "increaseFileViewGaps": "Aumentar espaços na visualização de arquivos",
         "increaseFileViewGapsDescription": "Adiciona preenchimento lateral na lista e aumenta os espaços na grade para facilitar a seleção."
+      },
+      "startupPage": {
+        "title": "Página de inicialização",
+        "description": "Escolha qual página mostrar ao iniciar o aplicativo.",
+        "last": "Última página"
       }
     },
     "actions": {
@@ -386,7 +391,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Quando a última aba for fechada",
-        "createDefaultTab": "Criar aba padrão",
+        "createDefaultTab": "Criar uma aba no diretório padrão",
         "closeWindow": "Fechar janela",
         "navigateToHomePage": "Navegar para a página inicial"
       },
@@ -394,6 +399,13 @@
         "title": "Aparência das guias",
         "description": "Personalize como as guias do navegador são exibidas.",
         "boldActiveTabTitle": "Texto da guia ativa em negrito"
+      },
+      "defaultDirectory": {
+        "title": "Diretório padrão",
+        "description": "Usado para novas abas e sempre que o aplicativo precisa de uma pasta e nenhuma foi especificada.",
+        "userHome": "Pasta do usuário",
+        "custom": "Pasta personalizada",
+        "customPath": "Caminho da pasta"
       }
     },
     "globalSearch": {
@@ -482,7 +494,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "visualização arquivos, caixa, seleção, arrastar, lista, grade, espaços, preenchimento"
+    "fileView": "visualização arquivos, caixa, seleção, arrastar, lista, grade, espaços, preenchimento",
+    "tabsWorkspaces": "abas, espaços de trabalho, fechar, última aba, aba padrão",
+    "defaultDirectory": "início, locations, este computador, unidades, pasta padrão, diretório padrão, nova aba, caminho personalizado",
+    "startupPage": "página de inicialização, início, abrir ao iniciar, página inicial, dashboard, navigator, última página, restaurar, página"
   },
   "drag": {
     "holdShiftToChangeMode": "Segure [Shift] para alterar os modos",

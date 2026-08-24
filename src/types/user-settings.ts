@@ -204,6 +204,8 @@ export type UserSettings = {
   tooltipDelayMs: number;
   launchAtStartup: boolean;
   launchAtStartupHidden: boolean;
+  startupPage: StartupPage;
+  lastRoute: LastRoute;
   performance: PerformanceSettings;
   appUpdates: AppUpdatesSettings;
   changelog: ChangelogSettings;
@@ -311,6 +313,28 @@ export type ListSortDirection = 'asc' | 'desc';
 
 export type LastTabCloseBehavior = 'createDefaultTab' | 'closeWindow' | 'navigateToHomePage';
 
+export type StartupPage = 'last' | 'home' | 'dashboard' | 'navigator';
+
+export type RestorableRouteName
+  = 'home'
+    | 'navigator'
+    | 'dashboard'
+    | 'settings'
+    | 'extensions'
+    | 'extension-page';
+
+export type LastRoute = {
+  name: RestorableRouteName;
+  fullPageId: string;
+};
+
+export type DefaultDirectoryKind = 'userHome' | 'locations' | 'custom';
+
+export type DefaultDirectorySettings = {
+  kind: DefaultDirectoryKind;
+  customPath: string;
+};
+
 export type SplitViewMode = 'split' | 'linked';
 
 export type NavigatorFolderLayoutName = 'list' | 'grid';
@@ -328,6 +352,7 @@ export type NavigatorFolderSettingsMap = Record<string, NavigatorFolderSettings>
 
 export type UserSettingsNavigator = {
   lastTabCloseBehavior: LastTabCloseBehavior;
+  defaultDirectory: DefaultDirectorySettings;
   boldActiveTabTitle: boolean;
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;

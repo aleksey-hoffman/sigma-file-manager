@@ -37,6 +37,7 @@ import {
   setupAuxiliaryWindowLifecycle,
 } from '@/utils/auxiliary-windows';
 import {
+  hasLaunchDirectoryCandidates,
   resolveLaunchTargetsFromArgs,
   type LaunchContext,
 } from '@/utils/launch-directories';
@@ -47,6 +48,11 @@ import { removeAppSplash } from '@/utils/app-splash';
 import { logInitTrace, traceInitStep } from '@/utils/init-trace';
 import { warmPathComparisonVolumeCache } from '@/utils/path-comparison-volume-cache';
 import { preloadNavigatorRoute } from '@/utils/open-navigator-directory';
+import {
+  persistLastRoute,
+  resolveStartupRouteLocation,
+  startLastRoutePersistence,
+} from '@/utils/last-route';
 
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 const STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS = 1500;
@@ -216,6 +222,24 @@ export function useInit() {
     return true;
   }
 
+  async function applyStartupPage(
+    launchContext: LaunchContext | undefined,
+    openedLaunchTargets: boolean,
+  ) {
+    if (openedLaunchTargets || hasLaunchDirectoryCandidates(launchContext)) {
+      return;
+    }
+
+    const startupRoute = resolveStartupRouteLocation(
+      userSettingsStore.userSettings.startupPage ?? 'home',
+      userSettingsStore.userSettings.lastRoute,
+    );
+
+    if (startupRoute) {
+      await router.push(startupRoute);
+    }
+  }
+
   async function registerAppLaunchArgsListener() {
     if (appLaunchArgsUnlisten || !isMainWebviewWindow()) {
       return;
@@ -327,6 +351,16 @@ export function useInit() {
         catch (absorbedShellError) {
           console.error('Failed to prepare absorbed shell launch targets:', absorbedShellError);
         }
+      }
+
+      await traceInitStep(
+        'applyStartupPage',
+        () => applyStartupPage(initialLaunchContext, openedInitialLaunchTargets),
+      );
+      startLastRoutePersistence(router);
+
+      if (openedInitialLaunchTargets || !hasLaunchDirectoryCandidates(initialLaunchContext)) {
+        await persistLastRoute(router.currentRoute.value);
       }
     }
 

@@ -40,6 +40,10 @@ vi.mock('@/stores/storage/user-settings', () => ({
 function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSettingsNavigator {
   return {
     lastTabCloseBehavior: 'createDefaultTab',
+    defaultDirectory: {
+      kind: 'userHome',
+      customPath: '',
+    },
     boldActiveTabTitle: false,
     splitViewMode: 'split',
     layout: {

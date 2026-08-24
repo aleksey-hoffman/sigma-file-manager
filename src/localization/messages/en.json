@@ -232,6 +232,11 @@
       "startupBehavior": "Startup behavior",
       "launchAppOnSystemLogin": "Launch app on system login",
       "launchAppInHiddenState": "Launch app in hidden state",
+      "startupPage": {
+        "title": "Startup page",
+        "description": "Choose which page to show when the app starts.",
+        "last": "Last page"
+      },
       "decreaseZoomLevel": "Decrease zoom level",
       "increaseZoomLevel": "Increase zoom level",
       "resetZoomLevel": "Reset zoom level",
@@ -415,9 +420,16 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "When last tab is closed",
-        "createDefaultTab": "Create default tab",
+        "createDefaultTab": "Create a tab at the default directory",
         "closeWindow": "Close window",
         "navigateToHomePage": "Navigate to home page"
+      },
+      "defaultDirectory": {
+        "title": "Default directory",
+        "description": "Used for new tabs and whenever the app needs a folder and none was specified.",
+        "userHome": "User Home",
+        "custom": "Custom folder",
+        "customPath": "Folder path"
       },
       "tabAppearance": {
         "title": "Tab appearance",
@@ -502,6 +514,9 @@
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
     "shortcuts": "shortcuts",
     "tabAppearance": "tabs, active tab, bold, text",
+    "tabsWorkspaces": "tabs, workspaces, close, last tab, default tab",
+    "defaultDirectory": "home, locations, this pc, computer, drives, default folder, default directory, new tab, custom path",
+    "startupPage": "startup page, startup, launch, open on launch, home, dashboard, navigator, last page, restore, page",
     "globalSearch": "global, search, find, look, filter, scan",
     "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",

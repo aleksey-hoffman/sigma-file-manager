@@ -203,6 +203,11 @@
       "startupBehavior": "Startverhalten",
       "launchAppOnSystemLogin": "App bei Systemanmeldung starten",
       "launchAppInHiddenState": "App im versteckten Zustand starten",
+      "startupPage": {
+        "title": "Seite beim Start",
+        "description": "Wählen Sie, welche Seite beim Start der App angezeigt wird.",
+        "last": "Letzte Seite"
+      },
       "decreaseZoomLevel": "Zoomstufe verringern",
       "increaseZoomLevel": "Zoomstufe erhöhen",
       "resetZoomLevel": "Zoomstufe zurücksetzen",
@@ -386,9 +391,16 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Wenn letzter Tab geschlossen wird",
-        "createDefaultTab": "Standard-Tab erstellen",
+        "createDefaultTab": "Tab im Standardverzeichnis erstellen",
         "closeWindow": "Fenster schließen",
         "navigateToHomePage": "Zur Startseite navigieren"
+      },
+      "defaultDirectory": {
+        "title": "Standardverzeichnis",
+        "description": "Wird für neue Tabs und immer dann verwendet, wenn die App einen Ordner braucht und keiner angegeben ist.",
+        "userHome": "Benutzerordner",
+        "custom": "Benutzerdefinierter Ordner",
+        "customPath": "Ordnerpfad"
       },
       "tabAppearance": {
         "title": "Tab-Darstellung",
@@ -472,6 +484,9 @@
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
     "shortcuts": "Abkürzungen",
     "tabAppearance": "Tabs, aktiver Tab, fett, Text",
+    "tabsWorkspaces": "Tabs, Arbeitsbereiche, schließen, letzter Tab, Standard-Tab",
+    "defaultDirectory": "Home, Locations, Arbeitsplatz, Computer, Laufwerke, Standardordner, Standardverzeichnis, neuer Tab, benutzerdefinierter Pfad",
+    "startupPage": "Seite beim Start, Start, Startseite, Dashboard, Navigator, letzte Seite, wiederherstellen, Seite",
     "globalSearch": "global, suchen, finden, suchen, filtern, scannen",
     "stats": "Statistiken, Daten, Benutzer, Favoriten, Tags, Verlauf, kürzlich, Dashboard, Speicher",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",

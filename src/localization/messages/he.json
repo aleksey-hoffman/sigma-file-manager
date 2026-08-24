@@ -248,6 +248,11 @@
         "enableBoxSelectionDescription": "גרור על שטח ריק כדי לבחור מספר פריטים עם תיבת בחירה. החזק Ctrl או Shift כדי להוסיף לבחירה; Alt כדי להפוך.",
         "increaseFileViewGaps": "הגדל רווחים בתצוגת קבצים",
         "increaseFileViewGapsDescription": "מוסיף ריווח צדדי בתצוגת רשימה ומגדיל רווחים בתצוגת רשת להקלה על הבחירה."
+      },
+      "startupPage": {
+        "title": "דף הפעלה",
+        "description": "בחרו איזה דף להציג בעת הפעלת היישום.",
+        "last": "העמוד האחרון"
       }
     },
     "actions": {
@@ -415,7 +420,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "כאשר הלשונית האחרונה נסגרת",
-        "createDefaultTab": "צור לשונית ברירת מחדל",
+        "createDefaultTab": "צור לשונית בתיקיית ברירת המחדל",
         "closeWindow": "סגור חלון",
         "navigateToHomePage": "נווט לדף הבית"
       },
@@ -423,6 +428,13 @@
         "title": "מראה הלשוניות",
         "description": "התאם את אופן הצגת לשוניות הניווט.",
         "boldActiveTabTitle": "טקסט מודגש בלשונית הפעילה"
+      },
+      "defaultDirectory": {
+        "title": "תיקיית ברירת מחדל",
+        "description": "משמש ללשוניות חדשות וכל אימת שהיישום צריך תיקייה ולא צוינה אחת.",
+        "userHome": "תיקיית המשתמש",
+        "custom": "תיקייה מותאמת",
+        "customPath": "נתיב התיקייה"
       }
     },
     "globalSearch": {
@@ -511,7 +523,10 @@
     "extensions": "תוספים, תוספות, הרחבות, תצורה, הגדרות",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "תצוגת קבצים, תיבה, בחירה, גרירה, רשימה, רשת, רווחים, padding"
+    "fileView": "תצוגת קבצים, תיבה, בחירה, גרירה, רשימה, רשת, רווחים, padding",
+    "tabsWorkspaces": "לשוניות, סביבות עבודה, סגור, לשונית אחרונה, לשונית ברירת מחדל",
+    "defaultDirectory": "בית, locations, המחשב הזה, כוננים, תיקיית ברירת מחדל, לשונית חדשה, נתיב מותאם",
+    "startupPage": "דף הפעלה, הפעלה, פתח בהפעלה, בית, לוח מחוונים, נווט, העמוד האחרון, שחזור, דף"
   },
   "drag": {
     "holdShiftToChangeMode": "החזק [Shift] כדי לשנות מצב",

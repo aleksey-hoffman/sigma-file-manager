@@ -219,6 +219,11 @@
         "enableBoxSelectionDescription": "Kéo trên vùng trống để chọn nhiều mục bằng khung chọn. Giữ Ctrl hoặc Shift để thêm vào vùng chọn; giữ Alt để đảo ngược.",
         "increaseFileViewGaps": "Tăng khoảng cách trong chế độ xem tệp",
         "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn."
+      },
+      "startupPage": {
+        "title": "Trang khởi động",
+        "description": "Chọn trang hiển thị khi ứng dụng khởi động.",
+        "last": "Trang gần nhất"
       }
     },
     "actions": {
@@ -386,7 +391,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Khi tab cuối cùng được đóng",
-        "createDefaultTab": "Tạo tab mặc định",
+        "createDefaultTab": "Tạo tab tại thư mục mặc định",
         "closeWindow": "Đóng cửa sổ",
         "navigateToHomePage": "Điều hướng đến trang chủ"
       },
@@ -394,6 +399,13 @@
         "title": "Giao diện tab",
         "description": "Tùy chỉnh cách hiển thị các tab trình điều hướng.",
         "boldActiveTabTitle": "In đậm văn bản tab đang hoạt động"
+      },
+      "defaultDirectory": {
+        "title": "Thư mục mặc định",
+        "description": "Dùng cho tab mới và khi ứng dụng cần một thư mục mà chưa được chỉ định.",
+        "userHome": "Thư mục nhà",
+        "custom": "Thư mục tùy chỉnh",
+        "customPath": "Đường dẫn thư mục"
       }
     },
     "globalSearch": {
@@ -482,7 +494,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm"
+    "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm",
+    "tabsWorkspaces": "tab, không gian làm việc, đóng, tab cuối, tab mặc định",
+    "defaultDirectory": "home, locations, máy tính, ổ đĩa, thư mục mặc định, tab mới, đường dẫn tùy chỉnh",
+    "startupPage": "trang khởi động, khởi động, mở khi khởi động, trang chủ, bảng điều khiển, navigator, trang gần nhất, khôi phục, trang"
   },
   "drag": {
     "holdShiftToChangeMode": "Giữ [Shift] để thay đổi chế độ",

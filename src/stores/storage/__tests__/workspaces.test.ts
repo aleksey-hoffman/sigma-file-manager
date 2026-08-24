@@ -17,6 +17,7 @@ const {
   routerPushMock,
   toastCustomMock,
   updateInfoPanelMock,
+  userSettingsMock,
 } = vi.hoisted(() => ({
   closeWindowMock: vi.fn(),
   invokeMock: vi.fn(),
@@ -25,6 +26,15 @@ const {
   routerPushMock: vi.fn(),
   toastCustomMock: vi.fn(),
   updateInfoPanelMock: vi.fn(),
+  userSettingsMock: {
+    navigator: {
+      lastTabCloseBehavior: 'createDefaultTab' as 'createDefaultTab' | 'closeWindow' | 'navigateToHomePage',
+      defaultDirectory: {
+        kind: 'userHome' as 'userHome' | 'locations' | 'custom',
+        customPath: '',
+      },
+    },
+  },
 }));
 
 vi.mock('@tauri-apps/api/core', () => ({
@@ -89,11 +99,7 @@ vi.mock('@/stores/storage/user-paths', () => ({
 
 vi.mock('@/stores/storage/user-settings', () => ({
   useUserSettingsStore: () => ({
-    userSettings: {
-      navigator: {
-        lastTabCloseBehavior: 'createDefaultTab',
-      },
-    },
+    userSettings: userSettingsMock,
   }),
 }));
 
@@ -109,6 +115,11 @@ describe('workspaces storage duplicate tabs', () => {
     routerPushMock.mockReset();
     toastCustomMock.mockReset();
     updateInfoPanelMock.mockReset();
+    userSettingsMock.navigator.lastTabCloseBehavior = 'createDefaultTab';
+    userSettingsMock.navigator.defaultDirectory = {
+      kind: 'userHome',
+      customPath: '',
+    };
   });
 
   it('closes duplicate single-tab groups for matching Windows paths and keeps the leftmost tab', async () => {
@@ -670,6 +681,110 @@ describe('workspaces storage duplicate tabs', () => {
 
     expect(dirEntry).toBeNull();
   });
+
+  it('opens a pathless new tab at the configured default directory', async () => {
+    mockDirectoryReadResponses();
+    userSettingsMock.navigator.defaultDirectory = {
+      kind: 'locations',
+      customPath: '',
+    };
+
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [createTab('existing-tab', 'C:/Users/aleks/Projects')],
+      ]),
+    ];
+
+    await workspacesStore.addNewTabGroup();
+
+    const newTab = workspacesStore.currentWorkspace?.tabGroups.at(-1)?.[0];
+    expect(newTab?.path).toBe('sfm://locations');
+  });
+
+  it('opens a pathless new tab at a custom default directory that exists', async () => {
+    mockDirectoryReadResponses({ existingPaths: ['D:/Work'] });
+    userSettingsMock.navigator.defaultDirectory = {
+      kind: 'custom',
+      customPath: 'D:/Work',
+    };
+
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [createTab('existing-tab', 'C:/Users/aleks/Projects')],
+      ]),
+    ];
+
+    await workspacesStore.addNewTabGroup();
+
+    const newTab = workspacesStore.currentWorkspace?.tabGroups.at(-1)?.[0];
+    expect(newTab?.path).toBe('D:/Work');
+  });
+
+  it('falls back to user home when the custom default directory is missing', async () => {
+    mockDirectoryReadResponses({ existingPaths: [] });
+    userSettingsMock.navigator.defaultDirectory = {
+      kind: 'custom',
+      customPath: 'D:/Missing',
+    };
+
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [createTab('existing-tab', 'C:/Users/aleks/Projects')],
+      ]),
+    ];
+
+    await workspacesStore.addNewTabGroup();
+
+    const newTab = workspacesStore.currentWorkspace?.tabGroups.at(-1)?.[0];
+    expect(newTab?.path).toBe('C:/Users/aleks');
+  });
+
+  it('redirects deleted tab paths to the configured default directory', async () => {
+    mockDirectoryReadResponses();
+    userSettingsMock.navigator.defaultDirectory = {
+      kind: 'locations',
+      customPath: '',
+    };
+
+    const firstTab = createTab('first-tab', 'C:/Users/aleks/First');
+    const deletedTab = createTab('deleted-tab', 'C:/Users/aleks/Deleted/Child');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [firstTab],
+        [deletedTab],
+      ]),
+    ];
+
+    await workspacesStore.closeTabGroup([deletedTab]);
+    workspacesStore.handlePathsDeleted(['C:/Users/aleks/Deleted']);
+
+    expect(workspacesStore.closedTabGroupHistory[0]?.tabGroup[0]?.path).toBe('sfm://locations');
+  });
+
+  it('creates the last-tab fallback at the configured default directory', async () => {
+    mockDirectoryReadResponses({ existingPaths: ['D:/Work'] });
+    userSettingsMock.navigator.defaultDirectory = {
+      kind: 'custom',
+      customPath: 'D:/Work',
+    };
+
+    const onlyTab = createTab('only-tab', 'C:/Users/aleks/Projects');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [onlyTab],
+      ]),
+    ];
+
+    await workspacesStore.closeAllTabGroups();
+
+    expect(workspacesStore.currentWorkspace?.tabGroups).toHaveLength(1);
+    expect(workspacesStore.currentTabGroup?.[0]?.path).toBe('D:/Work');
+  });
 });
 
 function createWorkspace(tabGroups: TabGroup[]): Workspace {
@@ -740,8 +855,16 @@ function createDirContents(path: string, entryPath: string): DirContents {
   };
 }
 
-function mockDirectoryReadResponses() {
+function mockDirectoryReadResponses(options?: { existingPaths?: string[] }) {
   invokeMock.mockImplementation((command: string, payload?: { path?: string }) => {
+    if (command === 'path_exists') {
+      if (!options?.existingPaths) {
+        return Promise.resolve(true);
+      }
+
+      return Promise.resolve(options.existingPaths.includes(payload?.path ?? ''));
+    }
+
     if (command === 'read_dir_with_timeout') {
       return Promise.resolve({
         path: payload?.path ?? '',

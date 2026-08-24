@@ -248,6 +248,11 @@
         "enableBoxSelectionDescription": "خالی جگہ پر گھسیٹ کر انتخاب باکس سے متعدد آئٹمز منتخب کریں۔ انتخاب میں شامل کرنے کے لیے Ctrl یا Shift دبائے رکھیں؛ الٹنے کے لیے Alt۔",
         "increaseFileViewGaps": "فائل منظر کے فاصلے بڑھائیں",
         "increaseFileViewGapsDescription": "فہرست لے آؤٹ میں سائیڈ padding شامل کرتا ہے اور گرڈ لے آؤٹ میں فاصلے بڑھا کر نشانہ لگانا آسان بناتا ہے۔"
+      },
+      "startupPage": {
+        "title": "اسٹارٹ اپ صفحہ",
+        "description": "منتخب کریں کہ ایپ شروع ہونے پر کون سا صفحہ دکھایا جائے۔",
+        "last": "آخری صفحہ"
       }
     },
     "actions": {
@@ -415,7 +420,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "جب آخری ٹیب بند ہو",
-        "createDefaultTab": "ڈیفالٹ ٹیب بنائیں",
+        "createDefaultTab": "ڈیفالٹ فولڈر میں ٹیب بنائیں",
         "closeWindow": "ونڈو بند کریں",
         "navigateToHomePage": "ہوم صفحے پر جائیں"
       },
@@ -423,6 +428,13 @@
         "title": "ٹیب کی ظاہری شکل",
         "description": "نیویگیٹر ٹیبز کے دکھنے کا طریقہ حسب ضرورت بنائیں۔",
         "boldActiveTabTitle": "فعال ٹیب کا متن بولڈ کریں"
+      },
+      "defaultDirectory": {
+        "title": "ڈیفالٹ فولڈر",
+        "description": "نئے ٹیبز اور جب ایپ کو فولڈر چاہیے اور کوئی راستہ نہ دیا گیا ہو تب استعمال ہوتا ہے۔",
+        "userHome": "صارف ہوم",
+        "custom": "حسب ضرورت فولڈر",
+        "customPath": "فولڈر کا راستہ"
       }
     },
     "globalSearch": {
@@ -511,7 +523,10 @@
     "extensions": "ایکسٹینشن, plugins, addons",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding"
+    "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding",
+    "tabsWorkspaces": "ٹیب, ورک اسپیس, بند, آخری ٹیب, ڈیفالٹ ٹیب",
+    "defaultDirectory": "ہوم, locations, یہ پی سی, کمپیوٹر, ڈرائیو, ڈیفالٹ فولڈر, نیا ٹیب, حسب ضرورت راستہ",
+    "startupPage": "اسٹارٹ اپ صفحہ, اسٹارٹ اپ, لانچ پر کھولیں, ہوم, ڈیش بورڈ, نیویگیٹر, آخری صفحہ, بحال, صفحہ"
   },
   "drag": {
     "holdShiftToChangeMode": "موڈ بدلنے کے لیے [Shift] دبائے رکھیں",

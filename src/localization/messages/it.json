@@ -219,6 +219,11 @@
         "enableBoxSelectionDescription": "Trascina su uno spazio vuoto per selezionare più elementi con un riquadro di selezione. Tieni premuto Ctrl o Maiusc per aggiungere alla selezione; Alt per invertire.",
         "increaseFileViewGaps": "Aumenta gli spazi nella vista file",
         "increaseFileViewGapsDescription": "Aggiunge padding laterale nella vista elenco e aumenta le distanze nella vista griglia per una selezione più facile."
+      },
+      "startupPage": {
+        "title": "Pagina di avvio",
+        "description": "Scegli quale pagina mostrare all'avvio dell'app.",
+        "last": "Ultima pagina"
       }
     },
     "actions": {
@@ -386,7 +391,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "Quando l'ultima scheda viene chiusa",
-        "createDefaultTab": "Crea scheda predefinita",
+        "createDefaultTab": "Crea una scheda nella cartella predefinita",
         "closeWindow": "Chiudi finestra",
         "navigateToHomePage": "Vai alla pagina iniziale"
       },
@@ -394,6 +399,13 @@
         "title": "Aspetto delle schede",
         "description": "Personalizza la visualizzazione delle schede del navigatore.",
         "boldActiveTabTitle": "Testo della scheda attiva in grassetto"
+      },
+      "defaultDirectory": {
+        "title": "Cartella predefinita",
+        "description": "Usata per le nuove schede e ogni volta che l'app ha bisogno di una cartella e non ne è stata specificata una.",
+        "userHome": "Cartella utente",
+        "custom": "Cartella personalizzata",
+        "customPath": "Percorso della cartella"
       }
     },
     "globalSearch": {
@@ -482,7 +494,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding"
+    "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding",
+    "tabsWorkspaces": "schede, spazi di lavoro, chiudi, ultima scheda, scheda predefinita",
+    "defaultDirectory": "home, locations, questo PC, computer, unità, cartella predefinita, nuova scheda, percorso personalizzato",
+    "startupPage": "pagina di avvio, avvio, apri all'avvio, home, dashboard, navigator, ultima pagina, ripristina, pagina"
   },
   "drag": {
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",

@@ -88,6 +88,10 @@ export function getLaunchDirectoryCandidates(context: LaunchContext): string[] {
   return candidates;
 }
 
+export function hasLaunchDirectoryCandidates(context: LaunchContext | undefined): boolean {
+  return context !== undefined && getLaunchDirectoryCandidates(context).length > 0;
+}
+
 export async function resolvePathLaunchTarget(
   rawPath: string,
   getDirEntry: (path: string) => Promise<DirEntry | null>,

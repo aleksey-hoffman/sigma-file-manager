@@ -219,6 +219,11 @@
         "enableBoxSelectionDescription": "空白部分をドラッグして、選択ボックスで複数の項目を選択します。Ctrl または Shift を押しながらで追加、Alt を押しながらで反転します。",
         "increaseFileViewGaps": "ファイルビューの間隔を広げる",
         "increaseFileViewGapsDescription": "リスト表示の左右余白を追加し、グリッド表示の間隔を広げて選択しやすくします。"
+      },
+      "startupPage": {
+        "title": "起動ページ",
+        "description": "アプリ起動時に表示するページを選びます。",
+        "last": "最後のページ"
       }
     },
     "actions": {
@@ -386,7 +391,7 @@
     "tabs": {
       "lastTabCloseBehavior": {
         "title": "最後のタブを閉じたとき",
-        "createDefaultTab": "デフォルトタブを作成",
+        "createDefaultTab": "デフォルトディレクトリにタブを作成",
         "closeWindow": "ウィンドウを閉じる",
         "navigateToHomePage": "ホームページに移動"
       },
@@ -394,6 +399,13 @@
         "title": "タブの外観",
         "description": "ナビゲーターのタブの表示方法をカスタマイズします。",
         "boldActiveTabTitle": "アクティブなタブのテキストを太字にする"
+      },
+      "defaultDirectory": {
+        "title": "デフォルトディレクトリ",
+        "description": "新しいタブと、フォルダーが指定されていないときに使用されます。",
+        "userHome": "ユーザーホーム",
+        "custom": "カスタムフォルダー",
+        "customPath": "フォルダーのパス"
       }
     },
     "globalSearch": {
@@ -482,7 +494,10 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白"
+    "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白",
+    "tabsWorkspaces": "タブ, ワークスペース, 閉じる, 最後のタブ, デフォルトタブ",
+    "defaultDirectory": "ホーム, locations, このPC, コンピュータ, ドライブ, デフォルトフォルダー, デフォルトディレクトリ, 新しいタブ, カスタムパス",
+    "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, ダッシュボード, ナビゲーター, 最後のページ, 復元, ページ"
   },
   "drag": {
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",
