@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { HardDriveIcon, NetworkIcon, UsbIcon, UnplugIcon } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { openNavigatorPath } from '@/utils/open-navigator-directory';
+import { openNavigatorPath, openNavigatorPathInNewTab } from '@/utils/open-navigator-directory';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import { getPathDisplayValue } from '@/utils/normalize-path';
@@ -73,23 +73,33 @@ const driveIcon = computed(() => {
   return props.drive.is_removable ? UsbIcon : HardDriveIcon;
 });
 
-async function handleClick() {
-  if (!props.drive.is_mounted) {
-    await mountAndNavigate();
+function handleMouseDown(event: MouseEvent) {
+  if (event.button !== 1) {
     return;
   }
 
-  await navigateToDrive(props.drive.path);
+  event.preventDefault();
+  event.stopPropagation();
+  void openDrive({ newTab: true });
 }
 
-async function mountAndNavigate() {
+async function openDrive(options?: { newTab?: boolean }) {
+  if (!props.drive.is_mounted) {
+    await mountAndNavigate(options);
+    return;
+  }
+
+  navigateToDrive(props.drive.path, options);
+}
+
+async function mountAndNavigate(options?: { newTab?: boolean }) {
   isMounting.value = true;
 
   try {
     const mountPoint = await invoke<string>('mount_drive', { devicePath: props.drive.device_path });
 
     if (mountPoint) {
-      await navigateToDrive(mountPoint);
+      navigateToDrive(mountPoint, options);
     }
   }
   catch (mountError) {
@@ -100,7 +110,12 @@ async function mountAndNavigate() {
   }
 }
 
-function navigateToDrive(drivePath: string) {
+function navigateToDrive(drivePath: string, options?: { newTab?: boolean }) {
+  if (options?.newTab) {
+    openNavigatorPathInNewTab(router, drivePath);
+    return;
+  }
+
   openNavigatorPath(router, drivePath);
 }
 
@@ -127,7 +142,8 @@ async function handleUnmount(clickEvent: MouseEvent) {
       'drive-card--circular': isCircular && showIndicator && hasSpaceData && drive.is_mounted,
       'drive-card--unmounted': !drive.is_mounted,
     }"
-    @click="handleClick"
+    @click="openDrive()"
+    @mousedown="handleMouseDown"
   >
     <EdgeIndicator
       v-if="drive.is_mounted && hasSpaceData && showIndicator && isLinearVertical"
@@ -198,6 +214,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
       class="drive-card__eject"
       :title="t('unmount')"
       @click="handleUnmount"
+      @mousedown.stop
     >
       <UnplugIcon :size="14" />
     </button>

@@ -85,6 +85,14 @@ async function applyLaunchTarget(
   }
 }
 
+export function openNavigatorPathInNewTab(router: Router, path: string): void {
+  ensureNavigatorRoute(router);
+
+  runNavigatorOpenTask(async () => {
+    await useWorkspacesStore().openNewTabGroup(path, { activate: false });
+  });
+}
+
 export function openNavigatorPath(
   router: Router,
   path: string,

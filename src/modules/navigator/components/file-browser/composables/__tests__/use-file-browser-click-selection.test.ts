@@ -274,11 +274,26 @@ describe('useFileBrowserClickSelection', () => {
 
   it('extends a Shift range from the original anchor', () => {
     const entries = [
-      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
-      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
-      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
-      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
-      createEntry({ path: 'C:/Dir/e.txt', name: 'e.txt' }),
+      createEntry({
+        path: 'C:/Dir/a.txt',
+        name: 'a.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/b.txt',
+        name: 'b.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/c.txt',
+        name: 'c.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/d.txt',
+        name: 'd.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/e.txt',
+        name: 'e.txt',
+      }),
     ];
     const harness = createClickSelectionHarness({ entries });
 
@@ -300,11 +315,26 @@ describe('useFileBrowserClickSelection', () => {
 
   it('replaces a previous selection when Shift selects a range without Ctrl', () => {
     const entries = [
-      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
-      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
-      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
-      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
-      createEntry({ path: 'C:/Dir/e.txt', name: 'e.txt' }),
+      createEntry({
+        path: 'C:/Dir/a.txt',
+        name: 'a.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/b.txt',
+        name: 'b.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/c.txt',
+        name: 'c.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/d.txt',
+        name: 'd.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/e.txt',
+        name: 'e.txt',
+      }),
     ];
     const harness = createClickSelectionHarness({ entries });
 
@@ -324,10 +354,22 @@ describe('useFileBrowserClickSelection', () => {
 
   it('keeps the first Shift range when Ctrl+Shift extends from the same anchor', () => {
     const entries = [
-      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
-      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
-      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
-      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+      createEntry({
+        path: 'C:/Dir/a.txt',
+        name: 'a.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/b.txt',
+        name: 'b.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/c.txt',
+        name: 'c.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/d.txt',
+        name: 'd.txt',
+      }),
     ];
     const harness = createClickSelectionHarness({ entries });
 
@@ -354,12 +396,30 @@ describe('useFileBrowserClickSelection', () => {
 
   it('adds a second range with Ctrl+Shift without clearing the first range', () => {
     const entries = [
-      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
-      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
-      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
-      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
-      createEntry({ path: 'C:/Dir/e.txt', name: 'e.txt' }),
-      createEntry({ path: 'C:/Dir/f.txt', name: 'f.txt' }),
+      createEntry({
+        path: 'C:/Dir/a.txt',
+        name: 'a.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/b.txt',
+        name: 'b.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/c.txt',
+        name: 'c.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/d.txt',
+        name: 'd.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/e.txt',
+        name: 'e.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/f.txt',
+        name: 'f.txt',
+      }),
     ];
     const harness = createClickSelectionHarness({ entries });
 
@@ -389,10 +449,22 @@ describe('useFileBrowserClickSelection', () => {
 
   it('adds a second range with Meta+Shift the same way as Ctrl+Shift', () => {
     const entries = [
-      createEntry({ path: 'C:/Dir/a.txt', name: 'a.txt' }),
-      createEntry({ path: 'C:/Dir/b.txt', name: 'b.txt' }),
-      createEntry({ path: 'C:/Dir/c.txt', name: 'c.txt' }),
-      createEntry({ path: 'C:/Dir/d.txt', name: 'd.txt' }),
+      createEntry({
+        path: 'C:/Dir/a.txt',
+        name: 'a.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/b.txt',
+        name: 'b.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/c.txt',
+        name: 'c.txt',
+      }),
+      createEntry({
+        path: 'C:/Dir/d.txt',
+        name: 'd.txt',
+      }),
     ];
     const harness = createClickSelectionHarness({ entries });
 

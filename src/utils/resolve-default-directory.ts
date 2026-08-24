@@ -29,6 +29,7 @@ export function resolveDefaultDirectoryPath(input: ResolveDefaultDirectoryInput)
   switch (kind) {
     case 'locations':
       return LOCATIONS_VIRTUAL_PATH;
+
     case 'custom': {
       const customPath = input.customPath?.trim() ?? '';
 
@@ -38,8 +39,10 @@ export function resolveDefaultDirectoryPath(input: ResolveDefaultDirectoryInput)
 
       return normalizePath(customPath);
     }
+
     case 'userHome':
       return input.homeDir;
+
     default: {
       const exhaustiveCheck: never = kind;
       void exhaustiveCheck;

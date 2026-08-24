@@ -87,6 +87,7 @@ export function resolveStartupRouteLocation(
       return { name: 'dashboard' };
     case 'navigator':
       return { name: 'navigator' };
+
     default: {
       const exhaustiveCheck: never = startupPage;
       return exhaustiveCheck;

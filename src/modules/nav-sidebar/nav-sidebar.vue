@@ -14,7 +14,7 @@ import {
   useShortcutsStore,
 } from '@/stores/runtime/shortcuts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { openNavigatorPath } from '@/utils/open-navigator-directory';
+import { openNavigatorPath, openNavigatorPathInNewTab } from '@/utils/open-navigator-directory';
 import { useDrives } from '@/modules/home/composables';
 import { DriveCard } from '@/modules/home/components';
 import { getLucideIcon } from '@/utils/lucide-icons';
@@ -92,6 +92,16 @@ function getExtensionPageShortcutLabel(pageId: string): string {
 
 function openDrive(path: string) {
   openNavigatorPath(router, path);
+}
+
+function handleDriveMouseDown(event: MouseEvent, path: string) {
+  if (event.button !== 1) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  openNavigatorPathInNewTab(router, path);
 }
 
 function getDriveIcon(drive: {
@@ -244,6 +254,7 @@ function getDriveIcon(drive: {
             class="nav-sidebar-drive"
             size="icon"
             @click="openDrive(drive.path)"
+            @mousedown="handleDriveMouseDown($event, drive.path)"
           >
             <UbuntuWslIcon
               v-if="drive.drive_type === 'WSL'"

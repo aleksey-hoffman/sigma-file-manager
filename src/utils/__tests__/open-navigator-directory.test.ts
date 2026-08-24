@@ -34,7 +34,7 @@ vi.mock('@/router/routes', () => ({
   loadNavigatorRoute: vi.fn(async () => ({})),
 }));
 
-import { openNavigatorPath, preloadNavigatorRoute } from '@/utils/open-navigator-directory';
+import { openNavigatorPath, openNavigatorPathInNewTab, preloadNavigatorRoute } from '@/utils/open-navigator-directory';
 import { loadNavigatorRoute } from '@/router/routes';
 
 function createRouter(routeName: string | symbol | null | undefined): Router {
@@ -150,5 +150,38 @@ describe('openNavigatorPath', () => {
 
     expect(router.push).not.toHaveBeenCalled();
     expect(openNewTabGroupMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('openNavigatorPathInNewTab', () => {
+  beforeEach(() => {
+    openNewTabGroupMock.mockReset().mockResolvedValue(undefined);
+    openPathInCurrentTabMock.mockReset().mockResolvedValue(undefined);
+  });
+
+  it('opens a background tab group and navigates to navigator', async () => {
+    const router = createRouter('home');
+
+    openNavigatorPathInNewTab(router, 'D:/');
+
+    expect(router.push).toHaveBeenCalledWith({ name: 'navigator' });
+
+    await vi.waitFor(() => {
+      expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/', { activate: false });
+    });
+
+    expect(openPathInCurrentTabMock).not.toHaveBeenCalled();
+  });
+
+  it('opens a background tab group without navigating when already on navigator', async () => {
+    const router = createRouter('navigator');
+
+    openNavigatorPathInNewTab(router, 'D:/');
+
+    expect(router.push).not.toHaveBeenCalled();
+
+    await vi.waitFor(() => {
+      expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/', { activate: false });
+    });
   });
 });
