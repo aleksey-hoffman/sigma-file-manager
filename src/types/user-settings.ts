@@ -175,6 +175,8 @@ export type ClipboardSettings = {
   showToolbarForExternalPaths: boolean;
 };
 
+export type QuickAccessSectionId = 'favorites' | 'tagged';
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -202,6 +204,7 @@ export type UserSettings = {
   focusWindowOnDriveConnected: boolean;
   preventDropdownCloseFocusReturn: boolean;
   quickAccessOnHover: boolean;
+  quickAccessSectionOrder: QuickAccessSectionId[];
   tooltipDelayMs: number;
   launchAtStartup: boolean;
   launchAtStartupHidden: boolean;

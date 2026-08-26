@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { Container, Draggable, type DropResult } from 'vue3-smooth-dnd';
+import { applyDropResult } from '@/utils/reorder-matching-items';
 
 interface Props<T> {
   items: T[];
@@ -27,28 +28,7 @@ function getItemGhostParent() {
 }
 
 function onDrop(dropResult: DropResult) {
-  emit('set', getUpdatedList(dropResult));
-}
-
-function getUpdatedList(dropResult: DropResult) {
-  const { removedIndex, addedIndex, payload } = dropResult;
-
-  if (removedIndex === null && addedIndex === null) {
-    return props.items;
-  }
-
-  const result = [...props.items];
-  let itemToAdd = payload;
-
-  if (removedIndex !== null) {
-    itemToAdd = result.splice(removedIndex, 1)[0];
-  }
-
-  if (addedIndex !== null) {
-    result.splice(addedIndex, 0, itemToAdd);
-  }
-
-  return result;
+  emit('set', applyDropResult(props.items, dropResult));
 }
 </script>
 

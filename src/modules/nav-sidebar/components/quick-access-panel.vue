@@ -14,33 +14,32 @@ const tagsOpenState = ref<boolean | null>(null);
 import { computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  StarIcon,
-  TagIcon,
-} from '@lucide/vue';
-import QuickAccessItemIcon from './quick-access-item-icon.vue';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { StarIcon, TagIcon } from '@lucide/vue';
+import QuickAccessEntry from './quick-access-entry.vue';
+import QuickAccessSection from './quick-access-section.vue';
+import { SortableList } from '@/components/sortable-list';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DirEntryInteractive } from '@/components/dir-entry-interactive';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
+import type { QuickAccessSectionId } from '@/types/user-settings';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
-import { getPathDisplayName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
+import { haveSameKeyOrder, reorderMatchingItems } from '@/utils/reorder-matching-items';
+import { normalizeQuickAccessSectionOrder } from '../utils/quick-access-section-order';
 
 const { t } = useI18n();
 const router = useRouter();
+const userSettingsStore = useUserSettingsStore();
 const userStatsStore = useUserStatsStore();
 const workspacesStore = useWorkspacesStore();
+const emit = defineEmits<{
+  'drag-start': [];
+  'drag-end': [];
+}>();
 
 const panelRef = ref<HTMLElement | null>(null);
 let dropContainerId: number | null = null;
@@ -95,18 +94,21 @@ const hasTaggedSectionContent = computed(() => {
 
 const favoritesOpen = computed({
   get: () => favoritesOpenState.value ?? favoriteItems.value.length > 0,
-  set: (value: boolean) => { favoritesOpenState.value = value; },
+  set: (value: boolean) => {
+    favoritesOpenState.value = value;
+  },
 });
 
 const tagsOpen = computed({
   get: () => tagsOpenState.value ?? totalTaggedItemCount.value > 0,
-  set: (value: boolean) => { tagsOpenState.value = value; },
+  set: (value: boolean) => {
+    tagsOpenState.value = value;
+  },
 });
 
-function getItemName(path: string): string {
-  if (!path) return '';
-  return getPathDisplayName(path, t) || path;
-}
+const sectionOrder = computed(() => {
+  return normalizeQuickAccessSectionOrder(userSettingsStore.userSettings.quickAccessSectionOrder);
+});
 
 function isFavoriteFile(item: FavoriteItem): boolean {
   if (isVirtualLocationPath(item.path)) {
@@ -132,6 +134,68 @@ function openFavoriteItem(item: FavoriteItem) {
 function openTaggedItem(item: TaggedItem) {
   openItem(item.path, item.isFile);
 }
+
+function getSectionKey(sectionId: QuickAccessSectionId): string {
+  return sectionId;
+}
+
+function getItemKey(item: FavoriteItem | TaggedItem): string {
+  return item.path;
+}
+
+function getFavoriteEntryProps(item: FavoriteItem) {
+  const isFile = isFavoriteFile(item);
+
+  return {
+    path: item.path,
+    isFile,
+    isCurrentDirectoryContext: isCurrentDirectoryItem(item.path, isFile),
+  };
+}
+
+function getTaggedEntryProps(item: TaggedItem) {
+  return {
+    path: item.path,
+    isFile: item.isFile,
+    isCurrentDirectoryContext: isCurrentDirectoryItem(item.path, item.isFile),
+  };
+}
+
+function handleItemDragEnd() {
+  function swallowClick(clickEvent: MouseEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+    window.removeEventListener('click', swallowClick, true);
+  }
+
+  window.addEventListener('click', swallowClick, true);
+  window.setTimeout(() => {
+    window.removeEventListener('click', swallowClick, true);
+  }, 0);
+  emit('drag-end');
+}
+
+function handleSectionsReorder(nextItems: QuickAccessSectionId[]) {
+  const nextOrder = normalizeQuickAccessSectionOrder(nextItems);
+
+  if (haveSameKeyOrder(sectionOrder.value, nextOrder, getSectionKey)) {
+    return;
+  }
+
+  userSettingsStore.set('quickAccessSectionOrder', nextOrder);
+}
+
+function handleFavoritesReorder(nextItems: FavoriteItem[]) {
+  userStatsStore.setFavorites(nextItems);
+}
+
+function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
+  userStatsStore.setTaggedItems(reorderMatchingItems(
+    taggedItems.value,
+    nextItems,
+    item => item.path,
+  ));
+}
 </script>
 
 <template>
@@ -145,177 +209,105 @@ function openTaggedItem(item: TaggedItem) {
 
     <ScrollArea class="quick-access-panel__scroll">
       <div class="quick-access-panel__content">
-        <Collapsible
-          v-model:open="favoritesOpen"
-          class="quick-access-panel__section"
+        <SortableList
+          class="quick-access-panel__sections"
+          :items="sectionOrder"
+          :get-key="getSectionKey"
+          handle-selector=".quick-access-panel__section-drag-handle"
+          @set="handleSectionsReorder"
+          @drag-start="emit('drag-start')"
+          @drag-end="emit('drag-end')"
         >
-          <CollapsibleTrigger
-            class="quick-access-panel__section-trigger"
-          >
-            <button
-              type="button"
-              class="quick-access-panel__section-header"
+          <template #item="{ item: sectionId }">
+            <QuickAccessSection
+              v-if="sectionId === 'favorites'"
+              v-model:open="favoritesOpen"
+              :icon="StarIcon"
+              :title="t('quickAccess.favorites')"
+              :count="favoriteItems.length"
+              :empty-text="t('quickAccess.emptyFavorites')"
+              :is-empty="favoriteItems.length === 0"
             >
-              <ChevronDownIcon
-                v-if="favoritesOpen"
-                :size="14"
-                class="quick-access-panel__chevron"
-              />
-              <ChevronRightIcon
-                v-else
-                :size="14"
-                class="quick-access-panel__chevron"
-              />
-              <StarIcon
-                :size="14"
-                class="quick-access-panel__section-icon"
-              />
-              <span class="quick-access-panel__section-title">{{ t('quickAccess.favorites') }}</span>
-              <span
-                v-if="favoriteItems.length > 0"
-                class="quick-access-panel__badge"
+              <SortableList
+                :items="favoriteItems"
+                :get-key="getItemKey"
+                @set="handleFavoritesReorder"
+                @drag-start="emit('drag-start')"
+                @drag-end="handleItemDragEnd"
               >
-                {{ favoriteItems.length }}
-              </span>
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent class="quick-access-panel__section-content">
-            <div
-              class="quick-access-panel__empty"
-              v-if="favoriteItems.length === 0"
-            >
-              {{ t('quickAccess.emptyFavorites') }}
-            </div>
-            <DirEntryInteractive
-              v-for="item in favoriteItems"
-              :key="item.path"
-              :path="item.path"
-              :is-file="isFavoriteFile(item)"
-              :is-current-directory-context="isCurrentDirectoryItem(item.path, isFavoriteFile(item))"
-            >
-              <button
-                type="button"
-                class="quick-access-panel__item"
-                @click="openFavoriteItem(item)"
-              >
-                <QuickAccessItemIcon
-                  :path="item.path"
-                  :is-file="isFavoriteFile(item)"
-                  :size="14"
-                />
-                <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
-              </button>
-            </DirEntryInteractive>
-          </CollapsibleContent>
-        </Collapsible>
+                <template #item="{ item }">
+                  <QuickAccessEntry
+                    v-bind="getFavoriteEntryProps(item)"
+                    @open="openFavoriteItem(item)"
+                  />
+                </template>
+              </SortableList>
+            </QuickAccessSection>
 
-        <Collapsible
-          v-model:open="tagsOpen"
-          class="quick-access-panel__section"
-        >
-          <CollapsibleTrigger
-            class="quick-access-panel__section-trigger"
-          >
-            <button
-              type="button"
-              class="quick-access-panel__section-header"
+            <QuickAccessSection
+              v-else-if="sectionId === 'tagged'"
+              v-model:open="tagsOpen"
+              :icon="TagIcon"
+              :title="t('quickAccess.tagged')"
+              :count="totalTaggedItemCount"
+              :empty-text="t('quickAccess.emptyTagged')"
+              :is-empty="!hasTaggedSectionContent"
             >
-              <ChevronDownIcon
-                v-if="tagsOpen"
-                :size="14"
-                class="quick-access-panel__chevron"
-              />
-              <ChevronRightIcon
-                v-else
-                :size="14"
-                class="quick-access-panel__chevron"
-              />
-              <TagIcon
-                :size="14"
-                class="quick-access-panel__section-icon"
-              />
-              <span class="quick-access-panel__section-title">{{ t('quickAccess.tagged') }}</span>
-              <span
-                v-if="totalTaggedItemCount > 0"
-                class="quick-access-panel__badge"
+              <div
+                v-for="group in tagGroups"
+                :key="group.tag.id"
+                class="quick-access-panel__tag-group"
               >
-                {{ totalTaggedItemCount }}
-              </span>
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent class="quick-access-panel__section-content">
-            <div
-              class="quick-access-panel__empty"
-              v-if="!hasTaggedSectionContent"
-            >
-              {{ t('quickAccess.emptyTagged') }}
-            </div>
-            <div
-              v-for="group in tagGroups"
-              :key="group.tag.id"
-              class="quick-access-panel__tag-group"
-            >
-              <div class="quick-access-panel__tag-subtitle">
-                <span
-                  class="quick-access-panel__tag-dot"
-                  :style="{ backgroundColor: group.tag.color }"
-                />
-                <span class="quick-access-panel__tag-name">{{ group.tag.name }}</span>
-                <span class="quick-access-panel__tag-count">{{ group.items.length }}</span>
-              </div>
-              <DirEntryInteractive
-                v-for="item in group.items"
-                :key="item.path"
-                :path="item.path"
-                :is-file="item.isFile"
-                :is-current-directory-context="isCurrentDirectoryItem(item.path, item.isFile)"
-              >
-                <button
-                  type="button"
-                  class="quick-access-panel__item"
-                  @click="openTaggedItem(item)"
-                >
-                  <QuickAccessItemIcon
-                    :path="item.path"
-                    :is-file="item.isFile"
-                    :size="14"
+                <div class="quick-access-panel__tag-subtitle">
+                  <span
+                    class="quick-access-panel__tag-dot"
+                    :style="{ backgroundColor: group.tag.color }"
                   />
-                  <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
-                </button>
-              </DirEntryInteractive>
-            </div>
-            <div
-              v-if="orphanedTaggedItems.length > 0"
-              class="quick-access-panel__tag-group"
-            >
-              <div class="quick-access-panel__tag-subtitle">
-                <span class="quick-access-panel__tag-dot quick-access-panel__tag-dot--muted" />
-                <span class="quick-access-panel__tag-name">{{ t('quickAccess.unknownTagGroup') }}</span>
-                <span class="quick-access-panel__tag-count">{{ orphanedTaggedItems.length }}</span>
-              </div>
-              <DirEntryInteractive
-                v-for="item in orphanedTaggedItems"
-                :key="item.path"
-                :path="item.path"
-                :is-file="item.isFile"
-                :is-current-directory-context="isCurrentDirectoryItem(item.path, item.isFile)"
-              >
-                <button
-                  type="button"
-                  class="quick-access-panel__item"
-                  @click="openTaggedItem(item)"
+                  <span class="quick-access-panel__tag-name">{{ group.tag.name }}</span>
+                  <span class="quick-access-panel__tag-count">{{ group.items.length }}</span>
+                </div>
+                <SortableList
+                  :items="group.items"
+                  :get-key="getItemKey"
+                  @set="handleTaggedItemsReorder"
+                  @drag-start="emit('drag-start')"
+                  @drag-end="handleItemDragEnd"
                 >
-                  <QuickAccessItemIcon
-                    :path="item.path"
-                    :is-file="item.isFile"
-                    :size="14"
-                  />
-                  <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
-                </button>
-              </DirEntryInteractive>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+                  <template #item="{ item }">
+                    <QuickAccessEntry
+                      v-bind="getTaggedEntryProps(item)"
+                      @open="openTaggedItem(item)"
+                    />
+                  </template>
+                </SortableList>
+              </div>
+              <div
+                v-if="orphanedTaggedItems.length > 0"
+                class="quick-access-panel__tag-group"
+              >
+                <div class="quick-access-panel__tag-subtitle">
+                  <span class="quick-access-panel__tag-dot quick-access-panel__tag-dot--muted" />
+                  <span class="quick-access-panel__tag-name">{{ t('quickAccess.unknownTagGroup') }}</span>
+                  <span class="quick-access-panel__tag-count">{{ orphanedTaggedItems.length }}</span>
+                </div>
+                <SortableList
+                  :items="orphanedTaggedItems"
+                  :get-key="getItemKey"
+                  @set="handleTaggedItemsReorder"
+                  @drag-start="emit('drag-start')"
+                  @drag-end="handleItemDragEnd"
+                >
+                  <template #item="{ item }">
+                    <QuickAccessEntry
+                      v-bind="getTaggedEntryProps(item)"
+                      @open="openTaggedItem(item)"
+                    />
+                  </template>
+                </SortableList>
+              </div>
+            </QuickAccessSection>
+          </template>
+        </SortableList>
       </div>
     </ScrollArea>
   </div>
@@ -360,123 +352,10 @@ function openTaggedItem(item: TaggedItem) {
   gap: 4px;
 }
 
-.quick-access-panel__section {
+.quick-access-panel__sections :deep(.sortable-list__items) {
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-sm);
-}
-
-.quick-access-panel__section-trigger {
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
-
-.quick-access-panel__section-header {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 8px 12px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: none;
-  cursor: pointer;
-  gap: 8px;
-  padding-inline-start: 8px;
-  text-align: start;
-  transition: background-color 0.15s ease;
-}
-
-.quick-access-panel__section-header:hover {
-  background-color: hsl(var(--foreground) / 5%);
-}
-
-.quick-access-panel__chevron {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.quick-access-panel__section-icon {
-  flex-shrink: 0;
-  color: hsl(var(--icon));
-}
-
-.quick-access-panel__section-title {
-  overflow: hidden;
-  flex: 1;
-  color: hsl(var(--foreground));
-  font-size: 0.8125rem;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quick-access-panel__badge {
-  flex-shrink: 0;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--primary) / 20%);
-  color: hsl(var(--primary));
-  font-size: 0.6875rem;
-  font-weight: 600;
-}
-
-.quick-access-panel__section-content {
-  padding-bottom: 4px;
-  margin-inline-end: 8px;
-  padding-inline-start: 20px;
-}
-
-.quick-access-panel__section-content[data-state="closed"] {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.quick-access-panel__empty {
-  padding: 8px 12px;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.75rem;
-}
-
-.quick-access-panel__item {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 6px 12px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: none;
-  cursor: pointer;
-  gap: 8px;
-  text-align: start;
-  transition: background-color 0.15s ease;
-}
-
-.quick-access-panel__item:hover {
-  background-color: hsl(var(--foreground) / 5%);
-}
-
-:deep(.dir-entry-interactive[data-drag-over]) > .quick-access-panel__item {
-  background-color: var(--drop-target-background);
-  outline: var(--drop-target-outline);
-  outline-offset: var(--drop-target-outline-offset);
-}
-
-.quick-access-panel__item-icon {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.quick-access-panel__item-name {
-  overflow: hidden;
-  min-width: 0;
-  flex: 1;
-  color: hsl(var(--foreground));
-  font-size: 0.8125rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  gap: 4px;
 }
 
 .quick-access-panel__tag-group {
@@ -491,8 +370,9 @@ function openTaggedItem(item: TaggedItem) {
 .quick-access-panel__tag-subtitle {
   display: flex;
   align-items: center;
-  padding: 4px 12px;
   gap: 6px;
+  padding-block: 4px;
+  padding-inline: 12px;
 }
 
 .quick-access-panel__tag-dot {

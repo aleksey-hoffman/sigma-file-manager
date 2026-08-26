@@ -45,12 +45,24 @@ const quickAccessContextMenuOpenCount = ref(0);
 provide(CONTEXT_MENU_OPEN_COUNT_KEY, quickAccessContextMenuOpenCount);
 
 const quickAccessHoverOpen = ref(false);
+const quickAccessReorderOpen = ref(false);
 const quickAccessTooltipOpen = computed(() =>
-  quickAccessHoverOpen.value || quickAccessContextMenuOpenCount.value > 0,
+  quickAccessHoverOpen.value
+  || quickAccessContextMenuOpenCount.value > 0
+  || quickAccessReorderOpen.value,
 );
 
 function handleQuickAccessTooltipOpenChange(value: boolean) {
   quickAccessHoverOpen.value = value;
+}
+
+function handleQuickAccessReorderStart() {
+  quickAccessReorderOpen.value = true;
+}
+
+function handleQuickAccessReorderEnd() {
+  quickAccessHoverOpen.value = true;
+  quickAccessReorderOpen.value = false;
 }
 
 function isDashboardPage(item: { name?: unknown }) {
@@ -175,7 +187,10 @@ function getDriveIcon(drive: {
                 </ContextMenuShortcut>
               </div>
             </div>
-            <QuickAccessPanel />
+            <QuickAccessPanel
+              @drag-start="handleQuickAccessReorderStart"
+              @drag-end="handleQuickAccessReorderEnd"
+            />
           </TooltipContent>
         </Tooltip>
         <Tooltip
@@ -383,7 +398,8 @@ function getDriveIcon(drive: {
 </style>
 
 <style>
-.nav-sidebar__quick-access-tooltip {
+.sigma-ui-tooltip-content.nav-sidebar__quick-access-tooltip {
+  overflow: visible;
   padding: 0;
   border: 1px solid hsl(var(--border) / 50%);
   margin-top: 0;

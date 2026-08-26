@@ -24,6 +24,7 @@ import {
 } from './utils/startup-storage-bootstrap';
 import { i18n } from '@/localization';
 import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
+import { haveSameKeyOrder, haveSameKeys } from '@/utils/reorder-matching-items';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 
 const HISTORY_MAX_ITEMS = 100;
@@ -297,6 +298,46 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
     userStats.value.tags[tagIndex].name = trimmed;
     await saveStats();
+  }
+
+  async function replaceListIfMembershipMatches<T>(
+    currentItems: T[],
+    nextItems: T[],
+    getKey: (item: T) => string,
+    assign: (items: T[]) => void,
+  ) {
+    if (!haveSameKeys(currentItems, nextItems, getKey)) {
+      return;
+    }
+
+    if (haveSameKeyOrder(currentItems, nextItems, getKey)) {
+      return;
+    }
+
+    assign(nextItems);
+    await saveStats();
+  }
+
+  async function setFavorites(nextFavorites: FavoriteItem[]) {
+    await replaceListIfMembershipMatches(
+      userStats.value.favorites,
+      nextFavorites,
+      item => item.path,
+      (items) => {
+        userStats.value.favorites = items;
+      },
+    );
+  }
+
+  async function setTaggedItems(nextTaggedItems: TaggedItem[]) {
+    await replaceListIfMembershipMatches(
+      userStats.value.taggedItems,
+      nextTaggedItems,
+      item => item.path,
+      (items) => {
+        userStats.value.taggedItems = items;
+      },
+    );
   }
 
   async function updateTagColor(tagId: string, color: string) {
@@ -582,6 +623,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
     createTag,
     deleteTag,
     renameTag,
+    setFavorites,
+    setTaggedItems,
     updateTagColor,
     recordItemOpen,
     clearHistory,

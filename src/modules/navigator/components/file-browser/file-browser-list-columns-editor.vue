@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useTextDirection } from '@/composables/use-text-direction';
+import { applyDropResult } from '@/utils/reorder-matching-items';
 import { useFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { buildCompactListColumnWidths, normalizeListColumnOrder } from './utils/file-browser-list-columns';
 import { getFileBrowserListColumnLabel } from './utils/file-browser-sort-columns';
@@ -45,24 +46,7 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
 }
 
 function getUpdatedColumnOrder(dropResult: DropResult): ListReorderableColumnId[] {
-  const { removedIndex, addedIndex, payload } = dropResult;
-
-  if (removedIndex === null && addedIndex === null) {
-    return reorderableColumnIds.value;
-  }
-
-  const nextOrder = [...reorderableColumnIds.value];
-  let columnToAdd = payload as ListReorderableColumnId;
-
-  if (removedIndex !== null) {
-    columnToAdd = nextOrder.splice(removedIndex, 1)[0];
-  }
-
-  if (addedIndex !== null) {
-    nextOrder.splice(addedIndex, 0, columnToAdd);
-  }
-
-  return normalizeListColumnOrder(nextOrder);
+  return normalizeListColumnOrder(applyDropResult(reorderableColumnIds.value, dropResult));
 }
 
 async function handleColumnOrderDrop(dropResult: DropResult) {
