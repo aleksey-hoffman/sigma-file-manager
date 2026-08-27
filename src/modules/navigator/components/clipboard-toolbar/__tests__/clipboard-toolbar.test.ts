@@ -14,6 +14,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import ClipboardToolbar from '../clipboard-toolbar.vue';
 
 const invokeMock = vi.hoisted(() => vi.fn());
@@ -156,8 +157,84 @@ describe('clipboard toolbar', () => {
     expect(wrapper.text()).toContain('fileBrowser.preparedForCopying');
     expect(wrapper.text()).toContain('1 items');
     expect(wrapper.text()).toContain('Image');
-    expect(wrapper.text()).toContain('252 x 358 · 7.5 MB');
-    expect(wrapper.find('.clipboard-toolbar__item-preview-image').attributes('src')).toBe('asset://C:/Temp/clipboard-image.png?v=42');
+    expect(wrapper.text()).toContain('252 x 358');
+    expect(wrapper.text()).toContain('7.5 MB');
+    expect(wrapper.find('.clipboard-items-popover__preview-image').attributes('src')).toBe('asset://C:/Temp/clipboard-image.png?v=42');
+    expect(wrapper.find('.clipboard-items-popover__item-path').text()).toBe('252 x 358');
+    expect(wrapper.find('.clipboard-items-popover__item-size').text()).toBe('7.5 MB');
+  });
+
+  it('renders the parent directory so file paths stay readable', () => {
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboard('copy', [
+      createDirEntry({
+        name: 'infusion-demo.mp4',
+        ext: 'mp4',
+        path: 'C:/Users/aleks/Videos/infusion-demo.mp4',
+        mime: 'video/mp4',
+      }),
+    ]);
+
+    const wrapper = mountToolbar();
+
+    expect(wrapper.find('.clipboard-items-popover__item-name').text()).toBe('infusion-demo.mp4');
+    expect(wrapper.find('.clipboard-items-popover__item-path').text()).toBe('C:/Users/aleks/Videos');
+    expect(wrapper.find('.clipboard-items-popover__item-size').text()).toBe('100 B');
+    expect(wrapper.find('.clipboard-items-popover__item-path').attributes('title')).toBe(
+      'C:/Users/aleks/Videos/infusion-demo.mp4',
+    );
+    expect(wrapper.find('.clipboard-items-popover__filter').exists()).toBe(false);
+  });
+
+  it('renders a cached folder size without requesting a new calculation', () => {
+    const folderPath = 'C:/Users/aleks/Videos';
+    const dirSizesStore = useDirSizesStore();
+    dirSizesStore.sizes.set(folderPath, {
+      size: 1048576,
+      status: 'Complete',
+      fileCount: 3,
+      dirCount: 1,
+      calculatedAt: 1,
+    });
+
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboard('copy', [
+      createDirEntry({
+        name: 'Videos',
+        path: folderPath,
+        size: 0,
+        is_file: false,
+        is_dir: true,
+      }),
+    ]);
+
+    const wrapper = mountToolbar();
+
+    expect(wrapper.find('.clipboard-items-popover__item-size').text()).toBe('1.0 MB');
+    expect(invokeMock).not.toHaveBeenCalledWith('get_dir_size', expect.anything());
+    expect(invokeMock).not.toHaveBeenCalledWith('get_dir_sizes_batch', expect.anything());
+  });
+
+  it('shows the filter when more than one clipboard item is prepared', () => {
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboard('copy', [
+      createDirEntry({
+        name: 'one.txt',
+        path: 'C:/Users/aleks/Documents/one.txt',
+      }),
+      createDirEntry({
+        name: 'two.txt',
+        path: 'C:/Users/aleks/Downloads/two.txt',
+      }),
+    ]);
+
+    const wrapper = mountToolbar();
+
+    expect(wrapper.find('.clipboard-items-popover__filter').exists()).toBe(true);
+    expect(wrapper.findAll('.clipboard-items-popover__item-path').map(path => path.text())).toEqual([
+      'C:/Users/aleks/Documents',
+      'C:/Users/aleks/Downloads',
+    ]);
   });
 
   it('toggles the items popover from the show items button', async () => {
@@ -177,6 +254,59 @@ describe('clipboard toolbar', () => {
 
     await showItemsButton.trigger('click');
     expect(showItemsButton.attributes('aria-expanded')).toBe('false');
+  });
+
+  it('saves a new clipboard image preview while the items menu stays open', async () => {
+    invokeMock.mockImplementation((commandName: string) => {
+      if (commandName === 'save_system_clipboard_image_to_temp') {
+        return Promise.resolve({
+          path: 'C:/Temp/clipboard-image.png',
+          sizeBytes: 7864320,
+        });
+      }
+
+      return Promise.resolve(undefined);
+    });
+
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboardImage({
+      width: 100,
+      height: 80,
+      sizeBytes: 1200,
+      clipboardSequence: 1,
+      tempPath: 'C:/Temp/old-clipboard-image.png',
+      tempVersion: 7,
+      savedSizeBytes: 2400,
+    });
+
+    const wrapper = mountToolbar();
+    const showItemsButton = wrapper.findAll('button').find(button => button.text().includes('showItems'));
+
+    if (!showItemsButton) {
+      throw new Error('Show items button was not rendered');
+    }
+
+    await showItemsButton.trigger('click');
+
+    clipboardStore.setClipboardImage({
+      width: 252,
+      height: 358,
+      sizeBytes: 360864,
+      clipboardSequence: 2,
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.clipboard-items-popover__item-path').text()).toBe('252 x 358');
+    expect(wrapper.find('.clipboard-items-popover__item-size').exists()).toBe(false);
+    expect(wrapper.find('.clipboard-items-popover__preview-image').exists()).toBe(false);
+
+    await flushPromises();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.clipboard-items-popover__item-size').text()).toBe('7.5 MB');
+    expect(wrapper.find('.clipboard-items-popover__preview-image').attributes('src')).toContain(
+      'asset://C:/Temp/clipboard-image.png',
+    );
   });
 
   it('renders generated previews for image file clipboard entries', async () => {
@@ -202,6 +332,6 @@ describe('clipboard toolbar', () => {
     await flushPromises();
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('.clipboard-toolbar__item-preview-image').attributes('src')).toBe('asset://C:/Thumbs/photo.png');
+    expect(wrapper.find('.clipboard-items-popover__preview-image').attributes('src')).toBe('asset://C:/Thumbs/photo.png');
   });
 });

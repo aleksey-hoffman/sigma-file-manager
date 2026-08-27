@@ -314,6 +314,64 @@ describe('clipboard store', () => {
     expect(store.canPasteTo('C:/Target')).toBe(true);
   });
 
+  it('saves a replacement clipboard image after a pending save finishes', async () => {
+    const firstSave = createDeferred<{ path: string; sizeBytes: number }>();
+    let saveCount = 0;
+    invokeMock.mockImplementation(async (commandName: string) => {
+      if (commandName === 'save_system_clipboard_image_to_temp') {
+        saveCount += 1;
+
+        if (saveCount === 1) {
+          return await firstSave.promise;
+        }
+
+        return {
+          path: 'C:/Temp/clipboard-image-2.png',
+          sizeBytes: 4096,
+        };
+      }
+
+      return undefined;
+    });
+
+    const store = useClipboardStore();
+    store.setClipboardImage({
+      width: 10,
+      height: 10,
+      sizeBytes: 100,
+      clipboardSequence: 1,
+    });
+
+    const firstEnsure = store.ensureSystemClipboardImageSaved();
+
+    store.setClipboardImage({
+      width: 20,
+      height: 20,
+      sizeBytes: 200,
+      clipboardSequence: 2,
+    });
+
+    const secondEnsure = store.ensureSystemClipboardImageSaved();
+    firstSave.resolve({
+      path: 'C:/Temp/clipboard-image-1.png',
+      sizeBytes: 2048,
+    });
+
+    await firstEnsure;
+    await secondEnsure;
+
+    expect(store.clipboardImage).toEqual({
+      width: 20,
+      height: 20,
+      sizeBytes: 200,
+      clipboardSequence: 2,
+      tempPath: 'C:/Temp/clipboard-image-2.png',
+      tempVersion: expect.any(Number),
+      savedSizeBytes: 4096,
+    });
+    expect(saveCount).toBe(2);
+  });
+
   it('saves clipboard image before paste when temp file is missing', async () => {
     invokeMock.mockImplementation(async (commandName: string) => {
       if (commandName === 'save_system_clipboard_image_to_temp') {

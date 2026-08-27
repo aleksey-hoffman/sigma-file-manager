@@ -597,7 +597,15 @@ export const useClipboardStore = defineStore('clipboard', () => {
     }
 
     if (pendingSystemClipboardImageSave) {
-      return pendingSystemClipboardImageSave;
+      await pendingSystemClipboardImageSave;
+
+      if (!clipboardImage.value) {
+        return null;
+      }
+
+      if (clipboardImage.value.tempPath) {
+        return clipboardImage.value;
+      }
     }
 
     const imageInfo = { ...clipboardImage.value };
