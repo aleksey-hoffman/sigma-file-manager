@@ -204,4 +204,50 @@ describe('user stats reorder setters', () => {
     ]);
     expect(lazyStoreSetMock).toHaveBeenCalledWith('taggedItems', nextTaggedItems);
   });
+
+  it('saves tags in the UI order', async () => {
+    const tags = [
+      createTag('tag-work', 'Work'),
+      createTag('tag-personal', 'Personal'),
+      createTag('tag-archive', 'Archive'),
+    ];
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      tags,
+    }));
+    lazyStoreSetMock.mockClear();
+    lazyStoreSaveMock.mockClear();
+
+    const nextTags = [tags[2], tags[0], tags[1]];
+    await store.setTags(nextTags);
+
+    expect(store.tags.map(tag => tag.id)).toEqual([
+      'tag-archive',
+      'tag-work',
+      'tag-personal',
+    ]);
+    expect(lazyStoreSetMock).toHaveBeenCalledWith('tags', nextTags);
+    expect(lazyStoreSaveMock).toHaveBeenCalled();
+  });
+
+  it('does not save tags when membership changes or order is unchanged', async () => {
+    const tags = [
+      createTag('tag-work', 'Work'),
+      createTag('tag-personal', 'Personal'),
+    ];
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      tags,
+    }));
+    lazyStoreSetMock.mockClear();
+    lazyStoreSaveMock.mockClear();
+
+    await store.setTags([createTag('tag-work', 'Work'), createTag('tag-other', 'Other')]);
+    await store.setTags(tags);
+
+    expect(store.tags.map(tag => tag.id)).toEqual(['tag-work', 'tag-personal']);
+    expect(lazyStoreSetMock).not.toHaveBeenCalled();
+  });
 });

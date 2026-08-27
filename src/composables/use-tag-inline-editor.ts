@@ -41,6 +41,7 @@ export function useTagInlineEditor(options: {
   const renameInputRef = ref<HTMLInputElement | null>(null);
   const previewTagColors = ref<Record<string, string>>({});
   const pendingTagColors = ref<Record<string, string>>({});
+  let skipClickToggle = false;
 
   function displayColor(tag: ItemTag): string {
     return previewTagColors.value[tag.id] ?? tag.color;
@@ -103,15 +104,7 @@ export function useTagInlineEditor(options: {
     cancelEdit();
   }
 
-  function startEdit(event: Event, tag: ItemTag) {
-    event.stopPropagation();
-    event.preventDefault();
-
-    if (editingTagId.value === tag.id) {
-      commitEdit();
-      return;
-    }
-
+  function beginEdit(tag: ItemTag) {
     if (editingTagId.value !== null && editingTagId.value !== tag.id) {
       commitEdit();
     }
@@ -122,6 +115,55 @@ export function useTagInlineEditor(options: {
       renameInputRef.value?.focus();
       renameInputRef.value?.select();
     });
+  }
+
+  function consumeSkipClickToggle(): boolean {
+    if (!skipClickToggle) {
+      return false;
+    }
+
+    skipClickToggle = false;
+    return true;
+  }
+
+  function onToggleControlPointerDown(event: Event, tag: ItemTag) {
+    event.stopPropagation();
+
+    if (editingTagId.value !== tag.id) {
+      return;
+    }
+
+    event.preventDefault();
+    commitEdit();
+    skipClickToggle = true;
+  }
+
+  function startEdit(event: Event, tag: ItemTag) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (consumeSkipClickToggle()) {
+      return;
+    }
+
+    if (editingTagId.value === tag.id) {
+      commitEdit();
+      return;
+    }
+
+    beginEdit(tag);
+  }
+
+  function onColorClick(event: Event, tag: ItemTag) {
+    event.stopPropagation();
+
+    if (consumeSkipClickToggle() || editingTagId.value === tag.id) {
+      event.preventDefault();
+      commitEdit();
+      return;
+    }
+
+    beginEdit(tag);
   }
 
   function deleteTag(event: Event, tagId: string) {
@@ -219,6 +261,8 @@ export function useTagInlineEditor(options: {
     cancelEdit,
     commitEdit,
     startEdit,
+    onToggleControlPointerDown,
+    onColorClick,
     deleteTag,
     onColorInput,
     onColorBlur,

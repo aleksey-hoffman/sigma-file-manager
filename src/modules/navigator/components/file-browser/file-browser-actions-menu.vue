@@ -116,6 +116,7 @@ const {
   createTagForEntries,
   renameTag,
   updateTagColor,
+  setTags,
 } = useFileBrowserTags();
 
 async function handleToggleTag(tagId: string) {
@@ -456,7 +457,6 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       :tags="availableTags"
       :selected-tag-ids="selectedItemTagIds"
       :allow-create="true"
-      :max-badges="1"
       :full-width="true"
       trigger-variant="default"
       align="end"
@@ -467,6 +467,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       @create-tag="handleCreateTag"
       @rename-tag="handleRenameTag"
       @update-tag-color="handleUpdateTagColor"
+      @reorder-tags="setTags"
     />
   </div>
 </template>

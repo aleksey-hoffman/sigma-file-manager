@@ -6,6 +6,7 @@ import { computed } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import type { ItemTag } from '@/types/user-stats';
+import { getTagsByIdsInListOrder } from '@/utils/item-tag-order';
 
 const tagColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
 
@@ -15,18 +16,13 @@ export function useFileBrowserTags() {
   const tagIdsByPath = computed(() => {
     return new Map(userStatsStore.taggedItems.map(item => [item.path, item.tagIds]));
   });
-  const tagsById = computed(() => {
-    return new Map(userStatsStore.tags.map(tag => [tag.id, tag]));
-  });
 
   function getEntryTagIds(entry: DirEntry): string[] {
     return tagIdsByPath.value.get(entry.path) ?? [];
   }
 
   function getEntryTags(entry: DirEntry): ItemTag[] {
-    return getEntryTagIds(entry)
-      .map(tagId => tagsById.value.get(tagId))
-      .filter((tag): tag is ItemTag => !!tag);
+    return getTagsByIdsInListOrder(availableTags.value, getEntryTagIds(entry));
   }
 
   function getEntriesSharedTagIds(entries: DirEntry[]): string[] {
@@ -78,5 +74,6 @@ export function useFileBrowserTags() {
     createTagForEntries,
     renameTag: userStatsStore.renameTag,
     updateTagColor: userStatsStore.updateTagColor,
+    setTags: userStatsStore.setTags,
   };
 }

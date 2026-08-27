@@ -33,6 +33,8 @@ const {
   cancelEdit,
   commitEdit,
   startEdit,
+  onToggleControlPointerDown,
+  onColorClick,
   deleteTag,
   onColorInput,
   onColorBlur,
@@ -57,7 +59,8 @@ const {
           type="color"
           class="tag-selector__color-input"
           :value="colorHexForPicker(displayColor(tag))"
-          @click.stop
+          @click.stop="onColorClick($event, tag)"
+          @pointerdown.stop="onToggleControlPointerDown($event, tag)"
           @input="onColorInput($event, tag.id)"
           @blur="onColorBlur"
         >
@@ -90,9 +93,10 @@ const {
         type="button"
         class="tag-selector__edit"
         :title="t('tags.renameTag')"
+        @pointerdown="onToggleControlPointerDown($event, tag)"
         @click="startEdit($event, tag)"
       >
-        <PencilIcon :size="14" />
+        <PencilIcon :size="16" />
       </button>
       <button
         type="button"
@@ -111,7 +115,7 @@ const {
   display: flex;
   width: 100%;
   max-width: 100%;
-  height: 24px;
+  min-height: 28px;
   align-items: center;
   gap: 8px;
   padding-block: 2px;
@@ -129,9 +133,11 @@ const {
 .dashboard-tag-section-header .tag-selector__edit,
 .dashboard-tag-section-header .tag-selector__delete {
   display: flex;
+  width: 28px;
+  height: 28px;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 0;
   border: none;
   border-radius: 4px;
   background: transparent;

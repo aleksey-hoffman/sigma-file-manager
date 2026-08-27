@@ -204,6 +204,10 @@ async function handleRenameTag(tagId: string, name: string) {
 async function handleUpdateTagColor(tagId: string, color: string) {
   await userStatsStore.updateTagColor(tagId, color);
 }
+
+async function handleReorderTags(nextTags: ItemTag[]) {
+  await userStatsStore.setTags(nextTags);
+}
 </script>
 
 <template>
@@ -370,6 +374,7 @@ async function handleUpdateTagColor(tagId: string, color: string) {
                         @create-tag="(name) => handleCreateTagForItem(item, name)"
                         @rename-tag="handleRenameTag"
                         @update-tag-color="handleUpdateTagColor"
+                        @reorder-tags="handleReorderTags"
                       />
                     </template>
                   </EntryCard>

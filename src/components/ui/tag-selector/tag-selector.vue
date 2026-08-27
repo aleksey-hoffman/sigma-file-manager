@@ -6,7 +6,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CheckIcon, CirclePlusIcon, PencilIcon, TagIcon } from '@lucide/vue';
+import {
+  CheckIcon,
+  CirclePlusIcon,
+  GripVerticalIcon,
+  PencilIcon,
+  TagIcon,
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -14,20 +20,22 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
+import { SortableList } from '@/components/sortable-list';
 import type { ItemTag } from '@/types/user-stats';
 import type { PopoverContentProps } from 'reka-ui';
 import { useTagInlineEditor, stopSpaceKeyPropagation } from '@/composables/use-tag-inline-editor';
+import { haveSameKeyOrder, reorderMatchingItems } from '@/utils/reorder-matching-items';
+import TagOverflowList from './tag-overflow-list.vue';
+import type { TagOverflowItem } from './tag-overflow-list';
 
 const props = withDefaults(defineProps<{
   tags: ItemTag[];
   selectedTagIds: string[];
   allowCreate?: boolean;
   triggerVariant?: 'default' | 'compact' | 'icon';
-  maxBadges?: number;
   fullWidth?: boolean;
   openOnMount?: boolean;
   align?: PopoverContentProps['align'];
@@ -37,7 +45,6 @@ const props = withDefaults(defineProps<{
 }>(), {
   allowCreate: true,
   triggerVariant: 'default',
-  maxBadges: 2,
   fullWidth: false,
   openOnMount: false,
   align: 'start',
@@ -51,6 +58,7 @@ const emit = defineEmits<{
   'create-tag': [name: string];
   'rename-tag': [tagId: string, name: string];
   'update-tag-color': [tagId: string, color: string];
+  'reorder-tags': [tags: ItemTag[]];
   'open-change': [open: boolean];
 }>();
 
@@ -70,6 +78,8 @@ const {
   cancelEdit,
   commitEdit,
   startEdit,
+  onToggleControlPointerDown,
+  onColorClick,
   onColorInput,
   onColorBlur,
   resetEditState,
@@ -100,8 +110,43 @@ const selectedTags = computed(() => {
   return props.tags.filter(tag => selectedTagIdsSet.value.has(tag.id));
 });
 
+const selectedOverflowTags = computed<TagOverflowItem[]>(() => {
+  return selectedTags.value.map(tag => ({
+    id: tag.id,
+    name: tag.name,
+    color: displayColor(tag),
+  }));
+});
+
+function getTagKey(tag: ItemTag): string {
+  return tag.id;
+}
+
 function toggleTag(tagId: string) {
   emit('toggle-tag', tagId);
+}
+
+function handleTagsReorder(nextVisibleTags: ItemTag[]) {
+  const nextTags = reorderMatchingItems(props.tags, nextVisibleTags, getTagKey);
+
+  if (haveSameKeyOrder(props.tags, nextTags, getTagKey)) {
+    return;
+  }
+
+  emit('reorder-tags', nextTags);
+}
+
+function handleTagsDragEnd() {
+  function swallowClick(clickEvent: MouseEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+    window.removeEventListener('click', swallowClick, true);
+  }
+
+  window.addEventListener('click', swallowClick, true);
+  window.setTimeout(() => {
+    window.removeEventListener('click', swallowClick, true);
+  }, 0);
 }
 
 function onSelectTag(tag: ItemTag) {
@@ -168,23 +213,8 @@ function clearSearch() {
       >
         <TagIcon class="tag-selector__trigger-icon-plus" />
         <span class="tag-selector__label">{{ t('tags.editTags') }}</span>
-        <template v-if="selectedTags.length > 0">
-          <div class="tag-selector__selected-tags">
-            <span
-              v-for="tag in selectedTags.slice(0, maxBadges)"
-              :key="tag.id"
-              class="tag-selector__badge"
-              :style="{ backgroundColor: displayColor(tag) + '25', color: displayColor(tag) }"
-            >
-              {{ tag.name }}
-            </span>
-            <span
-              v-if="selectedTags.length > maxBadges"
-              class="tag-selector__badge tag-selector__badge--more"
-            >
-              +{{ selectedTags.length - maxBadges }}
-            </span>
-          </div>
+        <template v-if="selectedOverflowTags.length > 0">
+          <TagOverflowList :tags="selectedOverflowTags" />
         </template>
       </Button>
     </PopoverTrigger>
@@ -222,73 +252,91 @@ function clearSearch() {
             </Button>
           </div>
           <CommandGroup v-if="filteredTags.length > 0">
-            <CommandItem
-              v-for="tag in filteredTags"
-              :key="tag.id"
-              :value="tag.name"
-              class="tag-selector__item"
-              @select="() => onSelectTag(tag)"
+            <SortableList
+              class="tag-selector__sortable"
+              :items="filteredTags"
+              :get-key="getTagKey"
+              handle-selector=".tag-selector__drag-handle"
+              @set="handleTagsReorder"
+              @drag-end="handleTagsDragEnd"
             >
-              <div
-                class="tag-selector__checkbox"
-                :data-selected="selectedTagIdsSet.has(tag.id) || undefined"
-                :style="selectedTagIdsSet.has(tag.id) ? { borderColor: displayColor(tag) + '80', backgroundColor: displayColor(tag) + '20' } : undefined"
-              >
-                <CheckIcon
-                  class="tag-selector__check"
-                  :style="{ color: displayColor(tag) }"
-                />
-              </div>
-              <label
-                class="tag-selector__color-dot-wrap"
-                :title="t('tags.tagColor')"
-                @click.stop
-                @pointerdown.stop
-              >
-                <div class="tag-selector__color-dot-hitbox">
-                  <input
-                    type="color"
-                    class="tag-selector__color-input"
-                    :value="colorHexForPicker(displayColor(tag))"
-                    @click.stop
-                    @input="onColorInput($event, tag.id)"
-                    @blur="onColorBlur"
-                  >
-                  <span
-                    class="tag-selector__color-dot"
+              <template #item="{ item: tag }">
+                <div class="sigma-ui-command-item tag-selector__item">
+                  <button
+                    type="button"
+                    class="tag-selector__drag-handle"
                     aria-hidden="true"
-                    :style="{ backgroundColor: displayColor(tag) }"
-                  />
+                    tabindex="-1"
+                    @click.stop
+                  >
+                    <GripVerticalIcon :size="14" />
+                  </button>
+                  <button
+                    type="button"
+                    class="tag-selector__checkbox"
+                    :data-selected="selectedTagIdsSet.has(tag.id) || undefined"
+                    :style="selectedTagIdsSet.has(tag.id) ? { borderColor: displayColor(tag) + '80', backgroundColor: displayColor(tag) + '20' } : undefined"
+                    @click.stop="onSelectTag(tag)"
+                  >
+                    <CheckIcon
+                      class="tag-selector__check"
+                      :style="{ color: displayColor(tag) }"
+                    />
+                  </button>
+                  <label
+                    class="tag-selector__color-dot-wrap"
+                    :title="t('tags.tagColor')"
+                    @click.stop
+                    @pointerdown.stop
+                  >
+                    <div class="tag-selector__color-dot-hitbox">
+                      <input
+                        type="color"
+                        class="tag-selector__color-input"
+                        :value="colorHexForPicker(displayColor(tag))"
+                        @click.stop="onColorClick($event, tag)"
+                        @pointerdown.stop="onToggleControlPointerDown($event, tag)"
+                        @input="onColorInput($event, tag.id)"
+                        @blur="onColorBlur"
+                      >
+                      <span
+                        class="tag-selector__color-dot"
+                        aria-hidden="true"
+                        :style="{ backgroundColor: displayColor(tag) }"
+                      />
+                    </div>
+                  </label>
+                  <span
+                    v-if="editingTagId !== tag.id"
+                    class="tag-selector__tag-name"
+                  >{{ tag.name }}</span>
+                  <input
+                    v-else
+                    :ref="setRenameInputRef"
+                    v-model="editDraft"
+                    class="sigma-ui-input tag-selector__rename-input"
+                    autofocus
+                    @keydown="stopSpaceKeyPropagation"
+                    @keydown.enter.prevent="commitEdit"
+                    @keydown.esc.prevent="cancelEdit"
+                    @blur="commitEdit"
+                    @click.stop
+                    @pointerdown.stop
+                  >
+                  <div class="tag-selector__item-actions">
+                    <button
+                      type="button"
+                      class="tag-selector__edit"
+                      :title="t('tags.renameTag')"
+                      @pointerdown="onToggleControlPointerDown($event, tag)"
+                      @click="startEdit($event, tag)"
+                    >
+                      <PencilIcon :size="16" />
+                    </button>
+                  </div>
                 </div>
-              </label>
-              <span
-                v-if="editingTagId !== tag.id"
-                class="tag-selector__tag-name"
-              >{{ tag.name }}</span>
-              <input
-                v-else
-                :ref="setRenameInputRef"
-                v-model="editDraft"
-                class="sigma-ui-input tag-selector__rename-input"
-                autofocus
-                @keydown="stopSpaceKeyPropagation"
-                @keydown.enter.prevent="commitEdit"
-                @keydown.esc.prevent="cancelEdit"
-                @blur="commitEdit"
-                @click.stop
-                @pointerdown.stop
-              >
-              <div class="tag-selector__item-actions">
-                <button
-                  type="button"
-                  class="tag-selector__edit"
-                  :title="t('tags.renameTag')"
-                  @click="(event) => startEdit(event, tag)"
-                >
-                  <PencilIcon :size="14" />
-                </button>
-              </div>
-            </CommandItem>
+              </template>
+            </SortableList>
           </CommandGroup>
           <CommandSeparator v-if="$slots.footer" />
           <div
@@ -359,14 +407,6 @@ function clearSearch() {
   font-weight: 600;
 }
 
-.tag-selector__selected-tags {
-  display: flex;
-  overflow: hidden;
-  min-width: 0;
-  flex: 1;
-  gap: 4px;
-}
-
 .tag-selector__badge {
   display: inline-flex;
   overflow: hidden;
@@ -414,18 +454,16 @@ function clearSearch() {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid hsl(var(--border));
+  padding: 0;
+  border: 1.5px solid hsl(var(--muted-foreground) / 70%);
   border-radius: 4px;
   margin-right: 8px;
-  opacity: 0.6;
+  background: transparent;
+  cursor: pointer;
 }
 
 .tag-selector__checkbox:not([data-selected]) .tag-selector__check {
   visibility: hidden;
-}
-
-.tag-selector__checkbox[data-selected] {
-  opacity: 1;
 }
 
 .tag-selector__check {
@@ -445,10 +483,11 @@ function clearSearch() {
 .tag-selector__color-dot-hitbox {
   position: relative;
   display: flex;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  padding: 6px;
 }
 
 .tag-selector__color-input {
@@ -477,8 +516,43 @@ function clearSearch() {
   white-space: nowrap;
 }
 
+.tag-selector__sortable :deep(.sortable-list__items) {
+  display: flex;
+  flex-direction: column;
+}
+
 .tag-selector__item {
   position: relative;
+}
+
+.tag-selector__item:hover {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--popover-foreground) / 80%);
+}
+
+.tag-selector__drag-handle {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  margin-right: 4px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: grab;
+  touch-action: none;
+}
+
+.tag-selector__drag-handle:hover {
+  background-color: hsl(var(--muted) / 40%);
+  color: hsl(var(--foreground));
+}
+
+.tag-selector__drag-handle:active {
+  cursor: grabbing;
 }
 
 .tag-selector__rename-input {
@@ -500,9 +574,11 @@ function clearSearch() {
 
 .tag-selector__edit {
   display: flex;
+  width: 28px;
+  height: 28px;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 0;
   border: none;
   border-radius: 4px;
   background: transparent;

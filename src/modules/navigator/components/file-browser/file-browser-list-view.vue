@@ -72,7 +72,6 @@ interface FileBrowserListDisplayRow extends FileBrowserListVirtualRow {
   createdDate: FileBrowserListDateDisplay;
   selectedTagIds: string[];
   tagBadges: FileBrowserListTagBadge[];
-  hiddenTagCount: number;
   tagSummary: string;
   isTagSelectorMounted: boolean;
   kindLabel: string;
@@ -158,6 +157,7 @@ const {
   createTagForEntries,
   renameTag,
   updateTagColor,
+  setTags,
 } = useFileBrowserTags();
 
 const clipboardPathsMap = computed(() => {
@@ -332,7 +332,7 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
   const sizeDisplay = visible.size ? getEntrySizeDisplay(entry) : emptySizeDisplay;
   const selectedTagIds = visible.tags ? getEntryTagIds(entry) : [];
   const selectedTags = visible.tags ? getEntryTags(entry) : [];
-  const tagBadges = selectedTags.slice(0, 1).map(createTagBadge);
+  const tagBadges = selectedTags.map(createTagBadge);
   const entryDescription = ctx.entryDescription?.(entry);
   const clipboardPathType = clipboardPathsMap.value.get(entry.path) || undefined;
   const isSelected = ctx.isEntrySelected(entry);
@@ -346,7 +346,6 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
   const linksDisplay = visible.links ? getDirEntryLinksDisplay(entry) : '';
   const linkStatusLabel = visible.linkStatus ? getLinkStatusDisplay(entry) : '';
   const isTagSelectorMounted = visible.tags && activeTagSelectorPath.value === entry.path;
-  const hiddenTagCount = Math.max(0, selectedTagIds.length - tagBadges.length);
   const tagSummary = visible.tags ? getEntryTagSummary(selectedTags, selectedTagIds) : '';
   const memoParts = [
     visibleColumnMemoKey.value,
@@ -396,7 +395,6 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
     createdDate,
     selectedTagIds,
     tagBadges,
-    hiddenTagCount,
     tagSummary,
     isTagSelectorMounted,
     kindLabel,
@@ -510,6 +508,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
             @create-tag="handleCreateEntryTag"
             @rename-tag="renameTag"
             @update-tag-color="updateTagColor"
+            @reorder-tags="setTags"
             @tags-open-change="handleEntryTagsOpenChange"
             @open-tag-selector="openEntryTagSelector"
           />

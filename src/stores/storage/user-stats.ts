@@ -23,6 +23,7 @@ import {
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
 import { i18n } from '@/localization';
+import { getTagsByIdsInListOrder } from '@/utils/item-tag-order';
 import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
 import { haveSameKeyOrder, haveSameKeys } from '@/utils/reorder-matching-items';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
@@ -205,7 +206,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
     if (!taggedItem) return [];
 
-    return userStats.value.tags.filter(tag => taggedItem.tagIds.includes(tag.id));
+    return getTagsByIdsInListOrder(userStats.value.tags, taggedItem.tagIds);
   }
 
   async function addTagToItem(path: string, tagId: string, isFile = false) {
@@ -336,6 +337,17 @@ export const useUserStatsStore = defineStore('userStats', () => {
       item => item.path,
       (items) => {
         userStats.value.taggedItems = items;
+      },
+    );
+  }
+
+  async function setTags(nextTags: ItemTag[]) {
+    await replaceListIfMembershipMatches(
+      userStats.value.tags,
+      nextTags,
+      tag => tag.id,
+      (items) => {
+        userStats.value.tags = items;
       },
     );
   }
@@ -625,6 +637,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
     renameTag,
     setFavorites,
     setTaggedItems,
+    setTags,
     updateTagColor,
     recordItemOpen,
     clearHistory,

@@ -292,7 +292,7 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-.sortable-list-move {
+.sortable-list--dragging .sortable-list-move {
   transition: transform 250ms ease;
 }
 </style>

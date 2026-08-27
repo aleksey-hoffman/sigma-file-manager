@@ -6,8 +6,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { TagSelector } from '@/components/ui/tag-selector';
+import { TagOverflowList, TagSelector } from '@/components/ui/tag-selector';
 import type { ItemTag, TaggedItem } from '@/types/user-stats';
+import { getTagsByIdsInListOrder } from '@/utils/item-tag-order';
 
 const props = defineProps<{
   item: TaggedItem;
@@ -22,20 +23,13 @@ const emit = defineEmits<{
   'create-tag': [name: string];
   'rename-tag': [tagId: string, name: string];
   'update-tag-color': [tagId: string, color: string];
+  'reorder-tags': [tags: ItemTag[]];
 }>();
 
 const { t } = useI18n();
 
 const selectedTags = computed(() => {
-  return props.item.tagIds
-    .map(tagId => props.tags.find(tag => tag.id === tagId))
-    .filter((tag): tag is ItemTag => tag !== undefined);
-});
-
-const visibleTagBadges = computed(() => selectedTags.value.slice(0, 1));
-
-const hiddenTagCount = computed(() => {
-  return Math.max(0, selectedTags.value.length - visibleTagBadges.value.length);
+  return getTagsByIdsInListOrder(props.tags, props.item.tagIds);
 });
 
 const tagSummary = computed(() => {
@@ -63,21 +57,11 @@ function handleOpenChange(open: boolean) {
           :title="tagSummary"
           @click.stop="emit('open')"
         >
-          <template v-if="visibleTagBadges.length > 0">
-            <span
-              v-for="tag in visibleTagBadges"
-              :key="tag.id"
-              class="tag-selector__badge entry-card-tags__badge"
-              :style="{ backgroundColor: `${tag.color}25`, color: tag.color }"
-            >
-              {{ tag.name }}
-            </span>
-            <span
-              v-if="hiddenTagCount > 0"
-              class="tag-selector__badge tag-selector__badge--more entry-card-tags__badge"
-            >
-              +{{ hiddenTagCount }}
-            </span>
+          <template v-if="selectedTags.length > 0">
+            <TagOverflowList
+              :tags="selectedTags"
+              badge-class="entry-card-tags__badge"
+            />
           </template>
           <span
             v-else
@@ -96,7 +80,6 @@ function handleOpenChange(open: boolean) {
             :tags="tags"
             :selected-tag-ids="item.tagIds"
             :allow-create="true"
-            :max-badges="1"
             :full-width="true"
             :open-on-mount="true"
             trigger-variant="default"
@@ -106,6 +89,7 @@ function handleOpenChange(open: boolean) {
             @create-tag="name => emit('create-tag', name)"
             @rename-tag="(tagId, name) => emit('rename-tag', tagId, name)"
             @update-tag-color="(tagId, color) => emit('update-tag-color', tagId, color)"
+            @reorder-tags="nextTags => emit('reorder-tags', nextTags)"
             @open-change="handleOpenChange"
           />
         </div>
@@ -168,14 +152,11 @@ function handleOpenChange(open: boolean) {
   white-space: nowrap;
 }
 
-.entry-card-tags .tag-selector__selected-tags {
-  min-width: 0;
-  flex: 1;
-}
-
 .entry-card-tags__static {
+  display: flex;
   overflow: hidden;
   min-width: 0;
+  align-items: center;
   padding: 0;
   border: none;
   background: transparent;

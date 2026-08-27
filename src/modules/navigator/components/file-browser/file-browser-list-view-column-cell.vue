@@ -9,7 +9,7 @@ import { LoaderCircleIcon } from '@lucide/vue';
 import type { ListReorderableColumnId } from '@/types/user-settings';
 import type { ItemTag } from '@/types/user-stats';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TagSelector } from '@/components/ui/tag-selector';
+import { TagOverflowList, TagSelector } from '@/components/ui/tag-selector';
 import type { DirEntry } from '@/types/dir-entry';
 
 interface FileBrowserListDateDisplay {
@@ -34,7 +34,6 @@ interface FileBrowserListViewColumnRow {
   createdDate: FileBrowserListDateDisplay;
   selectedTagIds: string[];
   tagBadges: FileBrowserListTagBadge[];
-  hiddenTagCount: number;
   tagSummary: string;
   isTagSelectorMounted: boolean;
   kindLabel: string;
@@ -54,6 +53,7 @@ const emit = defineEmits<{
   createTag: [entry: DirEntry, name: string];
   renameTag: [tagId: string, name: string];
   updateTagColor: [tagId: string, color: string];
+  reorderTags: [tags: ItemTag[]];
   tagsOpenChange: [entryPath: string, open: boolean];
   openTagSelector: [entryPath: string];
 }>();
@@ -129,7 +129,6 @@ const tagsColumnInteractionAttrs = computed(() => {
         :tags="props.availableTags"
         :selected-tag-ids="props.row.selectedTagIds"
         :allow-create="true"
-        :max-badges="1"
         :full-width="true"
         :open-on-mount="true"
         trigger-variant="default"
@@ -139,6 +138,7 @@ const tagsColumnInteractionAttrs = computed(() => {
         @create-tag="name => emit('createTag', props.row.entry, name)"
         @rename-tag="(tagId, name) => emit('renameTag', tagId, name)"
         @update-tag-color="(tagId, color) => emit('updateTagColor', tagId, color)"
+        @reorder-tags="nextTags => emit('reorderTags', nextTags)"
         @open-change="open => emit('tagsOpenChange', props.row.entry.path, open)"
       />
       <button
@@ -149,20 +149,7 @@ const tagsColumnInteractionAttrs = computed(() => {
         @click="emit('openTagSelector', props.row.entry.path)"
       >
         <template v-if="props.row.tagBadges.length > 0">
-          <span
-            v-for="tag in props.row.tagBadges"
-            :key="tag.id"
-            class="tag-selector__badge"
-            :style="tag.style"
-          >
-            {{ tag.name }}
-          </span>
-          <span
-            v-if="props.row.hiddenTagCount > 0"
-            class="tag-selector__badge tag-selector__badge--more"
-          >
-            +{{ props.row.hiddenTagCount }}
-          </span>
+          <TagOverflowList :tags="props.row.tagBadges" />
         </template>
         <span
           v-else
