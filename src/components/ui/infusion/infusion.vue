@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, ref, watch, type CSSProperties } from 'vue';
+import { usePreparedInfusionImage } from './use-prepared-infusion-image';
 
 interface Props {
   src: string;
@@ -41,6 +42,19 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const videoElementRef = ref<HTMLVideoElement | null>(null);
+const containerElementRef = ref<HTMLDivElement | null>(null);
+
+const { preparedImageSrc } = usePreparedInfusionImage({
+  containerElementRef,
+  src: () => props.src,
+  type: () => props.type,
+  blur: () => props.blur,
+  contrast: () => props.mediaContrast,
+  brightness: () => props.mediaBrightness,
+  noiseIntensity: () => props.noiseIntensity,
+  noiseOpacity: () => props.noiseOpacity,
+  noiseScale: () => props.noiseScale,
+});
 
 watch(
   [() => props.pausePlayback, videoElementRef, () => props.type, () => props.src],
@@ -61,11 +75,15 @@ watch(
   { immediate: true },
 );
 
+const hasMediaFilter = computed(() => {
+  return props.blur > 0 || props.mediaContrast !== 100 || props.mediaBrightness !== 100;
+});
+
 const imageStyle = computed(() => ({
   '--infusion-opacity': props.opacity,
   '--infusion-opacity-dark': props.opacityDark,
   '--infusion-z-index': props.zIndex,
-  '--infusion-blur': `${props.blur}px`,
+  '--infusion-blur': `${Math.max(0, props.blur)}px`,
   '--infusion-noise-intensity': props.noiseIntensity,
   '--infusion-noise-scale': props.noiseScale,
   '--infusion-noise-opacity': props.noiseOpacity,
@@ -117,19 +135,21 @@ const containerClass = computed(() => [
 
 <template>
   <div
+    ref="containerElementRef"
     :class="containerClass"
     :style="imageStyle"
   >
     <img
-      v-if="props.type === 'image'"
+      v-if="props.type === 'image' && preparedImageSrc"
       class="infusion-image"
-      :src="props.src"
+      :src="preparedImageSrc"
       alt=""
     >
     <video
       v-if="props.type === 'video'"
       ref="videoElementRef"
       class="infusion-video"
+      :class="{ 'infusion-media--filtered': hasMediaFilter }"
       :src="props.src"
       autoplay
       loop
@@ -138,7 +158,7 @@ const containerClass = computed(() => [
       alt=""
     />
     <div
-      v-if="noiseIntensity > 0"
+      v-if="props.type === 'video' && noiseIntensity > 0"
       class="infusion-noise"
       :style="{ backgroundImage: `url(${noiseDataUrl})` }"
     />
@@ -166,24 +186,17 @@ const containerClass = computed(() => [
   height: 100%;
 }
 
-.infusion-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: var(--infusion-opacity);
-  transform: scale(1.1)
-}
-
-.dark .infusion-image {
-  opacity: var(--infusion-opacity-dark);
-}
-
+.infusion-image,
 .infusion-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: var(--infusion-opacity);
-  transform: scale(1.1)
+  transform: scale(1.1);
+}
+
+.dark .infusion-image {
+  opacity: var(--infusion-opacity-dark);
 }
 
 .dark .infusion-video {
