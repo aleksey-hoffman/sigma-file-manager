@@ -218,6 +218,18 @@ fn get_launch_context() -> LaunchContext {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // WebKitGTK's DMA-BUF renderer frequently crashes the webview on startup with
+    // proprietary NVIDIA drivers under Wayland. Disable it unless the user already
+    // set an explicit value (e.g. via their own desktop entry / shell profile).
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+        // SAFETY: called once, before any threads are spawned and before the
+        // webview (which reads this variable) is created.
+        unsafe {
+            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+        }
+    }
+
     tauri::Builder::default()
         .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
