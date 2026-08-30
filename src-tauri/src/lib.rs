@@ -216,6 +216,17 @@ fn get_launch_context() -> LaunchContext {
     }
 }
 
+#[cfg(target_os = "linux")]
+fn is_wayland_session() -> bool {
+    std::env::var_os("WAYLAND_DISPLAY").is_some()
+        || std::env::var("XDG_SESSION_TYPE").is_ok_and(|value| value == "wayland")
+}
+
+#[cfg(target_os = "linux")]
+fn is_nvidia_driver_active() -> bool {
+    std::path::Path::new("/proc/driver/nvidia/version").exists()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // WebKitGTK's DMA-BUF renderer frequently crashes the webview on startup with
@@ -227,6 +238,18 @@ pub fn run() {
         // webview (which reads this variable) is created.
         unsafe {
             std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+        }
+    }
+
+    // The NVIDIA proprietary driver's Wayland explicit-sync support has long-standing
+    // bugs that make GTK/WebKitGTK compositing lag behind the cursor (e.g. hover
+    // highlights appearing 1-2s late). Forcing GTK onto XWayland avoids that broken
+    // sync path. Only applied when we can positively identify NVIDIA + Wayland, and
+    // only if the user hasn't already chosen a backend themselves.
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("GDK_BACKEND").is_none() && is_wayland_session() && is_nvidia_driver_active() {
+        unsafe {
+            std::env::set_var("GDK_BACKEND", "x11");
         }
     }
 
