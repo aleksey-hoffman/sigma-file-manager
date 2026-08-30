@@ -170,10 +170,7 @@ export function useImageThumbnails() {
       });
 
       if (request.generation === thumbnailGeneration && !cancelledThumbnails.has(processingKey)) {
-        imageThumbnails.value = {
-          ...imageThumbnails.value,
-          [request.thumbnailKey]: convertFileSrc(thumbnailPath),
-        };
+        imageThumbnails.value[request.thumbnailKey] = convertFileSrc(thumbnailPath);
       }
     }
     catch {
@@ -244,10 +241,7 @@ export function useImageThumbnails() {
         && !cancelledPlaceholders.has(processingKey)
         && !imageThumbnails.value[request.thumbnailKey]
       ) {
-        imageThumbnailPlaceholders.value = {
-          ...imageThumbnailPlaceholders.value,
-          [request.thumbnailKey]: placeholderDataUrl,
-        };
+        imageThumbnailPlaceholders.value[request.thumbnailKey] = placeholderDataUrl;
       }
       else if (
         !placeholderDataUrl

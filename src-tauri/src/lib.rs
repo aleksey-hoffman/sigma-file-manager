@@ -17,6 +17,7 @@ mod extensions;
 mod file_operations;
 mod global_search;
 mod image_thumbnails;
+mod infusion_images;
 mod input_simulation;
 mod lan_share;
 mod link_operations;
@@ -336,6 +337,7 @@ pub fn run() {
             image_thumbnails::cache_video_thumbnail,
             image_thumbnails::generate_image_thumbnail,
             image_thumbnails::get_cached_video_thumbnail,
+            infusion_images::generate_infusion_image,
             open_with::get_associated_programs,
             open_with::open_with_program,
             open_with::open_with_default,
