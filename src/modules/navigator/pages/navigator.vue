@@ -315,6 +315,11 @@ const isGalleryMode = computed(() => (
   !globalSearchStore.isOpen
   && activeNavigatorLayout.value === 'gallery'
 ));
+const galleryToolbarTeleportTarget = computed(() => (
+  isGalleryMode.value && !isSplitView.value
+    ? '#navigator-gallery-toolbar-target'
+    : undefined
+));
 
 watch(isGalleryMode, (galleryEnabled) => {
   if (!galleryEnabled) {
@@ -1240,6 +1245,11 @@ onUnmounted(() => {
           :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
         />
       </div>
+      <div
+        v-if="galleryToolbarTeleportTarget"
+        id="navigator-gallery-toolbar-target"
+        class="navigator-page__gallery-toolbar-target"
+      />
       <ResizablePanelGroup
         v-if="!isSmallScreen"
         :key="`info-panel-width-${infoPanelLayoutSizingKey}-${isGalleryMode ? 'gallery' : 'standard'}`"
@@ -1287,6 +1297,7 @@ onUnmounted(() => {
                         :track-relative-time="trackNavigatorRelativeTime"
                         :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
                         :is-split-view="true"
+                        :toolbar-teleport-target="galleryToolbarTeleportTarget"
                         class="navigator-page__pane"
                         @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                         @update:current-dir-entry="handleCurrentDirChange"
@@ -1308,6 +1319,7 @@ onUnmounted(() => {
                       :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
                       :track-relative-time="trackNavigatorRelativeTime"
                       :is-active-pane="true"
+                      :toolbar-teleport-target="galleryToolbarTeleportTarget"
                       class="navigator-page__pane"
                       @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
                       @update:current-dir-entry="handleCurrentDirChange"
@@ -1323,6 +1335,7 @@ onUnmounted(() => {
                     :layout="getLayoutForPath(currentActivePath)"
                     :track-relative-time="trackNavigatorRelativeTime"
                     :is-active-pane="true"
+                    :toolbar-teleport-target="galleryToolbarTeleportTarget"
                     class="navigator-page__pane"
                     @update:selected-entries="(entries) => handleSelectionChange(entries)"
                     @update:current-dir-entry="handleCurrentDirChange"
@@ -1533,6 +1546,23 @@ onUnmounted(() => {
   flex: 1;
   gap: 6px;
   transition: gap var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
+}
+
+.navigator-page__gallery-toolbar-target {
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--background-2));
+}
+
+.navigator-page__gallery-toolbar-target :deep(.file-browser-toolbar) {
+  min-height: 48px;
+  border-radius: inherit;
 }
 
 .navigator-page__main-resizable--info-panel-closed {
