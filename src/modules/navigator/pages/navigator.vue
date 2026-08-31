@@ -1554,15 +1554,20 @@ onUnmounted(() => {
   overflow: visible;
   width: 100%;
   min-width: 0;
-  min-height: 48px;
+  min-height: 40px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   background-color: hsl(var(--background-2));
 }
 
 .navigator-page__gallery-toolbar-target :deep(.file-browser-toolbar) {
-  min-height: 48px;
+  min-height: 40px;
   border-radius: inherit;
+}
+
+.navigator-page__gallery-toolbar-target :deep(.file-browser-toolbar__layout) {
+  height: 40px;
+  padding-block: 2px;
 }
 
 .navigator-page__main-resizable--info-panel-closed {
