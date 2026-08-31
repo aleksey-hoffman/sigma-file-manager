@@ -33,6 +33,7 @@ import {
 } from '../utils/file-browser-content-box';
 import type { FileBrowserVirtualRow } from '../utils/file-browser-virtual-rows';
 import { clearDocumentTextSelection } from '@/utils/document-selection';
+import type { FileBrowserLayout } from '../types';
 
 const BOX_SELECTION_OVERLAY_CLASS = 'file-browser-box-selection-overlay';
 const FILE_BROWSER_CONTENT_SELECTOR = '.file-browser__content';
@@ -88,7 +89,7 @@ function applyEdgeAutoScroll(
 
 export function useFileBrowserBoxSelection(options: {
   enabled: ComputedRef<boolean>;
-  layout: () => 'list' | 'grid' | undefined;
+  layout: () => FileBrowserLayout;
   paneElementRef: Ref<HTMLElement | null>;
   scrollViewportRef: Ref<HTMLElement | null>;
   entriesContainerRef: Ref<HTMLElement | null>;

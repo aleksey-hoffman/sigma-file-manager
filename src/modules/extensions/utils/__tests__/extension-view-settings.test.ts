@@ -90,6 +90,24 @@ describe('extension-view-settings', () => {
     });
   });
 
+  it('exposes gallery as its public API-compatible grid layout', () => {
+    const navigator = createNavigator({
+      layout: {
+        type: {
+          title: 'galleryLayout',
+          name: 'gallery',
+        },
+        dirItemOptions: {
+          title: { height: 0 },
+          directory: { height: 0 },
+          file: { height: 0 },
+        },
+      },
+    });
+
+    expect(readExtensionViewLayout(navigator)).toBe('grid');
+  });
+
   it('uses list sort settings for compact-list layout', () => {
     const navigator = createNavigator({
       layout: {

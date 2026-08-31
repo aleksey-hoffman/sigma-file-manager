@@ -26,6 +26,7 @@ import {
   type FileBrowserListVirtualRow,
   type FileBrowserVirtualRow,
 } from '../utils/file-browser-virtual-rows';
+import type { FileBrowserLayout } from '../types';
 
 export type {
   FileBrowserGridEntryVariant,
@@ -42,6 +43,7 @@ const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT = 56;
 const GRID_SECTION_HEADER_HEIGHT = 42;
 const GRID_DIR_ENTRY_HEIGHT = 52;
 const GRID_ENTRY_HEIGHT = 120;
+export const GALLERY_ENTRY_HEIGHT = 148;
 const VIRTUAL_OVERSCAN_PX = 420;
 const SCROLL_TO_PATH_DOM_SYNC_ATTEMPTS = 12;
 const STATUS_BAR_BORDER_CLEARANCE = 2;
@@ -50,7 +52,7 @@ const ENTRIES_CONTAINER_SELECTOR = '.file-browser__entries-container';
 const CONTENT_INNER_SELECTOR = '.file-browser__content-inner';
 const FILE_BROWSER_SELECTOR = '.file-browser';
 const STATUS_BAR_SELECTOR = '.file-browser-status-bar';
-const VIRTUAL_SPACER_SELECTOR = '.file-browser-list-view__list, .file-browser-grid-view__spacer';
+const VIRTUAL_SPACER_SELECTOR = '.file-browser-list-view__list, .file-browser-grid-view__spacer, .file-browser-gallery-view__spacer';
 
 interface GridSectionDefinition {
   key: FileBrowserGridSectionKey;
@@ -152,11 +154,12 @@ export function resolveViewportContentWidth(viewport: HTMLElement): number {
 function createListRows(
   entries: readonly DirEntry[],
   entryDescription?: (entry: DirEntry) => string | undefined,
+  fixedEntryHeight?: number,
 ): FileBrowserVirtualRow[] {
   let offset = 0;
 
   return entries.map((entry, entryIndex) => {
-    const size = getEntryDescriptionHeight(entry, entryDescription);
+    const size = fixedEntryHeight ?? getEntryDescriptionHeight(entry, entryDescription);
     const row: FileBrowserListVirtualRow = {
       type: 'list-entry',
       key: `list:${entry.path}`,
@@ -276,7 +279,7 @@ function createGridRows(
 
 export function createFileBrowserVirtualRows(options: {
   entries: readonly DirEntry[];
-  layout: 'list' | 'grid' | undefined;
+  layout: FileBrowserLayout;
   viewportWidth: number;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: boolean;
@@ -288,6 +291,10 @@ export function createFileBrowserVirtualRows(options: {
       getGridColumnCount(options.viewportWidth, gridGap),
       gridGap,
     );
+  }
+
+  if (options.layout === 'gallery') {
+    return createListRows(options.entries, undefined, GALLERY_ENTRY_HEIGHT);
   }
 
   return createListRows(options.entries, options.entryDescription);
@@ -321,7 +328,7 @@ export function getFileBrowserGridNavigationEntry(
 
 export function useFileBrowserVirtualLayout(options: {
   entries: ComputedRef<DirEntry[]>;
-  layout: () => 'list' | 'grid' | undefined;
+  layout: () => FileBrowserLayout;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: () => boolean;
 }) {
@@ -332,6 +339,8 @@ export function useFileBrowserVirtualLayout(options: {
   const scrollTop = ref(0);
   const virtualContentOffset = ref(0);
   let viewportResizeObserver: ResizeObserver | null = null;
+  let scrollUpdateFrame: number | null = null;
+  let pendingScrollTop: number | null = null;
 
   const gridGap = computed(() => getFileBrowserGridGap(!!options.increaseFileViewGaps?.()));
   const gridColumnCount = computed(() => getGridColumnCount(viewportWidth.value, gridGap.value));
@@ -364,6 +373,10 @@ export function useFileBrowserVirtualLayout(options: {
     return rowItems.slice(visibleRange.start, visibleRange.end);
   });
 
+  const gridSectionRows = computed(() => {
+    return rows.value.filter((row): row is FileBrowserGridSectionVirtualRow => row.type === 'grid-section');
+  });
+
   const activeGridSectionRow = computed(() => {
     if (options.layout() !== 'grid') {
       return null;
@@ -372,14 +385,12 @@ export function useFileBrowserVirtualLayout(options: {
     let activeRow: FileBrowserGridSectionVirtualRow | null = null;
     const virtualScrollTop = Math.max(0, scrollTop.value - virtualContentOffset.value);
 
-    for (const row of rows.value) {
+    for (const row of gridSectionRows.value) {
       if (row.start > virtualScrollTop) {
         break;
       }
 
-      if (row.type === 'grid-section') {
-        activeRow = row;
-      }
+      activeRow = row;
     }
 
     return activeRow;
@@ -472,7 +483,20 @@ export function useFileBrowserVirtualLayout(options: {
         observeViewportSize();
       }
 
-      scrollTop.value = Math.max(0, viewport.scrollTop);
+      pendingScrollTop = Math.max(0, viewport.scrollTop);
+
+      if (scrollUpdateFrame !== null) {
+        return;
+      }
+
+      scrollUpdateFrame = requestAnimationFrame(() => {
+        scrollUpdateFrame = null;
+
+        if (pendingScrollTop !== null) {
+          scrollTop.value = pendingScrollTop;
+          pendingScrollTop = null;
+        }
+      });
     }
   }
 
@@ -578,6 +602,13 @@ export function useFileBrowserVirtualLayout(options: {
 
     const maxScrollTop = getMaxScrollTop();
     const normalizedScrollTop = Math.min(Math.max(0, nextScrollTop), maxScrollTop);
+    pendingScrollTop = null;
+
+    if (scrollUpdateFrame !== null) {
+      cancelAnimationFrame(scrollUpdateFrame);
+      scrollUpdateFrame = null;
+    }
+
     viewport.scrollTop = normalizedScrollTop;
     scrollTop.value = normalizedScrollTop;
   }
@@ -674,6 +705,11 @@ export function useFileBrowserVirtualLayout(options: {
 
   onBeforeUnmount(() => {
     disconnectViewportResizeObserver();
+
+    if (scrollUpdateFrame !== null) {
+      cancelAnimationFrame(scrollUpdateFrame);
+      scrollUpdateFrame = null;
+    }
   });
 
   return {

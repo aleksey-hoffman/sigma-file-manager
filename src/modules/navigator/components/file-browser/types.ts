@@ -4,11 +4,14 @@
 
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
+import type { NavigatorFolderLayoutName } from '@/types/user-settings';
+
+export type FileBrowserLayout = NavigatorFolderLayoutName | undefined;
 
 export interface FileBrowserProps {
   tab?: Tab;
   paneIndex?: number;
-  layout?: 'list' | 'grid';
+  layout?: NavigatorFolderLayoutName;
 }
 
 export interface FileBrowserEmits {

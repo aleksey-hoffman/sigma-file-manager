@@ -398,7 +398,10 @@ watch(imagePreviewPlaceholderSrc, () => {
         'file-browser-grid-card__info--bottom': props.variant === 'other',
       }"
     >
-      <span class="file-browser-grid-card__name">{{ entry.name }}</span>
+      <span
+        class="file-browser-grid-card__name"
+        :title="entry.name"
+      >{{ entry.name }}</span>
       <div class="file-browser-grid-card__meta">
         <LoaderCircleIcon
           v-if="props.variant === 'dir' && isDirLoadingWithProgress(props.entry)"

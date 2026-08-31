@@ -9,6 +9,7 @@ import {
 import { createPinia, setActivePinia } from 'pinia';
 import { USER_SETTINGS_SCHEMA_VERSION } from '@/stores/schemas/user-settings';
 import {
+  BODY_VISUAL_FILTERS_ENABLED_CLASS,
   USER_SETTINGS_THEME_CHANGED_EVENT,
   useUserSettingsStore,
 } from '@/stores/storage/user-settings';
@@ -149,6 +150,28 @@ describe('user settings theme sync', () => {
     expect(lazyStoreSetMock).not.toHaveBeenCalled();
     expect(lazyStoreSaveMock).not.toHaveBeenCalled();
     expect(emitMock).not.toHaveBeenCalled();
+  });
+
+  it('avoids the full-page filter layer while visual filters are neutral', () => {
+    useUserSettingsStore();
+
+    expect(document.documentElement.classList.contains(BODY_VISUAL_FILTERS_ENABLED_CLASS)).toBe(false);
+    expect(document.documentElement.style.getPropertyValue('--sigma-visual-filter-brightness')).toBe('100');
+    expect(document.documentElement.style.getPropertyValue('--sigma-visual-filter-contrast')).toBe('100');
+  });
+
+  it('enables the full-page filter layer only for non-neutral visual filters', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    userSettingsStore.userSettings.visualFilters.brightness = 110;
+    await nextTick();
+
+    expect(document.documentElement.classList.contains(BODY_VISUAL_FILTERS_ENABLED_CLASS)).toBe(true);
+
+    userSettingsStore.userSettings.visualFilters.brightness = 100;
+    await nextTick();
+
+    expect(document.documentElement.classList.contains(BODY_VISUAL_FILTERS_ENABLED_CLASS)).toBe(false);
   });
 });
 

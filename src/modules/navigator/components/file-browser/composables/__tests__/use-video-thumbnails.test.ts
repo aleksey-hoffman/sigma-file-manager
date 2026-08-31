@@ -76,6 +76,22 @@ describe('normalizeVideoThumbnailSize', () => {
 });
 
 describe('useVideoThumbnails', () => {
+  it('updates thumbnail cache keys without replacing the reactive cache', async () => {
+    mockInvoke.mockImplementation((_command, payload: { path: string }) => {
+      return Promise.resolve(`${payload.path}.thumbnail.jpg`);
+    });
+
+    const thumbnails = useVideoThumbnails();
+    const cacheReference = thumbnails.videoThumbnails.value;
+
+    thumbnails.getVideoThumbnail(createVideoEntry('video-1.mp4'));
+    thumbnails.getVideoThumbnail(createVideoEntry('video-2.mp4'));
+    await flushThumbnailWork();
+
+    expect(thumbnails.videoThumbnails.value).toBe(cacheReference);
+    expect(Object.keys(cacheReference)).toHaveLength(2);
+  });
+
   it('removes queued thumbnail requests when they are cancelled', async () => {
     const pendingRequests: Deferred<string | null>[] = [];
     mockInvoke.mockImplementation(() => {

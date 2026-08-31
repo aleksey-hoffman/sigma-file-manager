@@ -58,6 +58,29 @@ describe('createFileBrowserVirtualRows', () => {
     expect(rows.map(row => row.size)).toEqual([42, 56, 42]);
   });
 
+  it('creates a single vertical filmstrip of fixed gallery rows', () => {
+    const entries = [
+      createEntry('photo.jpg', {
+        ext: 'jpg',
+        mime: 'image/jpeg',
+      }),
+      createEntry('notes.txt', {
+        ext: 'txt',
+        mime: 'text/plain',
+      }),
+    ];
+
+    const rows = createFileBrowserVirtualRows({
+      entries,
+      layout: 'gallery',
+      viewportWidth: 240,
+    });
+
+    expect(rows.map(row => row.type)).toEqual(['list-entry', 'list-entry']);
+    expect(rows.map(row => row.start)).toEqual([0, 148]);
+    expect(rows.map(row => row.size)).toEqual([148, 148]);
+  });
+
   it('creates grid section and item rows from responsive columns', () => {
     const entries = [
       createEntry('dir-1', {
@@ -299,6 +322,57 @@ describe('resolveViewportContentWidth', () => {
     await nextTick();
 
     expect(viewportWidth.value).toBe(860);
+    wrapper.unmount();
+  });
+});
+
+describe('useFileBrowserVirtualLayout scrolling', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('coalesces multiple scroll events into one reactive update per frame', () => {
+    const viewport = document.createElement('div');
+    const animationFrames: FrameRequestCallback[] = [];
+    let scrollTop!: Ref<number>;
+    let handleScroll!: (event: Event) => void;
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      value: 600,
+      configurable: true,
+    });
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+    const wrapper = mount(defineComponent({
+      setup() {
+        const virtualLayout = useFileBrowserVirtualLayout({
+          entries: computed(() => []),
+          layout: () => 'list',
+        });
+
+        scrollTop = virtualLayout.scrollTop;
+        handleScroll = virtualLayout.handleScroll;
+        virtualLayout.setScrollViewportRef(viewport);
+
+        return () => h('div');
+      },
+    }));
+
+    viewport.scrollTop = 120;
+    handleScroll({ currentTarget: viewport } as unknown as Event);
+    viewport.scrollTop = 240;
+    handleScroll({ currentTarget: viewport } as unknown as Event);
+
+    expect(animationFrames).toHaveLength(1);
+    expect(scrollTop.value).toBe(0);
+
+    animationFrames[0](0);
+
+    expect(scrollTop.value).toBe(240);
     wrapper.unmount();
   });
 });

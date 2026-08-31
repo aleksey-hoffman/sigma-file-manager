@@ -131,6 +131,19 @@ describe('useInfoPanelImagePreview', () => {
     expect(preview.usesThumbnailImagePreview.value).toBe(false);
   });
 
+  it('uses a converted HEIC preview when the original-image setting is enabled', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    userSettingsStore.userSettings.navigator.infoPanel.showFullSizeImagePreview = true;
+
+    const selectedEntry = ref<DirEntry | null>(createImageEntry('heic'));
+    const preview = mountInfoPanelImagePreview(selectedEntry);
+    await nextTick();
+
+    expect(preview.imagePreviewSrc.value).toBe('asset://thumb');
+    expect(mockGetImageThumbnail).toHaveBeenCalled();
+    expect(preview.usesThumbnailImagePreview.value).toBe(true);
+  });
+
   it('uses thumbnails for gif files when the setting is disabled', async () => {
     const selectedEntry = ref<DirEntry | null>(createImageEntry('gif'));
     const preview = mountInfoPanelImagePreview(selectedEntry);

@@ -103,6 +103,24 @@ describe('file browser sort columns', () => {
     });
   });
 
+  it('uses grid sorting for gallery layout', () => {
+    const navigator = createNavigatorSettings({
+      listSortColumn: 'size',
+      listSortDirection: 'desc',
+      gridSortColumn: 'modified',
+      gridSortDirection: 'asc',
+    });
+
+    expect(getNavigatorSortSettingsForLayout(navigator, 'gallery')).toEqual({
+      column: 'modified',
+      direction: 'asc',
+    });
+    expect(getNavigatorSortSettingKeys('gallery')).toEqual({
+      column: 'navigator.gridSortColumn',
+      direction: 'navigator.gridSortDirection',
+    });
+  });
+
   it('resolves null sort columns to name', () => {
     const navigator = createNavigatorSettings({
       listSortColumn: null,

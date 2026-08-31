@@ -24,14 +24,16 @@ import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue'
 import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode } from './address-bar-editor-utils';
 import ArchiveOptionsDialog, { type ArchiveOptions } from './archive-options-dialog.vue';
+import type { FileBrowserLayout } from './types';
 
 const props = withDefaults(defineProps<{
   tab?: Tab;
   paneIndex?: number;
-  layout?: 'list' | 'grid';
+  layout?: Exclude<FileBrowserLayout, undefined>;
   externalEntries?: DirEntry[];
   basePath?: string;
   hideToolbar?: boolean;
+  toolbarTeleportTarget?: string;
   hideStatusBar?: boolean;
   entryDescription?: (entry: DirEntry) => string | undefined;
   trackRelativeTime?: boolean;
@@ -43,6 +45,7 @@ const props = withDefaults(defineProps<{
   layout: undefined,
   externalEntries: undefined,
   basePath: undefined,
+  toolbarTeleportTarget: undefined,
   entryDescription: undefined,
   trackRelativeTime: true,
   isActivePane: undefined,
@@ -223,30 +226,36 @@ defineExpose({
     ref="fileBrowserRef"
     class="file-browser"
   >
-    <FileBrowserToolbar
-      v-if="!hideToolbar"
-      v-model:path-input="fb.pathInput.value"
-      v-model:filter-query="fb.filterQuery.value"
-      v-model:is-filter-open="fb.isFilterOpen.value"
-      :focus-filter-input="fb.shouldFocusFilterInput.value"
-      :can-go-back="fb.canGoBack.value"
-      :can-go-forward="fb.canGoForward.value"
-      :can-go-up="!!fb.parentPath.value"
-      :is-loading="fb.isLoading.value || fb.isRefreshing.value"
-      :is-split-view="props.isSplitView"
-      @go-back="fb.goBack"
-      @go-forward="fb.goForward"
-      @go-up="fb.navigateToParent"
-      @go-home="fb.navigateToHome"
-      @refresh="fb.refresh"
-      @submit-path="fb.handlePathSubmit"
-      @navigate-to="fb.navigateToPath"
-      @open-file="fb.openFile"
-      @open-address-editor="openAddressBarEditor('path')"
-      @create-new-directory="fb.openNewItemDialog('directory')"
-      @create-new-file="fb.openNewItemDialog('file')"
-      @filter-input-focused="fb.clearFilterInputFocusRequest"
-    />
+    <Teleport
+      :to="props.toolbarTeleportTarget || 'body'"
+      :disabled="!props.toolbarTeleportTarget"
+      defer
+    >
+      <FileBrowserToolbar
+        v-if="!hideToolbar"
+        v-model:path-input="fb.pathInput.value"
+        v-model:filter-query="fb.filterQuery.value"
+        v-model:is-filter-open="fb.isFilterOpen.value"
+        :focus-filter-input="fb.shouldFocusFilterInput.value"
+        :can-go-back="fb.canGoBack.value"
+        :can-go-forward="fb.canGoForward.value"
+        :can-go-up="!!fb.parentPath.value"
+        :is-loading="fb.isLoading.value || fb.isRefreshing.value"
+        :is-split-view="props.isSplitView"
+        @go-back="fb.goBack"
+        @go-forward="fb.goForward"
+        @go-up="fb.navigateToParent"
+        @go-home="fb.navigateToHome"
+        @refresh="fb.refresh"
+        @submit-path="fb.handlePathSubmit"
+        @navigate-to="fb.navigateToPath"
+        @open-file="fb.openFile"
+        @open-address-editor="openAddressBarEditor('path')"
+        @create-new-directory="fb.openNewItemDialog('directory')"
+        @create-new-file="fb.openNewItemDialog('file')"
+        @filter-input-focused="fb.clearFilterInputFocusRequest"
+      />
+    </Teleport>
     <AddressBarEditorDialog
       ref="addressBarEditorRef"
       :current-path="fb.pathInput.value"

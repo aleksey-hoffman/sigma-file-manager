@@ -341,7 +341,7 @@ export type DefaultDirectorySettings = {
 
 export type SplitViewMode = 'split' | 'linked';
 
-export type NavigatorFolderLayoutName = 'list' | 'grid';
+export type NavigatorFolderLayoutName = 'list' | 'grid' | 'gallery';
 
 export type NavigatorFolderSettings = {
   layout: NavigatorFolderLayoutName;
@@ -390,8 +390,8 @@ export type UserSettingsNavigatorInfoPanel = {
 
 export type NavigatorLayout = {
   type: {
-    title: 'compactListLayout' | 'listLayout' | 'gridLayout';
-    name: 'compact-list' | 'list' | 'grid';
+    title: 'compactListLayout' | 'listLayout' | 'gridLayout' | 'galleryLayout';
+    name: 'compact-list' | 'list' | 'grid' | 'gallery';
   };
   dirItemOptions: {
     title: {

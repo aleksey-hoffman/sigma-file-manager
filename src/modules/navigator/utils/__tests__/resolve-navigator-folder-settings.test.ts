@@ -156,6 +156,16 @@ describe('resolve navigator folder settings', () => {
     expect(hasNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents/')).toBe(true);
   });
 
+  it('resolves and snapshots gallery layout', () => {
+    const navigator = createNavigator({
+      folderSettings: {
+        '/home/user/Pictures': createFolderSettings({ layout: 'gallery' }),
+      },
+    });
+
+    expect(resolveNavigatorFolderSettings(navigator, '/home/user/Pictures').layout).toBe('gallery');
+  });
+
   it('drops non-object folder entries when reading the stored map', () => {
     const navigator = createNavigator({
       folderSettings: {

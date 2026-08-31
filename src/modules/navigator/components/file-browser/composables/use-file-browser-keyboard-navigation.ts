@@ -5,6 +5,7 @@
 import { nextTick, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
+import type { FileBrowserLayout } from '../types';
 
 const ROW_TOLERANCE_PX = 30;
 const OVERLAP_TOLERANCE_PX = 2;
@@ -12,7 +13,7 @@ const OVERLAP_TOLERANCE_PX = 2;
 export function useFileBrowserKeyboardNavigation(options: {
   entries: Ref<DirEntry[]>;
   selectedEntries: Ref<DirEntry[]>;
-  layout: () => 'list' | 'grid' | undefined;
+  layout: () => FileBrowserLayout;
   selectEntryByPath: (path: string) => boolean;
   scrollToPath?: (path: string, align?: ScrollLogicalPosition) => Promise<boolean>;
   getEntryElement?: (path: string) => HTMLElement | null;

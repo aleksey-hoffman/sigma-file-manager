@@ -11,6 +11,7 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import type { DirContents } from '@/types/dir-entry';
 import { getParentDirectory } from '@/utils/normalize-path';
+import { FILE_EXTENSIONS } from '@/constants';
 import {
   emitAuxiliaryWindowEvent,
   findAuxiliaryWindow,
@@ -20,7 +21,7 @@ import {
 
 export type QuickViewFileType = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'unsupported';
 
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif', 'avif'];
+const IMAGE_EXTENSIONS = FILE_EXTENSIONS.IMAGE;
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg', 'ogv', 'mov', 'avi', 'mkv', 'm4v', 'wmv', 'flv'];
 const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'oga', 'flac', 'aac', 'm4a', 'wma', 'opus'];
 const PDF_EXTENSIONS = ['pdf'];

@@ -1259,5 +1259,7 @@
     "replaceShareDialogTitle": "Փոխարինե՞լ ներկայիս կիսումը:",
     "replaceShareDialogDescription": "Ֆայլերն արդեն կիսվում են ցանցում: Ընթացիկ կիսումը կդադարեցվի և կփոխարինվի նորով:",
     "replaceShareDialogConfirm": "Փոխարինել"
-  }
+  },
+  "gallery": "Gallery",
+  "galleryLayout": "Gallery layout"
 }

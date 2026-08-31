@@ -110,20 +110,36 @@ afterEach(() => {
 
 describe('normalizeImageThumbnailMaxDimension', () => {
   it('uses the default size when no valid size is provided', () => {
-    expect(normalizeImageThumbnailMaxDimension()).toBe(384);
-    expect(normalizeImageThumbnailMaxDimension(Number.NaN)).toBe(384);
-    expect(normalizeImageThumbnailMaxDimension(-10)).toBe(384);
-    expect(normalizeImageThumbnailMaxDimension(0.4)).toBe(384);
+    expect(normalizeImageThumbnailMaxDimension()).toBe(2048);
+    expect(normalizeImageThumbnailMaxDimension(Number.NaN)).toBe(2048);
+    expect(normalizeImageThumbnailMaxDimension(-10)).toBe(2048);
+    expect(normalizeImageThumbnailMaxDimension(0.4)).toBe(2048);
   });
 
   it('clamps requested thumbnail sizes to the backend cap', () => {
     expect(normalizeImageThumbnailMaxDimension(1)).toBe(1);
     expect(normalizeImageThumbnailMaxDimension(340)).toBe(340);
-    expect(normalizeImageThumbnailMaxDimension(10_000)).toBe(384);
+    expect(normalizeImageThumbnailMaxDimension(10_000)).toBe(2048);
   });
 });
 
 describe('useImageThumbnails', () => {
+  it('updates thumbnail cache keys without replacing the reactive cache', async () => {
+    mockInvoke.mockImplementation((_command, payload: { path: string }) => {
+      return Promise.resolve(`${payload.path}.thumbnail.png`);
+    });
+
+    const thumbnails = useImageThumbnails();
+    const cacheReference = thumbnails.imageThumbnails.value;
+
+    thumbnails.getImageThumbnail(createImageEntry('image-1.jpg'));
+    thumbnails.getImageThumbnail(createImageEntry('image-2.jpg'));
+    await flushThumbnailWork();
+
+    expect(thumbnails.imageThumbnails.value).toBe(cacheReference);
+    expect(Object.keys(cacheReference)).toHaveLength(2);
+  });
+
   it('removes queued thumbnail requests when they are cancelled', async () => {
     const pendingRequests: Deferred<string>[] = [];
     mockInvoke.mockImplementation(() => {

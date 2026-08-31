@@ -43,6 +43,7 @@ import {
 } from '../utils/file-browser-range-selection';
 import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
 import { refreshDrives } from '@/modules/home/composables/use-drives';
+import type { FileBrowserLayout } from '../types';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -53,7 +54,7 @@ export function useFileBrowserSelection(
   onOpen: (entry: DirEntry) => void,
   onOpenProperties: (entries: DirEntry[]) => void,
   onRefresh: () => void,
-  layout?: () => 'list' | 'grid' | undefined,
+  layout?: () => FileBrowserLayout,
 ) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();

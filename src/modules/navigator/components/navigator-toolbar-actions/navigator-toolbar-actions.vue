@@ -29,6 +29,7 @@ import {
   PanelLeftRightDashedIcon,
   PanelRightOpenIcon,
   LayoutGridIcon,
+  GalleryVerticalEndIcon,
   ListIcon,
   CircleHelpIcon,
   EllipsisVerticalIcon,
@@ -46,7 +47,7 @@ import type {
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 import NavigatorLayoutSortControls from './navigator-layout-sort-controls.vue';
 
-type LayoutType = 'list' | 'grid';
+type LayoutType = 'list' | 'grid' | 'gallery';
 
 const props = defineProps<{
   isSplitView: boolean;
@@ -124,6 +125,10 @@ function setSplitViewMode(mode: SplitViewMode) {
 }
 
 async function setLayout(layoutName: LayoutType) {
+  if (layoutName === 'gallery' && props.isSplitView) {
+    return;
+  }
+
   await persistScopedPatch({ layout: layoutName });
 }
 
@@ -264,6 +269,16 @@ function handleSettingsScopeChange(value: string | number) {
                       <LayoutGridIcon :size="24" />
                       <span>{{ t('grid') }}</span>
                     </button>
+                    <button
+                      type="button"
+                      class="navigator-settings-menu__layout-option"
+                      :class="{ 'navigator-settings-menu__layout-option--active': currentLayout === 'gallery' }"
+                      :disabled="props.isSplitView"
+                      @click="setLayout('gallery')"
+                    >
+                      <GalleryVerticalEndIcon :size="24" />
+                      <span>{{ t('gallery') }}</span>
+                    </button>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -397,7 +412,7 @@ function handleSettingsScopeChange(value: string | number) {
             variant="ghost"
             size="icon"
             :class="{ 'navigator-toolbar-actions__button--active': props.isSplitView }"
-            :disabled="props.isGlobalSearchOpen"
+            :disabled="props.isGlobalSearchOpen || currentLayout === 'gallery'"
             @click="emit('toggle-split-view')"
           >
             <PanelLeftRightDashedIcon
@@ -425,6 +440,7 @@ function handleSettingsScopeChange(value: string | number) {
             variant="ghost"
             size="icon"
             :class="{ 'navigator-toolbar-actions__button--active': props.showInfoPanel }"
+            :disabled="currentLayout === 'gallery'"
             @click="emit('toggle-info-panel')"
           >
             <PanelRightOpenIcon

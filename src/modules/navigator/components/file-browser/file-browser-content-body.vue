@@ -9,14 +9,16 @@ import { FolderOpenIcon } from '@lucide/vue';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import FileBrowserGridView from './file-browser-grid-view.vue';
+import FileBrowserGalleryView from './file-browser-gallery-view.vue';
 import FileBrowserListView from './file-browser-list-view.vue';
 import FileBrowserContextMenu from './file-browser-context-menu.vue';
 import FileBrowserLoading from './file-browser-loading.vue';
 import FileBrowserError from './file-browser-error.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+import type { FileBrowserLayout } from './types';
 
 const props = withDefaults(defineProps<{
-  layout?: 'list' | 'grid';
+  layout?: Exclude<FileBrowserLayout, undefined>;
   trackRelativeTime?: boolean;
 }>(), {
   layout: undefined,
@@ -68,9 +70,8 @@ const { t } = useI18n();
             data-e2e-root="file-browser-entries"
             @contextmenu.self="ctx.handleBackgroundContextMenu"
           >
-            <FileBrowserGridView
-              v-if="props.layout === 'grid'"
-            />
+            <FileBrowserGalleryView v-if="props.layout === 'gallery'" />
+            <FileBrowserGridView v-else-if="props.layout === 'grid'" />
             <FileBrowserListView
               v-else
               :track-relative-time="props.trackRelativeTime"

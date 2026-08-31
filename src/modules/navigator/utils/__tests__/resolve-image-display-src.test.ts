@@ -5,6 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import {
+  canBrowserRenderImageEntry,
   resolveImageDisplaySrc,
   shouldAlwaysUseOriginalImageEntry,
   shouldUseImageThumbnail,
@@ -49,6 +50,11 @@ describe('shouldUseImageThumbnail', () => {
     expect(shouldUseImageThumbnail(createImageEntry('png'), true)).toBe(false);
   });
 
+  it('returns true for HEIC even when original preview is preferred', () => {
+    expect(shouldUseImageThumbnail(createImageEntry('heic'), true)).toBe(true);
+    expect(shouldUseImageThumbnail(createImageEntry('HEIF'), true)).toBe(true);
+  });
+
   it('returns false for svg files', () => {
     expect(shouldUseImageThumbnail(createImageEntry('svg'), false)).toBe(false);
   });
@@ -59,6 +65,18 @@ describe('shouldUseImageThumbnail', () => {
 
   it('returns true for other image files when original preview is disabled', () => {
     expect(shouldUseImageThumbnail(createImageEntry('png'), false)).toBe(true);
+  });
+});
+
+describe('canBrowserRenderImageEntry', () => {
+  it('recognizes browser-renderable image formats', () => {
+    expect(canBrowserRenderImageEntry(createImageEntry('png'))).toBe(true);
+    expect(canBrowserRenderImageEntry(createImageEntry('SVG'))).toBe(true);
+  });
+
+  it('rejects formats that require conversion', () => {
+    expect(canBrowserRenderImageEntry(createImageEntry('heic'))).toBe(false);
+    expect(canBrowserRenderImageEntry(createImageEntry('raw'))).toBe(false);
   });
 });
 
@@ -76,6 +94,21 @@ describe('resolveImageDisplaySrc', () => {
     })).toBe('asset://original');
 
     expect(getThumbnail).not.toHaveBeenCalled();
+  });
+
+  it('returns a converted HEIC preview when original preview is preferred', () => {
+    const entry = createImageEntry('heic');
+    const getThumbnail = vi.fn(() => 'asset://converted-heic');
+
+    expect(resolveImageDisplaySrc({
+      entry,
+      preferOriginal: true,
+      originalSrc: 'asset://original-heic',
+      maxDimension: 1200,
+      getThumbnail,
+    })).toBe('asset://converted-heic');
+
+    expect(getThumbnail).toHaveBeenCalledWith(entry, 1200);
   });
 
   it('returns a cached thumbnail when available', () => {
