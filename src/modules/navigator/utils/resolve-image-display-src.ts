@@ -5,6 +5,22 @@
 import type { DirEntry } from '@/types/dir-entry';
 
 const ORIGINAL_ONLY_IMAGE_EXTENSIONS = new Set(['svg']);
+const BROWSER_RENDERABLE_IMAGE_EXTENSIONS = new Set([
+  'bmp',
+  'gif',
+  'ico',
+  'jpeg',
+  'jpg',
+  'png',
+  'svg',
+  'webp',
+]);
+
+export function canBrowserRenderImageEntry(entry: DirEntry): boolean {
+  const extension = entry.ext?.toLowerCase();
+
+  return extension ? BROWSER_RENDERABLE_IMAGE_EXTENSIONS.has(extension) : false;
+}
 
 export function shouldAlwaysUseOriginalImageEntry(entry: DirEntry): boolean {
   const extension = entry.ext?.toLowerCase();
@@ -13,7 +29,11 @@ export function shouldAlwaysUseOriginalImageEntry(entry: DirEntry): boolean {
 }
 
 export function shouldUseImageThumbnail(entry: DirEntry, preferOriginal: boolean): boolean {
-  return !preferOriginal && !shouldAlwaysUseOriginalImageEntry(entry);
+  if (shouldAlwaysUseOriginalImageEntry(entry)) {
+    return false;
+  }
+
+  return !preferOriginal || !canBrowserRenderImageEntry(entry);
 }
 
 export function resolveImageDisplaySrc(options: {

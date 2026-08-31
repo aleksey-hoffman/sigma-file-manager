@@ -58,6 +58,29 @@ describe('createFileBrowserVirtualRows', () => {
     expect(rows.map(row => row.size)).toEqual([42, 56, 42]);
   });
 
+  it('creates a single vertical filmstrip of fixed gallery rows', () => {
+    const entries = [
+      createEntry('photo.jpg', {
+        ext: 'jpg',
+        mime: 'image/jpeg',
+      }),
+      createEntry('notes.txt', {
+        ext: 'txt',
+        mime: 'text/plain',
+      }),
+    ];
+
+    const rows = createFileBrowserVirtualRows({
+      entries,
+      layout: 'gallery',
+      viewportWidth: 240,
+    });
+
+    expect(rows.map(row => row.type)).toEqual(['list-entry', 'list-entry']);
+    expect(rows.map(row => row.start)).toEqual([0, 148]);
+    expect(rows.map(row => row.size)).toEqual([148, 148]);
+  });
+
   it('creates grid section and item rows from responsive columns', () => {
     const entries = [
       createEntry('dir-1', {

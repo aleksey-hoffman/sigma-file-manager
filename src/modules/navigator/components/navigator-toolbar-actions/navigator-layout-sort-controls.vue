@@ -33,7 +33,7 @@ import {
 import type { NavigatorFolderSettingsPatch } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 const props = defineProps<{
-  sortLayout: 'list' | 'grid';
+  sortLayout: 'list' | 'grid' | 'gallery';
   sortSource: NavigatorSortSource;
 }>();
 
@@ -68,7 +68,7 @@ function handleSortColumnChange(value: unknown) {
 function toggleSortDirection() {
   const nextDirection = getNextNavigatorSortDirection(activeSortDirection.value);
 
-  emit('persist', props.sortLayout === 'grid'
+  emit('persist', props.sortLayout === 'grid' || props.sortLayout === 'gallery'
     ? { gridSortDirection: nextDirection }
     : { listSortDirection: nextDirection });
 }

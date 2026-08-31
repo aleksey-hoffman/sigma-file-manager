@@ -15,6 +15,7 @@ import {
   type Ref,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useWindowSize } from '@vueuse/core';
 import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
@@ -50,6 +51,7 @@ import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolb
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
+import type { NavigatorFolderLayoutName } from '@/types/user-settings';
 import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
 
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
@@ -223,6 +225,12 @@ const currentDirEntry = ref<DirEntry | null>(
 );
 const activeTabId = ref<string | null>(null);
 const isSmallScreen = useIsSmallScreen();
+const { width: windowWidth } = useWindowSize();
+const galleryStripDefaultPercent = computed(() => {
+  const viewportWidth = Math.max(windowWidth.value, 1);
+  return Math.min(32, Math.max(15, (260 / viewportWidth) * 100));
+});
+const galleryPreviewDefaultPercent = computed(() => 100 - galleryStripDefaultPercent.value);
 
 watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   const currentTabIds = new Set(
@@ -298,9 +306,24 @@ const {
   () => canUseFolderSettingsForActivePath.value,
 );
 
-function getLayoutForPath(path: string | undefined): 'list' | 'grid' {
+function getLayoutForPath(path: string | undefined): NavigatorFolderLayoutName {
   return resolveForPath(path).layout;
 }
+
+const activeNavigatorLayout = computed(() => getLayoutForPath(activeFolderSettingsPath.value));
+const isGalleryMode = computed(() => (
+  !globalSearchStore.isOpen
+  && activeNavigatorLayout.value === 'gallery'
+));
+
+watch(isGalleryMode, (galleryEnabled) => {
+  if (!galleryEnabled) {
+    return;
+  }
+
+  showInfoPanel.value = true;
+  infoPanelSlideVisible.value = true;
+});
 
 const wasSplitViewBeforeSearch = ref(false);
 
@@ -337,7 +360,7 @@ watch(
 );
 
 function handleToggleSplitView() {
-  if (globalSearchStore.isOpen) return;
+  if (globalSearchStore.isOpen || isGalleryMode.value) return;
   workspacesStore.toggleSplitView();
 }
 
@@ -381,6 +404,10 @@ function syncLinkedPane(entries: DirEntry[], tabId: string) {
 }
 
 async function handleToggleInfoPanel() {
+  if (isGalleryMode.value) {
+    return;
+  }
+
   if (isSmallScreen.value) {
     showInfoPanel.value = !showInfoPanel.value;
     return;
@@ -974,6 +1001,7 @@ async function handleDuplicateCurrentTabShortcut() {
     case 'clone-path':
       await workspacesStore.openNewTabGroup(target.path);
       return;
+
     default: {
       const exhaustiveCheck: never = target;
       return exhaustiveCheck;
@@ -1149,7 +1177,7 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('switchToLeftPane', () => switchToPane(0));
   shortcutsStore.registerHandler('switchToRightPane', () => switchToPane(1));
   shortcutsStore.registerHandler('toggleSplitView', () => {
-    if (globalSearchStore.isOpen) return false;
+    if (globalSearchStore.isOpen || isGalleryMode.value) return false;
     handleToggleSplitView();
   });
 }
@@ -1214,7 +1242,7 @@ onUnmounted(() => {
       </div>
       <ResizablePanelGroup
         v-if="!isSmallScreen"
-        :key="`info-panel-width-${infoPanelLayoutSizingKey}`"
+        :key="`info-panel-width-${infoPanelLayoutSizingKey}-${isGalleryMode ? 'gallery' : 'standard'}`"
         direction="horizontal"
         class="navigator-page__main-resizable"
         :class="{ 'navigator-page__main-resizable--info-panel-closed': isInfoPanelHandleCollapsed }"
@@ -1222,8 +1250,10 @@ onUnmounted(() => {
       >
         <ResizablePanel
           :order="1"
-          :default-size="100"
-          :min-size="mainPanelMinSize"
+          :default-size="isGalleryMode ? galleryStripDefaultPercent : 100"
+          size-unit="%"
+          :min-size="isGalleryMode ? 13 : mainPanelMinSize"
+          :max-size="isGalleryMode ? 35 : 100"
         >
           <div class="navigator-page__panes-wrapper">
             <div class="navigator-page__panes-container">
@@ -1339,14 +1369,14 @@ onUnmounted(() => {
           @dragging="handleInfoPanelWidthHandleDragging"
         />
         <ResizablePanel
-          :ref="setInfoPanelWidthPanelRef"
+          :ref="isGalleryMode ? undefined : setInfoPanelWidthPanelRef"
           :order="2"
-          :default-size="infoPanelWidthDefault"
-          collapsible
+          :default-size="isGalleryMode ? galleryPreviewDefaultPercent : infoPanelWidthDefault"
+          :collapsible="!isGalleryMode"
           :collapsed-size="0"
-          size-unit="px"
+          :size-unit="isGalleryMode ? '%' : 'px'"
           :min-size="0"
-          :max-size="infoPanelLayout.MAX_WIDTH_PX"
+          :max-size="isGalleryMode ? 100 : infoPanelLayout.MAX_WIDTH_PX"
         >
           <div
             class="navigator-page__info-panel-slide"
@@ -1359,6 +1389,7 @@ onUnmounted(() => {
             <InfoPanel
               :selected-entry="infoPanelEntry"
               :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
+              :gallery="isGalleryMode"
             />
           </div>
         </ResizablePanel>

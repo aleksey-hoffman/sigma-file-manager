@@ -35,6 +35,7 @@ const INFO_PANEL_TEXT_PREVIEW_MAX_BYTES = 48 * 1024;
 const props = defineProps<{
   selectedEntry: DirEntry | null;
   isCurrentDir?: boolean;
+  fit?: 'cover' | 'contain';
 }>();
 
 const {
@@ -130,7 +131,10 @@ watch(
 </script>
 
 <template>
-  <div class="info-panel-preview">
+  <div
+    class="info-panel-preview"
+    :class="{ 'info-panel-preview--contain': props.fit === 'contain' }"
+  >
     <div
       v-if="!selectedEntry"
       class="info-panel-preview__placeholder"
@@ -283,6 +287,11 @@ watch(
 
 .info-panel-preview__video {
   border-radius: var(--radius-sm);
+}
+
+.info-panel-preview--contain .info-panel-preview__image,
+.info-panel-preview--contain .info-panel-preview__video {
+  object-fit: contain;
 }
 
 .info-panel-preview__media-container--audio {

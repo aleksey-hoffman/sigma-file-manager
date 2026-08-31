@@ -87,7 +87,11 @@ export function getNavigatorSortLayoutForViewLayout(
 }
 
 export function readExtensionViewLayout(navigator: UserSettingsNavigator): ExtensionViewLayout {
-  return navigator.layout.type.name;
+  const layoutName = navigator.layout.type.name;
+
+  // Gallery is a navigator-only presentation mode for now. Extensions that use
+  // the public view API still receive its grid-compatible sorting/layout model.
+  return layoutName === 'gallery' ? 'grid' : layoutName;
 }
 
 export function readExtensionViewSorting(

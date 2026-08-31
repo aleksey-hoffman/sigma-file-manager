@@ -6,7 +6,7 @@ import { reactive, ref } from 'vue';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 
-const IMAGE_THUMBNAIL_MAX_DIMENSION = 384;
+const IMAGE_THUMBNAIL_MAX_DIMENSION = 2048;
 const IMAGE_THUMBNAIL_PLACEHOLDER_SIZE = 20;
 const MAX_CONCURRENT_IMAGE_THUMBNAILS = 3;
 const MAX_CONCURRENT_IMAGE_PLACEHOLDERS = 1;

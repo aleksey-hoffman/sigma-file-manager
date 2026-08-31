@@ -4,7 +4,7 @@
 
 import { FILE_EXTENSIONS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
-import type { GroupedEntries } from './types';
+import type { FileBrowserLayout, GroupedEntries } from './types';
 
 export function isFileBrowserImageEntry(entry: DirEntry): boolean {
   if (entry.is_dir) return false;
@@ -59,7 +59,7 @@ export function getFileBrowserGridEntryOrder(entries: readonly DirEntry[]): DirE
 
 export function getFileBrowserVisualEntryOrder(
   entries: readonly DirEntry[],
-  layout: 'list' | 'grid' | undefined,
+  layout: FileBrowserLayout,
 ): DirEntry[] {
   if (layout === 'grid') {
     return getFileBrowserGridEntryOrder(entries);

@@ -13,12 +13,14 @@ import InfoPanelPreview from './info-panel-preview.vue';
 import InfoPanelProperties from './info-panel-properties.vue';
 import InfoPanelResizableLayout from './info-panel-resizable-layout.vue';
 import InfoPanelDrawerLayout from './info-panel-drawer-layout.vue';
+import InfoPanelGalleryLayout from './info-panel-gallery-layout.vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 
 const props = defineProps<{
   selectedEntry: DirEntry | null;
   isCurrentDir?: boolean;
+  gallery?: boolean;
 }>();
 
 const isCompact = useIsSmallScreen();
@@ -27,8 +29,13 @@ const isDrawerOpen = ref(false);
 
 <template>
   <div class="info-panel info-panel-hover-reveal">
+    <InfoPanelGalleryLayout
+      v-if="props.gallery && !isCompact"
+      :selected-entry="props.selectedEntry"
+      :is-current-dir="props.isCurrentDir"
+    />
     <InfoPanelResizableLayout
-      v-if="!isCompact"
+      v-else-if="!isCompact"
       :selected-entry="props.selectedEntry"
       :is-current-dir="props.isCurrentDir"
     />

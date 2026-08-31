@@ -24,11 +24,12 @@ import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue'
 import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode } from './address-bar-editor-utils';
 import ArchiveOptionsDialog, { type ArchiveOptions } from './archive-options-dialog.vue';
+import type { FileBrowserLayout } from './types';
 
 const props = withDefaults(defineProps<{
   tab?: Tab;
   paneIndex?: number;
-  layout?: 'list' | 'grid';
+  layout?: Exclude<FileBrowserLayout, undefined>;
   externalEntries?: DirEntry[];
   basePath?: string;
   hideToolbar?: boolean;

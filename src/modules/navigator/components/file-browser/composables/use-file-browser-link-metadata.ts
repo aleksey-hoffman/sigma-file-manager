@@ -14,13 +14,14 @@ import {
   isLinkMetadataSortColumn,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
+import type { FileBrowserLayout } from '../types';
 
 interface UseFileBrowserLinkMetadataOptions {
   enabled: boolean;
   currentPath: ComputedRef<string>;
   directoryEntries: ComputedRef<DirEntry[]>;
   visibleRows: ComputedRef<FileBrowserVirtualRow[]>;
-  layout: () => 'list' | 'grid' | undefined;
+  layout: () => FileBrowserLayout;
 }
 
 const VISIBLE_METADATA_REQUEST_DELAY_MS = 50;
@@ -74,7 +75,7 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
       options.layout(),
     ).column;
 
-    return options.layout() === 'list' || options.layout() === 'grid'
+    return options.layout() === 'list' || options.layout() === 'grid' || options.layout() === 'gallery'
       ? isLinkMetadataSortColumn(activeSortColumn)
       : false;
   });

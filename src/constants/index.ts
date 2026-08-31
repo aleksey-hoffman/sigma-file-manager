@@ -25,7 +25,12 @@ export const SEARCH_CONSTANTS = {
 } as const;
 
 export const FILE_EXTENSIONS: Record<string, readonly string[]> = {
-  IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif'],
+  IMAGE: [
+    'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif',
+    'heic', 'heif', 'avif', 'jxl', 'jp2', 'j2k', 'psd', 'dds', 'tga', 'exr',
+    'dng', 'cr2', 'cr3', 'nef', 'nrw', 'arw', 'orf', 'raf', 'rw2', 'pef',
+    'srw', '3fr', 'erf', 'kdc', 'mos', 'mrw', 'x3f',
+  ],
   VIDEO: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v', 'mpeg', 'mpg'],
   AUDIO: ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'opus'],
   CODE: ['js', 'ts', 'jsx', 'tsx', 'vue', 'py', 'java', 'cpp', 'c', 'h', 'rs', 'go', 'rb', 'php', 'swift', 'kt', 'cs', 'html', 'css', 'scss', 'sass', 'less', 'json', 'xml', 'yaml', 'yml', 'toml', 'md', 'sh', 'bash', 'ps1', 'sql'],

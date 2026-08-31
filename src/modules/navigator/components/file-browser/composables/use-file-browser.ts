@@ -49,21 +49,22 @@ import {
   type NavigatorSortSource,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
+import type { FileBrowserLayout } from '../types';
 
 function createNavigatorSortSettingsComputed(
   getSource: () => NavigatorSortSource,
-  layout: () => 'list' | 'grid' | undefined,
+  layout: () => FileBrowserLayout,
 ) {
   return computed(() => getNavigatorSortSettingsForLayout(getSource(), layout()));
 }
 
-function shouldApplyNavigatorSort(layout: 'list' | 'grid' | undefined) {
-  return layout === 'list' || layout === 'grid';
+function shouldApplyNavigatorSort(layout: FileBrowserLayout) {
+  return layout === 'list' || layout === 'grid' || layout === 'gallery';
 }
 
 export interface UseFileBrowserOptions {
   tab: () => Tab | undefined;
-  layout: () => 'list' | 'grid' | undefined;
+  layout: () => FileBrowserLayout;
   externalEntries?: () => DirEntry[];
   basePath?: () => string;
   onSelectedEntriesChange: (entries: DirEntry[]) => void;
@@ -468,7 +469,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   async function selectFirstEntry() {
     if (visualEntries.value.length === 0) return;
 
-    const firstEntry = visualEntries.value[0];
+    const firstEntry = options.layout() === 'gallery'
+      ? visualEntries.value.find(entry => entry.is_file) ?? visualEntries.value[0]
+      : visualEntries.value[0];
     selection.selectEntryByPath(firstEntry.path);
     await virtualLayout.scrollToPath(firstEntry.path);
     await nextTick();
@@ -479,6 +482,31 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       element.focus({ preventScroll: true });
     }
   }
+
+  watch(
+    [
+      () => options.layout(),
+      dataSource.currentPath,
+      dataSource.isLoading,
+      visualEntries,
+    ],
+    async ([layout, , isLoading, entries]) => {
+      if (
+        layout !== 'gallery'
+        || isLoading
+        || entries.length === 0
+        || selection.selectedEntries.value.length > 0
+      ) {
+        return;
+      }
+
+      await selectFirstEntry();
+    },
+    {
+      immediate: true,
+      flush: 'post',
+    },
+  );
 
   function handleVirtualScroll(event: Event) {
     virtualLayout.handleScroll(event);

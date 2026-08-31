@@ -20,9 +20,10 @@ import {
   getFileBrowserGridGap,
   getFileBrowserListSideGutter,
 } from './utils/file-browser-layout-gaps';
+import type { FileBrowserLayout } from './types';
 
 const props = withDefaults(defineProps<{
-  layout?: 'list' | 'grid';
+  layout?: Exclude<FileBrowserLayout, undefined>;
   trackRelativeTime?: boolean;
 }>(), {
   layout: undefined,
@@ -71,6 +72,7 @@ function handleViewportScroll(event: Event) {
     :class="{
       'file-browser__content--fill-column-width': listColumnFillWidth,
       'file-browser__content--grid': props.layout === 'grid',
+      'file-browser__content--gallery': props.layout === 'gallery',
       'file-browser__content--increased-gaps': ctx.increaseFileViewGaps,
     }"
     :style="contentStyle"
@@ -139,6 +141,10 @@ function handleViewportScroll(event: Event) {
 
 .file-browser__content--grid {
   --file-browser-scrollbar-gutter: 1.25rem;
+}
+
+.file-browser__content--gallery {
+  --file-browser-scrollbar-gutter: 0.5rem;
 }
 
 .file-browser__content--grid :deep(.file-browser__entries-container),

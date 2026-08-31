@@ -9,13 +9,14 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { FileBrowserVirtualRow } from './use-file-browser-virtual-layout';
 import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
+import type { FileBrowserLayout } from '../types';
 
 interface UseFileBrowserItemCountsOptions {
   enabled: boolean;
   currentPath: ComputedRef<string>;
   directoryEntries: ComputedRef<DirEntry[]>;
   visibleRows: ComputedRef<FileBrowserVirtualRow[]>;
-  layout: () => 'list' | 'grid' | undefined;
+  layout: () => FileBrowserLayout;
 }
 
 const VISIBLE_ITEM_COUNT_REQUEST_DELAY_MS = 50;
@@ -39,7 +40,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
       options.layout(),
     ).column;
 
-    return options.layout() === 'grid'
+    return options.layout() === 'grid' || options.layout() === 'gallery'
       || navigatorSettings.listColumnVisibility.items
       || activeSortColumn === 'items';
   });
@@ -49,7 +50,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
       options.layout(),
     ).column;
 
-    return (options.layout() === 'list' || options.layout() === 'grid')
+    return (options.layout() === 'list' || options.layout() === 'grid' || options.layout() === 'gallery')
       && activeSortColumn === 'items';
   });
   const showHiddenFiles = computed(() => appliedFolderSettings.value.showHiddenFiles);

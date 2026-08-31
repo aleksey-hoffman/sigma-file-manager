@@ -1259,5 +1259,7 @@
     "replaceShareDialogTitle": "موجودہ شیئر بدلیں؟",
     "replaceShareDialogDescription": "فائلیں پہلے سے نیٹ ورک پر ہیں۔ موجودہ شیئر بند ہو کر نئے سے بدل جائے گا۔",
     "replaceShareDialogConfirm": "بدل دیں"
-  }
+  },
+  "gallery": "Gallery",
+  "galleryLayout": "Gallery layout"
 }

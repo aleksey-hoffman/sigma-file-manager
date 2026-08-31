@@ -25,14 +25,24 @@ export type StoredNavigatorFolderSettingsMap = Record<string, Record<string, unk
 export function getNavigatorFolderLayoutName(
   layoutName: NavigatorLayout['type']['name'],
 ): NavigatorFolderLayoutName {
-  return layoutName === 'grid' ? 'grid' : 'list';
+  if (layoutName === 'grid' || layoutName === 'gallery') {
+    return layoutName;
+  }
+
+  return 'list';
 }
 
 export function toNavigatorFolderLayoutType(
   layoutName: NavigatorFolderLayoutName,
 ): NavigatorLayout['type'] {
+  const layoutTitleByName = {
+    list: 'listLayout',
+    grid: 'gridLayout',
+    gallery: 'galleryLayout',
+  } as const;
+
   return {
-    title: layoutName === 'grid' ? 'gridLayout' : 'listLayout',
+    title: layoutTitleByName[layoutName],
     name: layoutName,
   };
 }
@@ -42,7 +52,7 @@ function isListSortDirection(value: unknown): value is ListSortDirection {
 }
 
 function isNavigatorFolderLayoutName(value: unknown): value is NavigatorFolderLayoutName {
-  return value === 'list' || value === 'grid';
+  return value === 'list' || value === 'grid' || value === 'gallery';
 }
 
 function resolveFolderLayoutName(value: unknown, fallback: NavigatorFolderLayoutName): NavigatorFolderLayoutName {

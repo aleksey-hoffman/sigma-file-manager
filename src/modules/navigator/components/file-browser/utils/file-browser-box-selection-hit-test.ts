@@ -10,6 +10,7 @@ import {
   type FileBrowserListVirtualRow,
   type FileBrowserVirtualRow,
 } from './file-browser-virtual-rows';
+import type { FileBrowserLayout } from '../types';
 
 export interface FileBrowserBoxSelectionBox {
   left: number;
@@ -84,7 +85,7 @@ function getGridEntryBounds(
 export function collectFileBrowserBoxSelectionEntries(options: {
   rows: readonly FileBrowserVirtualRow[];
   selectionBox: FileBrowserBoxSelectionBox;
-  layout: 'list' | 'grid' | undefined;
+  layout: FileBrowserLayout;
   contentRect: DOMRect;
   viewportRect: DOMRect;
   contentWidth: number;

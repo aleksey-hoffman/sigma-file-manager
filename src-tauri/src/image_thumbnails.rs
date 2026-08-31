@@ -6,6 +6,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
@@ -19,7 +20,7 @@ use sha2::{Digest, Sha256};
 use tauri::Manager;
 
 const IMAGE_THUMBNAIL_CACHE_DIR: &str = "image-thumbnails";
-const THUMBNAIL_MAX_DIMENSION: u32 = 384;
+const THUMBNAIL_MAX_DIMENSION: u32 = 2048;
 const MAX_THUMBNAIL_CACHE_ITEM_COUNT: usize = 5000;
 const MAX_THUMBNAIL_CACHE_SIZE_BYTES: u64 = 1024 * 1024 * 1024;
 const THUMBNAIL_CACHE_LIMIT_CHECK_INTERVAL: usize = 100;
@@ -379,6 +380,51 @@ fn write_image_thumbnail(
         .map_err(|error| format!("Failed to write image thumbnail: {error}"))
 }
 
+fn write_image_thumbnail_with_imagemagick(
+    source_path: &Path,
+    thumbnail_path: &Path,
+    max_dimension: u32,
+) -> Result<(), String> {
+    let geometry = format!("{max_dimension}x{max_dimension}>");
+    let output_spec = format!("png:{}", thumbnail_path.to_string_lossy());
+    let command_candidates: &[&str] = if cfg!(windows) {
+        &["magick"]
+    } else {
+        &["magick", "convert"]
+    };
+    let mut last_error = String::from("ImageMagick is not available");
+
+    for command_name in command_candidates {
+        let output = Command::new(command_name)
+            .args([
+                "-limit", "memory", "192MiB", "-limit", "map", "256MiB", "-limit", "area", "50MP",
+            ])
+            .arg(source_path)
+            .args(["-auto-orient", "-thumbnail", &geometry, "-strip"])
+            .arg(&output_spec)
+            .output();
+
+        match output {
+            Ok(result) if result.status.success() && thumbnail_path.is_file() => {
+                return Ok(());
+            }
+            Ok(result) => {
+                let stderr = String::from_utf8_lossy(&result.stderr);
+                last_error = format!(
+                    "{command_name} failed with status {}: {}",
+                    result.status,
+                    stderr.trim()
+                );
+            }
+            Err(error) => {
+                last_error = format!("Failed to run {command_name}: {error}");
+            }
+        }
+    }
+
+    Err(last_error)
+}
+
 fn validate_video_thumbnail_size(width: u32, height: u32) -> Result<(), String> {
     if width == 0 || height == 0 {
         return Err("Video thumbnail dimensions are invalid".to_string());
@@ -548,26 +594,46 @@ fn generate_image_thumbnail_file(
         }
     }
 
-    let (source_width, source_height) = image_dimensions(source_path)?;
-    validate_image_thumbnail_source(source_metadata.len(), source_width, source_height)?;
-
-    if should_use_original_image_thumbnail(
-        source_path,
-        source_metadata.len(),
-        source_width,
-        source_height,
-        max_dimension,
-    ) {
-        return Ok(canonical_source_path.to_string_lossy().to_string());
-    }
-
-    let image = decode_image_thumbnail_source(source_path)?;
-    let thumbnail = image.resize(max_dimension, max_dimension, IMAGE_THUMBNAIL_RESIZE_FILTER);
     let temporary_path = temporary_thumbnail_path(&thumbnail_path);
+    let native_thumbnail_result = (|| -> Result<Option<String>, String> {
+        let (source_width, source_height) = image_dimensions(source_path)?;
+        validate_image_thumbnail_source(source_metadata.len(), source_width, source_height)?;
 
-    if let Err(error) = write_image_thumbnail(&thumbnail, &temporary_path) {
-        let _ = fs::remove_file(&temporary_path);
-        return Err(error);
+        if should_use_original_image_thumbnail(
+            source_path,
+            source_metadata.len(),
+            source_width,
+            source_height,
+            max_dimension,
+        ) {
+            return Ok(Some(canonical_source_path.to_string_lossy().to_string()));
+        }
+
+        let image = decode_image_thumbnail_source(source_path)?;
+        let thumbnail = image.resize(max_dimension, max_dimension, IMAGE_THUMBNAIL_RESIZE_FILTER);
+        write_image_thumbnail(&thumbnail, &temporary_path)?;
+        Ok(None)
+    })();
+
+    match native_thumbnail_result {
+        Ok(Some(original_path)) => return Ok(original_path),
+        Ok(None) => {}
+        Err(native_error) => {
+            if source_metadata.len() > MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES {
+                return Err("Image is too large to thumbnail".to_string());
+            }
+
+            if let Err(fallback_error) = write_image_thumbnail_with_imagemagick(
+                &canonical_source_path,
+                &temporary_path,
+                max_dimension,
+            ) {
+                let _ = fs::remove_file(&temporary_path);
+                return Err(format!(
+                    "{native_error}; ImageMagick fallback failed: {fallback_error}"
+                ));
+            }
+        }
     }
 
     {
@@ -738,6 +804,7 @@ mod tests {
             normalize_thumbnail_max_dimension(Some(10_000)),
             THUMBNAIL_MAX_DIMENSION
         );
+        assert_eq!(normalize_thumbnail_max_dimension(Some(1200)), 1200);
     }
 
     #[test]

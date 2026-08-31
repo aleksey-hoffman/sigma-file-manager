@@ -7,6 +7,7 @@ import type {
   ListSortColumn,
   ListSortDirection,
 } from '@/types/user-settings';
+import type { FileBrowserLayout } from '../types';
 
 export const FILE_BROWSER_SORT_COLUMNS: readonly ListSortColumn[] = [
   'name',
@@ -34,7 +35,7 @@ export const FILE_BROWSER_SORT_COLUMN_LABEL_KEYS: Record<ListSortColumn, string>
 
 export type FileBrowserListColumnLabelId = ListSortColumn | 'linkTarget';
 
-export type NavigatorSortLayout = 'list' | 'grid' | 'compact-list' | undefined;
+export type NavigatorSortLayout = FileBrowserLayout | 'compact-list';
 
 export type NavigatorSortSettingKeys = {
   column: 'navigator.listSortColumn' | 'navigator.gridSortColumn';
@@ -88,7 +89,7 @@ export function getNavigatorSortSettingsForLayout(
   source: NavigatorSortSource,
   layout: NavigatorSortLayout,
 ): NavigatorSortSettings {
-  if (layout === 'grid') {
+  if (layout === 'grid' || layout === 'gallery') {
     return {
       column: source.gridSortColumn,
       direction: source.gridSortDirection,
@@ -123,7 +124,7 @@ export function getFileBrowserSortReadDirOptions(
 }
 
 export function getNavigatorSortSettingKeys(layout: NavigatorSortLayout): NavigatorSortSettingKeys {
-  if (layout === 'grid') {
+  if (layout === 'grid' || layout === 'gallery') {
     return {
       column: 'navigator.gridSortColumn',
       direction: 'navigator.gridSortDirection',
@@ -147,7 +148,7 @@ export function getNavigatorSortColumnChangePatch(
 ): NavigatorSortSettingsPatch {
   const currentColumn = getNavigatorSortSettingsForLayout(source, layout).column;
 
-  if (layout === 'grid') {
+  if (layout === 'grid' || layout === 'gallery') {
     return currentColumn === column
       ? { gridSortColumn: column }
       : {

@@ -110,16 +110,16 @@ afterEach(() => {
 
 describe('normalizeImageThumbnailMaxDimension', () => {
   it('uses the default size when no valid size is provided', () => {
-    expect(normalizeImageThumbnailMaxDimension()).toBe(384);
-    expect(normalizeImageThumbnailMaxDimension(Number.NaN)).toBe(384);
-    expect(normalizeImageThumbnailMaxDimension(-10)).toBe(384);
-    expect(normalizeImageThumbnailMaxDimension(0.4)).toBe(384);
+    expect(normalizeImageThumbnailMaxDimension()).toBe(2048);
+    expect(normalizeImageThumbnailMaxDimension(Number.NaN)).toBe(2048);
+    expect(normalizeImageThumbnailMaxDimension(-10)).toBe(2048);
+    expect(normalizeImageThumbnailMaxDimension(0.4)).toBe(2048);
   });
 
   it('clamps requested thumbnail sizes to the backend cap', () => {
     expect(normalizeImageThumbnailMaxDimension(1)).toBe(1);
     expect(normalizeImageThumbnailMaxDimension(340)).toBe(340);
-    expect(normalizeImageThumbnailMaxDimension(10_000)).toBe(384);
+    expect(normalizeImageThumbnailMaxDimension(10_000)).toBe(2048);
   });
 });
 
