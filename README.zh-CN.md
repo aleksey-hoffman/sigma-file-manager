@@ -27,6 +27,26 @@
 - **测试**：259 个单元测试全部通过。
 - **上游追踪**：本工作对应上游 issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499)。
 
+## Listary 风格焦点跟随（实验性功能）
+
+分支新增的第二项实验功能：任何 Windows 应用的"打开 / 另存为"对话框（Chrome 下载、Word 另存为、VS Code 打开文件夹、钉钉 / 飞书另存为等）在你 Alt-Tab 切到 Sigma 浏览新路径后再切回对话框时，会自动跳转到 Sigma 当前目录。
+
+**状态**：实验性 —— 通过 [`sigma-listary-spike/`](./../sigma-listary-spike/) 子目录中的 spike 二进制完成 UI Automation 覆盖率验证。该 spike 在 Windows 11 上用 `windows` crate 0.62 干净构建，并在标准 Win32 OpenFileDialog 上实测通过 detect / read / write 三项能力。Chromium 类宿主通过移植自 QwenLM 的 `EnableWindow(FALSE)` RAII 保护（实测 Chromium 7/8 → 0 z-drops）。
+
+**启用方式**：打开 Sigma 前先启动 `sigma-listary-spike/target/release/spike.exe`。该二进制通过 TCP `127.0.0.1:37421` 与 Sigma 通信（基于行的 JSON 协议：`set_path` / `get_status` / `quit`）。
+
+**限制**：
+- **未对全部 7 个目标应用做无头 GUI 验证** —— 仅 Win32 #32770 对话框路径自动验证。生产环境使用前建议对每个应用做手动 GUI 验证。
+- **fg_bypass 仅覆盖 Chromium** —— UWP / XAML 宿主未做特殊保护（按 spike 简化策略省略了 QwenLM 的 UWP 分支）。
+- **STA 线程模型约束** —— spike 使用单线程 tokio 运行时，将 UIA 保持在主线程 COM STA 中。
+
+**源码归属**（MIT / Apache-2.0 许可证按文件保留）：
+- [`inaku-Gyan/PathWrap`](https://github.com/inaku-Gyan/PathWrap) —— `src/os/dialog.rs`（MIT）+ `src/os/monitor.rs`（MIT）
+- [`QwenLM/qwen-code`](https://github.com/QwenLM/qwen-code) —— `fg_bypass.rs`（Apache-2.0）
+
+**Spike 报告**：[`docs/superpowers/spike-reports/2026-09-27-listary-focus-sync-spike.md`](./../docs/superpowers/spike-reports/2026-09-27-listary-focus-sync-spike.md)
+**决策文档**：[`docs/superpowers/decisions/2026-09-27-listary-focus-sync-decision.md`](./../docs/superpowers/decisions/2026-09-27-listary-focus-sync-decision.md)
+
 ## 致谢
 
 - 上游：[aleksey-hoffman/sigma-file-manager](https://github.com/aleksey-hoffman)，作者 [Aleksey Hoffman](https://github.com/aleksey-hoffman)。所有产品功能、品牌与发布流程均归属于上游。

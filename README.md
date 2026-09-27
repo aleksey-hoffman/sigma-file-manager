@@ -27,6 +27,26 @@ A left-side **folder tree sidebar** that mirrors the file system and follows the
 - **Tests:** 259 unit tests passing.
 - **Upstream tracking:** this work is tracked against upstream issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499).
 
+## Listary-style focus sync (Experimental)
+
+A second experimental fork feature: any Windows app's file dialog (Chrome downloads, Word "Save As", VS Code "Open Folder", 钉钉 / 飞书 save flows, etc.) auto-jumps to Sigma's current folder when you Alt-Tab from the dialog to Sigma and back.
+
+**Status**: Experimental — UI Automation coverage validated via the [`sigma-listary-spike/`](./../sigma-listary-spike/) subdirectory. The spike binary builds cleanly on Windows 11 with `windows` crate 0.62 and empirically validates all three capabilities (detect / read / write) on a standard Win32 OpenFileDialog. Chromium hosts are shielded by an `EnableWindow(FALSE)` RAII guard ported from QwenLM (measured 7/8 → 0 z-drops on Chromium).
+
+**Enable**: launch `sigma-listary-spike/target/release/spike.exe` before opening Sigma. The binary communicates with Sigma over TCP on `127.0.0.1:37421` (line-based JSON protocol: `set_path`, `get_status`, `quit`).
+
+**Limitations**:
+- **No headless GUI verification on all 7 target apps** — only the Win32 #32770 dialog path is auto-verified. Manual GUI verification recommended per app before production use.
+- **fg_bypass covers Chromium only** — UWP / XAML hosts are not specially shielded (port omitted QwenLM's UWP branch per spike simplification).
+- **STA threading constraint** — spike uses a single-threaded tokio runtime to keep UIA on the main COM STA thread.
+
+**Source attribution** (MIT / Apache-2.0 licenses preserved per file):
+- [`inaku-Gyan/PathWrap`](https://github.com/inaku-Gyan/PathWrap) — `src/os/dialog.rs` (MIT) + `src/os/monitor.rs` (MIT)
+- [`QwenLM/qwen-code`](https://github.com/QwenLM/qwen-code) — `fg_bypass.rs` (Apache-2.0)
+
+**Spike report**: [`docs/superpowers/spike-reports/2026-09-27-listary-focus-sync-spike.md`](./../docs/superpowers/spike-reports/2026-09-27-listary-focus-sync-spike.md)
+**Decision**: [`docs/superpowers/decisions/2026-09-27-listary-focus-sync-decision.md`](./../docs/superpowers/decisions/2026-09-27-listary-focus-sync-decision.md)
+
 ## Credits
 
 - Upstream: [aleksey-hoffman/sigma-file-manager](https://github.com/aleksey-hoffman/sigma-file-manager) by [Aleksey Hoffman](https://github.com/aleksey-hoffman). All product features, branding, and release pipelines belong to upstream.
