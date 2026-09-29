@@ -8,6 +8,7 @@ import { computed, provide, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { BlocksIcon, HardDriveIcon, NetworkIcon, UsbIcon } from '@lucide/vue';
 import { useAppStore } from '@/stores/runtime/app';
+import { useAppWindowStore } from '@/stores/runtime/app-window';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import {
   BUILTIN_NAVIGATION_PAGE_SHORTCUTS,
@@ -33,6 +34,7 @@ import { useTextDirection } from '@/composables/use-text-direction';
 
 const router = useRouter();
 const appStore = useAppStore();
+const appWindowStore = useAppWindowStore();
 const extensionsStore = useExtensionsStore();
 const shortcutsStore = useShortcutsStore();
 const userSettingsStore = useUserSettingsStore();
@@ -40,6 +42,7 @@ const { drives } = useDrives();
 const { inlineEndSide } = useTextDirection();
 
 const quickAccessOnHover = computed(() => userSettingsStore.userSettings.quickAccessOnHover);
+const windowDragRegion = computed(() => (appWindowStore.isMainWindowFullscreen ? 'false' : ''));
 
 const quickAccessContextMenuOpenCount = ref(0);
 provide(CONTEXT_MENU_OPEN_COUNT_KEY, quickAccessContextMenuOpenCount);
@@ -135,11 +138,11 @@ function getDriveIcon(drive: {
   >
     <div
       class="nav-sidebar-header"
-      data-tauri-drag-region
+      :data-tauri-drag-region="windowDragRegion"
     >
       <div class="nav-sidebar-header-logo">
         <img
-          data-tauri-drag-region
+          :data-tauri-drag-region="windowDragRegion"
           src="@/assets/icons/logo-32x32.png"
           width="20"
           height="20"

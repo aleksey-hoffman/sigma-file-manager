@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { toggleMainWindowMaximized } from '@/utils/window-fullscreen';
 
 const { t } = useI18n();
 const appWindow = getCurrentWindow();
@@ -21,7 +22,9 @@ function minimizeWindow() {
 }
 
 function maximizeWindow() {
-  appWindow.toggleMaximize();
+  toggleMainWindowMaximized().catch((error: unknown) => {
+    console.error('Failed to toggle window maximize:', error);
+  });
 }
 
 function closeWindow() {

@@ -10,3 +10,14 @@ export async function toggleMainWindowFullscreen(): Promise<boolean> {
   await currentWindow.setFullscreen(nextState);
   return nextState;
 }
+
+export async function toggleMainWindowMaximized(): Promise<void> {
+  const currentWindow = getCurrentWindow();
+
+  if (await currentWindow.isFullscreen()) {
+    await currentWindow.setFullscreen(false);
+    return;
+  }
+
+  await currentWindow.toggleMaximize();
+}

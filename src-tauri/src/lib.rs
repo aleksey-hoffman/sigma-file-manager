@@ -20,6 +20,7 @@ mod image_thumbnails;
 mod input_simulation;
 mod lan_share;
 mod link_operations;
+mod main_window_state;
 mod open_with;
 mod process_runner;
 mod startup_storage_bootstrap;
@@ -254,13 +255,13 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin({
-            use tauri_plugin_window_state::StateFlags;
+        .plugin(
             tauri_plugin_window_state::Builder::default()
-                .with_state_flags(StateFlags::all() & !StateFlags::VISIBLE)
+                .with_state_flags(main_window_state::state_flags())
                 .with_denylist(&["quick-view"])
-                .build()
-        })
+                .skip_initial_state("main")
+                .build(),
+        )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
@@ -476,8 +477,10 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     #[cfg(not(windows))]
     let should_hide_main_window_on_startup = launched_from_autostart(&raw_args);
 
-    if !should_hide_main_window_on_startup {
-        if let Some(main_window) = app.get_webview_window("main") {
+    if let Some(main_window) = app.get_webview_window("main") {
+        main_window_state::restore_main_window_state(&main_window);
+
+        if !should_hide_main_window_on_startup {
             let _ = main_window.show();
         }
     }

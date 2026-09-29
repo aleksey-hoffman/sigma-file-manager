@@ -15,6 +15,7 @@ import { StatusCenterToolbarButton } from '@/modules/status-center';
 import CommandPaletteToolbarButton from '@/modules/extensions/components/command-palette-toolbar-button.vue';
 import { ProgressiveBlur, type ProgressiveBlurLayer } from '@/components/ui/progressive-blur';
 import { clearDocumentTextSelection } from '@/utils/document-selection';
+import { useAppWindowStore } from '@/stores/runtime/app-window';
 
 interface ToolbarDragSession {
   pointerId: number;
@@ -28,6 +29,7 @@ const WINDOW_DRAG_EXCLUDED_SELECTOR = '.tab-bar';
 
 const route = useRoute();
 const appWindow = getCurrentWindow();
+const appWindowStore = useAppWindowStore();
 
 let toolbarDragSession: ToolbarDragSession | null = null;
 let shouldSuppressNextToolbarClick = false;
@@ -118,6 +120,10 @@ function shouldSkipToolbarWindowDrag(event: PointerEvent) {
     return true;
   }
 
+  if (appWindowStore.isMainWindowFullscreen) {
+    return true;
+  }
+
   if (!(event.target instanceof Element)) {
     return false;
   }
@@ -191,7 +197,8 @@ onBeforeUnmount(() => {
     class="window-toolbar"
     :class="{
       'window-toolbar--blurred': isBlurred,
-      'window-toolbar--absolute': isAbsolute
+      'window-toolbar--absolute': isAbsolute,
+      'window-toolbar--fullscreen': appWindowStore.isMainWindowFullscreen
     }"
   >
     <ProgressiveBlur
@@ -317,5 +324,10 @@ onBeforeUnmount(() => {
 
 .window-toolbar-action-layer > * {
   z-index: 6;
+}
+
+.window-toolbar--fullscreen .window-toolbar-spacer,
+.window-toolbar--fullscreen .window-toolbar-action-layer {
+  -webkit-app-region: no-drag;
 }
 </style>

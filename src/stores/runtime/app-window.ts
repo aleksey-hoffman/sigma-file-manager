@@ -8,8 +8,10 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 
 export const useAppWindowStore = defineStore('appWindow', () => {
   const isMainWindowMinimized = ref(false);
+  const isMainWindowFullscreen = ref(false);
 
   let focusUnlisten: (() => void) | null = null;
+  let resizedUnlisten: (() => void) | null = null;
   let recheckTimerId: ReturnType<typeof setTimeout> | null = null;
 
   async function syncMinimizedFromNative() {
@@ -21,10 +23,22 @@ export const useAppWindowStore = defineStore('appWindow', () => {
     }
   }
 
+  async function syncFullscreenFromNative() {
+    try {
+      const appWindow = getCurrentWindow();
+      isMainWindowFullscreen.value = await appWindow.isFullscreen();
+    }
+    catch {
+    }
+  }
+
   async function initMainWindowStateListeners() {
     try {
       const appWindow = getCurrentWindow();
-      await syncMinimizedFromNative();
+      await Promise.all([
+        syncMinimizedFromNative(),
+        syncFullscreenFromNative(),
+      ]);
 
       focusUnlisten = await appWindow.onFocusChanged(async ({ payload: focused }) => {
         if (recheckTimerId !== null) {
@@ -44,6 +58,10 @@ export const useAppWindowStore = defineStore('appWindow', () => {
           void syncMinimizedFromNative();
         }, 120);
       });
+
+      resizedUnlisten = await appWindow.onResized(() => {
+        syncFullscreenFromNative();
+      });
     }
     catch {
     }
@@ -59,10 +77,16 @@ export const useAppWindowStore = defineStore('appWindow', () => {
       focusUnlisten();
       focusUnlisten = null;
     }
+
+    if (resizedUnlisten !== null) {
+      resizedUnlisten();
+      resizedUnlisten = null;
+    }
   }
 
   return {
     isMainWindowMinimized,
+    isMainWindowFullscreen,
     initMainWindowStateListeners,
     disposeMainWindowStateListeners,
   };
