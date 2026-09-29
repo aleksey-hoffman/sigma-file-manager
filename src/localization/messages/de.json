@@ -173,7 +173,13 @@
       "favorites": "Favoriten",
       "tagged": "Markiert",
       "frequent": "Häufig",
-      "history": "Verlauf"
+      "history": "Zuletzt angesehen"
+    },
+    "countScope": {
+      "total": "insgesamt",
+      "last": "zuletzt",
+      "totalItems": "Elemente insgesamt",
+      "lastItems": "letzte Elemente"
     },
     "emptyFavorites": "Noch keine Favoriten",
     "emptyFavoritesDescription": "Klicken Sie mit der rechten Maustaste auf eine Datei oder einen Ordner im Navigator und wählen Sie \"Zu Favoriten hinzufügen\".",
@@ -189,7 +195,34 @@
     "daysAgo": "vor {n} Tag | vor {n} Tagen | vor {n} Tagen | vor {n} Tagen",
     "openedCount": "{n} Mal geöffnet | {n} Mal geöffnet | {n} Mal geöffnet | {n} Mal geöffnet",
     "actions": {
-      "clearAll": "Alle aus dieser Liste entfernen"
+      "openContainingFolder": "Übergeordneten Ordner öffnen",
+      "clearAll": "Alle aus dieser Liste entfernen",
+      "clearAllConfirmTitle": "Alle aus dieser Liste entfernen?",
+      "clearAllConfirmDescription": "Das kann nicht rückgängig gemacht werden.",
+      "confirmRemove": "Entfernen",
+      "deleteTagConfirmTitle": "Dieses Tag löschen?",
+      "deleteTagConfirmDescription": "Das Tag wird gelöscht und von allen Elementen entfernt.",
+      "removeAllTags": "Alle Tags entfernen",
+      "removeAllTagsConfirmTitle": "Alle Tags von Elementen entfernen?",
+      "removeAllTagsConfirmDescription": "Alle Elemente werden enttaggt. Tag-Namen bleiben erhalten."
+    },
+    "emptyTagItems": "Keine Elemente mit diesem Tag",
+    "tagItems": "Elemente taggen",
+    "untag": "Tag entfernen",
+    "typeFilter": {
+      "label": "Nach Typ filtern",
+      "all": "Alle",
+      "documents": "Dokumente",
+      "archives": "Archive",
+      "showAll": "Alle anzeigen",
+      "more": "Weitere Filter"
+    },
+    "sort": {
+      "label": "Sortieren",
+      "custom": "Benutzerdefiniert",
+      "name": "Name",
+      "dateAdded": "Hinzugefügt am",
+      "path": "Pfad"
     }
   },
   "settingsCategories": {

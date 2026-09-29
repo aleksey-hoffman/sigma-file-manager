@@ -28,8 +28,8 @@ import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } 
 import { haveSameKeyOrder, haveSameKeys } from '@/utils/reorder-matching-items';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 
-const HISTORY_MAX_ITEMS = 100;
-const FREQUENT_ITEMS_MAX = 100;
+export const HISTORY_MAX_ITEMS = 100;
+export const FREQUENT_ITEMS_MAX = 100;
 const PATH_EXISTS_BATCH_SIZE = 4;
 
 export const useUserStatsStore = defineStore('userStats', () => {
@@ -243,6 +243,39 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
       await saveStats();
     }
+  }
+
+  async function removeTagFromAllItems(tagId: string) {
+    let didChange = false;
+
+    for (const item of userStats.value.taggedItems) {
+      const nextTagIds = item.tagIds.filter(id => id !== tagId);
+
+      if (nextTagIds.length !== item.tagIds.length) {
+        item.tagIds = nextTagIds;
+        didChange = true;
+      }
+    }
+
+    if (!didChange) {
+      return;
+    }
+
+    userStats.value.taggedItems = userStats.value.taggedItems.filter(
+      item => item.tagIds.length > 0,
+    );
+    await saveStats();
+  }
+
+  async function removeTaggedItem(path: string) {
+    const itemIndex = userStats.value.taggedItems.findIndex(item => item.path === path);
+
+    if (itemIndex === -1) {
+      return;
+    }
+
+    userStats.value.taggedItems.splice(itemIndex, 1);
+    await saveStats();
   }
 
   async function createTag(name: string, color: string): Promise<ItemTag> {
@@ -632,6 +665,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
     getItemTags,
     addTagToItem,
     removeTagFromItem,
+    removeTagFromAllItems,
+    removeTaggedItem,
     createTag,
     deleteTag,
     renameTag,

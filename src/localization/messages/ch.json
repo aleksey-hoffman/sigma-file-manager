@@ -173,7 +173,13 @@
       "favorites": "收藏",
       "tagged": "已标记",
       "frequent": "常用",
-      "history": "历史"
+      "history": "最近查看"
+    },
+    "countScope": {
+      "total": "总计",
+      "last": "最近",
+      "totalItems": "项（总计）",
+      "lastItems": "项（最近）"
     },
     "emptyFavorites": "暂无收藏",
     "emptyFavoritesDescription": "在导航器中右键点击任何文件或文件夹，选择\"添加到收藏\"。",
@@ -189,7 +195,34 @@
     "daysAgo": "{n}天前 | {n}天前 | {n}天前 | {n}天前",
     "openedCount": "已打开{n}次 | 已打开{n}次 | 已打开{n}次 | 已打开{n}次",
     "actions": {
-      "clearAll": "从此列表中删除全部"
+      "openContainingFolder": "打开所在文件夹",
+      "clearAll": "从此列表中删除全部",
+      "clearAllConfirmTitle": "从此列表中删除全部？",
+      "clearAllConfirmDescription": "此操作无法撤销。",
+      "confirmRemove": "删除",
+      "removeAllTags": "移除所有标签",
+      "removeAllTagsConfirmTitle": "移除所有项目的标签？",
+      "removeAllTagsConfirmDescription": "所有项目都将取消标签。标签名称会保留。",
+      "deleteTagConfirmTitle": "删除此标签？",
+      "deleteTagConfirmDescription": "标签将被删除并从所有项目中移除。"
+    },
+    "emptyTagItems": "此标签下没有项目",
+    "tagItems": "添加标签",
+    "untag": "移除标签",
+    "typeFilter": {
+      "label": "按类型筛选",
+      "all": "全部",
+      "documents": "文档",
+      "archives": "压缩包",
+      "showAll": "显示全部",
+      "more": "更多筛选"
+    },
+    "sort": {
+      "label": "排序",
+      "custom": "自定义",
+      "name": "名称",
+      "dateAdded": "添加日期",
+      "path": "路径"
     }
   },
   "settingsCategories": {

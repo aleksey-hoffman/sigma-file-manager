@@ -202,7 +202,13 @@
       "favorites": "מועדפים",
       "tagged": "מתויגים",
       "frequent": "נפוצים",
-      "history": "היסטוריה"
+      "history": "נצפו לאחרונה"
+    },
+    "countScope": {
+      "total": "בסך הכול",
+      "last": "אחרונים",
+      "totalItems": "פריטים בסך הכול",
+      "lastItems": "פריטים אחרונים"
     },
     "emptyFavorites": "אין עדיין מועדפים",
     "emptyFavoritesDescription": "לחץ לחיצה ימנית על קובץ או תיקייה כלשהם בניווט ובחר ב\"הוסף למועדפים\" כדי לראותם כאן.",
@@ -218,7 +224,34 @@
     "daysAgo": "לפני {n} יום | לפני {n} ימים | לפני {n} ימים | לפני {n} ימים",
     "openedCount": "נפתח {n} פעם | נפתח {n} פעמים | נפתח {n} פעמים | נפתח {n} פעמים",
     "actions": {
-      "clearAll": "הסר את כל הפריטים מרשימה זו"
+      "openContainingFolder": "פתח את התיקייה המכילה",
+      "clearAll": "הסר את כל הפריטים מרשימה זו",
+      "clearAllConfirmTitle": "להסיר את כל הפריטים מרשימה זו?",
+      "clearAllConfirmDescription": "לא ניתן לבטל פעולה זו.",
+      "confirmRemove": "הסר",
+      "removeAllTags": "הסר את כל התגיות",
+      "removeAllTagsConfirmTitle": "להסיר את כל התגיות מהפריטים?",
+      "removeAllTagsConfirmDescription": "כל הפריטים יישארו ללא תגיות. שמות התגיות יישמרו.",
+      "deleteTagConfirmTitle": "למחוק תגית זו?",
+      "deleteTagConfirmDescription": "התגית תימחק ותוסר מכל הפריטים."
+    },
+    "emptyTagItems": "אין פריטים עם תגית זו",
+    "tagItems": "תייג פריטים",
+    "untag": "הסר תגית",
+    "typeFilter": {
+      "label": "סינון לפי סוג",
+      "all": "הכול",
+      "documents": "מסמכים",
+      "archives": "ארכיונים",
+      "showAll": "הצג הכול",
+      "more": "מסננים נוספים"
+    },
+    "sort": {
+      "label": "מיון",
+      "custom": "מותאם אישית",
+      "name": "שם",
+      "dateAdded": "תאריך הוספה",
+      "path": "נתיב"
     }
   },
   "settingsCategories": {

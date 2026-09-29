@@ -15,8 +15,26 @@
   }
 }
 
+.animate-dashboard-content {
+  opacity: 0;
+  animation-name: animate-dashboard-content;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes animate-dashboard-content {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-stagger-slide-up {
+  .animate-stagger-slide-up,
+  .animate-dashboard-content {
     animation: none;
     opacity: 1;
     transform: none;

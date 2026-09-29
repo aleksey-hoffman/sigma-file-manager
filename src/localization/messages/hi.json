@@ -202,7 +202,13 @@
       "favorites": "पसंदीदा",
       "tagged": "टैग",
       "frequent": "अक्सर",
-      "history": "इतिहास"
+      "history": "हाल ही में देखे गए"
+    },
+    "countScope": {
+      "total": "कुल",
+      "last": "हाल के",
+      "totalItems": "कुल आइटम",
+      "lastItems": "हाल के आइटम"
     },
     "emptyFavorites": "अभी तक कोई पसंदीदा नहीं",
     "emptyFavoritesDescription": "नेविगेटर में किसी भी फ़ाइल या फ़ोल्डर पर राइट-क्लिक करें और उन्हें यहां देखने के लिए \"पसंदीदा में जोड़ें\" चुनें।",
@@ -218,7 +224,34 @@
     "daysAgo": "{n} दिन पहले | {n} दिन पहले | {n} दिन पहले | {n} दिन पहले",
     "openedCount": "{n} समय पर खोला गया | {n} बार खोला गया | {n} बार खोला गया | {n} बार खोला गया",
     "actions": {
-      "clearAll": "इस सूची से सभी को हटा दें"
+      "openContainingFolder": "संबंधित फ़ोल्डर खोलें",
+      "clearAll": "इस सूची से सभी को हटा दें",
+      "clearAllConfirmTitle": "इस सूची से सभी को हटाएँ?",
+      "clearAllConfirmDescription": "इसे पूर्ववत नहीं किया जा सकता.",
+      "confirmRemove": "हटाएँ",
+      "removeAllTags": "सभी टैग हटाएँ",
+      "removeAllTagsConfirmTitle": "सभी आइटम से टैग हटाएँ?",
+      "removeAllTagsConfirmDescription": "सभी आइटम बिना टैग के हो जाएँगे. टैग नाम रहेंगे.",
+      "deleteTagConfirmTitle": "यह टैग हटाएँ?",
+      "deleteTagConfirmDescription": "टैग हटा दिया जाएगा और सभी आइटम से निकल जाएगा."
+    },
+    "emptyTagItems": "इस टैग वाले कोई आइटम नहीं",
+    "tagItems": "आइटम टैग करें",
+    "untag": "टैग हटाएँ",
+    "typeFilter": {
+      "label": "प्रकार के अनुसार फ़िल्टर करें",
+      "all": "सभी",
+      "documents": "दस्तावेज़",
+      "archives": "आर्काइव",
+      "showAll": "सभी दिखाएँ",
+      "more": "अधिक फ़िल्टर"
+    },
+    "sort": {
+      "label": "क्रमबद्ध करें",
+      "custom": "कस्टम",
+      "name": "नाम",
+      "dateAdded": "जोड़े जाने की तिथि",
+      "path": "पथ"
     }
   },
   "settingsCategories": {

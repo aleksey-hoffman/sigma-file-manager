@@ -202,7 +202,13 @@
       "favorites": "Favorites",
       "tagged": "Tagged",
       "frequent": "Frequent",
-      "history": "History"
+      "history": "Recently viewed"
+    },
+    "countScope": {
+      "total": "total",
+      "last": "last",
+      "totalItems": "total items",
+      "lastItems": "last items"
     },
     "emptyFavorites": "No favorites yet",
     "emptyFavoritesDescription": "Right-click on any file or folder in the navigator and select \"Add to favorites\" to see them here.",
@@ -217,8 +223,35 @@
     "hoursAgo": "{n} hour ago | {n} hours ago | {n} hours ago | {n} hours ago",
     "daysAgo": "{n} day ago | {n} days ago | {n} days ago | {n} days ago",
     "openedCount": "Opened {n} time | Opened {n} times | Opened {n} times | Opened {n} times",
+    "emptyTagItems": "No items with this tag",
+    "tagItems": "Tag items",
+    "untag": "Remove tag",
+    "typeFilter": {
+      "label": "Filter by type",
+      "all": "All",
+      "documents": "Documents",
+      "archives": "Archives",
+      "showAll": "Show all",
+      "more": "More filters"
+    },
+    "sort": {
+      "label": "Sort",
+      "custom": "Custom",
+      "name": "Name",
+      "dateAdded": "Date added",
+      "path": "Path"
+    },
     "actions": {
-      "clearAll": "Remove all from this list"
+      "openContainingFolder": "Open containing folder",
+      "clearAll": "Remove all from this list",
+      "clearAllConfirmTitle": "Remove all from this list?",
+      "clearAllConfirmDescription": "This cannot be undone.",
+      "confirmRemove": "Remove",
+      "deleteTagConfirmTitle": "Delete this tag?",
+      "deleteTagConfirmDescription": "The tag will be deleted and removed from all items.",
+      "removeAllTags": "Remove all tags",
+      "removeAllTagsConfirmTitle": "Remove all tags from items?",
+      "removeAllTagsConfirmDescription": "Every item will be untagged. Tag names will stay."
     }
   },
   "settingsCategories": {

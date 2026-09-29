@@ -7,8 +7,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import type { ItemTag } from '@/types/user-stats';
 import { getTagsByIdsInListOrder } from '@/utils/item-tag-order';
-
-const tagColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
+import { pickRandomTagColor } from '@/utils/tag-colors';
 
 export function useFileBrowserTags() {
   const userStatsStore = useUserStatsStore();
@@ -57,7 +56,7 @@ export function useFileBrowserTags() {
   }
 
   async function createTagForEntries(entries: DirEntry[], name: string) {
-    const randomColor = tagColors[Math.floor(Math.random() * tagColors.length)];
+    const randomColor = pickRandomTagColor();
     const newTag = await userStatsStore.createTag(name, randomColor);
 
     for (const entry of entries) {

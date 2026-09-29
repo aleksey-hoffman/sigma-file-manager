@@ -18,9 +18,10 @@ export function getPathOrUrlExtension(pathOrUrl: string): string {
     }
   }
 
-  const lastDot = cleanPath.lastIndexOf('.');
+  const fileName = getFileName(cleanPath);
+  const lastDot = fileName.lastIndexOf('.');
 
-  return lastDot >= 0 ? cleanPath.slice(lastDot + 1).toLowerCase() : '';
+  return lastDot >= 0 ? fileName.slice(lastDot + 1).toLowerCase() : '';
 }
 
 export function getFileName(path: string): string {

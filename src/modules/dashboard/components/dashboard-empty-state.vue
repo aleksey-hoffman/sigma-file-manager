@@ -18,7 +18,7 @@ type EmptyStateType = 'favorites' | 'tagged' | 'frequent' | 'history';
 const props = defineProps<{
   type: EmptyStateType;
   title: string;
-  description: string;
+  description?: string;
 }>();
 
 const iconComponents: Record<EmptyStateType, Component> = {
@@ -36,5 +36,12 @@ const iconComponent = computed(() => iconComponents[props.type]);
     :icon="iconComponent"
     :title="title"
     :description="description"
-  />
+  >
+    <template
+      v-if="$slots.footer"
+      #footer
+    >
+      <slot name="footer" />
+    </template>
+  </EmptyState>
 </template>

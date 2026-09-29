@@ -173,7 +173,13 @@
       "favorites": "Yêu thích",
       "tagged": "Đã gắn thẻ",
       "frequent": "Thường dùng",
-      "history": "Lịch sử"
+      "history": "Đã xem gần đây"
+    },
+    "countScope": {
+      "total": "tổng",
+      "last": "gần nhất",
+      "totalItems": "mục tổng cộng",
+      "lastItems": "mục gần nhất"
     },
     "emptyFavorites": "Chưa có mục yêu thích",
     "emptyFavoritesDescription": "Nhấp chuột phải vào bất kỳ tệp hoặc thư mục nào trong trình duyệt và chọn \"Thêm vào yêu thích\".",
@@ -189,7 +195,34 @@
     "daysAgo": "{n} ngày trước | {n} ngày trước | {n} ngày trước | {n} ngày trước",
     "openedCount": "Đã mở {n} lần | Đã mở {n} lần | Đã mở {n} lần | Đã mở {n} lần",
     "actions": {
-      "clearAll": "Xóa tất cả khỏi danh sách này"
+      "openContainingFolder": "Mở thư mục chứa",
+      "clearAll": "Xóa tất cả khỏi danh sách này",
+      "clearAllConfirmTitle": "Xóa tất cả khỏi danh sách này?",
+      "clearAllConfirmDescription": "Không thể hoàn tác thao tác này.",
+      "confirmRemove": "Xóa",
+      "removeAllTags": "Gỡ tất cả thẻ",
+      "removeAllTagsConfirmTitle": "Gỡ tất cả thẻ khỏi các mục?",
+      "removeAllTagsConfirmDescription": "Mọi mục sẽ bị bỏ thẻ. Tên thẻ vẫn được giữ lại.",
+      "deleteTagConfirmTitle": "Xóa thẻ này?",
+      "deleteTagConfirmDescription": "Thẻ sẽ bị xóa và gỡ khỏi tất cả mục."
+    },
+    "emptyTagItems": "Không có mục nào với thẻ này",
+    "tagItems": "Gắn thẻ mục",
+    "untag": "Gỡ thẻ",
+    "typeFilter": {
+      "label": "Lọc theo loại",
+      "all": "Tất cả",
+      "documents": "Tài liệu",
+      "archives": "Tệp nén",
+      "showAll": "Hiển thị tất cả",
+      "more": "Thêm bộ lọc"
+    },
+    "sort": {
+      "label": "Sắp xếp",
+      "custom": "Tùy chỉnh",
+      "name": "Tên",
+      "dateAdded": "Ngày thêm",
+      "path": "Đường dẫn"
     }
   },
   "settingsCategories": {

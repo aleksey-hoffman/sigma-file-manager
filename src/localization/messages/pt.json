@@ -173,7 +173,13 @@
       "favorites": "Favoritos",
       "tagged": "Marcados",
       "frequent": "Frequentes",
-      "history": "Histórico"
+      "history": "Vistos recentemente"
+    },
+    "countScope": {
+      "total": "no total",
+      "last": "últimos",
+      "totalItems": "itens no total",
+      "lastItems": "últimos itens"
     },
     "emptyFavorites": "Ainda sem favoritos",
     "emptyFavoritesDescription": "Clique com o botão direito em qualquer arquivo ou pasta no navegador e selecione \"Adicionar aos favoritos\".",
@@ -189,7 +195,34 @@
     "daysAgo": "há {n} dia | há {n} dias | há {n} dias | há {n} dias",
     "openedCount": "Aberto {n} vez | Aberto {n} vezes | Aberto {n} vezes | Aberto {n} vezes",
     "actions": {
-      "clearAll": "Remover tudo desta lista"
+      "openContainingFolder": "Abrir pasta que contém",
+      "clearAll": "Remover tudo desta lista",
+      "clearAllConfirmTitle": "Remover tudo desta lista?",
+      "clearAllConfirmDescription": "Isto não pode ser desfeito.",
+      "confirmRemove": "Remover",
+      "removeAllTags": "Remover todas as etiquetas",
+      "removeAllTagsConfirmTitle": "Remover todas as etiquetas dos itens?",
+      "removeAllTagsConfirmDescription": "Todos os itens ficarão sem etiquetas. Os nomes das etiquetas permanecerão.",
+      "deleteTagConfirmTitle": "Excluir esta etiqueta?",
+      "deleteTagConfirmDescription": "A etiqueta será excluída e removida de todos os itens."
+    },
+    "emptyTagItems": "Nenhum item com esta etiqueta",
+    "tagItems": "Marcar itens",
+    "untag": "Remover etiqueta",
+    "typeFilter": {
+      "label": "Filtrar por tipo",
+      "all": "Todos",
+      "documents": "Documentos",
+      "archives": "Arquivos compactados",
+      "showAll": "Mostrar todos",
+      "more": "Mais filtros"
+    },
+    "sort": {
+      "label": "Ordenar",
+      "custom": "Personalizado",
+      "name": "Nome",
+      "dateAdded": "Data de adição",
+      "path": "Caminho"
     }
   },
   "settingsCategories": {

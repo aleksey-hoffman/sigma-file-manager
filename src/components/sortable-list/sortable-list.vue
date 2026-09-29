@@ -22,6 +22,7 @@ const props = defineProps<{
   items: T[];
   getKey: (item: T) => string;
   handleSelector?: string;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -31,7 +32,11 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
-  item(props: { item: T }): unknown;
+  item(props: {
+    item: T;
+    index: number;
+    ghost: boolean;
+  }): unknown;
 }>();
 
 const attrs = useAttrs();
@@ -112,7 +117,7 @@ function isHandleTarget(eventTarget: EventTarget | null): boolean {
 }
 
 function onPointerDown(pointerEvent: PointerEvent, index: number) {
-  if (pointerEvent.button !== 0 || !isHandleTarget(pointerEvent.target)) {
+  if (props.disabled || pointerEvent.button !== 0 || !isHandleTarget(pointerEvent.target)) {
     return;
   }
 
@@ -197,6 +202,19 @@ function onPointerMove(pointerEvent: PointerEvent) {
   draggingIndex.value = nextIndex;
 }
 
+function swallowNextClick() {
+  function swallowClick(clickEvent: MouseEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+    window.removeEventListener('click', swallowClick, true);
+  }
+
+  window.addEventListener('click', swallowClick, true);
+  window.setTimeout(() => {
+    window.removeEventListener('click', swallowClick, true);
+  }, 0);
+}
+
 function onPointerUp(pointerEvent: PointerEvent) {
   if (activePointerId !== pointerEvent.pointerId) {
     return;
@@ -217,6 +235,8 @@ function onPointerUp(pointerEvent: PointerEvent) {
     return;
   }
 
+  swallowNextClick();
+
   if (!haveSameKeyOrder(props.items, nextItems, props.getKey)) {
     emit('set', nextItems);
   }
@@ -234,7 +254,10 @@ onUnmounted(() => {
   <div
     ref="listRef"
     class="sortable-list"
-    :class="[attrs.class, { 'sortable-list--dragging': isDragging }]"
+    :class="[attrs.class, {
+      'sortable-list--dragging': isDragging,
+      'sortable-list--disabled': disabled,
+    }]"
   >
     <TransitionGroup
       class="sortable-list__items"
@@ -251,6 +274,8 @@ onUnmounted(() => {
         <slot
           name="item"
           :item="item"
+          :index="index"
+          :ghost="false"
         />
       </div>
     </TransitionGroup>
@@ -269,6 +294,8 @@ onUnmounted(() => {
       <slot
         name="item"
         :item="localItems[draggingIndex]"
+        :index="draggingIndex"
+        :ghost="true"
       />
     </div>
   </Teleport>
@@ -286,6 +313,10 @@ onUnmounted(() => {
 .sortable-list__item {
   width: 100%;
   touch-action: none;
+}
+
+.sortable-list--disabled .sortable-list__item {
+  touch-action: auto;
 }
 
 .sortable-list__item--placeholder {

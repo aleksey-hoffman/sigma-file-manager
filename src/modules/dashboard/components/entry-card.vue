@@ -4,16 +4,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue';
+import { computed, ref, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FolderIcon, FileIcon, HardDriveIcon } from '@lucide/vue';
 import { getPathDisplayName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import { useDashboardEntryPreview } from '@/modules/dashboard/composables/use-dashboard-entry-preview';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   path: string;
   isFile?: boolean;
-}>();
+  sizeLabel?: string;
+  layout?: 'list' | 'grid';
+}>(), {
+  sizeLabel: '',
+  layout: 'list',
+});
 
 const emit = defineEmits<{
   click: [];
@@ -21,8 +26,11 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const slots = useSlots();
+const rootRef = ref<HTMLElement | null>(null);
 
-const hasFooter = computed(() => !!slots.footer);
+const hasGridFooter = computed(() => {
+  return props.layout === 'grid' && (!!slots.meta || !!slots.actions);
+});
 
 const itemName = computed(() => {
   if (!props.path) return '';
@@ -35,19 +43,19 @@ const itemDirectory = computed(() => {
   return lastSlashIndex > 0 ? props.path.substring(0, lastSlashIndex) : props.path;
 });
 
-const isDirectory = computed(() => {
+const isFile = computed(() => {
   if (isVirtualLocationPath(props.path)) {
-    return true;
+    return false;
   }
 
-  if (props.isFile !== undefined) {
-    return !props.isFile;
-  }
-
-  return props.path.endsWith('/') || !props.path.includes('.');
+  return props.isFile === true;
 });
 
-const showLocationsIcon = computed(() => isVirtualLocationPath(props.path));
+const { iconSrc, fallbackIconComponent, thumbnailSrc } = useDashboardEntryPreview({
+  path: () => props.path,
+  isFile: () => isFile.value,
+  rootRef,
+});
 
 function handleClick() {
   emit('click');
@@ -56,39 +64,75 @@ function handleClick() {
 
 <template>
   <div
+    ref="rootRef"
     class="entry-card"
-    :class="{ 'entry-card--with-footer': hasFooter }"
+    :class="`entry-card--${layout}`"
   >
     <button
       type="button"
-      class="entry-card__main"
+      class="entry-card__hitbox"
+      :aria-label="itemName"
       @click="handleClick"
-    >
-      <div class="entry-card__icon">
-        <HardDriveIcon
-          v-if="showLocationsIcon"
-          :size="20"
-        />
-        <FolderIcon
-          v-else-if="isDirectory"
-          :size="20"
-        />
-        <FileIcon
-          v-else
-          :size="20"
-        />
-      </div>
-      <div class="entry-card__content">
+    />
+    <div class="entry-card__icon">
+      <img
+        v-if="thumbnailSrc"
+        class="entry-card__preview"
+        :src="thumbnailSrc"
+        alt=""
+        draggable="false"
+      >
+      <img
+        v-else-if="iconSrc"
+        class="entry-card__system-icon"
+        :src="iconSrc"
+        alt=""
+        width="24"
+        height="24"
+        draggable="false"
+      >
+      <component
+        :is="fallbackIconComponent"
+        v-else
+        :size="20"
+      />
+    </div>
+    <div class="entry-card__content">
+      <div class="entry-card__heading">
         <span class="entry-card__name">{{ itemName }}</span>
-        <span class="entry-card__path">{{ itemDirectory }}</span>
+        <span
+          v-if="sizeLabel"
+          class="entry-card__size"
+        >{{ sizeLabel }}</span>
       </div>
-      <slot />
-    </button>
+      <span class="entry-card__path">{{ itemDirectory }}</span>
+      <div
+        v-if="slots.details"
+        class="entry-card__details"
+      >
+        <slot name="details" />
+      </div>
+    </div>
+    <slot />
     <div
-      v-if="hasFooter"
+      v-if="hasGridFooter"
       class="entry-card__footer"
     >
-      <slot name="footer" />
+      <div class="entry-card__meta">
+        <slot name="meta" />
+      </div>
+      <div
+        v-if="slots.actions"
+        class="entry-card__actions"
+      >
+        <slot name="actions" />
+      </div>
+    </div>
+    <div
+      v-else-if="slots.actions"
+      class="entry-card__actions"
+    >
+      <slot name="actions" />
     </div>
   </div>
 </template>
@@ -96,10 +140,23 @@ function handleClick() {
 <style>
 .entry-card {
   position: relative;
+  display: flex;
   overflow: hidden;
+  min-width: 0;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   background-color: hsl(var(--card));
+  gap: 12px;
   transition: background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
+}
+
+.entry-card--grid {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 16px 16px 8px;
+  gap: 12px;
 }
 
 .entry-card:hover {
@@ -112,20 +169,56 @@ function handleClick() {
   transition: opacity var(--hover-transition-duration-in);
 }
 
-.entry-card__main {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 12px 16px;
+.entry-card__hitbox {
+  position: absolute;
+  padding: 0;
   border: none;
+  border-radius: inherit;
   background: none;
   cursor: pointer;
+  inset: 0;
+}
+
+.entry-card__details,
+.entry-card__actions,
+.entry-card__action {
+  position: relative;
+}
+
+.entry-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-right: -8px;
+  gap: 2px;
+}
+
+.entry-card__footer {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid hsl(var(--border));
+  margin-top: auto;
   gap: 12px;
-  text-align: left;
+}
+
+.entry-card__meta {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  gap: 16px;
+  white-space: nowrap;
 }
 
 .entry-card__icon {
   display: flex;
+  overflow: hidden;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
@@ -136,6 +229,18 @@ function handleClick() {
   color: hsl(var(--primary));
 }
 
+.entry-card__preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.entry-card__system-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
 .entry-card__content {
   display: flex;
   min-width: 0;
@@ -144,13 +249,39 @@ function handleClick() {
   gap: 4px;
 }
 
+.entry-card--grid .entry-card__content {
+  flex: 0 0 auto;
+}
+
+.entry-card__details {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.entry-card__heading {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .entry-card__name {
   overflow: hidden;
+  min-width: 0;
+  flex: 1;
   color: hsl(var(--foreground));
   font-size: 0.9rem;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.entry-card__size {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .entry-card__path {
@@ -159,14 +290,6 @@ function handleClick() {
   font-size: 0.8rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.entry-card__footer {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  padding: 0 16px 8px;
 }
 
 .entry-card__action {

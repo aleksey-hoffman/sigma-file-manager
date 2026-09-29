@@ -24,8 +24,10 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import type { QuickAccessSectionId } from '@/types/user-settings';
-import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
+import type { FavoriteItem, TaggedItem } from '@/types/user-stats';
+import { getOrphanedTaggedItems, getTaggedSections, ORPHANED_TAG_ID } from '@/utils/tagged-sections';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import { openDashboardTagged } from '@/utils/open-dashboard-tagged';
 import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
 import { haveSameKeyOrder, reorderMatchingItems } from '@/utils/reorder-matching-items';
@@ -62,26 +64,10 @@ const favoriteItems = computed(() => userStatsStore.favorites);
 const taggedItems = computed(() => userStatsStore.taggedItems);
 const tags = computed(() => userStatsStore.tags);
 
-interface TagGroup {
-  tag: ItemTag;
-  items: TaggedItem[];
-}
-
-const knownTagIds = computed(() => new Set(tags.value.map(tag => tag.id)));
-
-const tagGroups = computed<TagGroup[]>(() => {
-  return tags.value
-    .map(tag => ({
-      tag,
-      items: taggedItems.value.filter(item => item.tagIds.includes(tag.id)),
-    }))
-    .filter(group => group.items.length > 0);
-});
+const tagGroups = computed(() => getTaggedSections(tags.value, taggedItems.value));
 
 const orphanedTaggedItems = computed(() => {
-  return taggedItems.value.filter(
-    item => !item.tagIds.some(tagId => knownTagIds.value.has(tagId)),
-  );
+  return getOrphanedTaggedItems(tags.value, taggedItems.value);
 });
 
 const totalTaggedItemCount = computed(() => {
@@ -135,6 +121,10 @@ function openTaggedItem(item: TaggedItem) {
   openItem(item.path, item.isFile);
 }
 
+function openTagInDashboard(tagId: string) {
+  openDashboardTagged(router, tagId);
+}
+
 function getSectionKey(sectionId: QuickAccessSectionId): string {
   return sectionId;
 }
@@ -159,20 +149,6 @@ function getTaggedEntryProps(item: TaggedItem) {
     isFile: item.isFile,
     isCurrentDirectoryContext: isCurrentDirectoryItem(item.path, item.isFile),
   };
-}
-
-function handleItemDragEnd() {
-  function swallowClick(clickEvent: MouseEvent) {
-    clickEvent.preventDefault();
-    clickEvent.stopPropagation();
-    window.removeEventListener('click', swallowClick, true);
-  }
-
-  window.addEventListener('click', swallowClick, true);
-  window.setTimeout(() => {
-    window.removeEventListener('click', swallowClick, true);
-  }, 0);
-  emit('drag-end');
 }
 
 function handleSectionsReorder(nextItems: QuickAccessSectionId[]) {
@@ -233,7 +209,7 @@ function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
                 :get-key="getItemKey"
                 @set="handleFavoritesReorder"
                 @drag-start="emit('drag-start')"
-                @drag-end="handleItemDragEnd"
+                @drag-end="emit('drag-end')"
               >
                 <template #item="{ item }">
                   <QuickAccessEntry
@@ -258,20 +234,24 @@ function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
                 :key="group.tag.id"
                 class="quick-access-panel__tag-group"
               >
-                <div class="quick-access-panel__tag-subtitle">
+                <button
+                  type="button"
+                  class="quick-access-panel__tag-subtitle"
+                  @click="openTagInDashboard(group.tag.id)"
+                >
                   <span
                     class="quick-access-panel__tag-dot"
                     :style="{ backgroundColor: group.tag.color }"
                   />
                   <span class="quick-access-panel__tag-name">{{ group.tag.name }}</span>
                   <span class="quick-access-panel__tag-count">{{ group.items.length }}</span>
-                </div>
+                </button>
                 <SortableList
                   :items="group.items"
                   :get-key="getItemKey"
                   @set="handleTaggedItemsReorder"
                   @drag-start="emit('drag-start')"
-                  @drag-end="handleItemDragEnd"
+                  @drag-end="emit('drag-end')"
                 >
                   <template #item="{ item }">
                     <QuickAccessEntry
@@ -285,17 +265,21 @@ function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
                 v-if="orphanedTaggedItems.length > 0"
                 class="quick-access-panel__tag-group"
               >
-                <div class="quick-access-panel__tag-subtitle">
+                <button
+                  type="button"
+                  class="quick-access-panel__tag-subtitle"
+                  @click="openTagInDashboard(ORPHANED_TAG_ID)"
+                >
                   <span class="quick-access-panel__tag-dot quick-access-panel__tag-dot--muted" />
                   <span class="quick-access-panel__tag-name">{{ t('quickAccess.unknownTagGroup') }}</span>
                   <span class="quick-access-panel__tag-count">{{ orphanedTaggedItems.length }}</span>
-                </div>
+                </button>
                 <SortableList
                   :items="orphanedTaggedItems"
                   :get-key="getItemKey"
                   @set="handleTaggedItemsReorder"
                   @drag-start="emit('drag-start')"
-                  @drag-end="handleItemDragEnd"
+                  @drag-end="emit('drag-end')"
                 >
                   <template #item="{ item }">
                     <QuickAccessEntry
@@ -369,10 +353,20 @@ function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
 
 .quick-access-panel__tag-subtitle {
   display: flex;
+  width: 100%;
   align-items: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
   gap: 6px;
   padding-block: 4px;
   padding-inline: 12px;
+  text-align: left;
+}
+
+.quick-access-panel__tag-subtitle:hover {
+  background-color: hsl(var(--muted) / 50%);
 }
 
 .quick-access-panel__tag-dot {

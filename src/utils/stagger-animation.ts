@@ -46,3 +46,25 @@ export function getStaggerSlideUpBinding(
     style: getStaggerAnimationStyle(index, options),
   };
 }
+
+export const DASHBOARD_CONTENT_ENTRANCE_CLASS = 'animate-dashboard-content';
+export const DASHBOARD_CONTENT_ENTRANCE_DELAY_MS = 40;
+export const DASHBOARD_CONTENT_ENTRANCE_DURATION_MS = 160;
+
+export const DASHBOARD_CARD_ENTRANCE: StaggerAnimationOptions = {
+  initialDelayMs: DASHBOARD_CONTENT_ENTRANCE_DELAY_MS + DASHBOARD_CONTENT_ENTRANCE_DURATION_MS,
+  stepMs: defaultStepMs,
+};
+
+export function getDashboardContentEntranceBinding(): {
+  class: string;
+  style: { animationDelay: string; animationDuration: string };
+} {
+  return {
+    class: DASHBOARD_CONTENT_ENTRANCE_CLASS,
+    style: {
+      animationDelay: `${DASHBOARD_CONTENT_ENTRANCE_DELAY_MS}ms`,
+      animationDuration: `${DASHBOARD_CONTENT_ENTRANCE_DURATION_MS}ms`,
+    },
+  };
+}

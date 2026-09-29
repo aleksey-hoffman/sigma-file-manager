@@ -173,7 +173,13 @@
       "favorites": "お気に入り",
       "tagged": "タグ",
       "frequent": "よく使う",
-      "history": "履歴"
+      "history": "最近表示した項目"
+    },
+    "countScope": {
+      "total": "合計",
+      "last": "最新",
+      "totalItems": "件（合計）",
+      "lastItems": "件（最新）"
     },
     "emptyFavorites": "お気に入りはまだありません",
     "emptyFavoritesDescription": "ナビゲーターでファイルまたはフォルダーを右クリックし、「お気に入りに追加」を選択してください。",
@@ -189,7 +195,34 @@
     "daysAgo": "{n}日前 | {n}日前 | {n}日前 | {n}日前",
     "openedCount": "{n}回開いた | {n}回開いた | {n}回開いた | {n}回開いた",
     "actions": {
-      "clearAll": "このリストからすべて削除"
+      "openContainingFolder": "保存先フォルダーを開く",
+      "clearAll": "このリストからすべて削除",
+      "clearAllConfirmTitle": "このリストからすべて削除しますか？",
+      "clearAllConfirmDescription": "この操作は元に戻せません。",
+      "confirmRemove": "削除",
+      "removeAllTags": "すべてのタグを外す",
+      "removeAllTagsConfirmTitle": "すべての項目からタグを外しますか？",
+      "removeAllTagsConfirmDescription": "すべての項目のタグが外れます。タグ名は残ります。",
+      "deleteTagConfirmTitle": "このタグを削除しますか？",
+      "deleteTagConfirmDescription": "タグは削除され、すべての項目から外れます。"
+    },
+    "emptyTagItems": "このタグの項目はありません",
+    "tagItems": "項目にタグを付ける",
+    "untag": "タグを外す",
+    "typeFilter": {
+      "label": "種類で絞り込む",
+      "all": "すべて",
+      "documents": "ドキュメント",
+      "archives": "アーカイブ",
+      "showAll": "すべて表示",
+      "more": "その他のフィルター"
+    },
+    "sort": {
+      "label": "並べ替え",
+      "custom": "カスタム",
+      "name": "名前",
+      "dateAdded": "追加日",
+      "path": "パス"
     }
   },
   "settingsCategories": {

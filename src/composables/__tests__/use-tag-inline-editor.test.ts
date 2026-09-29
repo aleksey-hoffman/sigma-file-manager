@@ -39,6 +39,7 @@ describe('useTagInlineEditor', () => {
 
     expect(editor.editingTagId.value).toBe('work');
     expect(editor.editDraft.value).toBe('work');
+    expect(editor.colorEditingTagId.value).toBeNull();
   });
 
   it('closes the rename input when the edit button is pressed again', () => {
@@ -52,27 +53,51 @@ describe('useTagInlineEditor', () => {
     expect(editor.editingTagId.value).toBeNull();
   });
 
-  it('closes the rename input when the color control is pressed again', () => {
+  it('opens color editing without the rename input', () => {
+    const editor = createEditor();
+    const tag = createTag('work');
+    const colorClick = createCancelableEvent();
+
+    editor.onColorPointerDown(colorClick, tag);
+    editor.onColorClick(colorClick, tag);
+
+    expect(editor.colorEditingTagId.value).toBe('work');
+    expect(editor.editingTagId.value).toBeNull();
+    expect(colorClick.defaultPrevented).toBe(false);
+  });
+
+  it('closes color editing when the color control blurs', () => {
+    const editor = createEditor();
+    const tag = createTag('work');
+
+    editor.onColorPointerDown(createCancelableEvent(), tag);
+    editor.onColorBlur(createCancelableEvent());
+
+    expect(editor.colorEditingTagId.value).toBeNull();
+  });
+
+  it('closes the rename input when color editing starts', () => {
     const editor = createEditor();
     const tag = createTag('work');
     const colorClick = createCancelableEvent();
 
     editor.startEdit(createCancelableEvent(), tag);
-    editor.onToggleControlPointerDown(createCancelableEvent(), tag);
+    editor.onColorPointerDown(colorClick, tag);
     editor.onColorClick(colorClick, tag);
 
     expect(editor.editingTagId.value).toBeNull();
-    expect(colorClick.defaultPrevented).toBe(true);
+    expect(editor.colorEditingTagId.value).toBe('work');
+    expect(colorClick.defaultPrevented).toBe(false);
   });
 
-  it('opens the rename input from the color control', () => {
+  it('closes color editing when the rename input opens', () => {
     const editor = createEditor();
     const tag = createTag('work');
-    const colorClick = createCancelableEvent();
 
-    editor.onColorClick(colorClick, tag);
+    editor.onColorPointerDown(createCancelableEvent(), tag);
+    editor.startEdit(createCancelableEvent(), tag);
 
+    expect(editor.colorEditingTagId.value).toBeNull();
     expect(editor.editingTagId.value).toBe('work');
-    expect(colorClick.defaultPrevented).toBe(false);
   });
 });

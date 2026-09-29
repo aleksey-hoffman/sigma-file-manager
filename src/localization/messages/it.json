@@ -173,7 +173,13 @@
       "favorites": "Preferiti",
       "tagged": "Taggati",
       "frequent": "Frequenti",
-      "history": "Cronologia"
+      "history": "Visti di recente"
+    },
+    "countScope": {
+      "total": "in totale",
+      "last": "ultimi",
+      "totalItems": "elementi in totale",
+      "lastItems": "ultimi elementi"
     },
     "emptyFavorites": "Nessun preferito ancora",
     "emptyFavoritesDescription": "Fai clic destro su qualsiasi file o cartella nel navigatore e seleziona \"Aggiungi ai preferiti\".",
@@ -189,7 +195,34 @@
     "daysAgo": "{n} giorno fa | {n} giorni fa | {n} giorni fa | {n} giorni fa",
     "openedCount": "Aperto {n} volta | Aperto {n} volte | Aperto {n} volte | Aperto {n} volte",
     "actions": {
-      "clearAll": "Rimuovi tutto da questa lista"
+      "openContainingFolder": "Apri cartella contenitore",
+      "clearAll": "Rimuovi tutto da questa lista",
+      "clearAllConfirmTitle": "Rimuovere tutto da questa lista?",
+      "clearAllConfirmDescription": "Questa azione non può essere annullata.",
+      "confirmRemove": "Rimuovi",
+      "removeAllTags": "Rimuovi tutti i tag",
+      "removeAllTagsConfirmTitle": "Rimuovere tutti i tag dagli elementi?",
+      "removeAllTagsConfirmDescription": "Tutti gli elementi resteranno senza tag. I nomi dei tag resteranno.",
+      "deleteTagConfirmTitle": "Eliminare questo tag?",
+      "deleteTagConfirmDescription": "Il tag verrà eliminato e rimosso da tutti gli elementi."
+    },
+    "emptyTagItems": "Nessun elemento con questo tag",
+    "tagItems": "Aggiungi tag",
+    "untag": "Rimuovi tag",
+    "typeFilter": {
+      "label": "Filtra per tipo",
+      "all": "Tutti",
+      "documents": "Documenti",
+      "archives": "Archivi",
+      "showAll": "Mostra tutti",
+      "more": "Altri filtri"
+    },
+    "sort": {
+      "label": "Ordina",
+      "custom": "Personalizzato",
+      "name": "Nome",
+      "dateAdded": "Data di aggiunta",
+      "path": "Percorso"
     }
   },
   "settingsCategories": {

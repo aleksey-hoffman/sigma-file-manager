@@ -251,3 +251,60 @@ describe('user stats reorder setters', () => {
     expect(lazyStoreSetMock).not.toHaveBeenCalled();
   });
 });
+
+describe('user stats tagged item removal', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    storedValues.clear();
+    lazyStoreSaveMock.mockReset();
+    lazyStoreSetMock.mockReset();
+  });
+
+  it('removes a tag from every item and drops emptied rows', async () => {
+    const tags = [
+      createTag('tag-work', 'Work'),
+      createTag('tag-personal', 'Personal'),
+    ];
+    const taggedItems = [
+      createTaggedItem('/work-1', ['tag-work']),
+      createTaggedItem('/both', ['tag-work', 'tag-personal']),
+      createTaggedItem('/personal-1', ['tag-personal']),
+    ];
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      tags,
+      taggedItems,
+    }));
+    lazyStoreSetMock.mockClear();
+
+    await store.removeTagFromAllItems('tag-work');
+
+    expect(store.taggedItems.map(item => ({
+      path: item.path,
+      tagIds: item.tagIds,
+    }))).toEqual([
+      { path: '/both', tagIds: ['tag-personal'] },
+      { path: '/personal-1', tagIds: ['tag-personal'] },
+    ]);
+    expect(lazyStoreSetMock).toHaveBeenCalledWith('taggedItems', store.taggedItems);
+  });
+
+  it('removes a tagged item by path', async () => {
+    const taggedItems = [
+      createTaggedItem('/work-1', ['tag-work']),
+      createTaggedItem('/personal-1', ['tag-personal']),
+    ];
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      taggedItems,
+    }));
+    lazyStoreSetMock.mockClear();
+
+    await store.removeTaggedItem('/work-1');
+
+    expect(store.taggedItems.map(item => item.path)).toEqual(['/personal-1']);
+    expect(lazyStoreSetMock).toHaveBeenCalledWith('taggedItems', store.taggedItems);
+  });
+});

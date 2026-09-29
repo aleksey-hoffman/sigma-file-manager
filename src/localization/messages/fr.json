@@ -173,7 +173,13 @@
       "favorites": "Favoris",
       "tagged": "Tagués",
       "frequent": "Fréquents",
-      "history": "Historique"
+      "history": "Consultés récemment"
+    },
+    "countScope": {
+      "total": "au total",
+      "last": "derniers",
+      "totalItems": "éléments au total",
+      "lastItems": "derniers éléments"
     },
     "emptyFavorites": "Pas encore de favoris",
     "emptyFavoritesDescription": "Faites un clic droit sur n'importe quel fichier ou dossier dans le navigateur et sélectionnez \"Ajouter aux favoris\".",
@@ -189,7 +195,34 @@
     "daysAgo": "il y a {n} jour | il y a {n} jours | il y a {n} jours | il y a {n} jours",
     "openedCount": "Ouvert {n} fois | Ouvert {n} fois | Ouvert {n} fois | Ouvert {n} fois",
     "actions": {
-      "clearAll": "Tout supprimer de cette liste"
+      "openContainingFolder": "Ouvrir le dossier parent",
+      "clearAll": "Tout supprimer de cette liste",
+      "clearAllConfirmTitle": "Tout supprimer de cette liste ?",
+      "clearAllConfirmDescription": "Cette action est irréversible.",
+      "confirmRemove": "Supprimer",
+      "removeAllTags": "Retirer toutes les étiquettes",
+      "removeAllTagsConfirmTitle": "Retirer toutes les étiquettes des éléments ?",
+      "removeAllTagsConfirmDescription": "Tous les éléments seront sans étiquette. Les noms d'étiquettes seront conservés.",
+      "deleteTagConfirmTitle": "Supprimer cette étiquette ?",
+      "deleteTagConfirmDescription": "L'étiquette sera supprimée et retirée de tous les éléments."
+    },
+    "emptyTagItems": "Aucun élément avec cette étiquette",
+    "tagItems": "Étiqueter des éléments",
+    "untag": "Retirer l'étiquette",
+    "typeFilter": {
+      "label": "Filtrer par type",
+      "all": "Tout",
+      "documents": "Documents",
+      "archives": "Archives",
+      "showAll": "Tout afficher",
+      "more": "Plus de filtres"
+    },
+    "sort": {
+      "label": "Trier",
+      "custom": "Personnalisé",
+      "name": "Nom",
+      "dateAdded": "Date d'ajout",
+      "path": "Chemin"
     }
   },
   "settingsCategories": {

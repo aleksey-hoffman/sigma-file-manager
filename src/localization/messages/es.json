@@ -173,7 +173,13 @@
       "favorites": "Favoritos",
       "tagged": "Etiquetados",
       "frequent": "Frecuentes",
-      "history": "Historial"
+      "history": "Vistos recientemente"
+    },
+    "countScope": {
+      "total": "en total",
+      "last": "últimos",
+      "totalItems": "elementos en total",
+      "lastItems": "últimos elementos"
     },
     "emptyFavorites": "Aún no hay favoritos",
     "emptyFavoritesDescription": "Haz clic derecho en cualquier archivo o carpeta en el navegador y selecciona \"Añadir a favoritos\".",
@@ -189,7 +195,34 @@
     "daysAgo": "hace {n} día | hace {n} días | hace {n} días | hace {n} días",
     "openedCount": "Abierto {n} vez | Abierto {n} veces | Abierto {n} veces | Abierto {n} veces",
     "actions": {
-      "clearAll": "Eliminar todo de esta lista"
+      "openContainingFolder": "Abrir carpeta contenedora",
+      "clearAll": "Eliminar todo de esta lista",
+      "clearAllConfirmTitle": "¿Eliminar todo de esta lista?",
+      "clearAllConfirmDescription": "Esto no se puede deshacer.",
+      "confirmRemove": "Eliminar",
+      "removeAllTags": "Quitar todas las etiquetas",
+      "removeAllTagsConfirmTitle": "¿Quitar todas las etiquetas de los elementos?",
+      "removeAllTagsConfirmDescription": "Todos los elementos quedarán sin etiquetas. Los nombres de las etiquetas se conservarán.",
+      "deleteTagConfirmTitle": "¿Eliminar esta etiqueta?",
+      "deleteTagConfirmDescription": "La etiqueta se eliminará y se quitará de todos los elementos."
+    },
+    "emptyTagItems": "No hay elementos con esta etiqueta",
+    "tagItems": "Etiquetar elementos",
+    "untag": "Quitar etiqueta",
+    "typeFilter": {
+      "label": "Filtrar por tipo",
+      "all": "Todo",
+      "documents": "Documentos",
+      "archives": "Archivos comprimidos",
+      "showAll": "Mostrar todo",
+      "more": "Más filtros"
+    },
+    "sort": {
+      "label": "Ordenar",
+      "custom": "Personalizado",
+      "name": "Nombre",
+      "dateAdded": "Fecha de añadido",
+      "path": "Ruta"
     }
   },
   "settingsCategories": {

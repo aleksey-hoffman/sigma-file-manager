@@ -202,7 +202,13 @@
       "favorites": "Избранное",
       "tagged": "С метками",
       "frequent": "Частые",
-      "history": "История"
+      "history": "Недавно просмотренные"
+    },
+    "countScope": {
+      "total": "всего",
+      "last": "последние",
+      "totalItems": "всего элементов",
+      "lastItems": "последних элементов"
     },
     "emptyFavorites": "Избранного пока нет",
     "emptyFavoritesDescription": "Щёлкните правой кнопкой мыши по любому файлу или папке в навигаторе и выберите «Добавить в избранное».",
@@ -218,7 +224,34 @@
     "daysAgo": "{n} д. назад | {n} д. назад | {n} д. назад | {n} д. назад",
     "openedCount": "Открыто {n} раз | Открыто {n} раз | Открыто {n} раз | Открыто {n} раз",
     "actions": {
-      "clearAll": "Удалить всё из этого списка"
+      "openContainingFolder": "Открыть расположение",
+      "clearAll": "Удалить всё из этого списка",
+      "clearAllConfirmTitle": "Удалить всё из этого списка?",
+      "clearAllConfirmDescription": "Это действие нельзя отменить.",
+      "confirmRemove": "Удалить",
+      "removeAllTags": "Снять все метки",
+      "removeAllTagsConfirmTitle": "Снять все метки с элементов?",
+      "removeAllTagsConfirmDescription": "Все элементы будут без меток. Названия меток сохранятся.",
+      "deleteTagConfirmTitle": "Удалить эту метку?",
+      "deleteTagConfirmDescription": "Метка будет удалена и снята со всех элементов."
+    },
+    "emptyTagItems": "Нет элементов с этой меткой",
+    "tagItems": "Пометить элементы",
+    "untag": "Снять метку",
+    "typeFilter": {
+      "label": "Фильтр по типу",
+      "all": "Все",
+      "documents": "Документы",
+      "archives": "Архивы",
+      "showAll": "Показать все",
+      "more": "Другие фильтры"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "custom": "Своя",
+      "name": "Имя",
+      "dateAdded": "Дата добавления",
+      "path": "Путь"
     }
   },
   "settingsCategories": {

@@ -9,7 +9,7 @@ import { LoaderCircleIcon } from '@lucide/vue';
 import type { ListReorderableColumnId } from '@/types/user-settings';
 import type { ItemTag } from '@/types/user-stats';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TagOverflowList, TagSelector } from '@/components/ui/tag-selector';
+import { ItemTagsField } from '@/components/ui/tag-selector';
 import type { DirEntry } from '@/types/dir-entry';
 
 interface FileBrowserListDateDisplay {
@@ -124,38 +124,19 @@ const tagsColumnInteractionAttrs = computed(() => {
       >{{ props.row.createdDate.primary }}</span>
     </template>
     <template v-else-if="props.columnId === 'tags'">
-      <TagSelector
-        v-if="props.row.isTagSelectorMounted"
+      <ItemTagsField
         :tags="props.availableTags"
         :selected-tag-ids="props.row.selectedTagIds"
-        :allow-create="true"
-        :full-width="true"
-        :open-on-mount="true"
-        trigger-variant="default"
-        align="end"
-        side="bottom"
+        :is-selector-mounted="props.row.isTagSelectorMounted"
+        :tag-summary="props.row.tagSummary"
+        @open="emit('openTagSelector', props.row.entry.path)"
+        @open-change="open => emit('tagsOpenChange', props.row.entry.path, open)"
         @toggle-tag="tagId => emit('toggleTag', props.row.entry, tagId)"
         @create-tag="name => emit('createTag', props.row.entry, name)"
         @rename-tag="(tagId, name) => emit('renameTag', tagId, name)"
         @update-tag-color="(tagId, color) => emit('updateTagColor', tagId, color)"
         @reorder-tags="nextTags => emit('reorderTags', nextTags)"
-        @open-change="open => emit('tagsOpenChange', props.row.entry.path, open)"
       />
-      <button
-        v-else
-        type="button"
-        class="file-browser-list-view__entry-tags-static"
-        :title="props.row.tagSummary"
-        @click="emit('openTagSelector', props.row.entry.path)"
-      >
-        <template v-if="props.row.tagBadges.length > 0">
-          <TagOverflowList :tags="props.row.tagBadges" />
-        </template>
-        <span
-          v-else
-          class="file-browser-list-view__entry-tags-empty"
-        >—</span>
-      </button>
     </template>
     <template v-else-if="props.columnId === 'kind'">
       {{ props.row.kindLabel }}

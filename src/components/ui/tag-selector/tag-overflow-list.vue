@@ -173,6 +173,7 @@ watch(tagsMeasureKey, () => {
 
 .tag-overflow-list__badge {
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .tag-overflow-list__badge--shrink {

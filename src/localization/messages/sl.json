@@ -202,7 +202,13 @@
       "favorites": "Priljubljene",
       "tagged": "Označene",
       "frequent": "Pogoste",
-      "history": "Zgodovina"
+      "history": "Nedavno ogledano"
+    },
+    "countScope": {
+      "total": "skupaj",
+      "last": "zadnjih",
+      "totalItems": "elementov skupaj",
+      "lastItems": "zadnjih elementov"
     },
     "emptyFavorites": "Še brez priljubljenih",
     "emptyFavoritesDescription": "Desno kliknite katerokoli datoteko ali mapo v navigatorju in izberite \"Dodaj med priljubljene\", da se bodo tukaj prikazale.",
@@ -218,7 +224,34 @@
     "daysAgo": "{n} dan nazaj | {n} dni nazaj | {n} dni nazaj | {n} dni nazaj",
     "openedCount": "Odprto {n} krat | Odprto {n} krat | Odprto {n} krat | Odprto {n} krat",
     "actions": {
-      "clearAll": "Odstrani vse s tega seznama"
+      "openContainingFolder": "Odpri vsebujočo mapo",
+      "clearAll": "Odstrani vse s tega seznama",
+      "clearAllConfirmTitle": "Odstraniti vse s tega seznama?",
+      "clearAllConfirmDescription": "Tega ni mogoče razveljaviti.",
+      "confirmRemove": "Odstrani",
+      "removeAllTags": "Odstrani vse oznake",
+      "removeAllTagsConfirmTitle": "Odstraniti vse oznake z elementov?",
+      "removeAllTagsConfirmDescription": "Vsi elementi bodo brez oznak. Imena oznak ostanejo.",
+      "deleteTagConfirmTitle": "Izbrisati to oznako?",
+      "deleteTagConfirmDescription": "Oznaka bo izbrisana in odstranjena z vseh elementov."
+    },
+    "emptyTagItems": "Ni elementov s to oznako",
+    "tagItems": "Označi elemente",
+    "untag": "Odstrani oznako",
+    "typeFilter": {
+      "label": "Filtriraj po vrsti",
+      "all": "Vse",
+      "documents": "Dokumenti",
+      "archives": "Arhivi",
+      "showAll": "Pokaži vse",
+      "more": "Več filtrov"
+    },
+    "sort": {
+      "label": "Razvrsti",
+      "custom": "Po meri",
+      "name": "Ime",
+      "dateAdded": "Datum dodajanja",
+      "path": "Pot"
     }
   },
   "settingsCategories": {

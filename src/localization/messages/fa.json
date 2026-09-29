@@ -169,7 +169,13 @@
       "favorites": "موردعلاقه‌ها",
       "tagged": "برچسب‌گذاری شده",
       "frequent": "پرکاربرد",
-      "history": "تاریخچه"
+      "history": "اخیراً مشاهده‌شده"
+    },
+    "countScope": {
+      "total": "کل",
+      "last": "اخیر",
+      "totalItems": "مورد در کل",
+      "lastItems": "مورد اخیر"
     },
     "emptyFavorites": "هنوز موردعلاقه‌ای وجود ندارد",
     "emptyFavoritesDescription": "روی هر فایل یا پوشه در ناوبر راست کلیک کنید و \"افزودن به موردعلاقه‌ها\" را انتخاب کنید.",
@@ -185,7 +191,34 @@
     "daysAgo": "{n} روز پیش | {n} روز پیش | {n} روز پیش | {n} روز پیش",
     "openedCount": "{n} بار باز شده | {n} بار باز شده | {n} بار باز شده | {n} بار باز شده",
     "actions": {
-      "clearAll": "حذف همه از این لیست"
+      "openContainingFolder": "باز کردن پوشه حاوی",
+      "clearAll": "حذف همه از این لیست",
+      "clearAllConfirmTitle": "همه از این فهرست حذف شود؟",
+      "clearAllConfirmDescription": "این کار قابل بازگشت نیست.",
+      "confirmRemove": "حذف",
+      "removeAllTags": "برداشتن همه برچسب‌ها",
+      "removeAllTagsConfirmTitle": "همه برچسب‌ها از موارد برداشته شود؟",
+      "removeAllTagsConfirmDescription": "همه موارد بدون برچسب می‌شوند. نام برچسب‌ها می‌ماند.",
+      "deleteTagConfirmTitle": "این برچسب حذف شود؟",
+      "deleteTagConfirmDescription": "برچسب حذف می‌شود و از همه موارد برداشته می‌شود."
+    },
+    "emptyTagItems": "موردی با این برچسب نیست",
+    "tagItems": "برچسب‌گذاری موارد",
+    "untag": "برداشتن برچسب",
+    "typeFilter": {
+      "label": "فیلتر بر اساس نوع",
+      "all": "همه",
+      "documents": "اسناد",
+      "archives": "آرشیوها",
+      "showAll": "نمایش همه",
+      "more": "فیلترهای بیشتر"
+    },
+    "sort": {
+      "label": "مرتب‌سازی",
+      "custom": "سفارشی",
+      "name": "نام",
+      "dateAdded": "تاریخ افزودن",
+      "path": "مسیر"
     }
   },
   "settingsCategories": {

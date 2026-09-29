@@ -458,6 +458,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       :selected-tag-ids="selectedItemTagIds"
       :allow-create="true"
       :full-width="true"
+      show-trigger-label
       trigger-variant="default"
       align="end"
       :side="inlineEndSide"

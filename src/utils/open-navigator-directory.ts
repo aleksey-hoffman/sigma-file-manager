@@ -9,7 +9,7 @@ import {
   resolvePathLaunchTarget,
   type LaunchTarget,
 } from '@/utils/launch-directories';
-import normalizePath, { getParentDirectory } from '@/utils/normalize-path';
+import normalizePath, { getParentDirectory, getParentPath } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 
 export function preloadNavigatorRoute(): void {
@@ -121,6 +121,24 @@ export function openNavigatorPath(
   runNavigatorOpenTask(async () => {
     const openedNewTabGroup = { value: false };
     await applyLaunchTarget(router, createOptimisticLaunchTarget(path), openedNewTabGroup);
+  });
+}
+
+export function openNavigatorContainingDirectory(router: Router, itemPath: string): void {
+  const parentPath = getParentPath(itemPath);
+
+  if (!parentPath) {
+    return;
+  }
+
+  ensureNavigatorRoute(router);
+
+  runNavigatorOpenTask(async () => {
+    const openedNewTabGroup = { value: false };
+    await applyLaunchTarget(router, {
+      directoryPath: parentPath,
+      focusPath: itemPath,
+    }, openedNewTabGroup);
   });
 }
 

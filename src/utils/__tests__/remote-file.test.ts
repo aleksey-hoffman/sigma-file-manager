@@ -23,6 +23,12 @@ describe('remote-file', () => {
     expect(getPathOrUrlExtension('https://example.com/image.webp?size=large')).toBe('webp');
   });
 
+  it('ignores dots in parent directory names', () => {
+    expect(getPathOrUrlExtension('C:/Users/dir.v2/notes')).toBe('');
+    expect(getPathOrUrlExtension('C:\\Users\\dir.v2\\notes')).toBe('');
+    expect(getPathOrUrlExtension('https://example.com/assets.v2/image')).toBe('');
+  });
+
   it('extracts file names from paths', () => {
     expect(getFileName('C:/Users/aleks/photo.png')).toBe('photo.png');
     expect(getFileName('/home/aleks/photo.png')).toBe('photo.png');

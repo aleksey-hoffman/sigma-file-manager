@@ -37,6 +37,7 @@ export function useTagInlineEditor(options: {
   const { tags, onRename, onDelete, onUpdateColor } = options;
 
   const editingTagId = ref<string | null>(null);
+  const colorEditingTagId = ref<string | null>(null);
   const editDraft = ref('');
   const renameInputRef = ref<HTMLInputElement | null>(null);
   const previewTagColors = ref<Record<string, string>>({});
@@ -68,6 +69,10 @@ export function useTagInlineEditor(options: {
   }
 
   const schedulePersistTagColors = useThrottleFn(flushPendingColorsToParent, 1000, true, false);
+
+  function endColorEdit() {
+    colorEditingTagId.value = null;
+  }
 
   function cancelEdit() {
     editingTagId.value = null;
@@ -109,12 +114,21 @@ export function useTagInlineEditor(options: {
       commitEdit();
     }
 
+    endColorEdit();
     editingTagId.value = tag.id;
     editDraft.value = tag.name;
     nextTick(() => {
       renameInputRef.value?.focus();
       renameInputRef.value?.select();
     });
+  }
+
+  function beginColorEdit(tag: ItemTag) {
+    if (editingTagId.value !== null) {
+      commitEdit();
+    }
+
+    colorEditingTagId.value = tag.id;
   }
 
   function consumeSkipClickToggle(): boolean {
@@ -154,16 +168,14 @@ export function useTagInlineEditor(options: {
     beginEdit(tag);
   }
 
+  function onColorPointerDown(event: Event, tag: ItemTag) {
+    event.stopPropagation();
+    beginColorEdit(tag);
+  }
+
   function onColorClick(event: Event, tag: ItemTag) {
     event.stopPropagation();
-
-    if (consumeSkipClickToggle() || editingTagId.value === tag.id) {
-      event.preventDefault();
-      commitEdit();
-      return;
-    }
-
-    beginEdit(tag);
+    beginColorEdit(tag);
   }
 
   function deleteTag(event: Event, tagId: string) {
@@ -171,6 +183,10 @@ export function useTagInlineEditor(options: {
 
     if (editingTagId.value === tagId) {
       cancelEdit();
+    }
+
+    if (colorEditingTagId.value === tagId) {
+      endColorEdit();
     }
 
     onDelete?.(tagId);
@@ -208,11 +224,13 @@ export function useTagInlineEditor(options: {
   function onColorBlur(event: Event) {
     event.stopPropagation();
     flushPendingColorsToParent();
+    endColorEdit();
   }
 
   function resetEditState() {
     flushPendingColorsToParent();
     cancelEdit();
+    endColorEdit();
   }
 
   watch(
@@ -247,12 +265,17 @@ export function useTagInlineEditor(options: {
 
       previewTagColors.value = preview;
       pendingTagColors.value = pending;
+
+      if (colorEditingTagId.value !== null && !validIds.has(colorEditingTagId.value)) {
+        endColorEdit();
+      }
     },
     { deep: true },
   );
 
   return {
     editingTagId,
+    colorEditingTagId,
     editDraft,
     renameInputRef,
     setRenameInputRef,
@@ -262,6 +285,7 @@ export function useTagInlineEditor(options: {
     commitEdit,
     startEdit,
     onToggleControlPointerDown,
+    onColorPointerDown,
     onColorClick,
     deleteTag,
     onColorInput,

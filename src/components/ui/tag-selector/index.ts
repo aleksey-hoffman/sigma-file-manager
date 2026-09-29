@@ -4,4 +4,5 @@
 
 export { default as TagSelector } from './tag-selector.vue';
 export { default as TagOverflowList } from './tag-overflow-list.vue';
+export { default as ItemTagsField } from './item-tags-field.vue';
 export type { TagOverflowItem } from './tag-overflow-list';

@@ -173,7 +173,13 @@
       "favorites": "Favoriler",
       "tagged": "Etiketli",
       "frequent": "Sık Kullanılan",
-      "history": "Geçmiş"
+      "history": "Son görüntülenenler"
+    },
+    "countScope": {
+      "total": "toplam",
+      "last": "son",
+      "totalItems": "toplam öğe",
+      "lastItems": "son öğe"
     },
     "emptyFavorites": "Henüz favori yok",
     "emptyFavoritesDescription": "Gezginde herhangi bir dosya veya klasöre sağ tıklayın ve \"Favorilere ekle\" seçeneğini seçin.",
@@ -189,7 +195,34 @@
     "daysAgo": "{n} gün önce | {n} gün önce | {n} gün önce | {n} gün önce",
     "openedCount": "{n} kez açıldı | {n} kez açıldı | {n} kez açıldı | {n} kez açıldı",
     "actions": {
-      "clearAll": "Tümünü bu listeden kaldır"
+      "openContainingFolder": "İçeren klasörü aç",
+      "clearAll": "Tümünü bu listeden kaldır",
+      "clearAllConfirmTitle": "Tümünü bu listeden kaldırmak istiyor musunuz?",
+      "clearAllConfirmDescription": "Bu işlem geri alınamaz.",
+      "confirmRemove": "Kaldır",
+      "removeAllTags": "Tüm etiketleri kaldır",
+      "removeAllTagsConfirmTitle": "Tüm öğelerin etiketlerini kaldırmak istiyor musunuz?",
+      "removeAllTagsConfirmDescription": "Tüm öğelerin etiketleri kaldırılır. Etiket adları kalır.",
+      "deleteTagConfirmTitle": "Bu etiketi silmek istiyor musunuz?",
+      "deleteTagConfirmDescription": "Etiket silinecek ve tüm öğelerden kaldırılacak."
+    },
+    "emptyTagItems": "Bu etikete sahip öğe yok",
+    "tagItems": "Öğeleri etiketle",
+    "untag": "Etiketi kaldır",
+    "typeFilter": {
+      "label": "Türe göre filtrele",
+      "all": "Tümü",
+      "documents": "Belgeler",
+      "archives": "Arşivler",
+      "showAll": "Tümünü göster",
+      "more": "Diğer filtreler"
+    },
+    "sort": {
+      "label": "Sırala",
+      "custom": "Özel",
+      "name": "Ad",
+      "dateAdded": "Eklenme tarihi",
+      "path": "Yol"
     }
   },
   "settingsCategories": {

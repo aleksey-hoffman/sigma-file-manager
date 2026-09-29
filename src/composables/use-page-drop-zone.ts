@@ -7,13 +7,14 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { storeToRefs } from 'pinia';
 import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
+import {
+  collectPageDropTargets,
+  findPageDropTarget,
+  getPageDropTargetKey,
+  type PageDropTarget,
+} from '@/utils/page-drop-targets';
 
 export type DropOperationType = 'move' | 'copy';
-
-interface DropTargetInfo {
-  path: string;
-  element: Element;
-}
 
 export function usePageDropZone(options: {
   containerRef: Ref<Element | null>;
@@ -24,9 +25,9 @@ export function usePageDropZone(options: {
   const isActive = ref(false);
   const itemCount = ref(0);
   const operationType = ref<DropOperationType>('move');
-  let dropTargets: DropTargetInfo[] = [];
-  let currentDropTargetPath = '';
-  let currentTargetElement: Element | null = null;
+  let dropTargets: PageDropTarget[] = [];
+  let currentDropTarget: PageDropTarget | null = null;
+  let currentDropTargetKey = '';
   let unlistenDrop: (() => void) | null = null;
 
   function toLogicalPosition(physicalX: number, physicalY: number): {
@@ -55,41 +56,11 @@ export function usePageDropZone(options: {
   }
 
   function collectDropTargets() {
-    dropTargets = [];
     const container = options.containerRef.value;
-    if (!container) return;
-
-    const elements = container.querySelectorAll('[data-drop-target]');
-    elements.forEach((element) => {
-      const path = element.getAttribute('data-entry-path');
-
-      if (path) {
-        dropTargets.push({
-          path,
-          element,
-        });
-      }
-    });
+    dropTargets = container ? collectPageDropTargets(container) : [];
   }
 
-  function findDropTarget(clientX: number, clientY: number): DropTargetInfo | null {
-    for (const target of dropTargets) {
-      const rect = target.element.getBoundingClientRect();
-
-      if (
-        clientX >= rect.left
-        && clientX <= rect.right
-        && clientY >= rect.top
-        && clientY <= rect.bottom
-      ) {
-        return target;
-      }
-    }
-
-    return null;
-  }
-
-  function updateDropTargetAttributes(targetPath: string, targetElement?: Element | null) {
+  function updateDropTargetAttributes(target: PageDropTarget | null) {
     const container = options.containerRef.value;
     if (!container) return;
 
@@ -97,17 +68,8 @@ export function usePageDropZone(options: {
       element.removeAttribute('data-drag-over');
     });
 
-    if (targetElement) {
-      targetElement.setAttribute('data-drag-over', '');
-    }
-    else if (targetPath) {
-      const foundElement = container.querySelector(
-        `[data-entry-path="${CSS.escape(targetPath)}"]`,
-      );
-
-      if (foundElement) {
-        foundElement.setAttribute('data-drag-over', '');
-      }
+    if (target) {
+      target.element.setAttribute('data-drag-over', '');
     }
   }
 
@@ -126,10 +88,10 @@ export function usePageDropZone(options: {
   function resetState() {
     isActive.value = false;
     operationType.value = 'move';
-    currentDropTargetPath = '';
-    currentTargetElement = null;
+    currentDropTarget = null;
+    currentDropTargetKey = '';
     dropTargets = [];
-    updateDropTargetAttributes('');
+    updateDropTargetAttributes(null);
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
   }
@@ -181,14 +143,13 @@ export function usePageDropZone(options: {
           }
 
           const logicalPosition = toLogicalPosition(position.x, position.y);
-          const target = findDropTarget(logicalPosition.x, logicalPosition.y);
-          const newTargetPath = target ? target.path : '';
-          const newTargetElement = target?.element ?? null;
+          const target = findPageDropTarget(dropTargets, logicalPosition.x, logicalPosition.y);
+          const nextTargetKey = getPageDropTargetKey(target);
 
-          if (currentDropTargetPath !== newTargetPath || currentTargetElement !== newTargetElement) {
-            currentDropTargetPath = newTargetPath;
-            currentTargetElement = newTargetElement;
-            updateDropTargetAttributes(newTargetPath, newTargetElement);
+          if (currentDropTargetKey !== nextTargetKey || currentDropTarget?.element !== target?.element) {
+            currentDropTarget = target;
+            currentDropTargetKey = nextTargetKey;
+            updateDropTargetAttributes(target);
           }
         }
         else if (event.payload.type === 'leave') {
@@ -199,15 +160,17 @@ export function usePageDropZone(options: {
           const paths = (event.payload.paths as string[]) ?? [];
 
           const wasActive = isActive.value;
-          const targetPath = currentDropTargetPath;
+          const target = currentDropTarget;
           const operation = operationType.value;
 
           resetState();
           itemCount.value = 0;
 
-          if (wasActive && paths.length > 0 && targetPath) {
-            options.onDrop(paths, targetPath, operation);
+          if (!wasActive || paths.length === 0 || !target) {
+            return;
           }
+
+          options.onDrop(paths, target.path, operation);
         }
       })
       .then((unlisten) => {

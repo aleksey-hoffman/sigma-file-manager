@@ -31,4 +31,5 @@ export const FILE_EXTENSIONS: Record<string, readonly string[]> = {
   CODE: ['js', 'ts', 'jsx', 'tsx', 'vue', 'py', 'java', 'cpp', 'c', 'h', 'rs', 'go', 'rb', 'php', 'swift', 'kt', 'cs', 'html', 'css', 'scss', 'sass', 'less', 'json', 'xml', 'yaml', 'yml', 'toml', 'md', 'sh', 'bash', 'ps1', 'sql'],
   ARCHIVE: ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'iso'],
   TEXT: ['txt', 'log', 'ini', 'cfg', 'conf', 'env'],
+  DOCUMENT: ['pdf', 'doc', 'docx', 'odt', 'rtf', 'txt', 'md', 'xls', 'xlsx', 'ods', 'csv', 'ppt', 'pptx', 'odp', 'epub', 'pages', 'numbers', 'key'],
 };

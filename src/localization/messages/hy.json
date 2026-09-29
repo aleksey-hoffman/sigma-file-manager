@@ -202,7 +202,13 @@
       "favorites": "Սիրվածներ",
       "tagged": "Թեգված",
       "frequent": "Հաճախակի",
-      "history": "Պատմություն"
+      "history": "Վերջերս դիտված"
+    },
+    "countScope": {
+      "total": "ընդամենը",
+      "last": "վերջին",
+      "totalItems": "տարր ընդամենը",
+      "lastItems": "վերջին տարրեր"
     },
     "emptyFavorites": "Սիրվածներ դեռ չկան",
     "emptyFavoritesDescription": "Ցանկացած ֆայլի կամ պանակի վրա աջ կոճակին սեղմեք և ընտրեք «Ավելացնել սիրվածներին»՝ դրանք այստեղ տեսնելու համար։",
@@ -218,7 +224,34 @@
     "daysAgo": "{n} օր առաջ | {n} օր առաջ | {n} օր առաջ | {n} օր առաջ",
     "openedCount": "Բացված {n} անգամ | Բացված {n} անգամ | Բացված {n} անգամ | Բացված {n} անգամ",
     "actions": {
-      "clearAll": "Ջնջել բոլոր այս ցուցակից"
+      "openContainingFolder": "Բացել պարունակող թղթապանակը",
+      "clearAll": "Ջնջել բոլոր այս ցուցակից",
+      "clearAllConfirmTitle": "Ջնջե՞լ բոլորը այս ցուցակից",
+      "clearAllConfirmDescription": "Սա հնարավոր չէ հետարկել.",
+      "confirmRemove": "Ջնջել",
+      "removeAllTags": "Հեռացնել բոլոր թեգերը",
+      "removeAllTagsConfirmTitle": "Հեռացնե՞լ բոլոր թեգերը տարրերից",
+      "removeAllTagsConfirmDescription": "Բոլոր տարրերը կմնան առանց թեգերի. թեգերի անունները կպահպանվեն.",
+      "deleteTagConfirmTitle": "Ջնջե՞լ այս թեգը",
+      "deleteTagConfirmDescription": "Թեգը կջնջվի և կհեռացվի բոլոր տարրերից."
+    },
+    "emptyTagItems": "Այս թեգով տարրեր չկան",
+    "tagItems": "Թեգավորել տարրերը",
+    "untag": "Հեռացնել թեգը",
+    "typeFilter": {
+      "label": "Զտել ըստ տեսակի",
+      "all": "Բոլորը",
+      "documents": "Փաստաթղթեր",
+      "archives": "Արխիվներ",
+      "showAll": "Ցույց տալ բոլորը",
+      "more": "Այլ զտիչներ"
+    },
+    "sort": {
+      "label": "Տեսակավորել",
+      "custom": "Հատուկ",
+      "name": "Անուն",
+      "dateAdded": "Ավելացման ամսաթիվ",
+      "path": "Ուղի"
     }
   },
   "settingsCategories": {

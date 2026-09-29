@@ -16,9 +16,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   Command,
-  CommandEmpty,
-  CommandGroup,
   CommandInput,
   CommandList,
   CommandSeparator,
@@ -36,6 +39,7 @@ const props = withDefaults(defineProps<{
   selectedTagIds: string[];
   allowCreate?: boolean;
   triggerVariant?: 'default' | 'compact' | 'icon';
+  showTriggerLabel?: boolean;
   fullWidth?: boolean;
   openOnMount?: boolean;
   align?: PopoverContentProps['align'];
@@ -45,6 +49,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   allowCreate: true,
   triggerVariant: 'default',
+  showTriggerLabel: false,
   fullWidth: false,
   openOnMount: false,
   align: 'start',
@@ -71,6 +76,7 @@ const tagsRef = computed(() => props.tags);
 
 const {
   editingTagId,
+  colorEditingTagId,
   editDraft,
   setRenameInputRef,
   displayColor,
@@ -79,6 +85,7 @@ const {
   commitEdit,
   startEdit,
   onToggleControlPointerDown,
+  onColorPointerDown,
   onColorClick,
   onColorInput,
   onColorBlur,
@@ -134,19 +141,6 @@ function handleTagsReorder(nextVisibleTags: ItemTag[]) {
   }
 
   emit('reorder-tags', nextTags);
-}
-
-function handleTagsDragEnd() {
-  function swallowClick(clickEvent: MouseEvent) {
-    clickEvent.preventDefault();
-    clickEvent.stopPropagation();
-    window.removeEventListener('click', swallowClick, true);
-  }
-
-  window.addEventListener('click', swallowClick, true);
-  window.setTimeout(() => {
-    window.removeEventListener('click', swallowClick, true);
-  }, 0);
 }
 
 function onSelectTag(tag: ItemTag) {
@@ -212,7 +206,10 @@ function clearSearch() {
         :class="{ 'tag-selector__trigger--full-width': fullWidth }"
       >
         <TagIcon class="tag-selector__trigger-icon-plus" />
-        <span class="tag-selector__label">{{ t('tags.editTags') }}</span>
+        <span
+          v-if="showTriggerLabel"
+          class="tag-selector__label"
+        >{{ t('tags.editTags') }}</span>
         <template v-if="selectedOverflowTags.length > 0">
           <TagOverflowList :tags="selectedOverflowTags" />
         </template>
@@ -226,7 +223,10 @@ function clearSearch() {
       :align-offset="alignOffset"
       :side-offset="sideOffset"
     >
-      <Command :key="commandKey">
+      <Command
+        :key="commandKey"
+        ignore-filter
+      >
         <CommandInput
           v-model="searchQuery"
           :placeholder="t('tags.searchTags')"
@@ -234,9 +234,6 @@ function clearSearch() {
           @keydown.esc="clearSearch"
         />
         <CommandList class="tag-selector__command-list">
-          <CommandEmpty v-if="filteredTags.length === 0 && !canCreate">
-            {{ t('tags.noTagsFound') }}
-          </CommandEmpty>
           <div
             v-if="canCreate"
             class="tag-selector__create"
@@ -251,14 +248,16 @@ function clearSearch() {
               {{ t('tags.createTag') }} "{{ trimmedSearchQuery }}"
             </Button>
           </div>
-          <CommandGroup v-if="filteredTags.length > 0">
+          <div
+            v-if="filteredTags.length > 0"
+            class="tag-selector__results"
+          >
             <SortableList
               class="tag-selector__sortable"
               :items="filteredTags"
               :get-key="getTagKey"
               handle-selector=".tag-selector__drag-handle"
               @set="handleTagsReorder"
-              @drag-end="handleTagsDragEnd"
             >
               <template #item="{ item: tag }">
                 <div class="sigma-ui-command-item tag-selector__item">
@@ -283,29 +282,38 @@ function clearSearch() {
                       :style="{ color: displayColor(tag) }"
                     />
                   </button>
-                  <label
-                    class="tag-selector__color-dot-wrap"
-                    :title="t('tags.tagColor')"
-                    @click.stop
-                    @pointerdown.stop
-                  >
-                    <div class="tag-selector__color-dot-hitbox">
-                      <input
-                        type="color"
-                        class="tag-selector__color-input"
-                        :value="colorHexForPicker(displayColor(tag))"
-                        @click.stop="onColorClick($event, tag)"
-                        @pointerdown.stop="onToggleControlPointerDown($event, tag)"
-                        @input="onColorInput($event, tag.id)"
-                        @blur="onColorBlur"
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <label
+                        class="tag-selector__color-dot-wrap"
+                        @click.stop
+                        @pointerdown.stop
                       >
-                      <span
-                        class="tag-selector__color-dot"
-                        aria-hidden="true"
-                        :style="{ backgroundColor: displayColor(tag) }"
-                      />
-                    </div>
-                  </label>
+                        <div
+                          class="tag-selector__color-dot-hitbox"
+                          :class="{ 'tag-selector__color-dot-hitbox--editing': colorEditingTagId === tag.id }"
+                        >
+                          <input
+                            type="color"
+                            class="tag-selector__color-input"
+                            :value="colorHexForPicker(displayColor(tag))"
+                            @click.stop="onColorClick($event, tag)"
+                            @pointerdown.stop="onColorPointerDown($event, tag)"
+                            @input="onColorInput($event, tag.id)"
+                            @blur="onColorBlur"
+                          >
+                          <span
+                            class="tag-selector__color-dot"
+                            aria-hidden="true"
+                            :style="{ backgroundColor: displayColor(tag) }"
+                          />
+                        </div>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {{ t('tags.tagColor') }}
+                    </TooltipContent>
+                  </Tooltip>
                   <span
                     v-if="editingTagId !== tag.id"
                     class="tag-selector__tag-name"
@@ -324,20 +332,32 @@ function clearSearch() {
                     @pointerdown.stop
                   >
                   <div class="tag-selector__item-actions">
-                    <button
-                      type="button"
-                      class="tag-selector__edit"
-                      :title="t('tags.renameTag')"
-                      @pointerdown="onToggleControlPointerDown($event, tag)"
-                      @click="startEdit($event, tag)"
-                    >
-                      <PencilIcon :size="16" />
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <button
+                          type="button"
+                          class="tag-selector__edit"
+                          @pointerdown="onToggleControlPointerDown($event, tag)"
+                          @click="startEdit($event, tag)"
+                        >
+                          <PencilIcon :size="16" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {{ t('tags.renameTag') }}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </template>
             </SortableList>
-          </CommandGroup>
+          </div>
+          <p
+            v-else-if="!canCreate"
+            class="tag-selector__empty"
+          >
+            {{ t('tags.noTagsFound') }}
+          </p>
           <CommandSeparator v-if="$slots.footer" />
           <div
             v-if="$slots.footer"
@@ -436,6 +456,13 @@ function clearSearch() {
   padding: 8px;
 }
 
+.tag-selector__empty {
+  padding: 1.5rem 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  text-align: center;
+}
+
 .tag-selector__create-button {
   width: 100%;
   justify-content: flex-start;
@@ -488,6 +515,13 @@ function clearSearch() {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.tag-selector__color-dot-hitbox:hover,
+.tag-selector__color-dot-hitbox--editing {
+  background-color: hsl(var(--primary) / 10%);
 }
 
 .tag-selector__color-input {

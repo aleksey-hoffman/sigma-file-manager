@@ -716,34 +716,8 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   align-items: center;
 }
 
-.file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
-  min-width: 0;
-  max-width: 100%;
+.file-browser-list-view__entry-tags :deep(.item-tags-field) {
   height: 100%;
-  border: none;
-}
-
-.file-browser-list-view__entry-tags :deep(.tag-selector__label) {
-  display: none;
-}
-
-.file-browser-list-view__entry-tags :deep(.file-browser-list-view__entry-tags-static) {
-  display: flex;
-  overflow: hidden;
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  align-items: center;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  gap: 4px;
-}
-
-.file-browser-list-view__entry-tags :deep(.file-browser-list-view__entry-tags-empty) {
-  color: hsl(var(--muted-foreground));
 }
 
 .file-browser-list-view__entry-size {
@@ -878,7 +852,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-created,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-link-status,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
-.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.item-tags-field__static),
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
   color: hsl(var(--dangerous));
 }
@@ -889,7 +863,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-modified,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-created,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-tags,
-.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-tags-static,
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-tags :deep(.item-tags-field__static),
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
   color: hsl(var(--success));
 }
@@ -900,7 +874,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-modified,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-created,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
-.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.item-tags-field__static),
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
   color: hsl(var(--dangerous));
 }

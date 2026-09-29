@@ -202,7 +202,13 @@
       "favorites": "پسندیدہ",
       "tagged": "ٹیگ والے",
       "frequent": "اکثر استعمال",
-      "history": "سابقات"
+      "history": "حال ہی میں دیکھے گئے"
+    },
+    "countScope": {
+      "total": "کل",
+      "last": "حالیہ",
+      "totalItems": "کل آئٹمز",
+      "lastItems": "حالیہ آئٹمز"
     },
     "emptyFavorites": "ابھی کوئی پسندیدہ نہیں",
     "emptyFavoritesDescription": "نیویگیٹر میں کسی فائل یا فولڈر پر دائیں کلک کر کے \"پسندیدہ میں شامل کریں\" چنیں۔",
@@ -218,7 +224,34 @@
     "daysAgo": "{n} دن پہلے | {n} دن پہلے | {n} دن پہلے | {n} دن پہلے",
     "openedCount": "{n} بار کھولا | {n} بار کھولا | {n} بار کھولا | {n} بار کھولا",
     "actions": {
-      "clearAll": "اس فہرست سے سب ہٹائیں"
+      "openContainingFolder": "متعلقہ فولڈر کھولیں",
+      "clearAll": "اس فہرست سے سب ہٹائیں",
+      "clearAllConfirmTitle": "اس فہرست سے سب ہٹائیں؟",
+      "clearAllConfirmDescription": "اسے واپس نہیں کیا جا سکتا.",
+      "confirmRemove": "ہٹائیں",
+      "removeAllTags": "تمام ٹیگ ہٹائیں",
+      "removeAllTagsConfirmTitle": "تمام آئٹمز سے ٹیگ ہٹائیں؟",
+      "removeAllTagsConfirmDescription": "تمام آئٹمز بغیر ٹیگ کے ہو جائیں گے۔ ٹیگ کے نام رہیں گے۔",
+      "deleteTagConfirmTitle": "یہ ٹیگ حذف کریں؟",
+      "deleteTagConfirmDescription": "ٹیگ حذف ہو جائے گا اور تمام آئٹمز سے ہٹ جائے گا۔"
+    },
+    "emptyTagItems": "اس ٹیگ والے کوئی آئٹم نہیں",
+    "tagItems": "آئٹمز ٹیگ کریں",
+    "untag": "ٹیگ ہٹائیں",
+    "typeFilter": {
+      "label": "قسم کے لحاظ سے فلٹر کریں",
+      "all": "سب",
+      "documents": "دستاویزات",
+      "archives": "آرکائیوز",
+      "showAll": "سب دکھائیں",
+      "more": "مزید فلٹرز"
+    },
+    "sort": {
+      "label": "ترتیب",
+      "custom": "حسب ضرورت",
+      "name": "نام",
+      "dateAdded": "شامل کرنے کی تاریخ",
+      "path": "راستہ"
     }
   },
   "settingsCategories": {

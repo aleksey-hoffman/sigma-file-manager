@@ -34,7 +34,7 @@ vi.mock('@/router/routes', () => ({
   loadNavigatorRoute: vi.fn(async () => ({})),
 }));
 
-import { openNavigatorPath, openNavigatorPathInNewTab, preloadNavigatorRoute } from '@/utils/open-navigator-directory';
+import { openNavigatorContainingDirectory, openNavigatorPath, openNavigatorPathInNewTab, preloadNavigatorRoute } from '@/utils/open-navigator-directory';
 import { loadNavigatorRoute } from '@/router/routes';
 
 function createRouter(routeName: string | symbol | null | undefined): Router {
@@ -150,6 +150,40 @@ describe('openNavigatorPath', () => {
 
     expect(router.push).not.toHaveBeenCalled();
     expect(openNewTabGroupMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('openNavigatorContainingDirectory', () => {
+  beforeEach(() => {
+    openNewTabGroupMock.mockReset().mockResolvedValue(undefined);
+    openPathInCurrentTabMock.mockReset().mockResolvedValue(undefined);
+    setPendingLaunchRevealMock.mockReset();
+  });
+
+  it('opens the parent directory and reveals the item', async () => {
+    const router = createRouter('home');
+
+    openNavigatorContainingDirectory(router, 'C:/Users/aleks/Downloads/report.pdf');
+
+    expect(router.push).toHaveBeenCalledWith({ name: 'navigator' });
+
+    await vi.waitFor(() => {
+      expect(openNewTabGroupMock).toHaveBeenCalledWith('C:/Users/aleks/Downloads');
+      expect(setPendingLaunchRevealMock).toHaveBeenCalledWith(
+        'C:/Users/aleks/Downloads',
+        'C:/Users/aleks/Downloads/report.pdf',
+      );
+    });
+  });
+
+  it('does nothing when the item has no parent directory', () => {
+    const router = createRouter('home');
+
+    openNavigatorContainingDirectory(router, 'C:/');
+
+    expect(router.push).not.toHaveBeenCalled();
+    expect(openNewTabGroupMock).not.toHaveBeenCalled();
+    expect(setPendingLaunchRevealMock).not.toHaveBeenCalled();
   });
 });
 
