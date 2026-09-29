@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
   inset-inline: 0;
 }
 
-.window-toolbar-spacer {
+.window-toolbar-action-layer > .window-toolbar-spacer {
   z-index: 4;
   -webkit-app-region: drag;
 }
@@ -326,7 +326,7 @@ onBeforeUnmount(() => {
   z-index: 6;
 }
 
-.window-toolbar--fullscreen .window-toolbar-spacer,
+.window-toolbar--fullscreen .window-toolbar-action-layer > .window-toolbar-spacer,
 .window-toolbar--fullscreen .window-toolbar-action-layer {
   -webkit-app-region: no-drag;
 }
