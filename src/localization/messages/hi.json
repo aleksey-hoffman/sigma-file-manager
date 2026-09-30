@@ -286,7 +286,11 @@
       "startupPage": {
         "title": "स्टार्टअप पेज",
         "description": "ऐप शुरू होने पर कौन सा पृष्ठ दिखाना है चुनें।",
-        "last": "अंतिम पृष्ठ"
+        "last": "अंतिम पृष्ठ",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

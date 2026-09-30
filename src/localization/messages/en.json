@@ -269,7 +269,11 @@
       "startupPage": {
         "title": "Startup page",
         "description": "Choose which page to show when the app starts.",
-        "last": "Last page"
+        "last": "Last page",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       },
       "decreaseZoomLevel": "Decrease zoom level",
       "increaseZoomLevel": "Increase zoom level",

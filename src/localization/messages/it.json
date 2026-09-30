@@ -257,7 +257,11 @@
       "startupPage": {
         "title": "Pagina di avvio",
         "description": "Scegli quale pagina mostrare all'avvio dell'app.",
-        "last": "Ultima pagina"
+        "last": "Ultima pagina",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

@@ -974,6 +974,7 @@ async function handleDuplicateCurrentTabShortcut() {
     case 'clone-path':
       await workspacesStore.openNewTabGroup(target.path);
       return;
+
     default: {
       const exhaustiveCheck: never = target;
       return exhaustiveCheck;

@@ -47,7 +47,7 @@ import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 import { removeAppSplash } from '@/utils/app-splash';
 import { logInitTrace, traceInitStep } from '@/utils/init-trace';
 import { warmPathComparisonVolumeCache } from '@/utils/path-comparison-volume-cache';
-import { preloadNavigatorRoute } from '@/utils/open-navigator-directory';
+import { openNavigatorPath, preloadNavigatorRoute } from '@/utils/open-navigator-directory';
 import {
   persistLastRoute,
   resolveStartupRouteLocation,
@@ -230,8 +230,20 @@ export function useInit() {
       return;
     }
 
+    const startupPage = userSettingsStore.userSettings.startupPage ?? 'home';
+
+    if (startupPage === 'customPath') {
+      const customPath = userSettingsStore.userSettings.customStartupPath?.trim();
+
+      if (customPath) {
+        openNavigatorPath(router, customPath);
+        return;
+      }
+      // No custom path configured: fall through to default home behavior
+    }
+
     const startupRoute = resolveStartupRouteLocation(
-      userSettingsStore.userSettings.startupPage ?? 'home',
+      startupPage,
       userSettingsStore.userSettings.lastRoute,
     );
 

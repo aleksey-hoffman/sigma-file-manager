@@ -257,7 +257,11 @@
       "startupPage": {
         "title": "启动页",
         "description": "选择应用启动时显示的页面。",
-        "last": "上次打开的页面"
+        "last": "上次打开的页面",
+        "customPath": "自定义路径...",
+        "customPathPlaceholder": "选择启动时打开的目录",
+        "browse": "浏览...",
+        "browseTitle": "选择启动目录"
       }
     },
     "actions": {

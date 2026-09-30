@@ -257,7 +257,11 @@
       "startupPage": {
         "title": "Trang khởi động",
         "description": "Chọn trang hiển thị khi ứng dụng khởi động.",
-        "last": "Trang gần nhất"
+        "last": "Trang gần nhất",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

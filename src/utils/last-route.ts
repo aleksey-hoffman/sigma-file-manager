@@ -87,6 +87,10 @@ export function resolveStartupRouteLocation(
       return { name: 'dashboard' };
     case 'navigator':
       return { name: 'navigator' };
+    case 'customPath':
+      // customPath navigation is handled in use-init.ts:applyStartupPage
+      // which has access to both router and the configured custom path
+      return null;
 
     default: {
       const exhaustiveCheck: never = startupPage;

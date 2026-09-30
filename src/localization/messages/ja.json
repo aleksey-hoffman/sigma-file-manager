@@ -257,7 +257,11 @@
       "startupPage": {
         "title": "起動ページ",
         "description": "アプリ起動時に表示するページを選びます。",
-        "last": "最後のページ"
+        "last": "最後のページ",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

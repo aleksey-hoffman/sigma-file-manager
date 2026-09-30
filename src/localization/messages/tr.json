@@ -257,7 +257,11 @@
       "startupPage": {
         "title": "Başlangıç sayfası",
         "description": "Uygulama başladığında hangi sayfanın gösterileceğini seçin.",
-        "last": "Son sayfa"
+        "last": "Son sayfa",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

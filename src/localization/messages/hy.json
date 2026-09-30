@@ -286,7 +286,11 @@
       "startupPage": {
         "title": "Գործարկման էջ",
         "description": "Ընտրեք, թե որ էջը ցուցադրել ծրագիրը գործարկելիս:",
-        "last": "Վերջին էջ"
+        "last": "Վերջին էջ",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

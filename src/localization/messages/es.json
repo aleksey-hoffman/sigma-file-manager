@@ -240,7 +240,11 @@
       "startupPage": {
         "title": "Página de arranque",
         "description": "Elige qué página mostrar al iniciar la aplicación.",
-        "last": "Última página"
+        "last": "Última página",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       },
       "decreaseZoomLevel": "Disminuir el nivel de zoom",
       "increaseZoomLevel": "Aumentar el nivel de zoom",

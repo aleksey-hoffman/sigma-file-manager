@@ -286,7 +286,11 @@
       "startupPage": {
         "title": "דף הפעלה",
         "description": "בחרו איזה דף להציג בעת הפעלת היישום.",
-        "last": "העמוד האחרון"
+        "last": "העמוד האחרון",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

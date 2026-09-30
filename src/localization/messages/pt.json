@@ -257,7 +257,11 @@
       "startupPage": {
         "title": "Página de inicialização",
         "description": "Escolha qual página mostrar ao iniciar o aplicativo.",
-        "last": "Última página"
+        "last": "Última página",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

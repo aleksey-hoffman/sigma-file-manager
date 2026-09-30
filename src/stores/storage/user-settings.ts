@@ -211,6 +211,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     launchAtStartup: false,
     launchAtStartupHidden: false,
     startupPage: 'home',
+    customStartupPath: '',
     lastRoute: {
       name: 'home',
       fullPageId: '',

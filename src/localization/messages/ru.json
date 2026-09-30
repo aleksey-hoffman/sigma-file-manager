@@ -269,7 +269,11 @@
       "startupPage": {
         "title": "Стартовая страница",
         "description": "Выберите, какую страницу показывать при запуске приложения.",
-        "last": "Последняя страница"
+        "last": "Последняя страница",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       },
       "decreaseZoomLevel": "Уменьшить масштаб",
       "increaseZoomLevel": "Увеличить масштаб",

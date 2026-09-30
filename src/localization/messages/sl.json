@@ -286,7 +286,11 @@
       "startupPage": {
         "title": "Stran ob zagonu",
         "description": "Izberite, katera stran naj se prikaže ob zagonu aplikacije.",
-        "last": "Zadnja stran"
+        "last": "Zadnja stran",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

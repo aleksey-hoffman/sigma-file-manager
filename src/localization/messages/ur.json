@@ -286,7 +286,11 @@
       "startupPage": {
         "title": "اسٹارٹ اپ صفحہ",
         "description": "منتخب کریں کہ ایپ شروع ہونے پر کون سا صفحہ دکھایا جائے۔",
-        "last": "آخری صفحہ"
+        "last": "آخری صفحہ",
+        "customPath": "Custom path...",
+        "customPathPlaceholder": "Pick a directory to open at startup",
+        "browse": "Browse...",
+        "browseTitle": "Pick a startup directory"
       }
     },
     "actions": {

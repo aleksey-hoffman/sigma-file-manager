@@ -209,6 +209,7 @@ export type UserSettings = {
   launchAtStartup: boolean;
   launchAtStartupHidden: boolean;
   startupPage: StartupPage;
+  customStartupPath: string;
   lastRoute: LastRoute;
   performance: PerformanceSettings;
   appUpdates: AppUpdatesSettings;
@@ -317,7 +318,7 @@ export type ListSortDirection = 'asc' | 'desc';
 
 export type LastTabCloseBehavior = 'createDefaultTab' | 'closeWindow' | 'navigateToHomePage';
 
-export type StartupPage = 'last' | 'home' | 'dashboard' | 'navigator';
+export type StartupPage = 'last' | 'home' | 'dashboard' | 'navigator' | 'customPath';
 
 export type RestorableRouteName
   = 'home'
