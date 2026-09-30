@@ -214,22 +214,6 @@ function formatRelativeTime(timestamp: number): string {
                 @click="openItem(item.path, isFavoriteFile(item))"
               >
                 <template #actions>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        class="entry-card__action dashboard-page__remove-action"
-                        :aria-label="t('fileBrowser.actions.removeFromFavorites')"
-                        @click="userStatsStore.removeFromFavorites(item.path)"
-                      >
-                        <XIcon :size="14" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {{ t('fileBrowser.actions.removeFromFavorites') }}
-                    </TooltipContent>
-                  </Tooltip>
                   <DashboardOpenFolderButton :path="item.path" />
                 </template>
               </EntryCard>
