@@ -205,7 +205,6 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
 .file-browser-grid-view__section-bar-wrapper {
   padding-top: 8px;
   padding-bottom: 2px;
-  backdrop-filter: blur(var(--backdrop-filter-blur));
   background-color: hsl(var(--background-3));
   color: hsl(var(--muted-foreground));
   font-size: 12px;
@@ -224,7 +223,6 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
 .file-browser-grid-view__sticky-section-content {
   padding-top: 8px;
   padding-bottom: 2px;
-  backdrop-filter: blur(var(--backdrop-filter-blur));
   background-color: hsl(var(--background-3));
   color: hsl(var(--muted-foreground));
   font-size: 12px;

@@ -53,6 +53,7 @@ import {
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 export const USER_SETTINGS_THEME_CHANGED_EVENT = 'user-settings:theme-changed';
+export const BODY_VISUAL_FILTERS_ENABLED_CLASS = 'sigma-visual-filters-enabled';
 
 type ThemeChangedEventPayload = {
   theme: Theme;
@@ -306,6 +307,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     const brightness = clampVisualFilterValue(visualFilters.brightness);
     const contrast = clampVisualFilterValue(visualFilters.contrast);
 
+    document.documentElement.classList.toggle(
+      BODY_VISUAL_FILTERS_ENABLED_CLASS,
+      brightness !== 100 || contrast !== 100,
+    );
     document.documentElement.style.setProperty('--sigma-visual-filter-brightness', String(brightness));
     document.documentElement.style.setProperty('--sigma-visual-filter-contrast', String(contrast));
   }
