@@ -179,3 +179,126 @@ describe('useAppUpdater external update management', () => {
     expect(toastErrorMock).not.toHaveBeenCalled();
   });
 });
+
+describe('useAppUpdater site manifest fields', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    getVersionMock.mockReset().mockResolvedValue('2.0.0');
+    invokeMock.mockReset();
+    listenMock.mockReset().mockResolvedValue(vi.fn());
+    openUrlMock.mockReset();
+    toastCustomMock.mockReset();
+    toastDismissMock.mockReset();
+    toastErrorMock.mockReset();
+    userSettingsSetMock.mockReset().mockResolvedValue(undefined);
+    userSettingsStoreState.userSettings.appUpdates.autoCheck = true;
+    userSettingsStoreState.userSettings.appUpdates.lastCheckTimestamp = 0;
+    platformStoreState.appUpdatesManagedExternally = false;
+  });
+
+  it('carries notes, sha256 and source through to UpdateInfo', async () => {
+    invokeMock.mockResolvedValue({
+      updateAvailable: true,
+      latestVersion: '2.2.0',
+      releaseUrl: 'https://www.aiec.fun/alpha-file-manager/',
+      installerDownloadUrl:
+        'https://www.aiec.fun/alpha-file-manager/Alpha_File_Manager_2.2.0_x64-setup.exe',
+      installerFileName: 'Alpha_File_Manager_2.2.0_x64-setup.exe',
+      notes: 'v2.2.0 —— 目录树刷新修复',
+      pubDate: '2026-10-10T01:16:52Z',
+      sha256: '1b6a64f7a8d29fb0ab102e402294b674cb4cc30656ab21243aa759c0ef9c8635',
+      source: 'aiec.fun',
+    });
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { checkForUpdates } = useAppUpdater();
+
+    const result = await checkForUpdates();
+
+    expect(result).not.toBeNull();
+    expect(result?.notes).toBe('v2.2.0 —— 目录树刷新修复');
+    expect(result?.sha256).toBe(
+      '1b6a64f7a8d29fb0ab102e402294b674cb4cc30656ab21243aa759c0ef9c8635',
+    );
+    expect(result?.source).toBe('aiec.fun');
+    expect(result?.releaseUrl).toBe('https://www.aiec.fun/alpha-file-manager/');
+  });
+
+  it('passes expectedSha256 to the download command', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'check_for_updates') {
+        return {
+          updateAvailable: true,
+          latestVersion: '2.2.0',
+          releaseUrl: 'https://www.aiec.fun/alpha-file-manager/',
+          installerDownloadUrl: 'https://www.aiec.fun/alpha-file-manager/app.exe',
+          installerFileName: 'app.exe',
+          notes: 'x',
+          sha256: 'abc123',
+          source: 'aiec.fun',
+        };
+      }
+
+      return 'C:/Users/test/Downloads/app.exe';
+    });
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { checkForUpdates, downloadReleaseInstaller } = useAppUpdater();
+
+    const info = await checkForUpdates();
+    expect(info).not.toBeNull();
+    await downloadReleaseInstaller(info!);
+
+    expect(invokeMock).toHaveBeenCalledWith('download_release_installer', expect.objectContaining({
+      downloadUrl: 'https://www.aiec.fun/alpha-file-manager/app.exe',
+      fileName: 'app.exe',
+      expectedSha256: 'abc123',
+    }));
+  });
+
+  it('sends null expectedSha256 when the source provides no digest', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'check_for_updates') {
+        return {
+          updateAvailable: true,
+          latestVersion: '2.3.0',
+          releaseUrl: 'https://www.aiec.fun/alpha-file-manager/',
+          installerDownloadUrl: 'https://www.aiec.fun/alpha-file-manager/app.exe',
+          installerFileName: 'app.exe',
+          notes: null,
+          sha256: null,
+          source: 'GitHub',
+        };
+      }
+
+      return 'C:/Users/test/Downloads/app.exe';
+    });
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { checkForUpdates, downloadReleaseInstaller } = useAppUpdater();
+
+    const info = await checkForUpdates();
+    await downloadReleaseInstaller(info!);
+
+    expect(invokeMock).toHaveBeenCalledWith('download_release_installer', expect.objectContaining({
+      expectedSha256: null,
+    }));
+  });
+
+  it('treats a source error as failure instead of reporting an update', async () => {
+    invokeMock.mockRejectedValue(
+      '主源(aiec.fun)失败: 请求失败: timeout; 兜底源(GitHub)也失败: 请求失败: timeout',
+    );
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { checkForUpdates, updateAvailable, lastCheckError } = useAppUpdater();
+
+    const result = await checkForUpdates();
+
+    expect(result).toBeNull();
+    expect(updateAvailable.value).toBe(false);
+    // 错误文案必须点名是哪个源挂了，否则用户看到「GitHub 报错」却其实挂的是站点
+    expect(lastCheckError.value).toContain('aiec.fun');
+    expect(lastCheckError.value).toContain('GitHub');
+  });
+});

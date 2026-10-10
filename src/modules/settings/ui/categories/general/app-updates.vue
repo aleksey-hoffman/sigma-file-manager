@@ -54,7 +54,10 @@ async function handleCheckForUpdates() {
 }
 
 async function openReleasesPage() {
-  await openUrl(externalLinks.githubAllReleases);
+  // 更新渠道已迁到自建站。有检查结果时用清单里的 release_url，
+  // 否则退回站点下载页 —— 它会渲染 version.json 的 history[]，即全部历史版本。
+  const releaseUrl = updateInfo.value?.releaseUrl?.trim();
+  await openUrl(releaseUrl || externalLinks.updateChannelSiteUrl);
 }
 
 const hasInstallerDownload = computed(
@@ -114,7 +117,19 @@ async function handleUpdateAcquireAction() {
       </div>
 
       <div
-        v-else-if="hasCheckedOnce && !isChecking && !updateAvailable && !lastCheckError"
+        v-if="updateAvailable && updateInfo?.notes"
+        class="app-updates__notes"
+      >
+        <div class="app-updates__notes-title">
+          {{ t('changelog.title') }}
+        </div>
+        <p class="app-updates__notes-body">
+          {{ updateInfo.notes }}
+        </p>
+      </div>
+
+      <div
+        v-if="hasCheckedOnce && !isChecking && !updateAvailable && !lastCheckError"
         class="app-updates__status app-updates__status--up-to-date"
       >
         <CheckCircleIcon :size="16" />
@@ -241,6 +256,31 @@ async function handleUpdateAcquireAction() {
   align-items: center;
   font-size: 0.875rem;
   gap: 0.5rem;
+}
+
+.app-updates__notes {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  margin-top: 0.5rem;
+  background: hsl(var(--muted) / 35%);
+}
+
+.app-updates__notes-title {
+  margin-bottom: 0.25rem;
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.app-updates__notes-body {
+  max-height: 8rem;
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-y: auto;
+  white-space: pre-wrap;
 }
 
 .app-updates__status--available {

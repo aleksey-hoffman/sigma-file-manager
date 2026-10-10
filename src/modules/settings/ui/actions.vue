@@ -84,7 +84,8 @@ function openChangelogPage() {
 }
 
 function openReleasesPage() {
-  openUrl(externalLinks.githubAllReleases);
+  // 更新渠道已迁到自建站；这里的 GitHub 仓仍指向 sigma 上游，会把用户带到别人的版本列表。
+  openUrl(externalLinks.updateChannelSiteUrl);
 }
 </script>
 

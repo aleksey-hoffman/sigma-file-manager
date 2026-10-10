@@ -36,6 +36,14 @@ interface UpdateCheckResult {
   releaseUrl: string;
   installerDownloadUrl: string | null;
   installerFileName: string | null;
+  /** 更新说明。站点源来自 version.json 的 notes，GitHub 兜底源来自 release body。 */
+  notes?: string | null;
+  /** 发布日期（仅站点源提供）。 */
+  pubDate?: string | null;
+  /** 安装包 sha256，下载时交给 Rust 侧比对。 */
+  sha256?: string | null;
+  /** 本次结果来自哪个源：aiec.fun 或 GitHub。 */
+  source?: string;
 }
 
 export interface UpdateInfo {
@@ -44,6 +52,10 @@ export interface UpdateInfo {
   releaseUrl: string;
   installerDownloadUrl: string | null;
   installerFileName: string | null;
+  notes?: string | null;
+  sha256?: string | null;
+  /** 结果来源，用于排查「到底哪个源在工作」。 */
+  source?: string;
 }
 
 const isChecking = ref(false);
@@ -141,6 +153,9 @@ export function useAppUpdater() {
           releaseUrl: result.releaseUrl,
           installerDownloadUrl: result.installerDownloadUrl ?? null,
           installerFileName: result.installerFileName ?? null,
+          notes: result.notes ?? null,
+          sha256: result.sha256 ?? null,
+          source: result.source,
         };
 
         updateAvailable.value = true;
@@ -240,6 +255,7 @@ export function useAppUpdater() {
         downloadUrl: info.installerDownloadUrl,
         fileName: info.installerFileName,
         progressEventId: toastId,
+        expectedSha256: info.sha256 ?? null,
       });
 
       unlistenProgress();

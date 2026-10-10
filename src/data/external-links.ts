@@ -33,6 +33,13 @@ const extensionsApiBaseUrl = `${githubRawApiUrl}/${githubFullRepoName}/${githubM
 const extensionsTypesUrl = `${extensionsApiBaseUrl}/index.d.ts`;
 const extensionsManifestSchemaUrl = `${extensionsApiBaseUrl}/manifest.schema.json`;
 
+// 更新渠道的**人机入口页面**（下载 + 全部历史版本）。
+//
+// 这里只放 UI 要跳转的页面 URL，不要再复制一份 version.json / releases API 的地址：
+// 那些由 Rust 侧 app_updater.rs 的常量唯一定义，复制过来必然漂移。
+// 站点页会读取 version.json 并渲染 history[]，所以「查看所有版本」指向它。
+const updateChannelSiteUrl = 'https://www.aiec.fun/alpha-file-manager';
+
 export default {
   githubRepo,
   githubUserLink,
@@ -52,4 +59,5 @@ export default {
   extensionsDevelopmentWikiUrl,
   extensionsTypesUrl,
   extensionsManifestSchemaUrl,
+  updateChannelSiteUrl,
 };
