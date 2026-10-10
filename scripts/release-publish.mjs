@@ -128,15 +128,29 @@ function latestInstaller(releaseDir) {
 }
 
 function run(command, args, options = {}) {
-  const result = spawnSync(command, args, {
+  // 不经 shell 传参数数组。shell: true 会把参数交给 cmd.exe 重新拼接，
+  // 遇到非 ASCII 路径（本项目的站点源在 E:\办公文件\ 下）会被打散：
+  // 2026-10-10 实测 `gh release create` 因此报 "no matches found for `File`"。
+  // 调用方历史上为了迁就 shell 会给含空格的参数手动加引号，这里统一剥掉，
+  // 让 spawn 自己负责参数边界。
+  const isWindows = process.platform === 'win32';
+  // Windows 上 npm 是 .cmd shim，没有 shell 时必须带扩展名。
+  const exe = isWindows && command === 'npm' ? 'npm.cmd' : command;
+  const cleanArgs = args.map((arg) => {
+    if (typeof arg === 'string' && arg.length >= 2 && arg.startsWith('"') && arg.endsWith('"')) {
+      return arg.slice(1, -1);
+    }
+    return arg;
+  });
+  const result = spawnSync(exe, cleanArgs, {
     cwd: repoRoot,
     stdio: 'inherit',
-    shell: true,
+    shell: false,
     ...options,
   });
   if (result.error) fail(`执行 ${command} 失败：${result.error.message}`);
   if (typeof result.status === 'number' && result.status !== 0 && !options.allowFailure) {
-    fail(`${command} ${args.join(' ')} 退出码 ${result.status}`);
+    fail(`${command} ${cleanArgs.join(' ')} 退出码 ${result.status}`);
   }
   return result.status;
 }
@@ -270,7 +284,7 @@ async function upload() {
   if (!fs.existsSync(uploader)) fail(`上传脚本不存在：${uploader}`);
 
   console.log('[release] SFTP 上传中…');
-  run('"' + SFTP_PYTHON + '"', [`"${uploader}"`]);
+  run(SFTP_PYTHON, [uploader]);
   await verify();
 }
 
