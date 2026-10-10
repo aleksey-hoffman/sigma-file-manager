@@ -438,13 +438,27 @@ pub fn run() {
 }
 
 fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    if cfg!(debug_assertions) {
-        app.handle().plugin(
-            tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
-                .build(),
-        )?;
-    }
+    // v2.2.0-beta (2026-10-10): this used to be gated behind
+    // cfg!(debug_assertions), so a shipped build wrote nothing anywhere. That
+    // is why the 0xc0000005 startup crash left no trace to diagnose from.
+    //
+    // Builder::default() already targets LogDir, so the file lands in the
+    // Taurilog app log directory on release too. The plugin's own default
+    // max file size is only 40 KB, which is too small to be useful after the
+    // fact, so raise it. KeepOne keeps growth bounded (no unbounded rotated
+    // history on end-user machines).
+    app.handle().plugin(
+        tauri_plugin_log::Builder::default()
+            .level(log::LevelFilter::Info)
+            .max_file_size(2 * 1024 * 1024)
+            .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepOne)
+            .build(),
+    )?;
+    log::info!(
+        "setup_handler: app started, version={}, exe={}",
+        app.package_info().version,
+        std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default(),
+    );
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());

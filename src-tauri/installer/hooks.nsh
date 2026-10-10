@@ -24,6 +24,97 @@
 ; (We can't use $USERAPPDATA because NSIS 3.x reserves it as a built-in constant.)
 Var RESOLVEDAPPDATA
 
+; -----------------------------------------------------------------------
+; AlphaNormalizeInstDir — the single gate between "a registry string" and
+; "$INSTDIR".
+;
+; ROOT CAUSE of three shipped bugs (short menu shortcut gone, directory
+; page showing "D\Program Files\..." with Next disabled, "Run Alpha File
+; Manager" launching nothing): Tauri's NSIS template writes the uninstall
+; record's InstallLocation as a QUOTED string
+;     WriteRegStr SHCTX "${UNINSTKEY}" "InstallLocation" "$\"$INSTDIR$\""
+; Reading that back and assigning it with
+;     StrCpy $INSTDIR "$0"
+; produces a doubly-quoted instruction ("$0" expands to itself quoted), and
+; NSIS's tokenizer then eats the drive colon: "D:\Program Files\..." becomes
+; "D\Program Files\...". With no drive colon, NSIS reads $INSTDIR as a path
+; RELATIVE to the system directory and rewrites it to
+; "C:\D\Program Files\Alpha File Manager" — a path that does not exist. Every
+; "$INSTDIR\..." expansion then resolves under that bogus root, which is why
+; the start-menu/desktop shortcuts pointed at C:\D\... and why
+; nsis_tauri_utils::RunAsUser "$INSTDIR\alpha-file-manager.exe" silently did
+; nothing.
+;
+; Everything below this function only produces a CANDIDATE. Only a candidate
+; that AlphaNormalizeInstDir marks "ok" is ever assigned to $INSTDIR.
+;
+; in:  $1 = raw candidate, exactly as read from the registry
+; out: $1 = normalized path (unchanged if unusable)
+;      $0 = "ok"  -> $1 is an absolute drive-letter path, safe to use
+;          "bad" -> $1 must NOT be assigned to $INSTDIR
+; -----------------------------------------------------------------------
+Function AlphaNormalizeInstDir
+  StrCpy $0 "bad"
+
+  ; 1. Strip the surrounding double quotes Tauri's template writes.
+  ;    Deliberately uses only StrCpy / IntOp / ${StrLoc}. StrFunc's ${StrRep}
+  ;    is NOT available here: hooks.nsh is included by both the generated
+  ;    installer.nsi and the generated uninstaller script, neither of which
+  ;    registers it, and building with `${StrRep}` fails makensis with
+  ;    "You forgot ${Using:StrFunc} StrRep". ${StrLoc} IS registered.
+  ;
+  ;    Locating the trailing quote without knowing the string length: append a
+  ;    sentinel that cannot occur in a Windows path ('|'), then ask ${StrLoc}
+  ;    where it landed -- its 0-based index from the start IS the length.
+  ;    (Direction is ">" = from the start; measured, "<" counts from the end.)
+  StrCpy $4 $1 1
+  ${If} $4 == '"'
+    StrCpy $1 $1 "" 1            ; drop the leading quote
+  ${EndIf}
+  ; Trailing quote: locate it the same way, and only if a sentinel really
+  ; landed (guard, so a StrLoc miss can never feed IntOp a garbage index).
+  ${If} $1 != ""
+    StrCpy $7 "$1|"
+    ${StrLoc} $3 $7 "|" ">"
+    ${If} $3 != ""
+      IntOp $6 $3 - 1            ; index of the last character
+      StrCpy $4 $1 1 $6
+      ${If} $4 == '"'
+        StrCpy $1 $1 $6          ; truncate: drops the trailing quote
+      ${EndIf}
+    ${EndIf}
+  ${EndIf}
+
+  ; 2. Repair a colon that an EARLIER broken round already ate, so machines
+  ;    that are corrupted right now self-heal instead of silently relocating
+  ;    to C:\Program Files and orphaning the user's real folder.
+  ;    Only the unambiguous "<letter>\<rest>" shape is repaired — nothing else
+  ;    is guessed at.
+  ;    StrFunc argument order: ResultVar, String, StrToSearchFor, Direction.
+  ${StrLoc} $3 $1 ":" ">"
+  ${If} $3 == ""
+    StrCpy $4 $1 1           ; first character (the drive letter)
+    StrCpy $5 $1 1 1         ; second character
+    ${If} $4 != ""
+    ${AndIf} $5 == "\"
+      StrCpy $6 $1 "" 1      ; everything from offset 1 onward
+      StrCpy $1 "$4:$6"
+    ${EndIf}
+  ${EndIf}
+
+  ; 3. Accept only an absolute drive-letter path, i.e. colon at index 1.
+  ;    Anything else (relative junk, UNC, empty) is rejected and the caller
+  ;    keeps the installer's built-in default.
+  ;    StrFunc argument order: ResultVar, String, StrToSearchFor, Direction.
+  ;    Direction ">" = search forward from the start and return a 0-based index
+  ;    from the start. Measured, not assumed: ">" gives 1 for "D:\abc", while
+  ;    "<" gives 4 because it counts from the END.
+  ${StrLoc} $3 $1 ":" ">"
+  ${If} $3 == 1
+    StrCpy $0 "ok"
+  ${EndIf}
+FunctionEnd
+
 !macro NSIS_HOOK_PREINSTALL
   ; ---------------------------------------------------------------------
   ; Round 19e (2026-09-30): Defensive kill of any running sigma-file-manager.exe
@@ -81,10 +172,16 @@ Var RESOLVEDAPPDATA
   Pop $0
   nsExec::ExecToLog 'taskkill /F /IM "Alpha File Manager Renderer.exe" /T'
   Pop $0
-  nsExec::ExecToLog 'taskkill /F /IM msedgewebview2.exe /T'
-  Pop $0
-  nsExec::ExecToLog 'taskkill /F /IM crashpad_handler.exe /T'
-  Pop $0
+  ; v2.2.0-beta (2026-10-10): REMOVED the image-wide
+  ;   taskkill /F /IM msedgewebview2.exe /T
+  ;   taskkill /F /IM crashpad_handler.exe /T
+  ; They were a guess, not a diagnosis, and they destroy OTHER applications:
+  ; a measured probe on this machine found 6 live msedgewebview2.exe processes
+  ; owned by unrelated apps while Alpha was running (Edge, widgets, etc.).
+  ; They were also unnecessary. Same probe, killing ONLY alpha-file-manager.exe
+  ; with /T: all 7 of Alpha's own msedgewebview2.exe descendants (chain
+  ; 13888 -> 42144 -> 6 renderers) were terminated, 0 survivors, with no
+  ; image-wide kill involved.
   ; Also any msiexec / WerFault / TiWorker that might be holding files.
   nsExec::ExecToLog 'taskkill /F /IM TiWorker.exe /T 2>nul'
   Pop $0
@@ -151,29 +248,49 @@ Var RESOLVEDAPPDATA
   ; cases Tauri misses (legacy makensis installs, FS-only installs).
   ; ---------------------------------------------------------------------
   DetailPrint "==> [PREINSTALL HOOK START] $INSTDIR (before detection) = $INSTDIR"
+  ; ---------------------------------------------------------------------
+  ; v2.2.0-beta (2026-10-10): every branch below only produces a CANDIDATE.
+  ; AlphaNormalizeInstDir is the only thing allowed to turn a candidate into
+  ; $INSTDIR. The old code assigned the raw registry string directly, which
+  ; silently corrupted the drive colon — see the function's comment for the
+  ; full chain (broken shortcuts / disabled Next / dead "Run" checkbox).
+  ; ---------------------------------------------------------------------
   StrCpy $0 ""
 
-  ; 0. v2.2.0-alpha: the P4 rename also changed the NSIS uninstall-record key
-  ;    from the identifier-based "com.sigma-file-manager.app_is1" to the
-  ;    productName-based "Alpha File Manager". Detection below only read the
-  ;    OLD name, so it missed a live install and let a reinstall fall through
-  ;    to the default C:\Program Files — leaving the user's previous folder
-  ;    (e.g. D:\) behind as an orphan directory nothing ever cleans up.
-  ;    Check the current name FIRST, then fall back to the legacy ones.
-  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Alpha File Manager" "InstallLocation"
+  ; 0a. Tauri-native record. The template writes this UNQUOTED
+  ;     ("Save $INSTDIR in registry for future installations") and Tauri's
+  ;     own RestorePreviousInstallLocation reads it back, so it is the
+  ;     authoritative source for any install made by this or a later version.
+  ReadRegStr $0 HKLM "${MANUPRODUCTKEY}" ""
   ${If} $0 == ""
-    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Alpha File Manager" "InstallLocation"
-  ${EndIf}
-  ${If} $0 == ""
-    ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Alpha File Manager_is1" "InstallLocation"
+    ReadRegStr $0 HKLM "WOW6432Node\${MANUPRODUCTKEY}" ""
   ${EndIf}
 
-  ; 1. Tauri registry key (perMachine install via current installer)
+  ; 0b. Uninstall record written by this installer's template — QUOTED, so it
+  ;     must go through AlphaNormalizeInstDir.
+  ;     v2.2.0-alpha: the P4 rename also changed the NSIS uninstall-record key
+  ;     from the identifier-based "com.sigma-file-manager.app_is1" to the
+  ;     productName-based "Alpha File Manager". Detection then only read the
+  ;     OLD name, so it missed a live install and let a reinstall fall through
+  ;     to the default C:\Program Files — leaving the user's previous folder
+  ;     (e.g. D:\) behind as an orphan directory nothing ever cleans up.
+  ;     Check the current name FIRST, then fall back to the legacy ones.
   ${If} $0 == ""
-    ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\com.sigma-file-manager.app_is1" "InstallLocation"
+    ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "InstallLocation"
   ${EndIf}
   ${If} $0 == ""
-    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\com.sigma-file-manager.app_is1" "InstallLocation"
+    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "InstallLocation"
+  ${EndIf}
+  ${If} $0 == ""
+    ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}_is1" "InstallLocation"
+  ${EndIf}
+
+  ; 1. Identifier-based record left by pre-rename builds of this fork
+  ${If} $0 == ""
+    ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${BUNDLEID}_is1" "InstallLocation"
+  ${EndIf}
+  ${If} $0 == ""
+    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\${BUNDLEID}_is1" "InstallLocation"
   ${EndIf}
 
   ; 2. Legacy makensis registry key (upstream AppName)
@@ -194,17 +311,64 @@ Var RESOLVEDAPPDATA
   ${EndIf}
 
   ${If} $0 != ""
-    DetailPrint "==> [PREINSTALL HOOK] Found existing Sigma FM at: $0"
-    DetailPrint "    Reusing InstallDir (smart-upgrade)."
-    StrCpy $INSTDIR "$0"
+    ; Move the raw candidate into $1 (unquoted on purpose: $0 still carries
+    ; Tauri's literal quote characters, and StrCpy strips one quote layer,
+    ; which is exactly what we want before normalize() sees it).
+    StrCpy $1 $0
+    DetailPrint "==> [PREINSTALL HOOK] Existing-install candidate: $1"
+    Call AlphaNormalizeInstDir
+    ${If} $0 == "ok"
+      DetailPrint "==> [PREINSTALL HOOK] Reusing InstallDir (smart-upgrade): $1"
+      ; Safe to quote here: AlphaNormalizeInstDir guarantees $1 contains no
+      ; quote characters, so this cannot re-create the nested-quote bug.
+      StrCpy $INSTDIR "$1"
+      ; ---------------------------------------------------------------
+      ; Re-issue SetOutPath. The generated installer.nsi does
+      ;     Section Install
+      ;       SetOutPath $INSTDIR
+      ;       !insertmacro NSIS_HOOK_PREINSTALL     <-- we change $INSTDIR HERE
+      ;       ...
+      ;       File "${MAINBINARYSRCPATH}"           <-- writes to $OUTDIR
+      ; so $OUTDIR was frozen from the PRE-hook value. On a machine whose
+      ; record was still corrupted, that value is a drive-relative path
+      ; ("D\Program Files\..."), NSIS resolves it against the drive's current
+      ; directory, and the main executable is written somewhere else (or not
+      ; at all) while registry keys and shortcuts -- which use $INSTDIR
+      ; explicitly -- all look perfectly correct.
+      ; Measured on this machine: the very first install after this fix ran
+      ; left the 2.2.0 exe in place (silent no-op), and the next run, by which
+      ; time the registry had been repaired, wrote 2.2.1 correctly. Without
+      ; this line the failure only affects the FIRST upgrade on a corrupted
+      ; install -- i.e. exactly the users who need the upgrade most.
+      ; ---------------------------------------------------------------
+      SetOutPath "$INSTDIR"
+    ${Else}
+      DetailPrint "==> [PREINSTALL HOOK] Candidate is not an absolute drive path after normalize; ignored."
+      DetailPrint "==> [PREINSTALL HOOK] Keeping built-in default: $INSTDIR"
+    ${EndIf}
   ${Else}
-    DetailPrint "==> [PREINSTALL HOOK] No existing Sigma FM install detected via hook; using default path ($INSTDIR)."
+    DetailPrint "==> [PREINSTALL HOOK] No existing Alpha FM / Sigma FM install detected; using default path ($INSTDIR)."
   ${EndIf}
   DetailPrint "==> [PREINSTALL HOOK END] $INSTDIR (after detection) = $INSTDIR"
 !macroend
 
 !macro NSIS_HOOK_POSTINSTALL
   DetailPrint "==> [POSTINSTALL HOOK START] Deploying kizemo.focus-sync v0.3.0 (Scheduled Task mode) ..."
+
+  ; ---------------------------------------------------------------------
+  ; v2.2.0-beta (2026-10-10): repair the uninstall record's InstallLocation.
+  ; Tauri's template writes it as a QUOTED string
+  ;     WriteRegStr SHCTX "${UNINSTKEY}" "InstallLocation" "$\"$INSTDIR$\""
+  ; Our PREINSTALL used to read that back raw, and the quotes silently ate
+  ; the drive colon (see AlphaNormalizeInstDir). Rewriting it unquoted:
+  ;   * makes Add/Remove Programs display a real path instead of a quoted one
+  ;   * removes the trap for every future reader, including Tauri's own
+  ;     template on the next upgrade
+  ; NSIS uninstallers do NOT read this value (they embed $INSTDIR in the
+  ; uninstaller itself), so this is safe to rewrite.
+  ; ---------------------------------------------------------------------
+  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "InstallLocation" "$INSTDIR"
+  DetailPrint "==> [POSTINSTALL HOOK] Rewrote InstallLocation unquoted: $INSTDIR"
 
   ; ---------------------------------------------------------------------
   ; STAGE 0 (round 19d): Resolve the ORIGINAL USER's %APPDATA% before any
