@@ -31,6 +31,7 @@ import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+import { planDeleteJobs } from '@/utils/recycle-bin-delete';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { applyBackgroundContextMenu } from '@/modules/navigator/components/file-browser/utils/file-browser-background-context-menu';
@@ -1047,51 +1048,59 @@ export function useFileBrowserSelection(
       return false;
     }
 
-    if (!useTrash) {
-      const confirmed = await permanentDeleteConfirm.requestConfirm(entries);
+    const jobs = await planDeleteJobs({
+      entries,
+      useTrash,
+      requestPermanentConfirm: pendingEntries => permanentDeleteConfirm.requestConfirm(pendingEntries),
+    });
 
-      if (!confirmed) {
-        return false;
-      }
-    }
-
-    const paths = entries.map(entry => entry.path);
-    const sharedParentDirectory = getSharedSourceDirectory(paths);
-    const displayPath = sharedParentDirectory
-      ? basenameFromPath(sharedParentDirectory)
-      : '';
-
-    try {
-      const result = await deleteJobsStore.startJob(paths, useTrash, {
-        label: useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
-        displayPath,
-      });
-
-      if (result.deletedPaths.length > 0) {
-        workspacesStore.handlePathsDeleted(result.deletedPaths);
-        userStatsStore.handlePathsDeleted(result.deletedPaths);
-        userSettingsStore.handlePathsDeleted(result.deletedPaths);
-
-        dirSizesStore.invalidate([currentPathRef.value, ...result.deletedPaths]);
-
-        clearSelection();
-        onRefresh();
-      }
-
-      return result.success && !result.cancelled;
-    }
-    catch (error) {
-      toast.custom(markRaw(ToastStatic), {
-        componentProps: {
-          data: {
-            title: useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
-            description: String(error),
-          },
-        },
-      });
-
+    if (!jobs) {
       return false;
     }
+
+    let allSucceeded = true;
+
+    for (const job of jobs) {
+      const sharedParentDirectory = getSharedSourceDirectory(job.paths);
+      const displayPath = sharedParentDirectory
+        ? basenameFromPath(sharedParentDirectory)
+        : '';
+
+      try {
+        const result = await deleteJobsStore.startJob(job.paths, job.useTrash, {
+          label: job.useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
+          displayPath,
+        });
+
+        if (result.deletedPaths.length > 0) {
+          workspacesStore.handlePathsDeleted(result.deletedPaths);
+          userStatsStore.handlePathsDeleted(result.deletedPaths);
+          userSettingsStore.handlePathsDeleted(result.deletedPaths);
+
+          dirSizesStore.invalidate([currentPathRef.value, ...result.deletedPaths]);
+
+          clearSelection();
+          onRefresh();
+        }
+
+        if (!result.success || result.cancelled) {
+          allSucceeded = false;
+        }
+      }
+      catch (error) {
+        allSucceeded = false;
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: job.useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
+              description: String(error),
+            },
+          },
+        });
+      }
+    }
+
+    return allSucceeded;
   }
 
   function performSelectionAction(action: ContextMenuAction) {

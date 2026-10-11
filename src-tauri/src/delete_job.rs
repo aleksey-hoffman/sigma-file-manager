@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use crate::utils::{format_trash_error, minimize_delete_paths, normalize_path};
+use crate::utils::{delete_path_to_trash, minimize_delete_paths, normalize_path};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
@@ -97,7 +97,7 @@ fn run_delete_blocking(
         }
 
         let result = if use_trash {
-            trash::delete(path).map_err(format_trash_error)
+            delete_path_to_trash(path, &normalized)
         } else if path.is_dir() {
             fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {
@@ -129,6 +129,11 @@ fn run_delete_blocking(
         failed_count,
         last_error,
     }
+}
+
+#[tauri::command]
+pub fn recycle_bin_unavailable_paths(paths: Vec<String>) -> Vec<String> {
+    crate::utils::recycle_bin_unavailable_paths(paths)
 }
 
 #[tauri::command]
@@ -249,5 +254,56 @@ pub fn cancel_delete_job(job_id: String) -> bool {
         true
     } else {
         false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::run_delete_blocking;
+    use std::fs;
+    use std::sync::atomic::AtomicBool;
+    use std::sync::Arc;
+    use tokio::sync::mpsc::unbounded_channel;
+
+    #[test]
+    fn permanent_delete_removes_a_local_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let file_path = temp.path().join("notes.txt");
+        fs::write(&file_path, b"data").unwrap();
+        let (progress_tx, _progress_rx) = unbounded_channel();
+
+        let outcome = run_delete_blocking(
+            vec![file_path.to_string_lossy().to_string()],
+            false,
+            Arc::new(AtomicBool::new(false)),
+            progress_tx,
+        );
+
+        assert!(!outcome.cancelled);
+        assert_eq!(outcome.failed_count, 0);
+        assert!(outcome.last_error.is_none());
+        assert!(!file_path.exists());
+    }
+
+    #[test]
+    fn trash_of_a_missing_unc_path_leaves_nothing_deleted() {
+        let (progress_tx, _progress_rx) = unbounded_channel();
+        let unc_path = r"\\server\share\file.txt".to_string();
+
+        let outcome = run_delete_blocking(
+            vec![unc_path],
+            true,
+            Arc::new(AtomicBool::new(false)),
+            progress_tx,
+        );
+
+        assert!(!outcome.cancelled);
+        assert!(outcome.deleted_paths.is_empty());
+        assert_eq!(outcome.failed_count, 1);
+        assert!(outcome
+            .last_error
+            .as_deref()
+            .unwrap_or("")
+            .contains("does not exist"));
     }
 }

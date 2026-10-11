@@ -7,6 +7,14 @@ use std::fs::Metadata;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[cfg(windows)]
+use windows::core::PCWSTR;
+#[cfg(windows)]
+use windows::Win32::Storage::FileSystem::GetDriveTypeW;
+
+#[cfg(windows)]
+const DRIVE_REMOTE: u32 = 4;
+
 pub fn normalize_path(path: &str) -> String {
     path.replace('\\', "/")
 }
@@ -160,6 +168,90 @@ pub fn unique_path_with_index(
     }
 }
 
+pub fn is_unc_recycle_path(path: &str) -> bool {
+    let normalized = path.replace('\\', "/");
+    let lower = normalized.to_ascii_lowercase();
+
+    if has_extended_unc_prefix(&lower) {
+        return true;
+    }
+
+    if lower.starts_with("//?/") || lower.starts_with("//./") {
+        return false;
+    }
+
+    lower.starts_with("//") && !lower.starts_with("///")
+}
+
+fn has_extended_unc_prefix(lower: &str) -> bool {
+    for prefix in ["//?/unc", "//./unc"] {
+        if let Some(rest) = lower.strip_prefix(prefix) {
+            return rest.is_empty() || rest.starts_with('/');
+        }
+    }
+
+    false
+}
+
+pub fn windows_drive_letter(path: &str) -> Option<char> {
+    if is_unc_recycle_path(path) {
+        return None;
+    }
+
+    let normalized = path.replace('\\', "/");
+    let lower = normalized.to_ascii_lowercase();
+    let rest = lower
+        .strip_prefix("//?/")
+        .or_else(|| lower.strip_prefix("//./"))
+        .unwrap_or(lower.as_str());
+    let mut chars = rest.chars();
+    let letter = chars.next()?;
+
+    if !letter.is_ascii_alphabetic() || chars.next() != Some(':') {
+        return None;
+    }
+
+    Some(letter.to_ascii_uppercase())
+}
+
+#[cfg(windows)]
+fn windows_drive_letter_is_remote(letter: char) -> bool {
+    let root = format!("{}:\\", letter.to_ascii_uppercase());
+    let wide: Vec<u16> = root.encode_utf16().chain(std::iter::once(0)).collect();
+
+    unsafe { GetDriveTypeW(PCWSTR::from_raw(wide.as_ptr())) == DRIVE_REMOTE }
+}
+
+pub fn path_can_use_recycle_bin(path: &str) -> bool {
+    if is_unc_recycle_path(path) {
+        return false;
+    }
+
+    #[cfg(windows)]
+    if let Some(letter) = windows_drive_letter(path) {
+        if windows_drive_letter_is_remote(letter) {
+            return false;
+        }
+    }
+
+    true
+}
+
+pub fn recycle_bin_unavailable_paths(paths: Vec<String>) -> Vec<String> {
+    paths
+        .into_iter()
+        .filter(|path| !path_can_use_recycle_bin(path))
+        .collect()
+}
+
+pub fn delete_path_to_trash(path: &Path, path_text: &str) -> Result<(), String> {
+    if !path_can_use_recycle_bin(path_text) {
+        return Err("Recycle Bin is not available for this location".to_string());
+    }
+
+    trash::delete(path).map_err(format_trash_error)
+}
+
 pub fn format_trash_error(error: trash::Error) -> String {
     match error {
         trash::Error::Unknown { description } => description,
@@ -236,5 +328,103 @@ mod path_minimize_tests {
     fn minimize_dedupes() {
         let result = minimize_delete_paths(vec!["/x".to_string(), "/x".to_string()]);
         assert_eq!(result, vec!["/x"]);
+    }
+}
+
+#[cfg(test)]
+mod recycle_bin_tests {
+    use super::{
+        delete_path_to_trash, is_unc_recycle_path, path_can_use_recycle_bin,
+        recycle_bin_unavailable_paths, windows_drive_letter,
+    };
+    use std::path::Path;
+
+    #[test]
+    fn unc_paths_cannot_use_the_recycle_bin() {
+        let unc_paths = [
+            r"\\server\share\file.txt",
+            "//server/share/file.txt",
+            r"\\?\UNC\server\share\file.txt",
+            "//?/UNC/server/share/file.txt",
+            r"\\.\UNC\server\share\file.txt",
+            "//./unc/server/share/file.txt",
+        ];
+
+        for path in unc_paths {
+            assert!(is_unc_recycle_path(path), "{path}");
+            assert!(!path_can_use_recycle_bin(path), "{path}");
+        }
+    }
+
+    #[test]
+    fn local_paths_are_not_unc() {
+        let local_paths = [
+            r"C:\Users\file.txt",
+            "C:/Users/file.txt",
+            r"\\?\C:\Users\file.txt",
+            "//?/C:/Users/file.txt",
+            "/home/user/file.txt",
+            "notes.txt",
+        ];
+
+        for path in local_paths {
+            assert!(!is_unc_recycle_path(path), "{path}");
+        }
+
+        assert!(path_can_use_recycle_bin("/home/user/file.txt"));
+        assert!(path_can_use_recycle_bin("notes.txt"));
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn drive_letter_paths_stay_recyclable_without_drive_type_api() {
+        assert!(path_can_use_recycle_bin(r"C:\Users\file.txt"));
+        assert!(path_can_use_recycle_bin("C:/Users/file.txt"));
+        assert!(path_can_use_recycle_bin(r"\\?\C:\Users\file.txt"));
+        assert!(path_can_use_recycle_bin("//?/C:/Users/file.txt"));
+    }
+
+    #[test]
+    fn drive_letter_parser_ignores_unc_and_keeps_local_drives() {
+        assert_eq!(windows_drive_letter("Z:/nas/file.txt"), Some('Z'));
+        assert_eq!(windows_drive_letter(r"\\?\D:\data\file.txt"), Some('D'));
+        assert_eq!(windows_drive_letter(r"\\server\share\file.txt"), None);
+        assert_eq!(windows_drive_letter("/home/user/file.txt"), None);
+        assert_eq!(windows_drive_letter("notes.txt"), None);
+    }
+
+    #[test]
+    fn unavailable_path_list_keeps_only_unc_paths() {
+        let unavailable = recycle_bin_unavailable_paths(vec![
+            "/home/user/file.txt".to_string(),
+            r"\\server\share\file.txt".to_string(),
+            "//nas/docs/a.txt".to_string(),
+            "notes.txt".to_string(),
+        ]);
+
+        assert_eq!(
+            unavailable,
+            vec![
+                r"\\server\share\file.txt".to_string(),
+                "//nas/docs/a.txt".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn trash_rejects_unc_path_without_deleting() {
+        let temp = tempfile::tempdir().unwrap();
+        let file_path = temp.path().join("notes.txt");
+        std::fs::write(&file_path, b"data").unwrap();
+
+        let error = delete_path_to_trash(&file_path, r"\\server\share\notes.txt").unwrap_err();
+
+        assert_eq!(error, "Recycle Bin is not available for this location");
+        assert_eq!(std::fs::read(&file_path).unwrap(), b"data");
+        assert!(delete_path_to_trash(
+            Path::new(r"\\server\share\file.txt"),
+            r"\\server\share\file.txt",
+        )
+        .is_err());
     }
 }
