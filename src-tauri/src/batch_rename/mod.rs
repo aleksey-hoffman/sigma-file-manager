@@ -396,7 +396,7 @@ pub fn batch_rename_undo(id: String) -> UndoReport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::batch_rename::rules::RuleResult;
+    use crate::batch_rename::rules::{RuleResult, SequenceOptions};
 
     fn result(old: &str, new: &str) -> RuleResult {
         RuleResult {
@@ -429,20 +429,27 @@ mod tests {
         assert!(planned[0].unchanged);
     }
 
-    /// 仅大小写不同的改名不能被当成「撞上外部已有文件」而阻断，
-    /// 但要落到 C 类（自动腾空）—— Windows 上 `a.txt → A.TXT` 直接 rename
-    /// 有失败风险，先搬去临时名最稳。
+    /// 仅大小写不同的改名不能被当成「撞上外部已有文件」而阻断。
+    ///
+    /// 这里**不再要求走腾空**。早先的版本断言必须 `needs_staging = [0]`，
+    /// 理由是「Windows 上直接 rename 有失败风险」—— 该前提经实测不成立：
+    /// Windows 的 `MoveFileExW` 原地改名大小写完全正常
+    /// （`a.txt → A.txt`、`a.txt → A.TXT` 都成功，内容与目录名都正确）。
+    /// 腾空只会平白多出两次改名操作。
+    ///
+    /// 真正不能省的是 `detect` 的阻断：实测 `fs::rename` 对已存在的目标
+    /// 是**静默覆盖**，A 类检测是唯一的防线。
     #[test]
-    fn case_only_rename_is_staged_not_blocked() {
+    fn case_only_rename_is_allowed_without_staging() {
         let planned = to_planned(Path::new("D:/docs"), &[result("a.txt", "A.TXT")]);
         let report = detect(&planned, &HashSet::new());
 
         assert!(report.conflicts.is_empty(), "不应被判为冲突：{report:?}");
+        assert!(report.invalid_names.is_empty(), "{report:?}");
         assert!(report.is_executable());
-        assert_eq!(
-            report.needs_staging,
-            vec![0],
-            "应走腾空路径，绕开 Windows 同名覆盖"
+        assert!(
+            report.needs_staging.is_empty(),
+            "纯大小写改名无需腾空，实测可直接 rename：{report:?}"
         );
     }
 
@@ -459,5 +466,97 @@ mod tests {
 
         assert!(report.conflicts.is_empty());
         assert_eq!(report.needs_staging, vec![0, 1]);
+    }
+
+    /// UI 能构造出**真正的 2 环交换**，靠的是「序号 + 降序排序 + 模板 `{n}`」。
+    ///
+    /// 早先的判断是「所有规则合成同一个函数 f，构造不出 f(a)=b 且 f(b)=a」——
+    /// 那个结论漏了一点：`{n}` 取决于条目在**排序后**的位置，因此整条映射
+    /// 不是逐名一致的函数。名称降序时 `2.txt` 排前面拿到 n=1、`1.txt` 拿到 n=2，
+    /// 模板 `{n}.txt` 一渲染出来两者正好对调。
+    ///
+    /// 这条测试同时是真机验证的操作说明书：界面上的动作与之逐条对应。
+    #[test]
+    fn sequence_with_descending_sort_produces_a_real_two_cycle() {
+        let entries = vec![
+            RuleEntry {
+                name: "1.txt".to_string(),
+                parent: String::new(),
+                size_bytes: 0,
+                modified_ms: 0,
+            },
+            RuleEntry {
+                name: "2.txt".to_string(),
+                parent: String::new(),
+                size_bytes: 0,
+                modified_ms: 0,
+            },
+        ];
+        let rules = vec![
+            RenameRule::Sequence(SequenceOptions {
+                start: 1,
+                step: 1,
+                pad: 0,
+            }),
+            RenameRule::Template {
+                pattern: "{n}.txt".to_string(),
+            },
+        ];
+
+        let results = apply_rules_with_timezone(&entries, &rules, SortMode::NameDesc, 480);
+        let new_name_of = |old: &str| {
+            results
+                .iter()
+                .find(|r| r.old_name == old)
+                .map(|r| r.new_name.clone())
+                .unwrap_or_default()
+        };
+        assert_eq!(new_name_of("1.txt"), "2.txt", "1.txt 应改名成 2.txt");
+        assert_eq!(new_name_of("2.txt"), "1.txt", "2.txt 应改名成 1.txt");
+
+        let planned = to_planned(Path::new("D:/docs"), &results);
+        assert!(planned.iter().all(|p| !p.unchanged), "两条都是真实改名");
+
+        let report = detect(&planned, &HashSet::new());
+        assert!(report.conflicts.is_empty(), "交换循环不该被阻断: {report:?}");
+        assert_eq!(report.needs_staging, vec![0, 1], "两条都该腾空: {report:?}");
+        assert!(report.is_executable());
+    }
+
+    /// 反向对照：同样的规则但**升序**排序，得到的是恒等映射，两条都不变。
+    /// 这说明 2 环确实来自「降序」这一个变量，不是模板本身在捣鬼。
+    #[test]
+    fn sequence_with_ascending_sort_is_identity_not_a_swap() {
+        let entries = vec![
+            RuleEntry {
+                name: "1.txt".to_string(),
+                parent: String::new(),
+                size_bytes: 0,
+                modified_ms: 0,
+            },
+            RuleEntry {
+                name: "2.txt".to_string(),
+                parent: String::new(),
+                size_bytes: 0,
+                modified_ms: 0,
+            },
+        ];
+        let rules = vec![
+            RenameRule::Sequence(SequenceOptions {
+                start: 1,
+                step: 1,
+                pad: 0,
+            }),
+            RenameRule::Template {
+                pattern: "{n}.txt".to_string(),
+            },
+        ];
+
+        let results = apply_rules_with_timezone(&entries, &rules, SortMode::NameAsc, 480);
+        let planned = to_planned(Path::new("D:/docs"), &results);
+
+        assert!(planned.iter().all(|p| p.unchanged), "升序时应全部保持原名");
+        let report = detect(&planned, &HashSet::new());
+        assert!(report.needs_staging.is_empty(), "{report:?}");
     }
 }

@@ -167,8 +167,31 @@ pub fn detect(
         let idx = indices[0];
 
         // C：目标名落在本批次的旧名集合里 → 让位，用腾空解决，不阻断。
-        if own_old_names.contains_key(target_key) {
+        //
+        // 但「落在旧名集合里」还不等于「腾空能解决」，判据是**别人会不会让位**：
+        // 1. 存在另一条会搬走的条目持有该旧名 → 它腾空后目标名就空了，走 C。
+        // 2. 只有 `unchanged` 的条目持有该旧名 → 它从头到尾不参与任何 `MoveOp`，
+        //    永远占着那个名字，阶段二的 `fs::rename` 会直接盖上去。
+        //    Windows 上 Rust 的 `fs::rename` 走 `MoveFileExW(MOVEFILE_REPLACE_EXISTING)`，
+        //    是**静默覆盖**，原内容当场销毁且不可撤销 —— 必须按 A 类阻断。
+        // 3. 唯一持有者就是本条目自己（`a.txt → A.txt` 这类仅改大小写）：
+        //    既不用腾空，也不用阻断，交给下面的外部存在性检查。
+        let holders = own_old_names
+            .get(target_key)
+            .map(|list| list.iter().copied().filter(|i| *i != idx).collect::<Vec<_>>())
+            .unwrap_or_default();
+
+        if holders.iter().any(|i| !entries[*i].unchanged) {
             report.needs_staging.push(idx);
+            continue;
+        }
+
+        if !holders.is_empty() {
+            report.conflicts.push(NameConflict {
+                kind: ConflictKind::TargetExists,
+                entry_indices: vec![idx],
+                target_name,
+            });
             continue;
         }
 
@@ -438,5 +461,96 @@ mod tests {
     fn dotfile_is_a_valid_name() {
         // 隐藏文件的主名就是整个名字，不能因首字符是点就判非法。
         assert_eq!(validate_target_name(".gitignore"), None);
+    }
+
+    // ---------- 防回归：撞名对象是「未变化」条目 ----------
+
+    /// `a_b.txt` 要改成 `a-b.txt`，而 `a-b.txt` 自身不变。
+    ///
+    /// 目标名落在本批次旧名集合里，但被撞名的那条 `unchanged = true`，
+    /// 它不会出现在任何 `MoveOp` 里，永远腾不开这个位置。
+    /// 必须按 A 类阻断，否则落位时 `fs::rename` 静默覆盖、原内容销毁。
+    #[test]
+    fn target_hitting_unchanged_sibling_is_blocked_not_staged() {
+        let entries = vec![
+            entry("a_b.txt", "a-b.txt"),
+            PlannedRename {
+                path: "C:/dir/a-b.txt".into(),
+                old_name: "a-b.txt".into(),
+                new_name: "a-b.txt".into(),
+                unchanged: true,
+            },
+        ];
+        let report = detect(&entries, &names(&[]));
+
+        assert_eq!(report.conflicts.len(), 1, "{report:?}");
+        assert_eq!(report.conflicts[0].kind, ConflictKind::TargetExists);
+        assert_eq!(report.conflicts[0].target_name, "a-b.txt");
+        assert!(report.needs_staging.is_empty(), "不该腾空：{report:?}");
+        assert!(!report.is_executable());
+    }
+
+    /// 仅大小写不同的目标名撞上 `unchanged` 兄弟，同样阻断。
+    ///
+    /// 构造方式：在**大小写敏感**的文件系统上（`a.txt` 与 `A.txt` 是两个文件）
+    /// 用区分大小写的查找替换 `a` → `A`。`a.txt` 变成 `A.txt`，
+    /// `A.txt` 自身不含小写 `a`，新名与旧名逐字节相同 → 不变。
+    /// Windows 上这两个文件名指向同一个文件，构造不出来，但逻辑必须一致。
+    #[test]
+    fn case_only_target_hitting_unchanged_sibling_is_blocked() {
+        let entries = vec![
+            PlannedRename {
+                path: "C:/dir/a.txt".into(),
+                old_name: "a.txt".into(),
+                new_name: "A.txt".into(),
+                unchanged: false,
+            },
+            PlannedRename {
+                path: "C:/dir/A.txt".into(),
+                old_name: "A.txt".into(),
+                new_name: "A.txt".into(),
+                unchanged: true,
+            },
+        ];
+        let report = detect(&entries, &names(&[]));
+
+        assert_eq!(report.conflicts.len(), 1, "{report:?}");
+        assert_eq!(report.conflicts[0].target_name, "A.txt");
+        assert!(!report.is_executable());
+        assert!(report.needs_staging.is_empty(), "{report:?}");
+    }
+
+    /// 与上一条成对：仅改大小写、**没有**兄弟条目时必须照常放行。
+    ///
+    /// 这条防的是修复写过头。`a.txt` 的旧名规范化后等于自己的目标名，
+    /// 若不排除「自己」这个持有者，就会被误判成撞上未变化条目而阻断，
+    /// 导致「把 .txt 改成 .TXT」这类合法操作直接不可用。
+    ///
+    /// `existing` 传空：生产链路的 `read_existing_names` 会先剔除本批次自己的
+    /// 旧名，所以 `a.txt` 永远不会出现在「批次外已有文件」集合里。
+    #[test]
+    fn pure_case_only_rename_stays_allowed() {
+        let entry = PlannedRename {
+            path: "C:/dir/a.txt".into(),
+            old_name: "a.txt".into(),
+            new_name: "A.TXT".into(),
+            unchanged: false,
+        };
+        let report = detect(&[entry], &names(&[]));
+
+        assert!(report.conflicts.is_empty(), "仅改大小写不该被阻断: {report:?}");
+        assert!(report.invalid_names.is_empty(), "{report:?}");
+        assert!(report.is_executable());
+    }
+
+    /// 两条**都会搬走**时仍按 C 类腾空 —— 这是交换循环，必须保持不阻断。
+    /// 与上一条成对，防止把修复写成「一律阻断」，那会让真正的交换退化成死路。
+    #[test]
+    fn two_cycle_is_still_staged_not_blocked() {
+        let entries = vec![entry("a.txt", "b.txt"), entry("b.txt", "a.txt")];
+        let report = detect(&entries, &names(&[]));
+
+        assert!(report.conflicts.is_empty(), "{report:?}");
+        assert_eq!(report.needs_staging, vec![0, 1]);
     }
 }

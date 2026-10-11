@@ -35,8 +35,15 @@ pub trait MoveBackend {
 
 /// 生产实现：`fs::rename`。
 ///
-/// Windows 上 `rename` 对已存在的目标会**直接失败**（不同于 POSIX 的静默覆盖），
-/// 这恰好是一层额外保护：万一计划有漏，也不会悄悄覆盖用户文件。
+/// ⚠️ **它本身没有任何保护**：Windows 上 Rust 的 `fs::rename` 走
+/// `MoveFileExW(MOVEFILE_REPLACE_EXISTING)`，目标已存在时会**静默覆盖**
+/// （实测确认，POSIX 同样是静默覆盖）。早先这里写着「Windows 上 rename
+/// 对已存在的目标会直接失败，不会悄悄覆盖用户文件」—— 该说法不成立，
+/// 照着它设计会误以为执行器有兜底。
+///
+/// 唯一的防线是 [`crate::batch_rename::conflict::detect`] 的阻断，
+/// 它在**落盘前**就拦住 A 类（撞批次外文件）和「撞未变化条目」两类必覆盖的场景。
+/// 任何新增的改名路径都必须先过 `detect`。
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FsMoveBackend;
 
@@ -630,7 +637,124 @@ impl MoveBackend for FailOnceOnTempSource {
         }
     }
 
+    // ---------- 防回归：目标名撞上「未变化」条目 ----------
+
+    /// 真实 UI 场景：查找替换 `_` → `-`，同时选中 `a_b.txt` 与 `a-b.txt`。
+    ///
+    /// - `a_b.txt` → `a-b.txt`（要改）
+    /// - `a-b.txt` 不含 `_`，新名与旧名逐字节相同 → 标记为 `unchanged`
+    ///
+    /// 目标名 `a-b.txt` 落在本批次旧名集合里，早先的 [`detect`] 因此判为
+    /// C 类「让位」并不阻断。但被撞名的那个条目是**未变化**的，
+    /// 它从头到尾都不会被搬走 —— 阶段二的 `fs::rename` 于是直接覆盖它。
+    /// Windows 上 Rust 的 `fs::rename` 走 `MOVEFILE_REPLACE_EXISTING`，
+    /// 是**静默覆盖**，原文件内容当场销毁且不可撤销。
+    #[test]
+    fn target_colliding_with_unchanged_sibling_must_not_overwrite_it() {
+        let dir = tempfile::tempdir().unwrap();
+        make_file(dir.path(), "a_b.txt", "来自 a_b 的内容");
+        make_file(dir.path(), "a-b.txt", "原本属于 a-b 的内容");
+
+        let unchanged_sibling = PlannedRename {
+            path: dir.path().join("a-b.txt").to_string_lossy().to_string(),
+            old_name: "a-b.txt".to_string(),
+            new_name: "a-b.txt".to_string(),
+            unchanged: true,
+        };
+        let entries = vec![
+            entry(dir.path(), "a_b.txt", "a-b.txt"),
+            unchanged_sibling,
+        ];
+
+        let report = crate::batch_rename::conflict::detect(&entries, &HashSet::new());
+
+        assert!(
+            !report.is_executable(),
+            "撞上未变化条目必须阻断执行，而不是当成可腾空的 C 类: {report:?}"
+        );
+        assert!(
+            report.needs_staging.is_empty(),
+            "被撞名的条目不会让位，不该进腾空名单: {report:?}"
+        );
+    }
+
+    /// 前一条的**落盘级**证据：绕过检测强行执行，旧名 `a-b.txt` 的内容确实会消失。
+    ///
+    /// 这条测试存在的意义是证明 [`crate::batch_rename::conflict::detect`] 里那道
+    /// 阻断**是承重的、不是多余的**。它故意传入过时的 `needs_staging = [0]`
+    /// （即修复前的判定结果），并断言覆盖确实发生。
+    ///
+    /// ⚠️ 这条断言**锁死的是缺陷本身**。若哪天真的给 `FsMoveBackend` 加上了
+    /// 「目标已存在就拒绝」的兜底，它会转红 —— 那是**好事**，说明兜底生效了，
+    /// 此时应当把它改成断言「执行失败且目录完好」。
+    #[test]
+    fn bypassing_detect_still_destroys_the_unchanged_sibling() {
+        let dir = tempfile::tempdir().unwrap();
+        make_file(dir.path(), "a_b.txt", "来自 a_b 的内容");
+        make_file(dir.path(), "a-b.txt", "原本属于 a-b 的内容");
+
+        let entries = vec![
+            entry(dir.path(), "a_b.txt", "a-b.txt"),
+            PlannedRename {
+                path: dir.path().join("a-b.txt").to_string_lossy().to_string(),
+                old_name: "a-b.txt".to_string(),
+                new_name: "a-b.txt".to_string(),
+                unchanged: true,
+            },
+        ];
+
+        // 故意按修复前的判定（C 类让位、不阻断）强制执行。
+        let outcome = execute(&entries, &[0], dir.path(), &RealBackend);
+        let after = snapshot(dir.path());
+
+        println!("执行结果 = {outcome:?}");
+        println!("执行后目录 = {after:?}");
+
+        assert!(outcome.is_fully_successful(), "{outcome:?}");
+        assert_eq!(
+            after.get("a-b.txt"),
+            Some(&"来自 a_b 的内容".to_string()),
+            "文档化事实：绕过 detect 时原内容确实被覆盖，这正是 detect 必须阻断的原因"
+        );
+        assert_eq!(after.len(), 1, "{after:?}");
+    }
+
     // ---------- 辅助函数 ----------
+
+    /// UI 可达的 2 环交换在**真实文件系统**上的落盘结果。
+    ///
+    /// 界面上对应的操作：选中 `1.txt`、`2.txt`，排序选「名称降序」，
+    /// 加一条序号规则（起始 1、步长 1），再加一条模板规则 `{n}.txt`。
+    /// 降序让 `2.txt` 排在前拿到 n=1，于是两条正好对调。
+    ///
+    /// 这是唯一一条会让 `fs::rename` 在顺序执行下丢数据的路径，
+    /// 必须断言内容跟着名字走，而不是只断言「文件还在」。
+    #[test]
+    fn ui_reachable_two_cycle_swaps_contents_on_real_fs() {
+        let dir = tempfile::tempdir().unwrap();
+        make_file(dir.path(), "1.txt", "我是 1.txt");
+        make_file(dir.path(), "2.txt", "我是 2.txt");
+
+        // 排序后的顺序是 [2.txt, 1.txt]；n=1 给 2.txt，n=2 给 1.txt。
+        let entries = vec![
+            entry(dir.path(), "1.txt", "2.txt"),
+            entry(dir.path(), "2.txt", "1.txt"),
+        ];
+        let report = crate::batch_rename::conflict::detect(&entries, &HashSet::new());
+        assert!(report.is_executable(), "交换循环不应被阻断: {report:?}");
+        assert_eq!(report.needs_staging, vec![0, 1]);
+
+        let outcome = execute(&entries, &report.needs_staging, dir.path(), &RealBackend);
+        assert!(outcome.is_fully_successful(), "{outcome:?}");
+
+        let after = snapshot(dir.path());
+        assert_eq!(after.len(), 2, "不该有残留: {after:?}");
+        // 内容必须跟着文件名一起换位：`1.txt → 2.txt` 意味着
+        // 改名后叫 `2.txt` 的那个文件装的是原 `1.txt` 的内容。
+        assert_eq!(after.get("2.txt"), Some(&"我是 1.txt".to_string()), "{after:?}");
+        assert_eq!(after.get("1.txt"), Some(&"我是 2.txt".to_string()), "{after:?}");
+        assert!(!after.keys().any(|k| k.starts_with("__afm_tmp_")), "{after:?}");
+    }
 
     #[test]
     fn file_name_of_handles_both_separators() {
