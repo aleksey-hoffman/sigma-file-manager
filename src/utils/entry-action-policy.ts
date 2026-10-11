@@ -11,6 +11,7 @@ export type EntryActionPolicy = 'virtual-location' | 'system-mount-root' | 'norm
 
 const VIRTUAL_LOCATION_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'rename',
+  'batch-rename',
   'copy',
   'cut',
   'link',
@@ -26,6 +27,7 @@ const VIRTUAL_LOCATION_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
 
 const SYSTEM_MOUNT_ROOT_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'rename',
+  'batch-rename',
   'cut',
   'link',
   'delete',

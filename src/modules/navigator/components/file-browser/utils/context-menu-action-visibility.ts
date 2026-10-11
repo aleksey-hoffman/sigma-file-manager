@@ -83,6 +83,13 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     selectionTypes: ['single', 'multiple'],
     entryTypes: ['file', 'directory'],
   },
+  // 批量改名只在多选时出现：单文件改名走上面的 `rename`，那是既有路径。
+  // 目录混在多选里也能改名 —— 批量改名的执行器对目录与文件一视同仁。
+  {
+    action: 'batch-rename',
+    selectionTypes: ['multiple'],
+    entryTypes: ['file', 'directory'],
+  },
 ];
 
 const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties']);

@@ -15,6 +15,7 @@ import {
 } from '@/stores/runtime/shortcuts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { openNavigatorPath, openNavigatorPathInNewTab } from '@/utils/open-navigator-directory';
+import { getDriveShortLabel as getDriveShortLabelFromMountPoint } from '@/utils/drive-short-label';
 import { useDrives } from '@/modules/home/composables';
 import { DriveCard } from '@/modules/home/components';
 import { getLucideIcon } from '@/utils/lucide-icons';
@@ -125,6 +126,14 @@ function getDriveIcon(drive: {
   }
 
   return drive.is_removable ? UsbIcon : HardDriveIcon;
+}
+
+/**
+ * 从挂载点提取用于窄侧栏标识的短标签（2026-10-11）。
+ * 实现在 @/utils/drive-short-label，抽出是为了能单独写单测。
+ */
+function getDriveShortLabel(drive: { mount_point: string }): string {
+  return getDriveShortLabelFromMountPoint(drive.mount_point);
 }
 </script>
 
@@ -271,17 +280,20 @@ function getDriveIcon(drive: {
             @click="openDrive(drive.path)"
             @mousedown="handleDriveMouseDown($event, drive.path)"
           >
-            <UbuntuWslIcon
-              v-if="drive.drive_type === 'WSL'"
-              :size="16"
-              class="nav-sidebar-drive-icon"
-            />
-            <component
-              v-else
-              :is="getDriveIcon(drive)"
-              :size="16"
-              class="nav-sidebar-drive-icon"
-            />
+            <span class="nav-sidebar-drive-stack">
+              <UbuntuWslIcon
+                v-if="drive.drive_type === 'WSL'"
+                :size="16"
+                class="nav-sidebar-drive-icon"
+              />
+              <component
+                v-else
+                :is="getDriveIcon(drive)"
+                :size="16"
+                class="nav-sidebar-drive-icon"
+              />
+              <span class="nav-sidebar-drive-label">{{ getDriveShortLabel(drive) }}</span>
+            </span>
           </Button>
         </TooltipTrigger>
         <TooltipContent
@@ -390,9 +402,87 @@ function getDriveIcon(drive: {
   stroke: hsl(var(--muted-foreground));
 }
 
+/*
+ * 图标 + 盘符的纵向叠放容器（2026-10-11）。
+ *
+ * 用 overlay 而不是 flex 列布局，是为了**不改变按钮高度** ——
+ * 侧栏里可能同时挂着十几个盘（网络盘 + U 盘），
+ * 若每个按钮因加字而变高，底部空间不够时整列会被挤变形。
+ * 字标绝对定位在图标下缘，向上溢出可见，容器尺寸保持 24x24 不变。
+ */
+
+.nav-sidebar-drive-stack {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+ * 盘符字标：与图标合成一个整体（2026-10-11 第三轮）。
+ *
+ * 第一轮放在图标**下方**，两者是分离的两个元素，视觉上像两样东西。
+ * 第三轮按用户意见改成：压到图标上、只留字母、字母放大。
+ *
+ * 实现要点：
+ *
+ * 1. 去掉冒号，只留字母。侧栏仅 24px 宽，字高已放到 12px，
+ *    冒号在这个尺寸不增加辨识度、却占掉描边留白，反而让字母更难认。
+ *    认错分区是要付代价的，所以宁小勿杂。
+ *
+ * 2. `transform: translate(-50%, 10%)` 让字标顶边压到容器垂直中线略下方，
+ *    即字标上部压进图标下部、重叠约 56.7%。
+ *    取值来自逐档实测（12px 字 / 16px 图标，用 getBoundingClientRect 量重叠），
+ *    由用户从对照图里选定这一档：
+ *        0% → 66.7%   10% → 56.7% ← 当前值
+ *       18% → 48.7%   25% → 41.7%
+ *       32% → 34.7%   40% → 26.7%
+ *    0% 会压得太深、字母下半截沉进图标里显糊；40% 只剩 1/4 叠合，
+ *    「合成一体」的效果弱了。10% 是观感与辨识度的平衡点。
+ *
+ * 3. 描边用 `background-2`（侧栏自身底色）而不是固定灰：
+ *    浅色主题下是浅灰、深色主题下是深灰，永远与所在面板同色，
+ *    等于把图标线条从字上「抠断」，切任何主题都不会糊。
+ *    `paint-order: stroke fill` 保证描边画在字形**下面**而非盖住字 ——
+ *    实测去掉它，字几乎完全消失（见 scripts/drive-label-preview.html 的对照B）。
+ *
+ * 4. 描边宽度 2px 是可读性下限：再窄图标线条就会重新穿进字里。
+ */
+
+.nav-sidebar-drive-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  paint-order: stroke fill;
+  pointer-events: none;
+  -webkit-text-stroke: 2px hsl(var(--background-2));
+  transform: translate(-50%, 10%);
+  white-space: nowrap;
+}
+
+/*
+ * 悬停/聚焦时才提亮图标与字标。
+ * 默认态保持 muted，避免一列盘符全部高亮导致视觉噪音。
+ *
+ * 刻意只改 color 不改 -webkit-text-stroke：
+ * 描边必须始终等于侧栏底色，悬停时若跟着变色，
+ * 描边就盖不住图标线条了，「合成一体」的效果会消失。
+ */
+
 .nav-sidebar-drive:hover .nav-sidebar-drive-icon {
   color: hsl(var(--foreground));
   stroke: hsl(var(--foreground));
+}
+
+.nav-sidebar-drive:hover .nav-sidebar-drive-label {
+  color: hsl(var(--foreground));
 }
 
 </style>

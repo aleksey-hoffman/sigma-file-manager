@@ -27,6 +27,20 @@ export function useFileBrowserDialogs(options: {
     targetPaths: undefined as string[] | undefined,
   });
 
+  // 批量改名的状态独立于单项改名：两者入口、语义、风险等级都不同，
+  // 合成一个 state 会让「打开批量改名」不得不改写单项改名的字段。
+  const batchRenameState = ref({
+    isOpen: false,
+    entries: [] as DirEntry[],
+  });
+
+  const isBatchRenameDialogOpen = computed({
+    get: () => batchRenameState.value.isOpen,
+    set: (value: boolean) => {
+      batchRenameState.value.isOpen = value;
+    },
+  });
+
   const isRenameDialogOpen = computed({
     get: () => options.renameState.value.isActive,
     set: (value: boolean) => {
@@ -102,15 +116,34 @@ export function useFileBrowserDialogs(options: {
     closeNewItemDialog();
   }
 
+  /** 打开时对选中项做一份拷贝，避免用户在对话框里改动选择后条目被换掉。 */
+  function openBatchRenameDialog(entries: DirEntry[]) {
+    batchRenameState.value = {
+      isOpen: true,
+      entries: [...entries],
+    };
+  }
+
+  function closeBatchRenameDialog() {
+    batchRenameState.value = {
+      isOpen: false,
+      entries: [],
+    };
+  }
+
   return {
     openWithState,
     newItemDialogState,
+    batchRenameState,
     isRenameDialogOpen,
     isNewItemDialogOpen,
+    isBatchRenameDialogOpen,
     openOpenWithDialog,
     closeOpenWithDialog,
     openNewItemDialog,
     closeNewItemDialog,
+    openBatchRenameDialog,
+    closeBatchRenameDialog,
     handleRenameConfirm,
     handleRenameCancel,
     handleNewItemConfirm,

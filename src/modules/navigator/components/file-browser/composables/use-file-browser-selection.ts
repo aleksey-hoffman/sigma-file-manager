@@ -263,6 +263,11 @@ export function useFileBrowserSelection(
     isWindows: platformStore.isWindows,
   });
 
+  // 批量改名对话框的状态由 useFileBrowserDialogs 持有，而那个 composable
+  // 在 selection 之后才创建（它反过来要用 selection 的 renameState）。
+  // 用一个可后填的引用接上，好过为了开一个对话框去动 selection 的位置参数列表。
+  let openBatchRenameDialogForSelection: (entries: DirEntry[]) => void = () => {};
+
   function handleEntryFocus(entry: DirEntry, event: FocusEvent) {
     if (pendingFocusRequest.value != null) {
       return;
@@ -931,6 +936,14 @@ export function useFileBrowserSelection(
         }
 
         break;
+      case 'batch-rename':
+        // 可见性规则已经保证只在多选时出现，这里再挡一次是防止
+        // 快捷键或其它调用方绕过可见性判断直接派发。
+        if (entries.length > 1) {
+          openBatchRenameDialogForSelection(entries);
+        }
+
+        break;
       case 'copy':
         if (entries.length > 0) {
           copyItems(entries);
@@ -1173,5 +1186,8 @@ export function useFileBrowserSelection(
     handleTopLevelNameConflictMerge,
     handleTopLevelNameConflictCancel,
     permanentDeleteConfirm,
+    setOpenBatchRenameDialogHandler(handler: (entries: DirEntry[]) => void) {
+      openBatchRenameDialogForSelection = handler;
+    },
   };
 }

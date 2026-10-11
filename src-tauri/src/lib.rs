@@ -5,6 +5,7 @@
 mod app_updater;
 mod archive;
 mod background_sources;
+mod batch_rename;
 mod clipboard_source;
 mod clipboard_watcher;
 mod copy_move_job;
@@ -31,6 +32,7 @@ mod terminal;
 mod url_drop;
 mod user_storage_files_config;
 pub mod utils;
+pub mod startup_probe;
 mod version_json;
 mod windows_installation;
 #[cfg(windows)]
@@ -219,6 +221,17 @@ fn get_launch_context() -> LaunchContext {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // 2026-10-10 启动崩溃 0xc0000005 的定位分界线。
+    //
+    // WER 报告显示故障时 EmbeddedBrowserWebView.dll **已加载**，说明进程活过了
+    // WebView2 初始化；但偏移量无法映射（崩溃二进制已不存在）。
+    // 这两条标记把「Tauri 初始化」切成两半，下次复现时可直接读出进程死在哪一侧：
+    //   只有 pre_tauri            → 死在 wry / WebView2 创建窗口期间
+    //   pre_tauri + builder_built → 死在 setup_handler 或更后面
+    //
+    // builder_built 必须打在 .run() 之前：.run() 内部才真正创建窗口并加载 WebView2。
+    startup_probe::mark("run: entering tauri builder");
+
     tauri::Builder::default()
         .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
@@ -415,6 +428,10 @@ pub fn run() {
             lan_share::start_lan_share,
             lan_share::stop_lan_share,
             lan_share::get_local_ip,
+            batch_rename::batch_rename_preview,
+            batch_rename::batch_rename_execute,
+            batch_rename::batch_rename_history,
+            batch_rename::batch_rename_undo,
         ])
         .setup(setup_handler)
         .on_window_event(|window, event| {
@@ -433,11 +450,20 @@ pub fn run() {
             }
         })
         .on_menu_event(system_tray::handle_menu_event)
-        .run(tauri::generate_context!())
+        .run({
+            // 必须在 .run() 之前落盘：真正的窗口创建与 WebView2 加载发生在
+            // .run() 内部，这条标记是「进去之前」的最后一站。
+            startup_probe::mark("run: builder built, entering .run()");
+            tauri::generate_context!()
+        })
         .expect("error while running tauri application");
 }
 
 fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    // 与日志插件并行落盘：即使后面插件初始化失败，这条也已经在磁盘上，
+    // 足以证明「进程活过了 WebView2 与窗口创建」。
+    startup_probe::mark("setup_handler: entered");
+
     // v2.2.0-beta (2026-10-10): this used to be gated behind
     // cfg!(debug_assertions), so a shipped build wrote nothing anywhere. That
     // is why the 0xc0000005 startup crash left no trace to diagnose from.
@@ -493,6 +519,20 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
 
     if !should_hide_main_window_on_startup {
         if let Some(main_window) = app.get_webview_window("main") {
+            // 启动默认最大化（2026-10-11）。
+            //
+            // 为什么放在这里而不是 tauri.conf.json 里写 `"maximized": true`：
+            // tauri-plugin-window-state 会在 setup 阶段恢复用户上次的尺寸与位置，
+            // 它恢复出来的状态会覆盖 conf 里的初值 —— 那样只有「首次启动」会最大化，
+            // 用户手动改过尺寸之后就再也不最大化了，达不到「默认」的效果。
+            //
+            // 所以这里显式调用 maximize()，且**必须在 show() 之前**：
+            // Windows 上对不可见窗口 maximize 有时不会立即生效，
+            // show() 之后再最大化会出现「先闪一下小窗再放大」。
+            //
+            // 幂等：窗口已经是最大化时再次调用不改变任何东西，
+            // 因此自启动（窗口保持隐藏）路径不受影响。
+            let _ = main_window.maximize();
             let _ = main_window.show();
         }
     }

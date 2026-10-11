@@ -15,6 +15,7 @@ import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
+import FileBrowserBatchRenameDialog from './file-browser-batch-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
 import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
@@ -281,6 +282,13 @@ defineExpose({
       :entry="fb.renameState.value.entry"
       @confirm="fb.handleRenameConfirm"
       @cancel="fb.handleRenameCancel"
+    />
+
+    <FileBrowserBatchRenameDialog
+      v-model:open="fb.isBatchRenameDialogOpen.value"
+      :directory="fb.currentPath.value"
+      :entries="fb.batchRenameState.value.entries"
+      @applied="fb.refresh"
     />
 
     <FileBrowserNewItemDialog

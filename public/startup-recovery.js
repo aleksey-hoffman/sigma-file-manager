@@ -2,7 +2,7 @@
   const recoveryStorageKey = 'sigma-file-manager:module-load-recovery-at';
   const recoveryWindowMs = 30000;
   const reloadDelayMs = 1500;
-  const recoveryMessage = 'Failed to load Sigma File Manager. Please restart the app.';
+  const recoveryMessage = 'Failed to load Alpha File Manager. Please restart the app.';
 
   function getLastRecoveryAt() {
     try {

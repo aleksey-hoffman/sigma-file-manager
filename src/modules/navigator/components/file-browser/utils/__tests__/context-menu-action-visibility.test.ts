@@ -101,4 +101,54 @@ describe('isContextMenuActionVisible', () => {
 
     expect(isContextMenuActionVisible('disconnect', entries, { platform: 'windows' })).toBe(false);
   });
+
+  // ---- 批量改名入口 ----
+
+  describe('batch-rename', () => {
+    it('shows for a multiple selection', () => {
+      const entries = [
+        {
+          ...createDirectoryEntry('D:/docs/a.txt'),
+          is_dir: false,
+        },
+        {
+          ...createDirectoryEntry('D:/docs/b.txt'),
+          is_dir: false,
+        },
+      ];
+
+      expect(isContextMenuActionVisible('batch-rename', entries, { platform: 'windows' })).toBe(true);
+    });
+
+    it('stays hidden for a single selection, where rename already applies', () => {
+      // 单选是既有单项改名的场景。两个入口同时出现只会让用户犹豫该点哪个。
+      const entries = [{
+        ...createDirectoryEntry('D:/docs/a.txt'),
+        is_dir: false,
+      }];
+
+      expect(isContextMenuActionVisible('batch-rename', entries, { platform: 'windows' })).toBe(false);
+    });
+
+    it('shows for a mixed selection of files and directories', () => {
+      const entries = [
+        {
+          ...createDirectoryEntry('D:/docs/a.txt'),
+          is_dir: false,
+        },
+        createDirectoryEntry('D:/docs/folder'),
+      ];
+
+      expect(isContextMenuActionVisible('batch-rename', entries, { platform: 'windows' })).toBe(true);
+    });
+
+    it('is hidden inside virtual locations, same as rename', () => {
+      const entries = [
+        createDirectoryEntry(LOCATIONS_VIRTUAL_PATH),
+        createDirectoryEntry(`${LOCATIONS_VIRTUAL_PATH}/other`),
+      ];
+
+      expect(isContextMenuActionVisible('batch-rename', entries, { platform: 'windows' })).toBe(false);
+    });
+  });
 });

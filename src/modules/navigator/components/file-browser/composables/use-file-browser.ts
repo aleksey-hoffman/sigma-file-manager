@@ -378,6 +378,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     createNewItem: selection.createNewItem,
   });
 
+  // selection 必须早于 dialogs 创建（dialogs 依赖 selection 的 renameState），
+  // 所以打开批量改名对话框的回调在这里后填。
+  selection.setOpenBatchRenameDialogHandler(dialogs.openBatchRenameDialog);
+
   const drag = useFileBrowserDrag({
     selectedEntries: selection.selectedEntries,
     currentPath: dataSource.currentPath,
@@ -639,9 +643,13 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     newItemDialogState: dialogs.newItemDialogState,
     isRenameDialogOpen: dialogs.isRenameDialogOpen,
     isNewItemDialogOpen: dialogs.isNewItemDialogOpen,
+    isBatchRenameDialogOpen: dialogs.isBatchRenameDialogOpen,
+    batchRenameState: dialogs.batchRenameState,
     openOpenWithDialog: dialogs.openOpenWithDialog,
     closeOpenWithDialog: dialogs.closeOpenWithDialog,
     openNewItemDialog: dialogs.openNewItemDialog,
+    openBatchRenameDialog: dialogs.openBatchRenameDialog,
+    closeBatchRenameDialog: dialogs.closeBatchRenameDialog,
     handleRenameConfirm: dialogs.handleRenameConfirm,
     handleRenameCancel: dialogs.handleRenameCancel,
     handleNewItemConfirm: dialogs.handleNewItemConfirm,

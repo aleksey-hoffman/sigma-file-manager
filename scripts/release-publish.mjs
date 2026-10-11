@@ -135,14 +135,31 @@ function run(command, args, options = {}) {
   // 让 spawn 自己负责参数边界。
   const isWindows = process.platform === 'win32';
   // Windows 上 npm 是 .cmd shim，没有 shell 时必须带扩展名。
-  const exe = isWindows && command === 'npm' ? 'npm.cmd' : command;
-  const cleanArgs = args.map((arg) => {
+  const wantsCmdShim = isWindows && command === 'npm';
+
+  let exe = command;
+  let spawnArgs = args.map((arg) => {
     if (typeof arg === 'string' && arg.length >= 2 && arg.startsWith('"') && arg.endsWith('"')) {
       return arg.slice(1, -1);
     }
     return arg;
   });
-  const result = spawnSync(exe, cleanArgs, {
+
+  // Node 20+ 起，spawnSync 以 shell:false 执行 .cmd/.bat shim 会直接返回 EINVAL
+  // （2026-10-11 实测 `spawnSync npm.cmd EINVAL`，release:prepare 因此中断）。
+  //
+  // 不能简单改成 shell:true —— 那正是上面注释里记录的中文路径被打散的坑。
+  // 改用 `cmd.exe /d /c <shim> <args>`：cmd.exe 只负责把 .cmd shim 跑起来，
+  // 参数仍由 spawn 按数组逐个传递，不经过 cmd.exe 的重新拼接，
+  // 因此 `E:\办公文件\` 这类路径不会被拆开。
+  let wrapper = null;
+  if (wantsCmdShim) {
+    wrapper = process.env.ComSpec || 'cmd.exe';
+    exe = wrapper;
+    spawnArgs = ['/d', '/c', 'npm.cmd', ...spawnArgs];
+  }
+
+  const result = spawnSync(exe, spawnArgs, {
     cwd: repoRoot,
     stdio: 'inherit',
     shell: false,
@@ -150,7 +167,7 @@ function run(command, args, options = {}) {
   });
   if (result.error) fail(`执行 ${command} 失败：${result.error.message}`);
   if (typeof result.status === 'number' && result.status !== 0 && !options.allowFailure) {
-    fail(`${command} ${cleanArgs.join(' ')} 退出码 ${result.status}`);
+    fail(`${command} ${spawnArgs.slice(wantsCmdShim ? 3 : 0).join(' ')} 退出码 ${result.status}`);
   }
   return result.status;
 }

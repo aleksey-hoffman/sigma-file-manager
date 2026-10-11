@@ -1266,5 +1266,118 @@
     "replaceShareDialogDescription": "文件已在网络上共享。当前共享将被停止并替换为新的共享。",
     "replaceShareDialogConfirm": "替换"
   },
-  "tree": "Tree"
+  "tree": "Tree",
+  "batchRename": {
+    "menuItem": "批量改名",
+    "dialog": {
+      "title": "批量改名",
+      "tabRename": "改名",
+      "tabHistory": "撤销历史",
+      "cancel": "取消",
+      "apply": "执行改名",
+      "close": "关闭",
+      "loading": "正在计算…",
+      "noRules": "尚未添加规则，不会改名。",
+      "summaryChanged": "将改名 {count} 项",
+      "summaryUnchanged": "{count} 项保持不变",
+      "blocked": "存在冲突，请先解决再执行。",
+      "openHistory": "撤销历史"
+    },
+    "rules": {
+      "title": "规则",
+      "empty": "还没有规则。",
+      "add": "添加规则",
+      "remove": "删除规则",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "sortLabel": "编号顺序",
+      "type": {
+        "findReplace": "查找替换",
+        "caseTransform": "大小写转换",
+        "template": "模板",
+        "sequence": "序号",
+        "extension": "扩展名"
+      },
+      "findReplace": {
+        "find": "查找",
+        "replace": "替换为",
+        "caseSensitive": "区分大小写",
+        "includeExtension": "包含扩展名"
+      },
+      "caseTransform": {
+        "mode": "转换方式",
+        "includeExtension": "包含扩展名"
+      },
+      "case": {
+        "upper": "全部大写",
+        "lower": "全部小写",
+        "title": "首字母大写",
+        "camel": "驼峰",
+        "snake": "下划线",
+        "kebab": "短横线"
+      },
+      "template": {
+        "pattern": "模板",
+        "variables": "可用变量",
+        "dateFormat": "日期格式"
+      },
+      "sequence": {
+        "start": "起始值",
+        "step": "步长",
+        "pad": "补零位数",
+        "hint": "序号本身不产生改名，它只是为模板规则提供序号变量。需要再加一条模板规则才会生效。",
+        "addTemplate": "添加一条模板规则"
+      },
+      "extension": {
+        "newExtension": "新扩展名",
+        "newExtensionHint": "留空表示去掉扩展名"
+      }
+    },
+    "sort": {
+      "selection": "按选择顺序",
+      "nameAsc": "按名称升序",
+      "nameDesc": "按名称降序",
+      "modifiedAsc": "按修改时间从早到晚",
+      "modifiedDesc": "按修改时间从晚到早",
+      "sizeAsc": "按大小从小到大",
+      "sizeDesc": "按大小从大到小"
+    },
+    "preview": {
+      "title": "预览",
+      "oldName": "原文件名",
+      "newName": "新文件名",
+      "empty": "没有可预览的条目。",
+      "unchanged": "不变"
+    },
+    "conflicts": {
+      "title": "冲突",
+      "targetExists": "新名已被目录内其它文件占用。",
+      "duplicateTarget": "有多个条目会得到相同的名字。",
+      "invalidTitle": "非法的文件名",
+      "invalid": {
+        "empty": "文件名为空。",
+        "illegalCharacter": "包含文件名不允许的字符。",
+        "windowsReservedName": "Windows 保留名。",
+        "trailingDotOrSpace": "不能以点或空格结尾。"
+      }
+    },
+    "result": {
+      "success": "已改名 {count} 项",
+      "partial": "改名失败",
+      "rollbackOk": "已回滚，目录恢复到改动前状态。",
+      "rollbackFailed": "回滚失败，目录可能处于中间状态，请手动检查。",
+      "noUndo": "本次改动未能记录，无法撤销。"
+    },
+    "history": {
+      "title": "撤销历史",
+      "empty": "暂无历史记录。",
+      "undo": "撤销",
+      "undoing": "撤销中…",
+      "itemCount": "{count} 个文件",
+      "undoSuccess": "已撤销 {count} 项",
+      "undoFailed": "撤销失败",
+      "blockedBy": "以下名称已被占用，无法还原：{names}",
+      "notFound": "该条历史记录已不存在。"
+    }
+  }
 }

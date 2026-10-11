@@ -1266,5 +1266,118 @@
     "replaceShareDialogDescription": "Ağ üzerinden zaten dosyalar paylaşılıyor. Mevcut paylaşım durdurulup yenisiyle değiştirilecek.",
     "replaceShareDialogConfirm": "Değiştir"
   },
-  "tree": "Tree"
+  "tree": "Tree",
+  "batchRename": {
+    "menuItem": "Batch rename",
+    "dialog": {
+      "title": "Batch rename",
+      "tabRename": "Rename",
+      "tabHistory": "Undo history",
+      "cancel": "Cancel",
+      "apply": "Rename",
+      "close": "Close",
+      "loading": "Calculating…",
+      "noRules": "No rules added — nothing will be renamed.",
+      "summaryChanged": "{count} item(s) will be renamed",
+      "summaryUnchanged": "{count} item(s) unchanged",
+      "blocked": "Conflicts found. Fix them before applying.",
+      "openHistory": "Undo history"
+    },
+    "rules": {
+      "title": "Rules",
+      "empty": "No rules yet.",
+      "add": "Add rule",
+      "remove": "Remove rule",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "sortLabel": "Numbering order",
+      "type": {
+        "findReplace": "Find and replace",
+        "caseTransform": "Change case",
+        "template": "Template",
+        "sequence": "Numbering",
+        "extension": "Extension"
+      },
+      "findReplace": {
+        "find": "Find",
+        "replace": "Replace with",
+        "caseSensitive": "Match case",
+        "includeExtension": "Include extension"
+      },
+      "caseTransform": {
+        "mode": "Mode",
+        "includeExtension": "Include extension"
+      },
+      "case": {
+        "upper": "UPPERCASE",
+        "lower": "lowercase",
+        "title": "Title Case",
+        "camel": "camelCase",
+        "snake": "snake_case",
+        "kebab": "kebab-case"
+      },
+      "template": {
+        "pattern": "Pattern",
+        "variables": "Available variables",
+        "dateFormat": "Date format"
+      },
+      "sequence": {
+        "start": "Start",
+        "step": "Step",
+        "pad": "Zero padding",
+        "hint": "Numbering does not rename anything on its own. It only supplies the sequence variable used by a Template rule — add a Template rule to use it.",
+        "addTemplate": "Add a Template rule"
+      },
+      "extension": {
+        "newExtension": "New extension",
+        "newExtensionHint": "Leave empty to remove the extension"
+      }
+    },
+    "sort": {
+      "selection": "Selection order",
+      "nameAsc": "Name A to Z",
+      "nameDesc": "Name Z to A",
+      "modifiedAsc": "Modified, oldest first",
+      "modifiedDesc": "Modified, newest first",
+      "sizeAsc": "Size, smallest first",
+      "sizeDesc": "Size, largest first"
+    },
+    "preview": {
+      "title": "Preview",
+      "oldName": "Current name",
+      "newName": "New name",
+      "empty": "Nothing to preview.",
+      "unchanged": "unchanged"
+    },
+    "conflicts": {
+      "title": "Conflicts",
+      "targetExists": "The new name is already taken by another file in this folder.",
+      "duplicateTarget": "Several items would get the same name.",
+      "invalidTitle": "Invalid file names",
+      "invalid": {
+        "empty": "Name is empty.",
+        "illegalCharacter": "Contains a character that is not allowed in file names.",
+        "windowsReservedName": "Reserved name on Windows.",
+        "trailingDotOrSpace": "Cannot end with a dot or a space."
+      }
+    },
+    "result": {
+      "success": "Renamed {count} item(s)",
+      "partial": "Rename failed",
+      "rollbackOk": "Rolled back — the folder is back to its previous state.",
+      "rollbackFailed": "Rollback failed. The folder may be in a mixed state — check it manually.",
+      "noUndo": "This change could not be recorded for undo."
+    },
+    "history": {
+      "title": "Undo history",
+      "empty": "No history yet.",
+      "undo": "Undo",
+      "undoing": "Undoing…",
+      "itemCount": "{count} file(s)",
+      "undoSuccess": "Reverted {count} item(s)",
+      "undoFailed": "Undo failed",
+      "blockedBy": "These names are taken, so they could not be restored: {names}",
+      "notFound": "That history entry no longer exists."
+    }
+  }
 }

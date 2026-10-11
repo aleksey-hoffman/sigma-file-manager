@@ -1323,9 +1323,9 @@ onUnmounted(() => {
               <ResizablePanel
                 v-if="showFolderTree"
                 :order="1"
-                :default-size="22"
+                :default-size="28"
                 :min-size="12"
-                :max-size="40"
+                :max-size="48"
                 class="navigator-page__folder-tree-panel"
               >
                 <FileBrowserTreeView
@@ -1498,9 +1498,9 @@ onUnmounted(() => {
           <ResizablePanel
             v-if="showFolderTree"
             :order="1"
-            :default-size="22"
+            :default-size="28"
             :min-size="12"
-            :max-size="40"
+            :max-size="48"
             class="navigator-page__folder-tree-panel"
           >
             <FileBrowserTreeView

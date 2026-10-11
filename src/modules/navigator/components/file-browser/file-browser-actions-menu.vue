@@ -23,6 +23,7 @@ import {
   StarIcon,
   UnplugIcon,
   InfoIcon,
+  TextCursorInputIcon,
 } from '@lucide/vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { usePlatformStore } from '@/stores/runtime/platform';
@@ -216,6 +217,24 @@ function handleCreateLink(linkKind: LinkCreationKind) {
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('fileBrowser.actions.rename') }}
           <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('rename') }}</ContextMenuShortcut>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+    <Tooltip
+      v-if="isActionVisible('batch-rename')"
+    >
+      <TooltipTrigger as-child>
+        <Button
+          variant="ghost"
+          size="xs"
+          @click="emitAction('batch-rename')"
+        >
+          <TextCursorInputIcon :size="16" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div class="file-browser-actions-menu__tooltip-row">
+          {{ t('batchRename.menuItem') }}
         </div>
       </TooltipContent>
     </Tooltip>

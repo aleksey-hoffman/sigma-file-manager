@@ -1,5 +1,49 @@
 # تاریخچه تغییرات
 
+## [3.0.0] - October 2026
+
+**Summary:** The first official release under the Alpha File Manager brand. Adds batch rename, makes drives identifiable in the narrow sidebar, and ships a substantially hardened dialog focus sync extension.
+
+This release also renames the product from Sigma File Manager to **Alpha File Manager** throughout the interface, installer, and error messages. The underlying project lineage is unchanged; existing settings and layouts carry over.
+
+### Batch Rename
+
+Rename many files in one directory at once, with a live preview before anything touches disk.
+
+- **Entry point**: select two or more items, right-click, and choose `Batch rename`. Single selection keeps using the existing `Rename` action;
+- **Rules**: find and replace (optionally case-sensitive, optionally including the extension), case conversion (UPPERCASE, lowercase, Title Case, camelCase, snake_case, kebab-case), template names, numbering, and extension changes. Rules apply in the order shown and can be reordered;
+- **Template variables**: `{name}`, `{ext}`, `{parent}`, `{size}`, `{date}`, `{n}`, with `{date:YYYYMMDD}` formatting and local time;
+- **Live preview**: every entry shows its current and proposed name as you type. Entries that do not change are dimmed;
+- **Conflict safety**: a new name that collides with a file outside the batch is blocked rather than overwritten; two entries that would end up with the same name are blocked and named; swap cycles such as `a -> b` and `b -> a` are resolved automatically through a two-pass rename with no user-visible temporary files;
+- **Undo**: the last 10 batches are recorded and can be reverted, including batches that failed partway through. Reverting re-checks for collisions and refuses rather than overwriting later changes;
+
+Numbering supplies the value for `{n}` and does not rename on its own; pair it with a Template rule.
+
+### Drive Labels In The Sidebar
+
+Disks in the narrow sidebar are now distinguishable at a glance.
+
+- **Short label on the icon**: each drive icon carries a short label derived from its mount point — `C`, `D`, or the share name for network paths;
+- **Why it matters**: the sidebar column is only 24px wide and every drive icon looks alike, so it was impossible to tell partitions apart;
+- **Themed outline**: the label uses a 2px stroke in the sidebar's own background colour with `paint-order: stroke fill`, so the icon lines are knocked out behind the glyph. It stays legible in both light and dark themes;
+
+Folder tree panels also start slightly wider, so directory names are readable without dragging the divider.
+
+### Dialog Focus Sync
+
+The Focus Sync extension (`kizemo.focus-sync`) reaches version 0.5.8 with a set of correctness fixes. It navigates Windows file dialogs — including Save As in other applications — to the folder currently focused in Alpha File Manager.
+
+- **No more duplicate writes**: a dialog is no longer navigated twice about 900ms apart, which previously made the address bar visibly jump;
+- **Window activation races**: Windows routes activation through a short-lived `ForegroundStaging` window. The extension now waits for the dialog to be foreground again (up to 500ms) instead of giving up and falling through to a path that never actually navigated;
+- **Honest restore reporting**: restoring the filename field is now verified by reading the value back. A failed restore returns false instead of reporting success;
+- **Cleaner diagnostics**: the trace ring is no longer saturated by health-check polling, so a lost push is distinguishable from a callback that never fired. Dead window handles are reaped on sight instead of accumulating;
+- **Sidecar safety**: running the test suite no longer force-kills a sidecar you are actively using;
+
+### Branding
+
+- The application is now **Alpha File Manager** in the interface, the installer, window titles, and error messages;
+- The install, upgrade, and uninstall paths are stable across 2.2.x and 3.0.0 — upgrading in place preserves your settings, layouts, and shortcuts;
+
 ## [2.2.0] - July 2026
 
 **خلاصه:** یکپارچگی کلیپ‌بورد سیستم با سایر برنامه‌ها، انتخاب با کادر، نمای تقسیم‌شده پیوندی، مدیریت پیوندها، آرشیوهای ZIP محافظت‌شده با رمز، خصوصیات بومی در Windows، گسترش API افزونه‌ها، پشتیبانی از زبان عبری، و بهبودهای نویگیتور.
