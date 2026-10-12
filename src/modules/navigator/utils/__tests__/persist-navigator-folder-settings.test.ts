@@ -93,6 +93,8 @@ function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSe
     enableBoxSelection: false,
     // FORK-MODIFICATION: 列表视图缩略图（上游 #231），与默认值一致
     showListThumbnails: true,
+    // FORK-MODIFICATION: 缩略图大小默认中等档
+    thumbnailSize: 'medium',
     increaseFileViewGaps: false,
     ...overrides,
   };

@@ -37,8 +37,10 @@ export type {
 } from '../utils/file-browser-virtual-rows';
 export { getGridColumnCount } from '../utils/file-browser-virtual-rows';
 
-const LIST_ENTRY_HEIGHT = 42;
-const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT = 56;
+const LIST_ENTRY_HEIGHT_BASE = 42;
+const LIST_ENTRY_HEIGHT_LARGE = 64;
+const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_BASE = 56;
+const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_LARGE = 78;
 const GRID_SECTION_HEADER_HEIGHT = 42;
 const GRID_DIR_ENTRY_HEIGHT = 52;
 const GRID_ENTRY_HEIGHT = 120;
@@ -129,8 +131,12 @@ function escapeCssAttribute(value: string): string {
 function getEntryDescriptionHeight(
   entry: DirEntry,
   entryDescription?: (entry: DirEntry) => string | undefined,
+  thumbnailSize: 'small' | 'medium' | 'large' = 'medium',
 ): number {
-  return entryDescription?.(entry) ? LIST_ENTRY_WITH_DESCRIPTION_HEIGHT : LIST_ENTRY_HEIGHT;
+  const isLarge = thumbnailSize === 'large';
+  return entryDescription?.(entry)
+    ? (isLarge ? LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_LARGE : LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_BASE)
+    : (isLarge ? LIST_ENTRY_HEIGHT_LARGE : LIST_ENTRY_HEIGHT_BASE);
 }
 
 export function resolveViewportContentWidth(viewport: HTMLElement): number {
@@ -152,11 +158,12 @@ export function resolveViewportContentWidth(viewport: HTMLElement): number {
 function createListRows(
   entries: readonly DirEntry[],
   entryDescription?: (entry: DirEntry) => string | undefined,
+  thumbnailSize: 'small' | 'medium' | 'large' = 'medium',
 ): FileBrowserVirtualRow[] {
   let offset = 0;
 
   return entries.map((entry, entryIndex) => {
-    const size = getEntryDescriptionHeight(entry, entryDescription);
+    const size = getEntryDescriptionHeight(entry, entryDescription, thumbnailSize);
     const row: FileBrowserListVirtualRow = {
       type: 'list-entry',
       key: `list:${entry.path}`,
@@ -280,6 +287,8 @@ export function createFileBrowserVirtualRows(options: {
   viewportWidth: number;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: boolean;
+  // FORK-MODIFICATION: 缩略图大小档位（与 LIST_ENTRY_HEIGHT 联动）。默认 medium。
+  thumbnailSize?: 'small' | 'medium' | 'large';
 }): FileBrowserVirtualRow[] {
   if (options.layout === 'grid') {
     const gridGap = getFileBrowserGridGap(!!options.increaseFileViewGaps);
@@ -290,7 +299,7 @@ export function createFileBrowserVirtualRows(options: {
     );
   }
 
-  return createListRows(options.entries, options.entryDescription);
+  return createListRows(options.entries, options.entryDescription, options.thumbnailSize ?? 'medium');
 }
 
 export function getFileBrowserGridNavigationEntry(
@@ -324,6 +333,8 @@ export function useFileBrowserVirtualLayout(options: {
   layout: () => 'list' | 'grid' | 'tree' | undefined;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: () => boolean;
+  // FORK-MODIFICATION: 缩略图大小档位（影响 list 行高）
+  thumbnailSize?: () => 'small' | 'medium' | 'large';
 }) {
   const scrollViewportRef = ref<HTMLElement | null>(null);
   const viewportHeight = ref(0);
@@ -343,6 +354,7 @@ export function useFileBrowserVirtualLayout(options: {
       viewportWidth: viewportWidth.value,
       entryDescription: options.entryDescription,
       increaseFileViewGaps: options.increaseFileViewGaps?.(),
+      thumbnailSize: options.thumbnailSize?.() ?? 'medium',
     });
   });
 

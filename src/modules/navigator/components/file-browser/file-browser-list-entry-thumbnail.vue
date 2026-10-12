@@ -14,15 +14,18 @@ import {
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-display-src';
 import { getImageSrc } from './utils';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 const props = withDefaults(defineProps<{
   entry: DirEntry;
+  // 显式传入时优先；否则按 navigator.thumbnailSize 设置（small=24 / medium=32 / large=48）
   size?: number;
 }>(), {
-  size: 32,
+  size: undefined,
 });
 
 const ctx = useFileBrowserContext();
+const userSettingsStore = useUserSettingsStore();
 
 const containerRef = ref<HTMLElement | null>(null);
 const isInLoadRange = ref(false);
@@ -31,6 +34,16 @@ let intersectionObserver: IntersectionObserver | null = null;
 const isImage = computed(() => isFileBrowserImageEntry(props.entry));
 const isVideo = computed(() => isFileBrowserVideoEntry(props.entry));
 const isMedia = computed(() => isImage.value || isVideo.value);
+
+// 缩略图档位 → 像素尺寸（与 LIST_ENTRY_HEIGHT 联动，详见 spec §5.3）。
+// 显式传入 props.size 优先（保持向后兼容）；未传则按 setting 计算。
+const effectiveSize = computed<number>(() => {
+  if (typeof props.size === 'number') {
+    return props.size;
+  }
+  const size = userSettingsStore.userSettings.navigator.thumbnailSize;
+  return size === 'small' ? 24 : size === 'large' ? 48 : 32;
+});
 
 const imageThumbnailSrc = computed(() => {
   if (!isImage.value || !isInLoadRange.value) {
@@ -41,7 +54,7 @@ const imageThumbnailSrc = computed(() => {
     entry: props.entry,
     preferOriginal: false,
     originalSrc: getImageSrc(props.entry),
-    maxDimension: props.size,
+    maxDimension: effectiveSize.value,
     getThumbnail: (entry, maxDimension) => ctx.getImageThumbnail(entry, maxDimension),
   });
 });
@@ -58,7 +71,7 @@ const thumbnailSrc = computed(() => imageThumbnailSrc.value ?? videoThumbnailSrc
 
 function cancelThumbnail(): void {
   if (isImage.value) {
-    ctx.cancelImageThumbnail(props.entry, props.size);
+    ctx.cancelImageThumbnail(props.entry, effectiveSize.value);
   }
 
   if (isVideo.value) {
@@ -101,13 +114,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <span ref="containerRef" class="file-browser-list-entry-thumbnail">
+  <span ref="containerRef" class="file-browser-list-entry-thumbnail" :style="{ width: `${effectiveSize}px`, height: `${effectiveSize}px` }">
     <img
       v-if="thumbnailSrc"
       class="file-browser-list-entry-thumbnail__image"
       :src="thumbnailSrc"
-      :width="props.size"
-      :height="props.size"
+      :width="effectiveSize"
+      :height="effectiveSize"
       :alt="''"
       draggable="false"
     >
@@ -125,8 +138,6 @@ onBeforeUnmount(() => {
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
 }
 
 .file-browser-list-entry-thumbnail__image {

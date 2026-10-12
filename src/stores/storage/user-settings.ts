@@ -165,6 +165,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       enableBoxSelection: true,
       // FORK-MODIFICATION: 列表视图缩略图默认开启（上游 #231）
       showListThumbnails: true,
+      // FORK-MODIFICATION: 缩略图大小默认中等档（list 行高 42 像素已留 32 缩略图余量）
+      thumbnailSize: 'medium',
       increaseFileViewGaps: false,
     },
     globalSearch: {

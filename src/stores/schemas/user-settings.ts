@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 29;
+export const USER_SETTINGS_SCHEMA_VERSION = 30;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -500,6 +500,12 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     await setDefaultBooleanIfMissing(storage, 'navigator.showListThumbnails', true);
   }
 
+  // FORK-MODIFICATION: 缩略图大小三档（small / medium / large），默认 medium。
+  // 用「缺失才写」而非覆盖写：与 29 步相同理由（用户主动选择不应被升级冲掉）。
+  if (fromVersion === 29 && toVersion === 30) {
+    await setDefaultEnumIfMissing(storage, 'navigator.thumbnailSize', 'medium', ['small', 'medium', 'large']);
+  }
+
   if (fromVersion === 6 && toVersion === 7) {
     const appData = await appDataDir();
     const mediaDir = `${appData.replace(/\\/g, '/')}/user-data/media`.replace(/\/+/g, '/');
@@ -552,6 +558,19 @@ async function setDefaultBooleanIfMissing(
   const existingValue = await storage.get<unknown>(key);
 
   if (typeof existingValue !== 'boolean') {
+    await storage.set(key, defaultValue);
+  }
+}
+
+async function setDefaultEnumIfMissing<T extends string>(
+  storage: StorageAdapter,
+  key: string,
+  defaultValue: T,
+  allowed: readonly T[],
+) {
+  const existingValue = await storage.get<unknown>(key);
+
+  if (typeof existingValue !== 'string' || !allowed.includes(existingValue as T)) {
     await storage.set(key, defaultValue);
   }
 }

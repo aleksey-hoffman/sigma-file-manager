@@ -58,6 +58,45 @@ describe('createFileBrowserVirtualRows', () => {
     expect(rows.map(row => row.size)).toEqual([42, 56, 42]);
   });
 
+  // FORK-MODIFICATION: 缩略图大小三档，LIST_ENTRY_HEIGHT 与 LIST_ENTRY_WITH_DESCRIPTION_HEIGHT 联动。
+  describe('thumbnailSize', () => {
+    it('medium (default): list rows stay 42 / 56', () => {
+      const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
+      const rows = createFileBrowserVirtualRows({
+        entries,
+        layout: 'list',
+        viewportWidth: 500,
+        entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
+        thumbnailSize: 'medium',
+      });
+      expect(rows.map(row => row.size)).toEqual([42, 56, 42]);
+    });
+
+    it('small: list rows stay 42 / 56（与 medium 同）', () => {
+      const entries = [createEntry('a'), createEntry('b')];
+      const rows = createFileBrowserVirtualRows({
+        entries,
+        layout: 'list',
+        viewportWidth: 500,
+        entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
+        thumbnailSize: 'small',
+      });
+      expect(rows.map(row => row.size)).toEqual([42, 56]);
+    });
+
+    it('large: list rows grow to 64 / 78', () => {
+      const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
+      const rows = createFileBrowserVirtualRows({
+        entries,
+        layout: 'list',
+        viewportWidth: 500,
+        entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
+        thumbnailSize: 'large',
+      });
+      expect(rows.map(row => row.size)).toEqual([64, 78, 64]);
+    });
+});
+
   it('creates grid section and item rows from responsive columns', () => {
     const entries = [
       createEntry('dir-1', {

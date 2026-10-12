@@ -343,4 +343,27 @@ describe('migrateUserSettingsStorage', () => {
 
     expect(storage.values.get('navigator.showListThumbnails')).toBe(false);
   });
+
+  it('defaults thumbnail size to medium when migrating from schema version 29', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 29,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.thumbnailSize')).toBe('medium');
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('preserves an existing thumbnail size setting when migrating from schema version 29', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 29,
+      'navigator.thumbnailSize': 'large',
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.thumbnailSize')).toBe('large');
+  });
 });

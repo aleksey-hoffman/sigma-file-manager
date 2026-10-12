@@ -25,6 +25,18 @@ vi.mock('../composables/use-file-browser-context', () => ({
   }),
 }));
 
+// FORK-MODIFICATION: thumbnailSize 改由 navigator.thumbeded 设置驱动，测试需 mock。
+let mockThumbnailSize: 'small' | 'medium' | 'large' = 'medium';
+vi.mock('@/stores/storage/user-settings', () => ({
+  useUserSettingsStore: () => ({
+    userSettings: {
+      navigator: {
+        get thumbnailSize() { return mockThumbnailSize; },
+      },
+    },
+  }),
+}));
+
 vi.mock('../file-browser-entry-icon.vue', () => ({
   default: {
     name: 'FileBrowserEntryIcon',
@@ -73,6 +85,7 @@ beforeEach(() => {
   intersectionCallback = null;
   observedTargets.length = 0;
   disconnected = false;
+  mockThumbnailSize = 'medium';
   vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
 });
 

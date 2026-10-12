@@ -318,6 +318,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     layout: options.layout,
     entryDescription: options.entryDescription,
     increaseFileViewGaps: () => increaseFileViewGaps.value,
+    thumbnailSize: () => userSettingsStore.userSettings.navigator.thumbnailSize,
   });
   const scrollStateKey = computed(() => options.scrollStateKey?.());
 
