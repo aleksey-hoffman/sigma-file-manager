@@ -226,7 +226,12 @@
         "foldersFirst": "Place folders before files in list view",
         "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
         "showListThumbnails": "Show thumbnails in list view",
-        "showListThumbnailsDescription": "Images and videos show thumbnails in the list. Folders and documents still show their type icon. Grid view always shows thumbnails and is not affected by this switch."
+        "showListThumbnailsDescription": "Images and videos show thumbnails in the list. Folders and documents still show their type icon. Grid view always shows thumbnails and is not affected by this switch.",
+        "thumbnailSizeTitle": "Thumbnail size",
+        "thumbnailSizeDescription": "Adjust the size of thumbnails in the list view. The Large preset also enlarges the row height.",
+        "thumbnailSizeSmall": "Small (24 px)",
+        "thumbnailSizeMedium": "Medium (32 px)",
+        "thumbnailSizeLarge": "Large (48 px, larger row height)"
       },
       "startupPage": {
         "title": "Página de inicialização",

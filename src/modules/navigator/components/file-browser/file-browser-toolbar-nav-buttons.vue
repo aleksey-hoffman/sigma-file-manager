@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/tooltip';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,11 +30,14 @@ import {
   FilePlusIcon,
   FolderPlusIcon,
   HomeIcon,
+  ImageIcon,
   LayoutGridIcon,
   ListIcon,
   RefreshCwIcon,
 } from '@lucide/vue';
 import { useTextDirection } from '@/composables/use-text-direction';
+import FileBrowserThumbnailSizeDialog from './file-browser-thumbnail-size-dialog.vue';
+import type { ThumbnailSize } from './types';
 
 const props = defineProps<{
   canGoBack: boolean;
@@ -65,6 +69,16 @@ const forwardHistoryIcon = computed(() => isRtl.value ? ArrowLeftIcon : ArrowRig
 // aria-label 显示将切到的目标视图。详见 docs/superpowers/specs/2026-10-12-navigator-polish-pack-design.md §5.2。
 const isGridLayout = computed(() => props.currentLayout === 'grid');
 const nextLayoutLabelKey = computed(() => isGridLayout.value ? 'list' : 'grid');
+
+// FORK-MODIFICATION: 缩略图大小三档弹窗入口（紧跟 layout toggle 按钮）。
+const userSettingsStore = useUserSettingsStore();
+const thumbnailSize = computed<ThumbnailSize>(
+  () => userSettingsStore.userSettings.navigator.thumbnailSize,
+);
+const isThumbnailSizeDialogOpen = ref(false);
+function openThumbnailSizeDialog() {
+  isThumbnailSizeDialogOpen.value = true;
+}
 </script>
 
 <template>
@@ -191,6 +205,27 @@ const nextLayoutLabelKey = computed(() => isGridLayout.value ? 'list' : 'grid');
         {{ t(nextLayoutLabelKey) }}
       </TooltipContent>
     </Tooltip>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="file-browser-toolbar-nav-buttons__button"
+          data-test="thumbnail-size-button"
+          :aria-label="t('settings.general.fileView.thumbnailSizeTitle')"
+          @click="openThumbnailSizeDialog"
+        >
+          <ImageIcon class="file-browser-toolbar-nav-buttons__icon" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {{ t('settings.general.fileView.thumbnailSizeTitle') }}
+      </TooltipContent>
+    </Tooltip>
+    <FileBrowserThumbnailSizeDialog
+      v-model:open="isThumbnailSizeDialogOpen"
+      v-model:model-value="thumbnailSize"
+    />
   </div>
 
   <div class="file-browser-toolbar-nav-buttons file-browser-toolbar-nav-buttons--collapsed">

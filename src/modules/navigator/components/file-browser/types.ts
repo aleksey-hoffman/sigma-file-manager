@@ -12,6 +12,9 @@ export interface FileBrowserProps {
   layout?: 'list' | 'grid' | 'tree';
 }
 
+// FORK-MODIFICATION: 缩略图大小三档（与 navigator.thumbnailSize 对齐）
+export type ThumbnailSize = 'small' | 'medium' | 'large';
+
 export interface FileBrowserEmits {
   'update:selectedEntries': [entries: DirEntry[]];
   'update:currentDirEntry': [entry: DirEntry | null];

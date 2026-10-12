@@ -28,6 +28,16 @@ vi.mock('@/stores/runtime/shortcuts', () => ({
   }),
 }));
 
+vi.mock('@/stores/storage/user-settings', () => ({
+  useUserSettingsStore: () => ({
+    userSettings: {
+      navigator: {
+        thumbnailSize: 'medium',
+      },
+    },
+  }),
+}));
+
 vi.mock('@/composables/use-text-direction', () => ({
   useTextDirection: () => ({
     isRtl: { value: false },
