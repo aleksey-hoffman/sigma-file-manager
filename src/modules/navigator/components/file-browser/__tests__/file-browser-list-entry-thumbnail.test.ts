@@ -26,7 +26,7 @@ vi.mock('../composables/use-file-browser-context', () => ({
 }));
 
 // FORK-MODIFICATION: thumbnailSize 改由 navigator.thumbeded 设置驱动，测试需 mock。
-let mockThumbnailSize: 'small' | 'medium' | 'large' = 'medium';
+let mockThumbnailSize: 'small' | 'medium' | 'large' | 'xlarge' = 'medium';
 vi.mock('@/stores/storage/user-settings', () => ({
   useUserSettingsStore: () => ({
     userSettings: {
@@ -116,6 +116,21 @@ describe('file-browser-list-entry-thumbnail', () => {
     await wrapper.vm.$nextTick();
 
     expect(getImageThumbnail).toHaveBeenCalledWith(entry, 32);
+  });
+
+  // FORK-MODIFICATION: 验收反馈 2026-10-12 第二轮 — 缩略图 4 档加 xlarge=54 像素。
+  it('uses 54 px when thumbnailSize is xlarge', async () => {
+    mockThumbnailSize = 'xlarge';
+    const entry = createEntry({ path: 'C:/photo-xl.jpg', ext: 'jpg' });
+    const wrapper = mount(FileBrowserListEntryThumbnail, {
+      props: { entry },
+      global: { stubs: { Teleport: true } },
+    });
+
+    enterViewport();
+    await wrapper.vm.$nextTick();
+
+    expect(getImageThumbnail).toHaveBeenCalledWith(entry, 54);
   });
 
   it('swaps to the thumbnail image once the source resolves', async () => {

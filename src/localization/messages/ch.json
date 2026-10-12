@@ -228,10 +228,11 @@
         "showListThumbnails": "列表视图中显示缩略图",
         "showListThumbnailsDescription": "图片和视频在列表中显示缩略图；文件夹与文档仍显示类型图标。网格视图始终显示缩略图，不受此开关影响。",
         "thumbnailSizeTitle": "缩略图大小",
-        "thumbnailSizeDescription": "调整列表视图中缩略图的尺寸。large 档会增大行高以容纳更大的缩略图。",
+        "thumbnailSizeDescription": "调整列表视图中缩略图的尺寸。",
         "thumbnailSizeSmall": "小（24 像素）",
         "thumbnailSizeMedium": "中（32 像素）",
-        "thumbnailSizeLarge": "大（48 像素，行高增大）"
+        "thumbnailSizeLarge": "大（48 像素）",
+        "thumbnailSizeXLarge": "特大（54 像素）"
       },
       "startupPage": {
         "title": "启动页",

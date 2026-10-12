@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 30;
+export const USER_SETTINGS_SCHEMA_VERSION = 31;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -504,6 +504,13 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   // 用「缺失才写」而非覆盖写：与 29 步相同理由（用户主动选择不应被升级冲掉）。
   if (fromVersion === 29 && toVersion === 30) {
     await setDefaultEnumIfMissing(storage, 'navigator.thumbnailSize', 'medium', ['small', 'medium', 'large']);
+  }
+
+  // FORK-MODIFICATION: 缩略图四档（增加 xlarge = 54 像素）。验收反馈 2026-10-12:
+  // 用户希望再增加一档"中大"以精细化缩略图尺寸,行高 70 逻辑像素。
+  // 仍走 setDefaultEnumIfMissing —— 已有值不动;allowed 扩到 4 档让 schema 校验更松。
+  if (fromVersion === 30 && toVersion === 31) {
+    await setDefaultEnumIfMissing(storage, 'navigator.thumbnailSize', 'medium', ['small', 'medium', 'large', 'xlarge']);
   }
 
   if (fromVersion === 6 && toVersion === 7) {

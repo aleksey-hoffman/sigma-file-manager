@@ -2,8 +2,9 @@
 License: GNU GPLv3 or later. See the license file in the project root for more information.
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-FORK-MODIFICATION: 缩略图大小三档弹窗（small / medium / large）。
+FORK-MODIFICATION: 缩略图大小四档弹窗（small / medium / large / xlarge）。
 详见 docs/superpowers/specs/2026-10-12-navigator-polish-pack-design.md §5.3。
+验收反馈 2026-10-12:用户希望增加 54 像素档（xlarge）。
 -->
 
 <script setup lang="ts">
@@ -32,6 +33,7 @@ const options: Array<{ value: ThumbnailSizeOption; descriptionKey: string }> = [
   { value: 'small', descriptionKey: 'settings.general.fileView.thumbnailSizeSmall' },
   { value: 'medium', descriptionKey: 'settings.general.fileView.thumbnailSizeMedium' },
   { value: 'large', descriptionKey: 'settings.general.fileView.thumbnailSizeLarge' },
+  { value: 'xlarge', descriptionKey: 'settings.general.fileView.thumbnailSizeXLarge' },
 ];
 
 function selectOption(size: ThumbnailSizeOption) {

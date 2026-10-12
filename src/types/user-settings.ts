@@ -380,8 +380,11 @@ export type UserSettingsNavigator = {
   enableBoxSelection: boolean;
   // FORK-MODIFICATION: 列表视图缩略图开关（上游 #231）
   showListThumbnails: boolean;
-  // FORK-MODIFICATION: 缩略图大小三档（small / medium / large）。中等档默认；与 LIST_ENTRY_HEIGHT 联动。
-  thumbnailSize: 'small' | 'medium' | 'large';
+  // FORK-MODIFICATION: 缩略图大小四档（small / medium / large / xlarge）。
+  //   small=24 / medium=32 / large=48 / xlarge=54 像素;
+  //   行高联动: small/medium=42, large=64, xlarge=70 逻辑像素。
+  //   验收反馈 2026-10-12:用户希望增加 54 像素档以更精细化。
+  thumbnailSize: 'small' | 'medium' | 'large' | 'xlarge';
   increaseFileViewGaps: boolean;
   // FORK-MODIFICATION: sidebar tree toggle persistence (issue #499)
   showFolderTree?: boolean;

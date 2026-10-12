@@ -27,7 +27,7 @@ vi.mock('@/stores/storage/user-settings', () => ({
   }),
 }));
 
-function mountDialog(props: { open?: boolean; modelValue?: 'small' | 'medium' | 'large' } = {}) {
+function mountDialog(props: { open?: boolean; modelValue?: 'small' | 'medium' | 'large' | 'xlarge' } = {}) {
   return mount(FileBrowserThumbnailSizeDialog, {
     props: {
       open: props.open ?? true,
@@ -56,6 +56,15 @@ describe('file-browser-thumbnail-size-dialog', () => {
     expect(wrapper.find('[data-test="thumbnail-size-small"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="thumbnail-size-medium"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="thumbnail-size-large"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="thumbnail-size-xlarge"]').exists()).toBe(true);
+  });
+
+  // FORK-MODIFICATION: 验收反馈 2026-10-12 第二轮 — 加 4 档 xlarge 端到端测试。
+  it('selects xlarge and persists it', async () => {
+    const wrapper = mountDialog({ modelValue: 'medium' });
+    await wrapper.find('[data-test="thumbnail-size-xlarge"]').trigger('click');
+    expect(wrapper.emitted('update:modelValue')).toEqual([['xlarge']]);
+    expect(setMock).toHaveBeenCalledWith('navigator.thumbnailSize', 'xlarge');
   });
 
   it('marks the active option based on modelValue', () => {

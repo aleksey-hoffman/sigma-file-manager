@@ -266,10 +266,11 @@
         "showListThumbnails": "Show thumbnails in list view",
         "showListThumbnailsDescription": "Images and videos show thumbnails in the list. Folders and documents still show their type icon. Grid view always shows thumbnails and is not affected by this switch.",
         "thumbnailSizeTitle": "Thumbnail size",
-        "thumbnailSizeDescription": "Adjust the size of thumbnails in the list view. The Large preset also enlarges the row height.",
+        "thumbnailSizeDescription": "Adjust thumbnail size in the list view.",
         "thumbnailSizeSmall": "Small (24 px)",
         "thumbnailSizeMedium": "Medium (32 px)",
-        "thumbnailSizeLarge": "Large (48 px, larger row height)"
+        "thumbnailSizeLarge": "Large (48 px)",
+        "thumbnailSizeXLarge": "Extra large (54 px)"
       }
     },
     "actions": {

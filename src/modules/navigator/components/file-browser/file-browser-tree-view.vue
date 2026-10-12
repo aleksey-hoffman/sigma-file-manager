@@ -30,6 +30,7 @@ import {
 import { useFileTree } from '@/modules/navigator/composables/use-file-tree';
 import {
   ContextMenu,
+  ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { revealInExplorer } from '@/utils/open-in-explorer';
 import { openNativeProperties } from '@/utils/open-native-properties';
@@ -65,31 +66,25 @@ const { expandedPaths, selectedPath } = storeToRefs(folderTreeStore);
 
 // FORK-MODIFICATION: 目录树右键菜单（C 范围）。详见 spec §5.4。
 // tree 节点的 FileTreeFlatRow 不是完整 DirEntry；右键菜单只需 path + isDirectory。
+// reka-ui ContextMenuRoot 自己管 open 状态,这里只记 target 即可。
 const clipboardStore = useClipboardStore();
 
 interface TreeMenuTarget {
   path: string;
   isDirectory: boolean;
 }
-interface ContextMenuState {
-  open: boolean;
-  target: TreeMenuTarget | null;
-}
-const contextMenu = ref<ContextMenuState>({ open: false, target: null });
+const contextMenuTarget = ref<TreeMenuTarget | null>(null);
 
 function openContextMenu(row: { path: string; isDirectory: boolean }) {
-  contextMenu.value = {
-    open: true,
-    target: { path: row.path, isDirectory: row.isDirectory },
-  };
+  contextMenuTarget.value = { path: row.path, isDirectory: row.isDirectory };
 }
 
 function closeContextMenu() {
-  contextMenu.value = { open: false, target: null };
+  contextMenuTarget.value = null;
 }
 
 async function handleContextAction(name: string) {
-  const target = contextMenu.value.target;
+  const target = contextMenuTarget.value;
   closeContextMenu();
   if (!target) {
     return;
@@ -224,49 +219,55 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
 </script>
 
 <template>
-  <div class="file-tree-view" data-e2e-root="file-tree-view">
-    <div
-      v-for="row in rows"
-      :key="row.path"
-      class="file-tree-row"
-      :class="{
-        'file-tree-row--selected': isRowSelected(row.path),
-        'file-tree-row--loading': isRowLoading(row.path),
-        'file-tree-row--error': isRowLoadError(row.path),
-      }"
-      :style="{ paddingLeft: `${row.depth * 16 + 8}px` }"
-      :aria-expanded="row.isDirectory ? row.isExpanded : undefined"
-      :data-tree-path="row.path"
-      :data-selected="isRowSelected(row.path) || undefined"
-      :title="row.path"
-      @click="onRowClick(row)"
-      @contextmenu.prevent="openContextMenu(row)"
-    >
-      <component
-        :is="row.isDirectory && row.isExpanded ? ChevronDownIcon : ChevronRightIcon"
-        v-if="row.isDirectory"
-        :size="14"
-        class="file-tree-row__chevron"
-        @click.stop="onChevronClick(row)"
-      />
-      <span v-else class="file-tree-row__spacer" />
-      <component
-        :is="getRowIcon(row)"
-        :size="14"
-      />
-      <span class="file-tree-row__name" :title="row.name">{{ row.name }}</span>
-      <span
-        v-if="isRowLoadError(row.path)"
-        class="file-tree-row__error-marker"
-        title="Failed to load children"
-      >!</span>
-    </div>
-  </div>
-
-  <!-- FORK-MODIFICATION: 目录树右键菜单（C 范围） -->
-  <ContextMenu v-if="contextMenu.open && contextMenu.target" v-model:open="contextMenu.open">
+  <ContextMenu>
+    <ContextMenuTrigger as-child>
+      <div class="file-tree-view" data-e2e-root="file-tree-view">
+        <div
+          v-for="row in rows"
+          :key="row.path"
+          class="file-tree-row"
+          :class="{
+            'file-tree-row--selected': isRowSelected(row.path),
+            'file-tree-row--loading': isRowLoading(row.path),
+            'file-tree-row--error': isRowLoadError(row.path),
+          }"
+          :style="{ paddingLeft: `${row.depth * 16 + 8}px` }"
+          :aria-expanded="row.isDirectory ? row.isExpanded : undefined"
+          :data-tree-path="row.path"
+          :data-selected="isRowSelected(row.path) || undefined"
+          :title="row.path"
+          @click="onRowClick(row)"
+          @contextmenu="openContextMenu(row)"
+        >
+          <component
+            :is="row.isDirectory && row.isExpanded ? ChevronDownIcon : ChevronRightIcon"
+            v-if="row.isDirectory"
+            :size="14"
+            class="file-tree-row__chevron"
+            @click.stop="onChevronClick(row)"
+          />
+          <span v-else class="file-tree-row__spacer" />
+          <component
+            :is="getRowIcon(row)"
+            :size="14"
+          />
+          <span class="file-tree-row__name" :title="row.name">{{ row.name }}</span>
+          <span
+            v-if="isRowLoadError(row.path)"
+            class="file-tree-row__error-marker"
+            title="Failed to load children"
+          >!</span>
+        </div>
+      </div>
+    </ContextMenuTrigger>
+    <!--
+      FORK-MODIFICATION: 目录树右键菜单(C 范围)。FileTreeContextMenu 内部
+      第一行是 <ContextMenuContent>,从最近的 ContextMenuRoot 取上下文;
+      用 v-if 让组件在 target 缺失时整体不挂载,避免空内容弹位置。
+    -->
     <FileTreeContextMenu
-      :target="contextMenu.target"
+      v-if="contextMenuTarget"
+      :target="contextMenuTarget"
       @action="handleContextAction"
       @close="closeContextMenu"
     />

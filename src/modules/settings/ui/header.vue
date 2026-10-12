@@ -15,8 +15,16 @@ const { t } = useI18n();
     <img :src="logoImage">
     <div class="settings-header__title-section">
       <p class="settings-header__description">
+        <!--
+          FORK-MODIFICATION: 修设置页文案重复。
+          `app.description` 在 17 个语言包里均以 `"Alpha File Manager" ...` 开头,
+          而模板同时在前面输出 `app.name`,会渲染成两个连续的
+          `"Alpha File Manager" "Alpha File Manager" 在 ...`。
+          修法:模板里 `app.description` 用正则去掉开头的引语,
+          保留 strong 版的 app.name 即可。
+        -->
         <strong>"{{ t('app.name') }}"</strong>
-        {{ t('app.description') }}
+        {{ t('app.description').replace(/^"[^"]*"\s*/, '') }}
         <br>{{ t('app.copyright') }}
       </p>
     </div>

@@ -366,4 +366,30 @@ describe('migrateUserSettingsStorage', () => {
 
     expect(storage.values.get('navigator.thumbnailSize')).toBe('large');
   });
+
+  // FORK-MODIFICATION: 验收反馈 2026-10-12 第二轮 — schema 30→31 加 xlarge 档。
+  // 30→31 migration 只允许"缺失才写",已有值不动;allowed 列表里加了 xlarge,
+  // 4 个值都不冲突。
+  it('defaults thumbnail size to medium when migrating from schema version 30', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 30,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.thumbnailSize')).toBe('medium');
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('preserves an existing thumbnail size setting when migrating from schema version 30', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 30,
+      'navigator.thumbnailSize': 'large',
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.thumbnailSize')).toBe('large');
+  });
 });

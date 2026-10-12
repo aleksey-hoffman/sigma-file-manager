@@ -95,6 +95,20 @@ describe('createFileBrowserVirtualRows', () => {
       });
       expect(rows.map(row => row.size)).toEqual([64, 78, 64]);
     });
+
+    // FORK-MODIFICATION: 验收反馈 2026-10-12 第二轮 — 缩略图 4 档加 xlarge=54 像素,
+    // 行高 70 / with-description 84(均 +6 像素,大 6 px 给 54 px 缩略图留余量)。
+    it('xlarge: list rows grow to 70 / 84', () => {
+      const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
+      const rows = createFileBrowserVirtualRows({
+        entries,
+        layout: 'list',
+        viewportWidth: 500,
+        entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
+        thumbnailSize: 'xlarge',
+      });
+      expect(rows.map(row => row.size)).toEqual([70, 84, 70]);
+    });
 });
 
   it('creates grid section and item rows from responsive columns', () => {

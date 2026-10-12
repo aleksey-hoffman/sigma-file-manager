@@ -18,7 +18,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 const props = withDefaults(defineProps<{
   entry: DirEntry;
-  // 显式传入时优先；否则按 navigator.thumbnailSize 设置（small=24 / medium=32 / large=48）
+  // 显式传入时优先；否则按 navigator.thumbnailSize 设置（small=24 / medium=32 / large=48 / xlarge=54）
   size?: number;
 }>(), {
   size: undefined,
@@ -36,13 +36,17 @@ const isVideo = computed(() => isFileBrowserVideoEntry(props.entry));
 const isMedia = computed(() => isImage.value || isVideo.value);
 
 // 缩略图档位 → 像素尺寸（与 LIST_ENTRY_HEIGHT 联动，详见 spec §5.3）。
+//   small=24 / medium=32 / large=48 / xlarge=54 像素。
 // 显式传入 props.size 优先（保持向后兼容）；未传则按 setting 计算。
 const effectiveSize = computed<number>(() => {
   if (typeof props.size === 'number') {
     return props.size;
   }
   const size = userSettingsStore.userSettings.navigator.thumbnailSize;
-  return size === 'small' ? 24 : size === 'large' ? 48 : 32;
+  if (size === 'small') return 24;
+  if (size === 'large') return 48;
+  if (size === 'xlarge') return 54;
+  return 32;
 });
 
 const imageThumbnailSrc = computed(() => {

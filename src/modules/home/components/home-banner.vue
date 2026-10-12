@@ -289,8 +289,13 @@ function preventPopoverClose(event: Event) {
       />
     </div>
 
-    <div class="home-banner__overlay home-banner__overlay--top" />
-    <div class="home-banner__overlay home-banner__overlay--bottom" />
+    <!--
+      FORK-MODIFICATION: 验收反馈 2026-10-12 — 去掉顶部 / 底部渐变 overlay。
+      原版:两个绝对定位的渐变 div(__overlay--top / --bottom)模拟"标题悬浮在图片上"的氛围。
+      需求:"顶部和底部为渐变效果,希望去除渐变效果,显示尺寸高度适当缩小,
+            和下面的标题文字"主页"保持足够间距"。
+      修法:删两个 overlay div + 对应 CSS;actions 容器 position 仍 absolute,保持原视觉锚点。
+    -->
 
     <div class="home-banner__actions">
       <span class="home-banner__title">
@@ -459,9 +464,11 @@ function preventPopoverClose(event: Event) {
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: 50vh;
-  min-height: 300px;
-  max-height: 500px;
+  /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 缩小 banner 高度,留出与"主页"标题
+     / 下方 UserDirectories / Drives 区的视觉呼吸感。原 50vh / min 300 / max 500。 */
+  height: 28vh;
+  min-height: 180px;
+  max-height: 280px;
 }
 
 .home-banner__media-container {
@@ -482,43 +489,16 @@ function preventPopoverClose(event: Event) {
   transition: opacity 0.5s ease;
 }
 
-.home-banner__overlay {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-}
-
-.home-banner__overlay--top {
-  top: 0;
-  height: 100px;
-  background: linear-gradient(
-    to bottom,
-    hsl(var(--background-3)) 0%,
-    hsl(var(--background-3) / 80%) 20%,
-    hsl(var(--background-3) / 50%) 40%,
-    hsl(var(--background-3) / 20%) 70%,
-    transparent 100%
-  );
-}
-
-.home-banner__overlay--bottom {
-  bottom: 0;
-  height: 150px;
-  background: linear-gradient(
-    to top,
-    hsl(var(--background-3)) 0%,
-    hsl(var(--background-3) / 95%) 20%,
-    hsl(var(--background-3) / 70%) 40%,
-    hsl(var(--background-3) / 30%) 70%,
-    transparent 100%
-  );
-}
+/*
+  FORK-MODIFICATION: 验收反馈 2026-10-12 — 顶部 / 底部渐变 overlay 已删除。
+  原 .home-banner__overlay / --top / --bottom 全部移除(对应 template 的 div 也已删)。
+*/
 
 .home-banner__actions {
   position: absolute;
   z-index: 3;
-  bottom: 12px;
+  /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 距 banner 底 20px,与下方内容保持间距。 */
+  bottom: 20px;
   left: 16px;
   display: flex;
   align-items: center;
@@ -529,7 +509,7 @@ function preventPopoverClose(event: Event) {
   color: hsl(var(--foreground));
   font-size: 20px;
   font-weight: 600;
-  text-shadow: 0 1px 3px hsl(0deg 0% 0% / 50%);
+  /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 渐变已去,文字阴影也不再需要,移除。 */
 }
 
 .home-banner__action-button {
