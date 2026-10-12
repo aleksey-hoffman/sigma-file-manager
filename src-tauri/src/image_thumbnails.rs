@@ -632,9 +632,15 @@ pub async fn clear_thumbnail_cache(app: tauri::AppHandle) -> Result<(), String> 
         return Ok(());
     }
 
-    tauri::async_runtime::spawn_blocking(move || clear_thumbnail_cache_dir(&cache_dir))
-        .await
-        .map_err(|error| format!("Failed to clear thumbnail cache: {error}"))?
+    tauri::async_runtime::spawn_blocking(move || {
+        let _cache_file_lock = IMAGE_THUMBNAIL_CACHE_FILE_LOCK
+            .lock()
+            .map_err(|error| format!("Failed to lock thumbnail cache files: {error}"))?;
+
+        clear_thumbnail_cache_dir(&cache_dir)
+    })
+    .await
+    .map_err(|error| format!("Failed to clear thumbnail cache: {error}"))?
 }
 
 #[tauri::command]
