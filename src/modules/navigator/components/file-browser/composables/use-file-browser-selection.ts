@@ -984,6 +984,9 @@ export function useFileBrowserSelection(
 
         break;
       case 'toggle-favorite':
+        // INVARIANT (2026-10-12 §5.5.1): toggle-favorite 唯一入口是右键菜单与
+        // 快捷键。file row 上未绑 long-press / pointer-hold / touchstart handler,
+        // 不会有"长按文件 → 切换置顶"的代码路径触发本 case。
         if (entries.length > 0) {
           toggleFavorites(entries);
         }

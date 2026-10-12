@@ -327,6 +327,26 @@ export type ContextMenuAction = ... | 'open-containing-directory';
 
 **记录**：无论结论如何，把验证过程 + 结论写进 `progress.md`。
 
+#### 5.5.1 代码层调查结论（2026-10-12 沉淀）
+
+**invariant**：`toggle-favorite` 不会由任何长按 / pointer-hold 事件链触发。
+
+**清单**（grep 范围 `src/modules/navigator/components/file-browser`）：
+
+| 探测 | 命中 | 说明 |
+|---|---|---|
+| `@touchstart` / `@touchend` / `touchstart` / `touchend` 在 file row 组件 | **0** | grep `touchstart\|touchend` 范围 `file-browser/` 全空 |
+| `longpress` / `long-press` / `holdfor` / `holdDelay` | **0** | file-browser/ 全空（`LONG_PRESS_DELAY` 只在 `tab-bar/tab/tab.vue` 出现 —— Tab 长按重命名,与 file row 无关）|
+| `pointerdown` 直接绑到 file row | **0** | file-browser/ 全空；只命中 `sortable-list` 与 `window-toolbar` 与 `tag-inline-editor`（这些都不是 file row）|
+| file row 上的 `@click` / `@dblclick` / `@contextmenu` / pointer-hold 链 | row click 走 `useFileBrowserSelection.onRowActivate` 走 activate；contextmenu 弹 `file-browser-context-menu.vue`，**不调用 `toggleFavorites`** | 见 `use-file-browser-actions.ts::onContextMenuAction` 的 switch |
+| `toggleFavorites` / `toggle-favorite` 调用链 | 仅两条：(1) 右键菜单的 `'toggle-favorite'` action（`file-browser-actions-menu.vue` + `use-file-browser-actions.ts`）；(2) selection 的 case `'toggle-favorite'`（`use-file-browser-selection.ts:986`、`use-dir-entry-actions.ts:501`）。两条都需用户显式操作（菜单点击 / `shortcutsStore` 触发快捷键）| 项目内不存在任何"长按文件 → 触发 toggle-favorite"的路径 |
+
+**剩余不确定因素**：用户报告的 "长按导致 alpha 切换置顶" 现象如果真实存在，**触发点不在 `toggle-favorite` 路径上**，候选是：
+- **`@crabnebula/tauri-plugin-drag` 的 `startOutboundDrag`** 副作用 —— 拖拽开始时主动激活 webview 焦点
+- **Windows OS 的"开始拖拽即聚焦源窗口"行为** —— DWM 层先于应用逻辑
+
+**这两条都需要真机复现才能定性**（代码层无可读钩子）。建议在用户授权后由本会话的 `tauri build` + UIA 阶段一并验证：本批 commit 不阻塞发版。
+
 ### 5.6 全局搜索"打开文件所在目录"（需求 6）
 
 **与需求 4 完全共享**：需求 4 已加 `'open-containing-directory'` action，handler 全局可用。全局搜索结果的 FileBrowser 实例复用现有菜单 → 自动继承。
