@@ -123,19 +123,20 @@ const { openCopiedPath } = useOpenCopiedPath({
 });
 
 // FORK-MODIFICATION: layout toggle button moved to file-browser-toolbar-nav-buttons.
-// This composable handles per-folder / global scope resolution; see useNavigatorFolderSettings.
+// 按当前激活选项卡的 path 写 per-folder settings —— 不同选项卡可独立设置视图（不再统一全局）。
 const { persistForScope } = useNavigatorFolderSettings(
   () => fb.currentPath.value,
   () => Boolean(props.tab?.type !== 'search' && fb.currentPath.value),
 );
 
-// toolbar 上点击布局切换按钮只改全局 layout（per-folder 改走 navigator-toolbar-actions 的 ⋮ 菜单「设置作用域」 Tab）。
 const currentLayout = computed<'list' | 'grid'>(() => (
   props.layout === 'grid' ? 'grid' : 'list'
 ));
 
 async function setLayout(target: 'list' | 'grid') {
-  await persistForScope('global', { layout: target });
+  // 总是 per-folder：让不同选项卡的目录独立记忆各自视图。
+  // 如需切回全局一致，可走 navigator-toolbar-actions ⋮ 菜单「设置作用域」Tab。
+  await persistForScope('folder', { layout: target });
 }
 
 function openAddressBarEditor(mode: AddressBarEditorMode) {

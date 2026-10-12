@@ -119,4 +119,14 @@ describe('file-browser-toolbar-nav-buttons · layout toggle', () => {
     expect(wrapper.emitted('toggle-layout')).toBeTruthy();
     expect(wrapper.emitted('toggle-layout')).toHaveLength(1);
   });
+
+  it('collapsed dropdown menu also exposes layout toggle item (narrow-screen parity)', async () => {
+    const wrapper = mountNavButtons({ currentLayout: 'list' });
+    // 模拟点击 ⋮ dropdown 触发器
+    await wrapper.findAll('button').find(b => b.attributes('title') === 'settingsCategories.navigation')?.trigger('click');
+    const menuItem = wrapper.find('[data-test="toggle-layout-menu-item"]');
+    expect(menuItem.exists()).toBe(true);
+    await menuItem.trigger('click');
+    expect(wrapper.emitted('toggle-layout')).toBeTruthy();
+  });
 });

@@ -248,6 +248,20 @@ const nextLayoutLabelKey = computed(() => isGridLayout.value ? 'list' : 'grid');
           <RefreshCwIcon :size="14" />
           {{ t('fileBrowser.refresh') }}
         </DropdownMenuItem>
+        <DropdownMenuItem
+          data-test="toggle-layout-menu-item"
+          @click="emit('toggle-layout')"
+        >
+          <LayoutGridIcon
+            v-if="isGridLayout"
+            :size="14"
+          />
+          <ListIcon
+            v-else
+            :size="14"
+          />
+          {{ isGridLayout ? t('list') : t('grid') }}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           class="file-browser-toolbar-nav-buttons__menu-item-with-shortcut"
