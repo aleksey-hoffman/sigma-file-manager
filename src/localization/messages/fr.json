@@ -388,6 +388,7 @@
       "sorting": "Tri",
       "sortAscending": "Ascendant",
       "sortDescending": "Descendant",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Portée",
       "settingsScopeGlobal": "Global",
       "settingsScopeThisFolder": "Ce dossier",

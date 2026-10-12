@@ -417,6 +417,7 @@
       "sorting": "Сортировка",
       "sortAscending": "По возрастанию",
       "sortDescending": "По убыванию",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Область",
       "settingsScopeGlobal": "Глобальные",
       "settingsScopeThisFolder": "Эта папка",

@@ -417,6 +417,7 @@
       "sorting": "Razvrščanje",
       "sortAscending": "Naraščajoče",
       "sortDescending": "Padajoče",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Obseg",
       "settingsScopeGlobal": "Globalno",
       "settingsScopeThisFolder": "Ta mapa",

@@ -65,6 +65,7 @@ function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSe
     listColumnOrder: ['items', 'size', 'modified', 'created', 'tags', 'kind', 'links', 'linkStatus'],
     listSortColumn: null,
     listSortDirection: 'asc',
+    foldersFirst: true,
     gridSortColumn: 'name',
     gridSortDirection: 'asc',
     enableBoxSelection: false,

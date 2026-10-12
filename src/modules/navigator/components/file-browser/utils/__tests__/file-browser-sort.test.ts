@@ -41,7 +41,7 @@ describe('sortFileBrowserEntries', () => {
         is_dir: true,
       }),
     ];
-    const sorted = sortFileBrowserEntries(entries, 'size', 'desc');
+    const sorted = sortFileBrowserEntries(entries, 'size', 'desc', true);
 
     expect(sorted.map(entry => entry.name)).toEqual(['small-folder', 'large-folder']);
   });
@@ -70,7 +70,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'tags', 'asc', {
+    const sorted = sortFileBrowserEntries(entries, 'tags', 'asc', true, {
       tags: [
         {
           id: 'beta',
@@ -134,7 +134,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'kind', 'asc');
+    const sorted = sortFileBrowserEntries(entries, 'kind', 'asc', true);
 
     expect(sorted.map(entry => entry.name)).toEqual(['normal', 'hardlink', 'shortcut']);
   });
@@ -151,7 +151,7 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'links', 'asc');
+    const sorted = sortFileBrowserEntries(entries, 'links', 'asc', true);
 
     expect(sorted.map(entry => entry.name)).toEqual(['one', 'two']);
   });
@@ -170,7 +170,7 @@ describe('sortFileBrowserEntries', () => {
       ['one', 1],
     ]);
 
-    const sorted = sortFileBrowserEntries(entries, 'links', 'asc', {
+    const sorted = sortFileBrowserEntries(entries, 'links', 'asc', true, {
       tags: [],
       taggedItems: [],
       getLinkSortFields: entry => ({
@@ -198,8 +198,67 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    const sorted = sortFileBrowserEntries(entries, 'linkStatus', 'asc');
+    const sorted = sortFileBrowserEntries(entries, 'linkStatus', 'asc', true);
 
     expect(sorted.map(entry => entry.name)).toEqual(['broken', 'valid']);
+  });
+});
+
+describe('sortFileBrowserEntries foldersFirst', () => {
+  function mkEntry(name: string, isDir: boolean): DirEntry {
+    return {
+      name,
+      is_dir: isDir,
+      path: `C:/d/${name}`,
+    } as DirEntry;
+  }
+
+  it('places folders before files when foldersFirst is true', () => {
+    const entries = [
+      mkEntry('b.txt', false),
+      mkEntry('a_folder', true),
+      mkEntry('a.txt', false),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
+    expect(sorted.map(e => e.name)).toEqual(['a_folder', 'a.txt', 'b.txt']);
+  });
+
+  it('interleaves folders and files by the sort column when foldersFirst is false', () => {
+    const entries = [
+      mkEntry('b_folder', true),
+      mkEntry('a.txt', false),
+      mkEntry('a_folder', true),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', false);
+    // 期望值说明：名称列用的是 Intl.Collator(undefined, { numeric: true })，
+    // 主序比较下 'a_folder' 与 'a.txt' 比的是 "afolder" 与 "atxt"，所以
+    // a_folder 排在 a.txt 前面。夹带的判别点是 b_folder 落在末尾（索引 2）——
+    // 若文件夹被整体提前，结果会是 ['a_folder', 'b_folder', 'a.txt']。
+    expect(sorted.map(e => e.name)).toEqual(['a_folder', 'a.txt', 'b_folder']);
+  });
+
+  // 上面两条用例的夹具排不出「文件夹置顶」与「纯按名称排序」的差别：
+  // a_folder 本来就排在 a.txt 前面，两者结果完全相同。也就是说，
+  // 把 if (foldersFirst && ...) 改成 if (false && ...) 时测试仍然全绿 ——
+  // 那是一个等价变换，探针无效。下面这两条用的夹具让文件夹的名称排在
+  // 文件之后，两个分支的结果才真正分叉。
+  it('hoists a folder whose name sorts after a file when foldersFirst is true', () => {
+    const entries = [
+      mkEntry('a.txt', false),
+      mkEntry('b_folder', true),
+      mkEntry('c.txt', false),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
+    expect(sorted.map(e => e.name)).toEqual(['b_folder', 'a.txt', 'c.txt']);
+  });
+
+  it('leaves that folder interleaved when foldersFirst is false', () => {
+    const entries = [
+      mkEntry('a.txt', false),
+      mkEntry('b_folder', true),
+      mkEntry('c.txt', false),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', false);
+    expect(sorted.map(e => e.name)).toEqual(['a.txt', 'b_folder', 'c.txt']);
   });
 });

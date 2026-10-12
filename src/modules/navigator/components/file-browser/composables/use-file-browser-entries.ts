@@ -32,6 +32,7 @@ export function useFileBrowserEntries(
   showHiddenFiles: Ref<boolean>,
   sortColumn: Ref<ListSortColumn | null>,
   sortDirection: Ref<ListSortDirection>,
+  foldersFirst: Ref<boolean>,
   applySort: ComputedRef<boolean>,
 ) {
   const dirSizesStore = useDirSizesStore();
@@ -89,6 +90,7 @@ export function useFileBrowserEntries(
         entriesForSort,
         column,
         sortDirection.value,
+        foldersFirst.value,
         sortContext,
       );
     }

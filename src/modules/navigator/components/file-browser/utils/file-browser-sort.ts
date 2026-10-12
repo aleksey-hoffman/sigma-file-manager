@@ -49,6 +49,7 @@ export function sortFileBrowserEntries(
   items: DirEntry[],
   column: ListSortColumn,
   direction: ListSortDirection,
+  foldersFirst: boolean,
   tagContext?: FileBrowserEntrySortTagContext,
 ): DirEntry[] {
   const multiplier = direction === 'asc' ? 1 : -1;
@@ -56,10 +57,10 @@ export function sortFileBrowserEntries(
   const getLinkSortFields = tagContext?.getLinkSortFields;
 
   return [...items].sort((entryA, entryB) => {
-    const dirsFirst = (entryA.is_dir === entryB.is_dir) ? 0 : (entryA.is_dir ? -1 : 1);
-
-    if (dirsFirst !== 0) {
-      return dirsFirst;
+    // FORK-MODIFICATION: 可关闭的文件夹优先排序（上游 #529/#481/#482）
+    // foldersFirst 为 true 时与改动前的 dirsFirst 表达式逐字节等价。
+    if (foldersFirst && entryA.is_dir !== entryB.is_dir) {
+      return entryA.is_dir ? -1 : 1;
     }
 
     let comparison: number;

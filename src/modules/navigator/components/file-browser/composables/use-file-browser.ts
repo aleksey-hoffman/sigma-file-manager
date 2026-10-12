@@ -144,6 +144,7 @@ function setupNavigationDataSource(
   const sortColumn = computed(() => sortSettings.value.column);
   const sortDirection = computed(() => sortSettings.value.direction);
   const applySort = computed(() => shouldApplyNavigatorSort(options.layout()));
+  const foldersFirst = computed(() => userSettingsStore.userSettings.navigator.foldersFirst);
   const {
     entries: filteredEntries,
     isDirectoryEmpty: filteredIsDirectoryEmpty,
@@ -153,6 +154,7 @@ function setupNavigationDataSource(
     showHiddenFiles,
     sortColumn,
     sortDirection,
+    foldersFirst,
     applySort,
   );
 
@@ -215,6 +217,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const sortColumn = computed(() => sortSettings.value.column);
   const sortDirection = computed(() => sortSettings.value.direction);
   const applySort = computed(() => shouldApplyNavigatorSort(options.layout()));
+  const foldersFirst = computed(() => userSettingsStore.userSettings.navigator.foldersFirst);
   const {
     entries: sortedEntries,
     isDirectoryEmpty,
@@ -224,6 +227,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     showAllEntries,
     sortColumn,
     sortDirection,
+    foldersFirst,
     applySort,
   );
 

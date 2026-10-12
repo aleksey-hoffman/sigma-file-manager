@@ -388,6 +388,7 @@
       "sorting": "排序",
       "sortAscending": "升序",
       "sortDescending": "降序",
+      "foldersFirst": "文件夹排在文件之前",
       "settingsScope": "范围",
       "settingsScopeGlobal": "全局",
       "settingsScopeThisFolder": "此文件夹",

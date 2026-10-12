@@ -417,6 +417,7 @@
       "sorting": "छँटाई",
       "sortAscending": "आरोही",
       "sortDescending": "अवरोही",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "दायरा",
       "settingsScopeGlobal": "वैश्विक",
       "settingsScopeThisFolder": "यह फ़ोल्डर",

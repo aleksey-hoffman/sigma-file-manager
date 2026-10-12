@@ -388,6 +388,7 @@
       "sorting": "Sortierung",
       "sortAscending": "Aufsteigend",
       "sortDescending": "Absteigend",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Bereich",
       "settingsScopeGlobal": "Global",
       "settingsScopeThisFolder": "Dieser Ordner",

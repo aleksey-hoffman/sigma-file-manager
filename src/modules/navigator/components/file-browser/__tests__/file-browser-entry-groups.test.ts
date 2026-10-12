@@ -89,7 +89,7 @@ describe('file browser entry groups', () => {
       }),
       createEntry('notes.txt', { ext: 'txt' }),
     ];
-    const sortedEntries = sortFileBrowserEntries(entries, 'name', 'asc');
+    const sortedEntries = sortFileBrowserEntries(entries, 'name', 'asc', true);
     const groupedEntries = groupFileBrowserEntries(sortedEntries);
 
     expect(groupedEntries.dirs.map(entry => entry.name)).toEqual(['folder-a', 'folder-b']);
@@ -105,7 +105,7 @@ describe('file browser entry groups', () => {
         is_file: false,
       }),
       createEntry('notes.txt', { ext: 'txt' }),
-    ], 'name', 'asc');
+    ], 'name', 'asc', true);
 
     expect(sortedEntries.map(entry => entry.name)).toEqual(['clips', 'notes.txt', 'photo.png']);
     expect(getFileBrowserGridEntryOrder(sortedEntries).map(entry => entry.name)).toEqual([

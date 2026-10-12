@@ -388,6 +388,7 @@
       "sorting": "Ordenação",
       "sortAscending": "Ascendente",
       "sortDescending": "Descendente",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Escopo",
       "settingsScopeGlobal": "Global",
       "settingsScopeThisFolder": "Esta pasta",

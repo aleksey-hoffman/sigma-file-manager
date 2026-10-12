@@ -417,6 +417,7 @@
       "sorting": "מיון",
       "sortAscending": "עולה",
       "sortDescending": "יורד",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "היקף",
       "settingsScopeGlobal": "גלובלי",
       "settingsScopeThisFolder": "התיקייה הזו",

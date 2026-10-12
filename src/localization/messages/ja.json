@@ -388,6 +388,7 @@
       "sorting": "並べ替え",
       "sortAscending": "昇順",
       "sortDescending": "降順",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "範囲",
       "settingsScopeGlobal": "グローバル",
       "settingsScopeThisFolder": "このフォルダー",

@@ -373,6 +373,8 @@ export type UserSettingsNavigator = {
   listColumnOrder: ListColumnOrder;
   listSortColumn: ListSortColumn | null;
   listSortDirection: ListSortDirection;
+  // FORK-MODIFICATION: 可关闭的文件夹优先排序（上游 #529/#481/#482）
+  foldersFirst: boolean;
   gridSortColumn: ListSortColumn | null;
   gridSortDirection: ListSortDirection;
   enableBoxSelection: boolean;

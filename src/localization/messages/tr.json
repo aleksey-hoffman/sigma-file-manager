@@ -388,6 +388,7 @@
       "sorting": "Sıralama",
       "sortAscending": "Artan",
       "sortDescending": "Azalan",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Kapsam",
       "settingsScopeGlobal": "Genel",
       "settingsScopeThisFolder": "Bu klasör",

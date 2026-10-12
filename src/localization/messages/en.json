@@ -417,6 +417,7 @@
       "sorting": "Sorting",
       "sortAscending": "Ascending",
       "sortDescending": "Descending",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Scope",
       "settingsScopeGlobal": "Global",
       "settingsScopeThisFolder": "This folder",

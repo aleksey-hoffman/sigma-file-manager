@@ -157,6 +157,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       listColumnOrder: ['items', 'size', 'modified', 'created', 'tags', 'kind', 'links', 'linkStatus'],
       listSortColumn: null,
       listSortDirection: 'asc',
+      // FORK-MODIFICATION: 可关闭的文件夹优先排序（上游 #529/#481/#482）
+      foldersFirst: true,
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
       enableBoxSelection: false,

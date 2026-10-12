@@ -388,6 +388,7 @@
       "sorting": "Sắp xếp",
       "sortAscending": "Tăng dần",
       "sortDescending": "Giảm dần",
+      "foldersFirst": "Place folders before files",
       "settingsScope": "Phạm vi",
       "settingsScopeGlobal": "Toàn cục",
       "settingsScopeThisFolder": "Thư mục này",
