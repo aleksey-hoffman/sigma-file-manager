@@ -258,6 +258,7 @@
         "title": "Вид файлов",
         "enableBoxSelection": "Включить рамочное выделение",
         "enableBoxSelectionDescription": "Перетаскивайте по пустому месту, чтобы выделить несколько элементов рамкой. Удерживайте Ctrl или Shift, чтобы добавить к выделению; Alt — чтобы инвертировать.",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Увеличить промежутки в виде файлов",
         "increaseFileViewGapsDescription": "Добавляет боковые отступы в списке и увеличивает промежутки в сетке для более удобного выделения."
       }

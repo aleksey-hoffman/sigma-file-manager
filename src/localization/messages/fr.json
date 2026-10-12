@@ -229,6 +229,7 @@
         "title": "Vue des fichiers",
         "enableBoxSelection": "Activer la sélection par cadre",
         "enableBoxSelectionDescription": "Faites glisser sur un espace vide pour sélectionner plusieurs éléments avec un cadre de sélection. Maintenez Ctrl ou Maj pour ajouter à la sélection ; Alt pour inverser.",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Augmenter les espacements de la vue fichiers",
         "increaseFileViewGapsDescription": "Ajoute un remplissage latéral en liste et augmente les espacements en grille pour faciliter le ciblage."
       }

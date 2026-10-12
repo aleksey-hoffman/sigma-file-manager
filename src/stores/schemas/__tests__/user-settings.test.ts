@@ -193,7 +193,7 @@ describe('migrateUserSettingsStorage', () => {
 
     await migrateUserSettingsStorage(storage);
 
-    expect(storage.values.get('navigator.enableBoxSelection')).toBe(false);
+    expect(storage.values.get('navigator.enableBoxSelection')).toBe(true);
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
@@ -304,6 +304,19 @@ describe('migrateUserSettingsStorage', () => {
     await migrateUserSettingsStorage(storage);
 
     expect(storage.values.get('navigator.foldersFirst')).toBe(false);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('forces box selection on when migrating from schema version 27 even if the user had disabled it', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 27,
+      'navigator.enableBoxSelection': false,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.enableBoxSelection')).toBe(true);
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });

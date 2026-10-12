@@ -220,6 +220,7 @@
         "title": "Chế độ xem tệp",
         "enableBoxSelection": "Bật chọn bằng khung kéo",
         "enableBoxSelectionDescription": "Kéo trên vùng trống để chọn nhiều mục bằng khung chọn. Giữ Ctrl hoặc Shift để thêm vào vùng chọn; giữ Alt để đảo ngược.",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Tăng khoảng cách trong chế độ xem tệp",
         "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn."
       },

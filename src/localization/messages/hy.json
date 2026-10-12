@@ -249,6 +249,7 @@
         "title": "Ֆայլի դիտում",
         "enableBoxSelection": "Միացնել վանդակի ընտրությունը",
         "enableBoxSelectionDescription": "Ֆայլերի ցուցակի դատարկ մասում սեղմիր ու քաշիր՝ ուղղանկյուն ընտրության շրջանակով մի քանի ֆայլ ու պանակ միանգամից ընտրելու համար։ Ctrl կամ Shift պահիր՝ այդ ընտրությանը ավելացնելու համար; Alt պահիր՝ ընտրությունը հետադարձելու համար։",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Մեծացնել ֆայլի ցուցադրման բացատները",
         "increaseFileViewGapsDescription": "Ավելացնում է կողային բացատներ ցուցակում և մեծացնում է բացերը ցանցում ավելի հեշտ ընտրելու համար։"
       },

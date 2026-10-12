@@ -220,6 +220,7 @@
         "title": "ファイルビュー",
         "enableBoxSelection": "ボックス選択を有効にする",
         "enableBoxSelectionDescription": "空白部分をドラッグして、選択ボックスで複数の項目を選択します。Ctrl または Shift を押しながらで追加、Alt を押しながらで反転します。",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "ファイルビューの間隔を広げる",
         "increaseFileViewGapsDescription": "リスト表示の左右余白を追加し、グリッド表示の間隔を広げて選択しやすくします。"
       },

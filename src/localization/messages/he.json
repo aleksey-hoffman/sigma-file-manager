@@ -249,6 +249,7 @@
         "title": "תצוגת קבצים",
         "enableBoxSelection": "הפעל בחירה עם תיבת סימון",
         "enableBoxSelectionDescription": "גרור על שטח ריק כדי לבחור מספר פריטים עם תיבת בחירה. החזק Ctrl או Shift כדי להוסיף לבחירה; Alt כדי להפוך.",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "הגדל רווחים בתצוגת קבצים",
         "increaseFileViewGapsDescription": "מוסיף ריווח צדדי בתצוגת רשימה ומגדיל רווחים בתצוגת רשת להקלה על הבחירה."
       },

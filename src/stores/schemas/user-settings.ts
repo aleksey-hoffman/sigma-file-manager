@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 27;
+export const USER_SETTINGS_SCHEMA_VERSION = 28;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -482,6 +482,14 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   // 默认 true，等同改动前的硬编码置顶；已有取值一律不覆盖。
   if (fromVersion === 26 && toVersion === 27) {
     await setDefaultBooleanIfMissing(storage, 'navigator.foldersFirst', true);
+  }
+
+  // FORK-MODIFICATION: 框选迁移强制开启（上游 #465）。
+  // 框选功能早已实现且含单测，但默认关闭导致用户不进设置就用不了（#465）。
+  // 这是**覆盖写**而非 setDefaultBooleanIfMissing —— 已确认要覆盖用户此前的关闭选择。
+  // 补偿措施：设置项下方有说明文案，告知可在此再次关闭。
+  if (fromVersion === 27 && toVersion === 28) {
+    await storage.set('navigator.enableBoxSelection', true);
   }
 
   if (fromVersion === 6 && toVersion === 7) {

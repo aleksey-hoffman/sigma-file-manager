@@ -45,6 +45,9 @@ async function onIncreaseFileViewGapsChange(enabled: boolean) {
             <p class="file-view-settings__description">
               {{ t('settings.general.fileView.enableBoxSelectionDescription') }}
             </p>
+            <p class="file-view-settings__description">
+              {{ t('settings.general.fileView.boxSelectionEnabledByDefault') }}
+            </p>
           </div>
           <Switch
             :model-value="enableBoxSelection"

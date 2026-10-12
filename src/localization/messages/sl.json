@@ -249,6 +249,7 @@
         "title": "Pogled datotek",
         "enableBoxSelection": "Omogoči izbiro s kvadratom",
         "enableBoxSelectionDescription": "Povlecite po praznem prostoru, da izberete več elementov s kvadratom izbire. Za dodajanje k izbiri držite Ctrl ali Shift; za obrat izbiro Alt.",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Povečaj razmike v pogledu datotek",
         "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje."
       },

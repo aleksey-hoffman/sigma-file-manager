@@ -161,7 +161,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       foldersFirst: true,
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
-      enableBoxSelection: false,
+      // FORK-MODIFICATION: 框选默认开启（上游 #465）
+      enableBoxSelection: true,
       increaseFileViewGaps: false,
     },
     globalSearch: {

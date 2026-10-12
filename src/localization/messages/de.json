@@ -229,6 +229,7 @@
         "title": "Dateiansicht",
         "enableBoxSelection": "Markierungsrahmen-Auswahl aktivieren",
         "enableBoxSelectionDescription": "Ziehen Sie auf leerem Bereich, um mehrere Elemente mit einem Auswahlrahmen auszuwählen. Halten Sie Strg oder Umschalttaste gedrückt, um zur Auswahl hinzuzufügen; Alt zum Invertieren.",
+        "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Abstände in der Dateiansicht vergrößern",
         "increaseFileViewGapsDescription": "Fügt Seitenabstände in der Listenansicht hinzu und vergrößert die Abstände in der Rasteransicht für einfachere Auswahl."
       }
