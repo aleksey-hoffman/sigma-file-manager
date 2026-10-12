@@ -1,8 +1,8 @@
 {
   "app": {
     "name": "Alpha File Manager",
-    "description": "est une application gratuite, open source, avancée et moderne de gestion de fichiers, sous licence GNU GPLv3 ou ultérieure.",
-    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
+    "description": "\"Alpha File Manager\" is developed on top of \"Sigma File Manager\", with added features like directory tree, popup path focus, batch rename and more — a better file manager application.",
+    "copyright": "Credits to Aleksey Hoffman"
   },
   "units": {
     "px": "px"

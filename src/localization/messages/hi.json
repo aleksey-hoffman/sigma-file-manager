@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "सिग्मा फ़ाइल प्रबंधक",
-    "description": "एक मुफ़्त, खुला स्रोत, उन्नत, आधुनिक फ़ाइल प्रबंधक ऐप है, जो GNU GPLv3 या उसके बाद के संस्करण के तहत लाइसेंस प्राप्त है।",
-    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
+    "name": "Alpha File Manager",
+    "description": "\"Alpha File Manager\" is developed on top of \"Sigma File Manager\", with added features like directory tree, popup path focus, batch rename and more — a better file manager application.",
+    "copyright": "Credits to Aleksey Hoffman"
   },
   "units": {
     "px": "पिक्सल"

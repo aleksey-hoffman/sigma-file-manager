@@ -1,8 +1,8 @@
 {
   "app": {
     "name": "Alpha File Manager",
-    "description": "là một ứng dụng quản lý tệp hiện đại, mã nguồn mở, miễn phí, được cấp phép theo GNU GPLv3 trở lên.",
-    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
+    "description": "\"Alpha File Manager\" is developed on top of \"Sigma File Manager\", with added features like directory tree, popup path focus, batch rename and more — a better file manager application.",
+    "copyright": "Credits to Aleksey Hoffman"
   },
   "units": {
     "px": "px"

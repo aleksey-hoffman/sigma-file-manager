@@ -1,8 +1,8 @@
 {
   "app": {
     "name": "Alpha File Manager",
-    "description": "是一个免费、开源、先进、现代的文件管理器应用程序，在 GNU GPLv3 或更高版本下授权。",
-    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
+    "description": "\"Alpha File Manager\" 在 \"Sigma File Manage\" 基础上开发，添加了目录树、弹窗路径聚焦、批量重命名等功能，是一款更好用的文件管理器应用程序。",
+    "copyright": "鸣谢 Aleksey Hoffman"
   },
   "units": {
     "px": "px"
