@@ -17,6 +17,7 @@ import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
+import FileBrowserListEntryThumbnail from './file-browser-list-entry-thumbnail.vue';
 import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserTags } from './composables/use-file-browser-tags';
@@ -125,6 +126,9 @@ function getOptionalColumnId(column: FileBrowserVisibleOptionalListColumn) {
   return column.id;
 }
 
+const showListThumbnails = computed(
+  () => userSettingsStore.userSettings.navigator.showListThumbnails,
+);
 const showModifiedColumn = computed(() => columnVisibility.value.modified);
 const showCreatedColumn = computed(() => columnVisibility.value.created);
 const shouldTrackListRelativeTime = computed(() => {
@@ -441,7 +445,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
         <div
           v-for="row in visibleRows"
           :key="row.key"
-          v-memo="[row.memoKey]"
+          v-memo="[row.memoKey, showListThumbnails]"
           role="button"
           tabindex="0"
           class="file-browser-list-view__entry"
@@ -464,7 +468,12 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
           @keydown="handleEntryKeydown($event, row.entry)"
         >
           <div class="file-browser-list-view__entry-name">
+            <FileBrowserListEntryThumbnail
+              v-if="showListThumbnails"
+              :entry="row.entry"
+            />
             <FileBrowserEntryIcon
+              v-else
               :entry="row.entry"
               :size="18"
               class="file-browser-list-view__entry-icon"
