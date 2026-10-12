@@ -24,6 +24,7 @@ function setFoldersFirst(checked: boolean) {
 <template>
   <SettingsItem
     :title="t('settings.navigator.foldersFirst')"
+    :description="t('settings.navigator.foldersFirstDescription')"
     :icon="FolderTreeIcon"
   >
     <Switch

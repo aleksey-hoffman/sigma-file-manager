@@ -213,14 +213,26 @@ describe('sortFileBrowserEntries foldersFirst', () => {
     } as DirEntry;
   }
 
+  function mkTimedEntry(name: string, isDir: boolean, modifiedTime: number): DirEntry {
+    return {
+      name,
+      is_dir: isDir,
+      modified_time: modifiedTime,
+      path: `C:/d/${name}`,
+    } as DirEntry;
+  }
+
   it('places folders before files when foldersFirst is true', () => {
+    // 夹具里的文件夹名（m_folder）刻意排在文件名之后：若夹具用 a_folder，
+    // 「文件夹置顶」与「纯按名称排序」结果相同，这条用例就成了恒真断言，
+    // 把置顶逻辑整个删掉也照样绿。
     const entries = [
-      mkEntry('b.txt', false),
-      mkEntry('a_folder', true),
       mkEntry('a.txt', false),
+      mkEntry('m_folder', true),
+      mkEntry('z.txt', false),
     ];
     const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
-    expect(sorted.map(e => e.name)).toEqual(['a_folder', 'a.txt', 'b.txt']);
+    expect(sorted.map(e => e.name)).toEqual(['m_folder', 'a.txt', 'z.txt']);
   });
 
   it('interleaves folders and files by the sort column when foldersFirst is false', () => {
@@ -237,22 +249,7 @@ describe('sortFileBrowserEntries foldersFirst', () => {
     expect(sorted.map(e => e.name)).toEqual(['a_folder', 'a.txt', 'b_folder']);
   });
 
-  // 上面两条用例的夹具排不出「文件夹置顶」与「纯按名称排序」的差别：
-  // a_folder 本来就排在 a.txt 前面，两者结果完全相同。也就是说，
-  // 把 if (foldersFirst && ...) 改成 if (false && ...) 时测试仍然全绿 ——
-  // 那是一个等价变换，探针无效。下面这两条用的夹具让文件夹的名称排在
-  // 文件之后，两个分支的结果才真正分叉。
-  it('hoists a folder whose name sorts after a file when foldersFirst is true', () => {
-    const entries = [
-      mkEntry('a.txt', false),
-      mkEntry('b_folder', true),
-      mkEntry('c.txt', false),
-    ];
-    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
-    expect(sorted.map(e => e.name)).toEqual(['b_folder', 'a.txt', 'c.txt']);
-  });
-
-  it('leaves that folder interleaved when foldersFirst is false', () => {
+  it('leaves a later-sorting folder interleaved when foldersFirst is false', () => {
     const entries = [
       mkEntry('a.txt', false),
       mkEntry('b_folder', true),
@@ -260,5 +257,42 @@ describe('sortFileBrowserEntries foldersFirst', () => {
     ];
     const sorted = sortFileBrowserEntries(entries, 'name', 'asc', false);
     expect(sorted.map(e => e.name)).toEqual(['a.txt', 'b_folder', 'c.txt']);
+  });
+
+  // 下面两条覆盖上游 #529/#481/#482 的真实动机：按「修改时间」排序时，
+  // 文件夹置顶会遮挡最近修改的文件（目录的 mtime 常常比文件新）。
+  // 夹具刻意让两个目录的 mtime 分别夹在两个文件之间。
+  it('interleaves folders by modified time when foldersFirst is false', () => {
+    const entries = [
+      mkTimedEntry('a.txt', false, 400),
+      mkTimedEntry('docs', true, 300),
+      mkTimedEntry('b.txt', false, 200),
+      mkTimedEntry('photos', true, 100),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'modified', 'desc', false);
+    expect(sorted.map(e => e.name)).toEqual(['a.txt', 'docs', 'b.txt', 'photos']);
+  });
+
+  it('matches pre-change folders-first behavior on the modified column when foldersFirst is true', () => {
+    const entries = [
+      mkTimedEntry('a.txt', false, 400),
+      mkTimedEntry('docs', true, 300),
+      mkTimedEntry('b.txt', false, 200),
+      mkTimedEntry('photos', true, 100),
+    ];
+
+    // 独立实现「改动前」的排序作为参照物：先按时间降序，再把文件夹整体提到
+    // 最前（同组内保持时间序）。Array.prototype.sort 自 ES2019 起稳定，
+    // 两次排序等价于「时间降序 + 按 is_dir 分区」。
+    // 断言等于这个参照物，就把「true 时行为与改动前逐字节一致」钉成了
+    // 可执行断言，而不是只靠论证。
+    const preChangeOrder = [...entries]
+      .sort((entryA, entryB) => entryB.modified_time - entryA.modified_time)
+      .sort((entryA, entryB) => Number(entryB.is_dir) - Number(entryA.is_dir));
+
+    const sorted = sortFileBrowserEntries(entries, 'modified', 'desc', true);
+
+    expect(sorted.map(e => e.name)).toEqual(['docs', 'photos', 'a.txt', 'b.txt']);
+    expect(sorted.map(e => e.name)).toEqual(preChangeOrder.map(e => e.name));
   });
 });

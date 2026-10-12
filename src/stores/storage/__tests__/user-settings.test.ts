@@ -147,6 +147,27 @@ describe('user settings theme sync', () => {
     expect(emitMock).toHaveBeenCalledWith(USER_SETTINGS_THEME_CHANGED_EVENT, { theme: 'light' });
   });
 
+  it('keeps folders-first sorting enabled for stored settings that predate the key', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    // createUserSettingsBootstrap 只带 __schemaVersion 与 theme，
+    // 也就是模拟「升级前就已存在、但没有 navigator.foldersFirst」的老用户。
+    // 老用户必须读到 true：一旦这里变成 false，就等于把既有用户的默认
+    // 行为从「文件夹置顶」静默翻转成「混合排序」。
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+
+    expect(userSettingsStore.userSettings.navigator.foldersFirst).toBe(true);
+  });
+
+  it('reads a persisted folders-first preference instead of the default', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+    await userSettingsStore.set('navigator.foldersFirst', false);
+
+    expect(userSettingsStore.userSettings.navigator.foldersFirst).toBe(false);
+  });
+
   it('applies theme changes from other windows without writing them back', async () => {
     const userSettingsStore = useUserSettingsStore();
 

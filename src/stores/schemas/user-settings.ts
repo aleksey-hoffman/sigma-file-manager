@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 26;
+export const USER_SETTINGS_SCHEMA_VERSION = 27;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -476,6 +476,12 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     if (!isRecord(existingFolderSettings)) {
       await storage.set('navigator.folderSettings', {});
     }
+  }
+
+  // FORK-MODIFICATION: 可关闭的文件夹优先排序（上游 #529/#481/#482）
+  // 默认 true，等同改动前的硬编码置顶；已有取值一律不覆盖。
+  if (fromVersion === 26 && toVersion === 27) {
+    await setDefaultBooleanIfMissing(storage, 'navigator.foldersFirst', true);
   }
 
   if (fromVersion === 6 && toVersion === 7) {
