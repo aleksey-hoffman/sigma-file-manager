@@ -19,8 +19,11 @@ withDefaults(defineProps<{
   isFilterOpen: boolean;
   focusFilterInput: boolean;
   isSplitView?: boolean;
+  // FORK-MODIFICATION: layout toggle forwarded from file-browser.vue
+  currentLayout: 'list' | 'grid';
 }>(), {
   isSplitView: false,
+  currentLayout: 'list',
 });
 
 const emit = defineEmits<{
@@ -39,6 +42,7 @@ const emit = defineEmits<{
   (event: 'createNewDirectory'): void;
   (event: 'createNewFile'): void;
   (event: 'filterInputFocused'): void;
+  (event: 'toggle-layout'): void;
 }>();
 
 function handleAddressBarNavigate(path: string) {
@@ -58,6 +62,7 @@ function handleAddressBarNavigate(path: string) {
         :can-go-forward="canGoForward"
         :can-go-up="canGoUp"
         :is-loading="isLoading"
+        :current-layout="currentLayout"
         @go-back="emit('goBack')"
         @go-forward="emit('goForward')"
         @go-up="emit('goUp')"
@@ -65,6 +70,7 @@ function handleAddressBarNavigate(path: string) {
         @refresh="emit('refresh')"
         @create-new-directory="emit('createNewDirectory')"
         @create-new-file="emit('createNewFile')"
+        @toggle-layout="emit('toggle-layout')"
       />
 
       <FileBrowserToolbarAddressBar

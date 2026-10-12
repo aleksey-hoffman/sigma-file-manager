@@ -29,15 +29,19 @@ import {
   FilePlusIcon,
   FolderPlusIcon,
   HomeIcon,
+  LayoutGridIcon,
+  ListIcon,
   RefreshCwIcon,
 } from '@lucide/vue';
 import { useTextDirection } from '@/composables/use-text-direction';
 
-defineProps<{
+const props = defineProps<{
   canGoBack: boolean;
   canGoForward: boolean;
   canGoUp: boolean;
   isLoading: boolean;
+  // FORK-MODIFICATION: layout toggle moved here from window toolbar (issue TBD)
+  currentLayout: 'list' | 'grid';
 }>();
 
 const emit = defineEmits<{
@@ -48,6 +52,7 @@ const emit = defineEmits<{
   (event: 'refresh'): void;
   (event: 'createNewDirectory'): void;
   (event: 'createNewFile'): void;
+  (event: 'toggle-layout'): void;
 }>();
 
 const { t } = useI18n();
@@ -55,6 +60,11 @@ const shortcutsStore = useShortcutsStore();
 const { isRtl } = useTextDirection();
 const backHistoryIcon = computed(() => isRtl.value ? ArrowRightIcon : ArrowLeftIcon);
 const forwardHistoryIcon = computed(() => isRtl.value ? ArrowLeftIcon : ArrowRightIcon);
+
+// 图标语义：显示当前所在视图（与 Windows 资源管理器一致）。
+// aria-label 显示将切到的目标视图。详见 docs/superpowers/specs/2026-10-12-navigator-polish-pack-design.md §5.2。
+const isGridLayout = computed(() => props.currentLayout === 'grid');
+const nextLayoutLabelKey = computed(() => isGridLayout.value ? 'list' : 'grid');
 </script>
 
 <template>
@@ -155,6 +165,30 @@ const forwardHistoryIcon = computed(() => isRtl.value ? ArrowLeftIcon : ArrowRig
           {{ t('fileBrowser.refresh') }}
           <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('reloadCurrentDirectory') }}</ContextMenuShortcut>
         </div>
+      </TooltipContent>
+    </Tooltip>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="file-browser-toolbar-nav-buttons__button"
+          data-test="toggle-layout-button"
+          :aria-label="t(nextLayoutLabelKey)"
+          @click="emit('toggle-layout')"
+        >
+          <LayoutGridIcon
+            v-if="isGridLayout"
+            class="file-browser-toolbar-nav-buttons__icon"
+          />
+          <ListIcon
+            v-else
+            class="file-browser-toolbar-nav-buttons__icon"
+          />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {{ t(nextLayoutLabelKey) }}
       </TooltipContent>
     </Tooltip>
   </div>

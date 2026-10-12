@@ -11,6 +11,7 @@ import { getScrollRestorationKey } from '@/stores/runtime/scroll-restoration';
 import { useFileBrowser } from './composables/use-file-browser';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 import { provideFileBrowserContext } from './composables/use-file-browser-context';
+import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
@@ -120,6 +121,22 @@ const { openCopiedPath } = useOpenCopiedPath({
   openDirectory: fb.navigateToPath,
   openFile: fb.openFile,
 });
+
+// FORK-MODIFICATION: layout toggle button moved to file-browser-toolbar-nav-buttons.
+// This composable handles per-folder / global scope resolution; see useNavigatorFolderSettings.
+const { persistForScope } = useNavigatorFolderSettings(
+  () => fb.currentPath.value,
+  () => Boolean(props.tab?.type !== 'search' && fb.currentPath.value),
+);
+
+// toolbar 上点击布局切换按钮只改全局 layout（per-folder 改走 navigator-toolbar-actions 的 ⋮ 菜单「设置作用域」 Tab）。
+const currentLayout = computed<'list' | 'grid'>(() => (
+  props.layout === 'grid' ? 'grid' : 'list'
+));
+
+async function setLayout(target: 'list' | 'grid') {
+  await persistForScope('global', { layout: target });
+}
 
 function openAddressBarEditor(mode: AddressBarEditorMode) {
   addressBarEditorRef.value?.open(mode);
@@ -237,6 +254,7 @@ defineExpose({
       :can-go-up="!!fb.parentPath.value"
       :is-loading="fb.isLoading.value || fb.isRefreshing.value"
       :is-split-view="props.isSplitView"
+      :current-layout="currentLayout"
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"
@@ -249,6 +267,7 @@ defineExpose({
       @create-new-directory="fb.openNewItemDialog('directory')"
       @create-new-file="fb.openNewItemDialog('file')"
       @filter-input-focused="fb.clearFilterInputFocusRequest"
+      @toggle-layout="setLayout(currentLayout === 'grid' ? 'list' : 'grid')"
     />
     <AddressBarEditorDialog
       ref="addressBarEditorRef"

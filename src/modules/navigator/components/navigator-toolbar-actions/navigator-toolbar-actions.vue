@@ -28,9 +28,7 @@ import {
   FlipHorizontalIcon,
   PanelLeftRightDashedIcon,
   PanelRightOpenIcon,
-  LayoutGridIcon,
   FolderTreeIcon,
-  ListIcon,
   CircleHelpIcon,
   EllipsisVerticalIcon,
   EyeOffIcon,
@@ -46,8 +44,6 @@ import type {
   NavigatorOptionsScope,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 import NavigatorLayoutSortControls from './navigator-layout-sort-controls.vue';
-
-type LayoutType = 'list' | 'grid';
 
 const props = defineProps<{
   isSplitView: boolean;
@@ -125,13 +121,6 @@ function setSplitViewMode(mode: SplitViewMode) {
 
   userSettingsStore.set('navigator.splitViewMode', mode);
 }
-
-async function setLayout(layoutName: LayoutType) {
-  await persistScopedPatch({ layout: layoutName });
-}
-
-const isGridLayout = computed(() => currentLayout.value === 'grid');
-const nextLayoutLabelKey = computed(() => (isGridLayout.value ? 'list' : 'grid'));
 
 function handleToggleHiddenFiles(checked: boolean) {
   persistScopedPatch({ showHiddenFiles: checked });
@@ -440,35 +429,7 @@ function handleSettingsScopeChange(value: string | number) {
           {{ t('settings.infoPanel.title') }}
         </TooltipContent>
       </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            :aria-label="t(nextLayoutLabelKey)"
-            @click="setLayout(isGridLayout ? 'list' : 'grid')"
-          >
-            <LayoutGridIcon
-              v-if="isGridLayout"
-              :size="16"
-              class="navigator-toolbar-actions__icon"
-            />
-            <ListIcon
-              v-else
-              :size="16"
-              class="navigator-toolbar-actions__icon"
-            />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent
-          :side="'bottom'"
-          class="navigator-toolbar-actions__tooltip"
-        >
-          <div class="navigator-toolbar-actions__tooltip-row">
-            {{ t(nextLayoutLabelKey) }}
-          </div>
-        </TooltipContent>
-      </Tooltip>
+      <!-- FORK-MODIFICATION: layout toggle moved to file-browser-toolbar-nav-buttons (refresh 旁). -->
     </div>
   </Teleport>
 </template>
