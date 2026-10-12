@@ -130,6 +130,9 @@ async function setLayout(layoutName: LayoutType) {
   await persistScopedPatch({ layout: layoutName });
 }
 
+const isGridLayout = computed(() => currentLayout.value === 'grid');
+const nextLayoutLabelKey = computed(() => (isGridLayout.value ? 'list' : 'grid'));
+
 function handleToggleHiddenFiles(checked: boolean) {
   persistScopedPatch({ showHiddenFiles: checked });
 }
@@ -265,35 +268,6 @@ function handleSettingsScopeChange(value: string | number) {
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  @select.prevent
-                  class="navigator-settings-menu__item navigator-settings-menu__item--layout"
-                >
-                  <div class="navigator-settings-menu__layout-label">
-                    {{ t('settings.navigator.navigatorViewLayout') }}
-                  </div>
-                  <div class="navigator-settings-menu__layout-row">
-                    <button
-                      type="button"
-                      class="navigator-settings-menu__layout-option"
-                      :class="{ 'navigator-settings-menu__layout-option--active': currentLayout === 'list' }"
-                      @click="setLayout('list')"
-                    >
-                      <ListIcon :size="24" />
-                      <span>{{ t('list') }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="navigator-settings-menu__layout-option"
-                      :class="{ 'navigator-settings-menu__layout-option--active': currentLayout === 'grid' }"
-                      @click="setLayout('grid')"
-                    >
-                      <LayoutGridIcon :size="24" />
-                      <span>{{ t('grid') }}</span>
-                    </button>
-                  </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -464,6 +438,35 @@ function handleSettingsScopeChange(value: string | number) {
         </TooltipTrigger>
         <TooltipContent>
           {{ t('settings.infoPanel.title') }}
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            variant="ghost"
+            size="icon"
+            :aria-label="t(nextLayoutLabelKey)"
+            @click="setLayout(isGridLayout ? 'list' : 'grid')"
+          >
+            <LayoutGridIcon
+              v-if="isGridLayout"
+              :size="16"
+              class="navigator-toolbar-actions__icon"
+            />
+            <ListIcon
+              v-else
+              :size="16"
+              class="navigator-toolbar-actions__icon"
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent
+          :side="'bottom'"
+          class="navigator-toolbar-actions__tooltip"
+        >
+          <div class="navigator-toolbar-actions__tooltip-row">
+            {{ t(nextLayoutLabelKey) }}
+          </div>
         </TooltipContent>
       </Tooltip>
     </div>

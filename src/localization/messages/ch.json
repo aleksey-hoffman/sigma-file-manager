@@ -382,7 +382,6 @@
       }
     },
     "navigator": {
-      "navigatorViewLayout": "布局",
       "navigatorOptions": "导航器选项",
       "systemIcons": "图标主题",
       "systemIconsDirectories": "文件夹",

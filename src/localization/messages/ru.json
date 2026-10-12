@@ -411,7 +411,6 @@
       }
     },
     "navigator": {
-      "navigatorViewLayout": "Макет",
       "navigatorOptions": "Параметры навигатора",
       "systemIcons": "Тема значков",
       "systemIconsDirectories": "Папки",

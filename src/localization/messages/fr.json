@@ -382,7 +382,6 @@
       }
     },
     "navigator": {
-      "navigatorViewLayout": "Disposition",
       "navigatorOptions": "Options du navigateur",
       "systemIcons": "Thème d'icônes",
       "systemIconsDirectories": "Dossiers",

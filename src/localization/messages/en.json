@@ -411,7 +411,6 @@
       }
     },
     "navigator": {
-      "navigatorViewLayout": "Layout",
       "navigatorOptions": "Navigator options",
       "systemIcons": "Icon Theme",
       "systemIconsDirectories": "Directories",

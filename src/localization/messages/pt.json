@@ -382,7 +382,6 @@
       }
     },
     "navigator": {
-      "navigatorViewLayout": "Layout",
       "navigatorOptions": "Opções do navegador",
       "systemIcons": "Tema de ícones",
       "systemIconsDirectories": "Pastas",

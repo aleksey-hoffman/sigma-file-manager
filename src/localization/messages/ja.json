@@ -382,7 +382,6 @@
       }
     },
     "navigator": {
-      "navigatorViewLayout": "レイアウト",
       "navigatorOptions": "ナビゲーターオプション",
       "systemIcons": "アイコンテーマ",
       "systemIconsDirectories": "フォルダー",
