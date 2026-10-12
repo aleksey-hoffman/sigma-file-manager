@@ -15,6 +15,7 @@ use image::codecs::gif::GifDecoder;
 use image::codecs::png::{CompressionType, FilterType as PngFilterType, PngEncoder};
 use image::{imageops::FilterType, ImageDecoder, ImageReader, Limits};
 use once_cell::sync::Lazy;
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use tauri::Manager;
 
@@ -38,10 +39,11 @@ static IMAGE_THUMBNAIL_CACHE_MAINTENANCE: Lazy<Mutex<ThumbnailCacheMaintenanceSt
     Lazy::new(|| Mutex::new(ThumbnailCacheMaintenanceState::default()));
 static TEMPORARY_THUMBNAIL_COUNTER: AtomicU64 = AtomicU64::new(0);
 
-#[derive(Default)]
-struct ThumbnailCacheStats {
-    item_count: usize,
-    size_bytes: u64,
+#[derive(Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ThumbnailCacheStats {
+    pub item_count: usize,
+    pub size_bytes: u64,
 }
 
 #[derive(Default)]
@@ -610,6 +612,32 @@ pub async fn generate_image_thumbnail(
 }
 
 #[tauri::command]
+pub async fn get_thumbnail_cache_stats(
+    app: tauri::AppHandle,
+) -> Result<ThumbnailCacheStats, String> {
+    let cache_dir = thumbnail_cache_dir(&app)?;
+    if !cache_dir.exists() {
+        return Ok(ThumbnailCacheStats::default());
+    }
+
+    tauri::async_runtime::spawn_blocking(move || thumbnail_cache_stats(&cache_dir))
+        .await
+        .map_err(|error| format!("Failed to read thumbnail cache stats: {error}"))?
+}
+
+#[tauri::command]
+pub async fn clear_thumbnail_cache(app: tauri::AppHandle) -> Result<(), String> {
+    let cache_dir = thumbnail_cache_dir(&app)?;
+    if !cache_dir.exists() {
+        return Ok(());
+    }
+
+    tauri::async_runtime::spawn_blocking(move || clear_thumbnail_cache_dir(&cache_dir))
+        .await
+        .map_err(|error| format!("Failed to clear thumbnail cache: {error}"))?
+}
+
+#[tauri::command]
 pub async fn get_cached_video_thumbnail(
     app: tauri::AppHandle,
     path: String,
@@ -657,12 +685,12 @@ pub async fn cache_video_thumbnail(
 #[cfg(test)]
 mod tests {
     use super::{
-        enforce_thumbnail_cache_limits, generate_image_thumbnail_file,
+        clear_thumbnail_cache_dir, enforce_thumbnail_cache_limits, generate_image_thumbnail_file,
         normalize_thumbnail_max_dimension, path_is_same_or_descendant, thumbnail_cache_key,
         thumbnail_cache_stats, validate_image_thumbnail_source,
         MAX_ORIGINAL_IMAGE_THUMBNAIL_SOURCE_SIZE_BYTES, MAX_THUMBNAIL_CACHE_ITEM_COUNT,
         MAX_THUMBNAIL_CACHE_SIZE_BYTES, MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES,
-        MAX_THUMBNAIL_SOURCE_PIXELS, THUMBNAIL_MAX_DIMENSION,
+        MAX_THUMBNAIL_SOURCE_PIXELS, THUMBNAIL_MAX_DIMENSION, IMAGE_THUMBNAIL_CACHE_DIR,
     };
     use std::fs;
     use std::fs::File;
@@ -920,5 +948,65 @@ mod tests {
         let stats = thumbnail_cache_stats(temp_dir.path()).unwrap();
         assert_eq!(stats.item_count, 0);
         assert_eq!(stats.size_bytes, 0);
+    }
+
+    #[test]
+    fn thumbnail_cache_stats_counts_files_and_bytes() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.png"), b"12345").unwrap();
+        std::fs::write(dir.path().join("b.png"), b"678").unwrap();
+
+        let stats = thumbnail_cache_stats(dir.path()).unwrap();
+        assert_eq!(stats.item_count, 2);
+        assert_eq!(stats.size_bytes, 8);
+    }
+
+    #[test]
+    fn clear_thumbnail_cache_dir_empties_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.png"), b"12345").unwrap();
+
+        clear_thumbnail_cache_dir(dir.path()).unwrap();
+
+        let remaining = std::fs::read_dir(dir.path()).unwrap().count();
+        assert_eq!(remaining, 0, "清理后目录应为空");
+    }
+
+    #[test]
+    fn clear_thumbnail_cache_dir_only_touches_cache_dir() {
+        let app_data_dir = tempfile::tempdir().unwrap();
+        let cache_dir = app_data_dir.path().join(IMAGE_THUMBNAIL_CACHE_DIR);
+        let user_file = app_data_dir.path().join("user-notes.txt");
+        let settings_file = app_data_dir.path().join("settings.json");
+
+        fs::create_dir_all(&cache_dir).unwrap();
+        fs::write(cache_dir.join("thumb.png"), b"12345").unwrap();
+        fs::write(&user_file, b"do not touch").unwrap();
+        fs::write(&settings_file, b"{}").unwrap();
+
+        clear_thumbnail_cache_dir(&cache_dir).unwrap();
+
+        assert!(
+            app_data_dir.path().exists(),
+            "缓存目录之外的父目录不应被清理，实际已被删除"
+        );
+        assert!(
+            user_file.exists(),
+            "缓存目录之外的同级文件不应被清理，实际已被删除"
+        );
+        assert!(
+            settings_file.exists(),
+            "缓存目录之外的同级文件不应被清理，实际已被删除"
+        );
+        assert_eq!(
+            fs::read(&user_file).unwrap(),
+            b"do not touch",
+            "缓存目录之外的文件内容不应被改动"
+        );
+        assert_eq!(
+            fs::read_dir(&cache_dir).unwrap().count(),
+            0,
+            "缓存目录应被清空"
+        );
     }
 }
