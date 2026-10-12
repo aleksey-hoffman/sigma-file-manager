@@ -224,7 +224,9 @@
         "increaseFileViewGaps": "增大文件视图间距",
         "increaseFileViewGapsDescription": "增加列表布局的左右内边距以及网格布局的间距，便于选择。",
         "foldersFirst": "列表视图中文件夹排在文件之前",
-        "foldersFirstDescription": "仅影响列表视图；网格视图始终按类型分区显示文件夹。"
+        "foldersFirstDescription": "仅影响列表视图；网格视图始终按类型分区显示文件夹。",
+        "showListThumbnails": "列表视图中显示缩略图",
+        "showListThumbnailsDescription": "图片和视频在列表中显示缩略图；文件夹与文档仍显示类型图标。网格视图始终显示缩略图，不受此开关影响。"
       },
       "startupPage": {
         "title": "启动页",

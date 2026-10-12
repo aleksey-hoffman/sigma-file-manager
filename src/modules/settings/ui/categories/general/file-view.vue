@@ -23,6 +23,9 @@ const increaseFileViewGaps = computed(
 const foldersFirst = computed(
   () => userSettingsStore.userSettings.navigator.foldersFirst,
 );
+const showListThumbnails = computed(
+  () => userSettingsStore.userSettings.navigator.showListThumbnails,
+);
 
 async function onEnableBoxSelectionChange(enabled: boolean) {
   await userSettingsStore.set('navigator.enableBoxSelection', enabled);
@@ -34,6 +37,10 @@ async function onIncreaseFileViewGapsChange(enabled: boolean) {
 
 async function onFoldersFirstChange(enabled: boolean) {
   await userSettingsStore.set('navigator.foldersFirst', enabled);
+}
+
+async function onShowListThumbnailsChange(enabled: boolean) {
+  await userSettingsStore.set('navigator.showListThumbnails', enabled);
 }
 </script>
 
@@ -89,6 +96,21 @@ async function onFoldersFirstChange(enabled: boolean) {
           <Switch
             :model-value="foldersFirst"
             @update:model-value="onFoldersFirstChange"
+          />
+        </div>
+
+        <div class="file-view-settings__row">
+          <div class="file-view-settings__copy">
+            <span class="file-view-settings__label">
+              {{ t('settings.general.fileView.showListThumbnails') }}
+            </span>
+            <p class="file-view-settings__description">
+              {{ t('settings.general.fileView.showListThumbnailsDescription') }}
+            </p>
+          </div>
+          <Switch
+            :model-value="showListThumbnails"
+            @update:model-value="onShowListThumbnailsChange"
           />
         </div>
       </div>

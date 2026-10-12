@@ -253,7 +253,9 @@
         "increaseFileViewGaps": "הגדל רווחים בתצוגת קבצים",
         "increaseFileViewGapsDescription": "מוסיף ריווח צדדי בתצוגת רשימה ומגדיל רווחים בתצוגת רשת להקלה על הבחירה.",
         "foldersFirst": "Place folders before files in list view",
-        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
+        "showListThumbnails": "Show thumbnails in list view",
+        "showListThumbnailsDescription": "Images and videos show thumbnails in the list. Folders and documents still show their type icon. Grid view always shows thumbnails and is not affected by this switch."
       },
       "startupPage": {
         "title": "דף הפעלה",

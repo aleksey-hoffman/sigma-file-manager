@@ -233,7 +233,9 @@
         "increaseFileViewGaps": "Abstände in der Dateiansicht vergrößern",
         "increaseFileViewGapsDescription": "Fügt Seitenabstände in der Listenansicht hinzu und vergrößert die Abstände in der Rasteransicht für einfachere Auswahl.",
         "foldersFirst": "Place folders before files in list view",
-        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
+        "showListThumbnails": "Show thumbnails in list view",
+        "showListThumbnailsDescription": "Images and videos show thumbnails in the list. Folders and documents still show their type icon. Grid view always shows thumbnails and is not affected by this switch."
       }
     },
     "actions": {
