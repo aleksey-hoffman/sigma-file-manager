@@ -51,7 +51,7 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "alpha-file-manager"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "arboard",
  "axum",
@@ -5424,7 +5424,7 @@ dependencies = [
 
 [[package]]
 name = "sfm-default-file-manager-common"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "serde",
 ]
@@ -5470,7 +5470,7 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "sigma-file-manager-launcher"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "serde_json",
  "sfm-default-file-manager-common",
