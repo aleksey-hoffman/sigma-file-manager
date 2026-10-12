@@ -69,6 +69,8 @@ function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSe
     gridSortColumn: 'name',
     gridSortDirection: 'asc',
     enableBoxSelection: false,
+    // FORK-MODIFICATION: 列表视图缩略图（上游 #231），与默认值一致
+    showListThumbnails: true,
     increaseFileViewGaps: false,
     ...overrides,
   };

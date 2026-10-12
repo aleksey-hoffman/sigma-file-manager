@@ -378,6 +378,8 @@ export type UserSettingsNavigator = {
   gridSortColumn: ListSortColumn | null;
   gridSortDirection: ListSortDirection;
   enableBoxSelection: boolean;
+  // FORK-MODIFICATION: 列表视图缩略图开关（上游 #231）
+  showListThumbnails: boolean;
   increaseFileViewGaps: boolean;
   // FORK-MODIFICATION: sidebar tree toggle persistence (issue #499)
   showFolderTree?: boolean;

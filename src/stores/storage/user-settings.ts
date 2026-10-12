@@ -163,6 +163,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       gridSortDirection: 'asc',
       // FORK-MODIFICATION: 框选默认开启（上游 #465）
       enableBoxSelection: true,
+      // FORK-MODIFICATION: 列表视图缩略图默认开启（上游 #231）
+      showListThumbnails: true,
       increaseFileViewGaps: false,
     },
     globalSearch: {

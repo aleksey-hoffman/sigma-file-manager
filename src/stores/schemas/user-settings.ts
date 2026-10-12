@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 28;
+export const USER_SETTINGS_SCHEMA_VERSION = 29;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -490,6 +490,14 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   // 补偿措施：设置项下方有说明文案，告知可在此再次关闭。
   if (fromVersion === 27 && toVersion === 28) {
     await storage.set('navigator.enableBoxSelection', true);
+  }
+
+  // FORK-MODIFICATION: 列表视图缩略图（上游 #231）。
+  // 用「缺失才写」而非覆盖写：缩略图是全新功能，用户此前没有这个选项，
+  // 不存在「此前的选择」被覆盖的问题。覆盖写会让用户日后主动关掉后，
+  // 每升一次版又被强行打开。
+  if (fromVersion === 28 && toVersion === 29) {
+    await setDefaultBooleanIfMissing(storage, 'navigator.showListThumbnails', true);
   }
 
   if (fromVersion === 6 && toVersion === 7) {
