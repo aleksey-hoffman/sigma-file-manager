@@ -56,7 +56,10 @@
 - Modify: `src/types/user-settings.ts:380` 附近
 - Modify: `src/stores/storage/user-settings.ts:165` 附近
 - Modify: `src/stores/schemas/user-settings.ts:19`（常量）与 `:493` 附近（迁移步）
+- Modify（**计划初稿漏列，实施时补上**）：`src/modules/navigator/utils/__tests__/resolve-navigator-folder-settings.test.ts`、`src/modules/navigator/utils/__tests__/persist-navigator-folder-settings.test.ts`、`src/modules/navigator/components/file-browser/utils/__tests__/file-browser-sort-columns.test.ts`
 - Test: `src/stores/schemas/__tests__/user-settings.test.ts`
+
+> 上面三个 fixture 逐字列全 `UserSettingsNavigator` 的必填字段，新增必填字段后 `npm run ts` 会以 `TS2322` 报错。它们与当初加 `enableBoxSelection` 时同构，各加一行 `showListThumbnails: true,` 即可。
 
 **Interfaces:**
 - Consumes: 无
@@ -177,7 +180,7 @@ Expected: exit 0。
 npx vitest run src/stores/schemas/__tests__/user-settings.test.ts
 ```
 
-Expected: **第二条** FAIL，输出必须精确显示 `expected false to be true`。若只有第一条失败或两条都通过，探针无效，重新设计。
+Expected: **第二条** FAIL，输出必须精确显示 `expected true to be false`（vitest 的格式是 `expected <实际值> to be <期望值>`；覆盖写后实际值是 `true`，断言是 `toBe(false)`）。若只有第一条失败或两条都通过，探针无效，重新设计。
 
 **探针 B（验证迁移步真的可达）**：把整个 `if (fromVersion === 28 && toVersion === 29)` 块注释掉。
 
