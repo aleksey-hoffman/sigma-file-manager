@@ -222,6 +222,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: TabAppearanceSection },
       { default: ExtensionsListSection },
       { default: DefaultFileManagerSection },
+      { default: ThumbnailCacheSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/date-time.vue'),
@@ -256,6 +257,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/tabs/tab-appearance.vue'),
       import('@/modules/settings/ui/categories/extensions/extensions-list.vue'),
       import('@/modules/settings/ui/categories/experimental/default-file-manager.vue'),
+      import('@/modules/settings/ui/categories/storage/thumbnail-cache.vue'),
     ]);
 
     allSections.value = [
@@ -493,6 +495,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.experimental',
         component: markRaw(DefaultFileManagerSection),
         category: 'experimental',
+      },
+      {
+        key: 'thumbnailCache',
+        titleKey: 'settings.storage.thumbnailCache.title',
+        tags: 'settingsTags.thumbnailCache',
+        component: markRaw(ThumbnailCacheSection),
+        category: 'storage',
       },
     ];
 

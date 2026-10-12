@@ -457,6 +457,21 @@
         "description": "Bu seçenek sistem kaydını değiştirir ve cihazınızda beklenmedik yan etkilere neden olabilir. Riski kabul ederek devam edin.",
         "unavailableInMicrosoftStore": "Microsoft Store sürümünde kullanılamaz"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -507,7 +522,8 @@
     "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu",
     "tabsWorkspaces": "sekmeler, çalışma alanları, kapat, son sekme, varsayılan sekme",
     "defaultDirectory": "ana sayfa, locations, bu bilgisayar, sürücüler, varsayılan klasör, varsayılan dizin, yeni sekme, özel yol",
-    "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, pano, gezgin, son sayfa, geri yükle, sayfa"
+    "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, pano, gezgin, son sayfa, geri yükle, sayfa",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",

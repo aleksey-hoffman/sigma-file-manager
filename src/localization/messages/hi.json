@@ -486,6 +486,21 @@
         "description": "यह विकल्प सिस्टम रजिस्ट्री को संशोधित करता है और आपके डिवाइस पर अप्रत्याशित दुष्प्रभाव हो सकता है। स्वयं के जोखिम पर आगे बढ़ें।",
         "unavailableInMicrosoftStore": "Microsoft Store संस्करण में उपलब्ध नहीं"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -536,7 +551,8 @@
     "fileView": "फ़ाइल दृश्य, बॉक्स चयन, खींचकर चयन, सूची, ग्रिड, अंतर, padding",
     "tabsWorkspaces": "टैब, वर्कस्पेस, बंद, अंतिम टैब, डिफ़ॉल्ट टैब",
     "defaultDirectory": "होम, locations, यह पीसी, कंप्यूटर, ड्राइव, डिफ़ॉल्ट फ़ोल्डर, नया टैब, कस्टम पथ",
-    "startupPage": "स्टार्टअप पेज, स्टार्टअप, लॉन्च पर खोलें, होम, डैशबोर्ड, नेविगेटर, अंतिम पृष्ठ, पुनर्स्थापित, पेज"
+    "startupPage": "स्टार्टअप पेज, स्टार्टअप, लॉन्च पर खोलें, होम, डैशबोर्ड, नेविगेटर, अंतिम पृष्ठ, पुनर्स्थापित, पेज",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "मोड बदलने के लिए [Shift] दबाए रखें",

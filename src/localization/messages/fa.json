@@ -453,6 +453,21 @@
         "description": "این گزینه رجیستری سیستم را تغییر می دهد و ممکن است عوارض جانبی غیرمنتظره ای روی دستگاه شما داشته باشد. با مسئولیت خود ادامه دهید.",
         "unavailableInMicrosoftStore": "در نسخه Microsoft Store در دسترس نیست"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -503,7 +518,8 @@
     "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding",
     "tabsWorkspaces": "برگه، فضای کاری، بستن، آخرین برگه، برگه پیش‌فرض",
     "defaultDirectory": "خانه، locations، این رایانه، درایو، پوشه پیش‌فرض، برگه جدید، مسیر سفارشی",
-    "startupPage": "صفحه راه‌اندازی، راه‌اندازی، باز کردن هنگام راه‌اندازی، خانه، داشبورد، ناوبری، آخرین صفحه، بازیابی، صفحه"
+    "startupPage": "صفحه راه‌اندازی، راه‌اندازی، باز کردن هنگام راه‌اندازی، خانه، داشبورد، ناوبری، آخرین صفحه، بازیابی، صفحه",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",

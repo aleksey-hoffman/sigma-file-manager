@@ -486,6 +486,21 @@
         "description": "This option modifies the system registry and can have unexpected side effects on your device. Continue at your own risk.",
         "unavailableInMicrosoftStore": "Not available in the Microsoft Store version"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -536,7 +551,8 @@
     "autostart": "autostart, startup, boot, login, launch, system, wake",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "file view, box selection, drag selection, list, grid, gaps, padding, spacing",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "Hold [Shift] to change mode",

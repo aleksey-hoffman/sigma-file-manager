@@ -486,6 +486,21 @@
         "description": "Ta možnost spremeni sistemski register in lahko povzroči nepričakovane stranske učinke na vaši napravi. Nadaljujte na lastno odgovornost.",
         "unavailableInMicrosoftStore": "Ni na voljo v različici iz trgovine Microsoft Store"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -536,7 +551,8 @@
     "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik",
     "tabsWorkspaces": "zavihki, delovni prostori, zapri, zadnji zavihek, privzet zavihek",
     "defaultDirectory": "domov, locations, ta računalnik, pogoni, privzeta mapa, nov zavihek, pot po meri",
-    "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, nadzorna plošča, navigator, zadnja stran, obnovi, stran"
+    "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, nadzorna plošča, navigator, zadnja stran, obnovi, stran",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",

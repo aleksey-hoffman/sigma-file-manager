@@ -457,6 +457,21 @@
         "description": "Questa opzione modifica il registro di sistema e può avere effetti collaterali imprevisti sul dispositivo. Continua a tuo rischio.",
         "unavailableInMicrosoftStore": "Non disponibile nella versione Microsoft Store"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -507,7 +522,8 @@
     "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding",
     "tabsWorkspaces": "schede, spazi di lavoro, chiudi, ultima scheda, scheda predefinita",
     "defaultDirectory": "home, locations, questo PC, computer, unità, cartella predefinita, nuova scheda, percorso personalizzato",
-    "startupPage": "pagina di avvio, avvio, apri all'avvio, home, dashboard, navigator, ultima pagina, ripristina, pagina"
+    "startupPage": "pagina di avvio, avvio, apri all'avvio, home, dashboard, navigator, ultima pagina, ripristina, pagina",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",

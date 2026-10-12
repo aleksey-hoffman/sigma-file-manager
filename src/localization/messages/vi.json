@@ -457,6 +457,21 @@
         "description": "Tùy chọn này sửa đổi sổ đăng ký hệ thống và có thể gây ra tác dụng phụ ngoài ý muốn trên thiết bị của bạn. Hãy tiếp tục với rủi ro của riêng bạn.",
         "unavailableInMicrosoftStore": "Không khả dụng trong phiên bản Microsoft Store"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -507,7 +522,8 @@
     "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm",
     "tabsWorkspaces": "tab, không gian làm việc, đóng, tab cuối, tab mặc định",
     "defaultDirectory": "home, locations, máy tính, ổ đĩa, thư mục mặc định, tab mới, đường dẫn tùy chỉnh",
-    "startupPage": "trang khởi động, khởi động, mở khi khởi động, trang chủ, bảng điều khiển, navigator, trang gần nhất, khôi phục, trang"
+    "startupPage": "trang khởi động, khởi động, mở khi khởi động, trang chủ, bảng điều khiển, navigator, trang gần nhất, khôi phục, trang",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "Giữ [Shift] để thay đổi chế độ",

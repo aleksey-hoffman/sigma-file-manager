@@ -130,6 +130,42 @@ fn thumbnail_cache_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
         .join(IMAGE_THUMBNAIL_CACHE_DIR))
 }
 
+/// 解析缩略图缓存目录并统计。
+///
+/// 单独抽出来是为了让「只统计 cache_dir、不统计 app_data_dir 下的其他文件」
+/// 这条能被 `--lib` 单元测试覆盖：command 需要 `tauri::AppHandle`，而本项目
+/// 的 tauri feature 不含 `test`，单元测试构造不出 AppHandle。command 只负责
+/// AppHandle → app_data_dir 的转换。
+fn thumbnail_cache_stats_in_app_data_dir(
+    app_data_dir: &Path,
+) -> Result<ThumbnailCacheStats, String> {
+    let cache_dir = app_data_dir.join(IMAGE_THUMBNAIL_CACHE_DIR);
+
+    if !cache_dir.exists() {
+        return Ok(ThumbnailCacheStats::default());
+    }
+
+    thumbnail_cache_stats(&cache_dir)
+}
+
+/// 解析缩略图缓存目录并清理。
+///
+/// 抽出来的理由同 `thumbnail_cache_stats_in_app_data_dir`。这条尤其关键：
+/// 一旦把 app_data_dir（父目录）而不是 cache_dir 交给清理函数，
+/// 用户的设置文件、扩展数据等都会被一起删掉。
+fn clear_thumbnail_cache_in_app_data_dir(app_data_dir: &Path) -> Result<(), String> {
+    let cache_dir = app_data_dir.join(IMAGE_THUMBNAIL_CACHE_DIR);
+    if !cache_dir.exists() {
+        return Ok(());
+    }
+
+    let _cache_file_lock = IMAGE_THUMBNAIL_CACHE_FILE_LOCK
+        .lock()
+        .map_err(|error| format!("Failed to lock thumbnail cache files: {error}"))?;
+
+    clear_thumbnail_cache_dir(&cache_dir)
+}
+
 fn path_is_same_or_descendant(path: &Path, parent: &Path) -> bool {
     path == parent || path.starts_with(parent)
 }
@@ -615,29 +651,27 @@ pub async fn generate_image_thumbnail(
 pub async fn get_thumbnail_cache_stats(
     app: tauri::AppHandle,
 ) -> Result<ThumbnailCacheStats, String> {
-    let cache_dir = thumbnail_cache_dir(&app)?;
-    if !cache_dir.exists() {
-        return Ok(ThumbnailCacheStats::default());
-    }
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
 
-    tauri::async_runtime::spawn_blocking(move || thumbnail_cache_stats(&cache_dir))
-        .await
-        .map_err(|error| format!("Failed to read thumbnail cache stats: {error}"))?
+    tauri::async_runtime::spawn_blocking(move || {
+        thumbnail_cache_stats_in_app_data_dir(&app_data_dir)
+    })
+    .await
+    .map_err(|error| format!("Failed to read thumbnail cache stats: {error}"))?
 }
 
 #[tauri::command]
 pub async fn clear_thumbnail_cache(app: tauri::AppHandle) -> Result<(), String> {
-    let cache_dir = thumbnail_cache_dir(&app)?;
-    if !cache_dir.exists() {
-        return Ok(());
-    }
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
 
     tauri::async_runtime::spawn_blocking(move || {
-        let _cache_file_lock = IMAGE_THUMBNAIL_CACHE_FILE_LOCK
-            .lock()
-            .map_err(|error| format!("Failed to lock thumbnail cache files: {error}"))?;
-
-        clear_thumbnail_cache_dir(&cache_dir)
+        clear_thumbnail_cache_in_app_data_dir(&app_data_dir)
     })
     .await
     .map_err(|error| format!("Failed to clear thumbnail cache: {error}"))?
@@ -691,12 +725,14 @@ pub async fn cache_video_thumbnail(
 #[cfg(test)]
 mod tests {
     use super::{
-        clear_thumbnail_cache_dir, enforce_thumbnail_cache_limits, generate_image_thumbnail_file,
+        clear_thumbnail_cache_dir, clear_thumbnail_cache_in_app_data_dir,
+        enforce_thumbnail_cache_limits, generate_image_thumbnail_file,
         normalize_thumbnail_max_dimension, path_is_same_or_descendant, thumbnail_cache_key,
-        thumbnail_cache_stats, validate_image_thumbnail_source,
+        thumbnail_cache_stats, thumbnail_cache_stats_in_app_data_dir,
+        validate_image_thumbnail_source, IMAGE_THUMBNAIL_CACHE_DIR,
         MAX_ORIGINAL_IMAGE_THUMBNAIL_SOURCE_SIZE_BYTES, MAX_THUMBNAIL_CACHE_ITEM_COUNT,
         MAX_THUMBNAIL_CACHE_SIZE_BYTES, MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES,
-        MAX_THUMBNAIL_SOURCE_PIXELS, THUMBNAIL_MAX_DIMENSION, IMAGE_THUMBNAIL_CACHE_DIR,
+        MAX_THUMBNAIL_SOURCE_PIXELS, THUMBNAIL_MAX_DIMENSION,
     };
     use std::fs;
     use std::fs::File;
@@ -1013,6 +1049,90 @@ mod tests {
             fs::read_dir(&cache_dir).unwrap().count(),
             0,
             "缓存目录应被清空"
+        );
+    }
+
+    /// 设置页的清理按钮最终会调用 `clear_thumbnail_cache` command，
+    /// 它转发到 `clear_thumbnail_cache_in_app_data_dir`。
+    /// 这条测试盯的就是那次转发：**必须**只把 cache_dir 交给清理函数。
+    /// 如果哪天改成把 app_data_dir（父目录）传下去，这个测试会红。
+    #[test]
+    fn clear_thumbnail_cache_in_app_data_dir_only_clears_cache_subdirectory() {
+        let app_data_dir = tempfile::tempdir().unwrap();
+        let cache_dir = app_data_dir.path().join(IMAGE_THUMBNAIL_CACHE_DIR);
+        let settings_file = app_data_dir.path().join("settings.json");
+        let extension_dir = app_data_dir.path().join("extensions");
+
+        fs::create_dir_all(&cache_dir).unwrap();
+        fs::write(cache_dir.join("thumb.png"), b"12345").unwrap();
+        fs::write(cache_dir.join("video-thumb.jpg"), b"12345").unwrap();
+        fs::write(&settings_file, b"{}").unwrap();
+        fs::create_dir_all(&extension_dir).unwrap();
+        fs::write(extension_dir.join("ext.marker"), b"keep me").unwrap();
+
+        clear_thumbnail_cache_in_app_data_dir(app_data_dir.path()).unwrap();
+
+        // 先断言「不该被删的东西」，再断言「该被删的东西」。
+        // 顺序反过来的话，缺陷注入时第一个失败会是一条 unwrap 的 NotFound，
+        // 看不出到底损坏成什么样。
+        assert!(
+            settings_file.exists(),
+            "command 转发时若把父目录交给清理函数，settings.json 会被删掉"
+        );
+        assert!(
+            extension_dir.exists(),
+            "command 转发时若把父目录交给清理函数，extensions 目录会被删掉"
+        );
+        assert_eq!(
+            fs::read(extension_dir.join("ext.marker")).unwrap(),
+            b"keep me",
+            "缓存目录之外的兄弟目录内容不应被改动"
+        );
+        assert_eq!(
+            fs::read_dir(&cache_dir).unwrap().count(),
+            0,
+            "缓存目录应被清空"
+        );
+    }
+
+    /// 设置页显示的占用大小来自 `get_thumbnail_cache_stats` command。
+    /// 同样的转发风险：统计范围必须限定在 cache_dir 内，
+    /// 否则设置页会把用户设置文件的大小算进「缩略图缓存占用」。
+    #[test]
+    fn thumbnail_cache_stats_in_app_data_dir_counts_only_cache_subdirectory() {
+        let app_data_dir = tempfile::tempdir().unwrap();
+        let cache_dir = app_data_dir.path().join(IMAGE_THUMBNAIL_CACHE_DIR);
+
+        fs::create_dir_all(&cache_dir).unwrap();
+        fs::write(cache_dir.join("thumb.png"), b"12345").unwrap();
+        fs::write(cache_dir.join("video-thumb.jpg"), b"12345").unwrap();
+        fs::write(app_data_dir.path().join("settings.json"), b"x").unwrap();
+
+        let stats = thumbnail_cache_stats_in_app_data_dir(app_data_dir.path()).unwrap();
+
+        assert_eq!(stats.item_count, 2, "统计只应包含缓存目录内的两个缩略图");
+        assert_eq!(
+            stats.size_bytes, 10,
+            "统计只应包含缓存目录内的字节数，不应包含 settings.json"
+        );
+    }
+
+    /// 缓存目录尚未创建时（用户从没浏览过图片）command 不应报错。
+    #[test]
+    fn thumbnail_cache_in_app_data_dir_handles_missing_cache_dir() {
+        let app_data_dir = tempfile::tempdir().unwrap();
+        let settings_file = app_data_dir.path().join("settings.json");
+        fs::write(&settings_file, b"{}").unwrap();
+
+        let stats = thumbnail_cache_stats_in_app_data_dir(app_data_dir.path()).unwrap();
+        assert_eq!(stats.item_count, 0);
+        assert_eq!(stats.size_bytes, 0);
+
+        // 缓存目录不存在时清理应当是安全的空操作。
+        clear_thumbnail_cache_in_app_data_dir(app_data_dir.path()).unwrap();
+        assert!(
+            settings_file.exists(),
+            "缓存目录不存在时清理不应删除任何东西"
         );
     }
 }

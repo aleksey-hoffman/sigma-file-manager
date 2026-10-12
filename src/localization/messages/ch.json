@@ -457,6 +457,21 @@
         "description": "此选项会修改系统注册表，并且可能会对您的设备产生意外的副作用。请自行承担风险后继续。",
         "unavailableInMicrosoftStore": "Microsoft Store 版本不可用"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "缩略图缓存",
+        "description": "图片与视频缩略图共用同一个缓存目录。清理后缩略图会在下次浏览时自动重新生成。",
+        "sizeLabel": "占用大小",
+        "sizeUnknown": "未知",
+        "countLabel": "条目数",
+        "countUnknown": "未知",
+        "clear": "清理缓存",
+        "clearSuccess": "缩略图缓存已清理",
+        "clearFailed": "清理缩略图缓存失败",
+        "confirmTitle": "清理缩略图缓存？",
+        "confirmDescription": "此操作会同时清除图片缩略图与视频缩略图缓存，且无法撤销。被缓存的缩略图会在下次浏览对应文件时重新生成。"
+      }
     }
   },
   "projectGithubButtons": {
@@ -507,7 +522,8 @@
     "fileView": "文件视图, 框选, 拖动选择, 列表, 网格, 间距, 内边距",
     "tabsWorkspaces": "标签, 工作区, 关闭, 最后一个标签, 默认标签",
     "defaultDirectory": "主页, locations, 此电脑, 计算机, 驱动器, 默认文件夹, 默认目录, 新标签, 自定义路径",
-    "startupPage": "启动页, 启动, 启动时打开, 主页, 仪表板, 导航器, 上次打开的页面, 恢复, 页面"
+    "startupPage": "启动页, 启动, 启动时打开, 主页, 仪表板, 导航器, 上次打开的页面, 恢复, 页面",
+    "thumbnailCache": "缩略图, 缓存, 清理, 图片, 视频, 预览, 存储, 磁盘, 占用"
   },
   "drag": {
     "holdShiftToChangeMode": "按住 [Shift] 改变模式",

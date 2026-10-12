@@ -457,6 +457,21 @@
         "description": "このオプションはシステム レジストリを変更するため、デバイスで予期しない副作用が発生する可能性があります。自己責任で続行してください。",
         "unavailableInMicrosoftStore": "Microsoft Store 版では利用できません"
       }
+    },
+    "storage": {
+      "thumbnailCache": {
+        "title": "Thumbnail cache",
+        "description": "Image and video thumbnails share the same cache directory. Cleared thumbnails are regenerated automatically the next time you browse.",
+        "sizeLabel": "Disk usage",
+        "sizeUnknown": "Unknown",
+        "countLabel": "Items",
+        "countUnknown": "Unknown",
+        "clear": "Clear cache",
+        "clearSuccess": "Thumbnail cache cleared",
+        "clearFailed": "Failed to clear the thumbnail cache",
+        "confirmTitle": "Clear the thumbnail cache?",
+        "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
+      }
     }
   },
   "projectGithubButtons": {
@@ -507,7 +522,8 @@
     "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白",
     "tabsWorkspaces": "タブ, ワークスペース, 閉じる, 最後のタブ, デフォルトタブ",
     "defaultDirectory": "ホーム, locations, このPC, コンピュータ, ドライブ, デフォルトフォルダー, デフォルトディレクトリ, 新しいタブ, カスタムパス",
-    "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, ダッシュボード, ナビゲーター, 最後のページ, 復元, ページ"
+    "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, ダッシュボード, ナビゲーター, 最後のページ, 復元, ページ",
+    "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",
