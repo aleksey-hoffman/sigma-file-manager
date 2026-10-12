@@ -122,12 +122,24 @@ fn video_thumbnail_cache_path(
     ))
 }
 
+/// 缩略图缓存目录名的**唯一**拼接点。
+///
+/// 生成、统计、清理三条路径都必须经过这里。这三者如果各自 `join`，
+/// 将来有人只改其中一处（例如改成分层布局 `image-thumbnails/v2`），
+/// 生成会写到新目录、统计与清理还盯着旧目录，而单测全部照常通过——
+/// 测试守的是 helper 自己算出来的路径，不是彼此是否一致。
+/// 收敛成单一函数后，"改目录名"只剩一个可改的地方。
+fn thumbnail_cache_dir_in(app_data_dir: &Path) -> PathBuf {
+    app_data_dir.join(IMAGE_THUMBNAIL_CACHE_DIR)
+}
+
 fn thumbnail_cache_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    Ok(app
-        .path()
-        .app_data_dir()
-        .map_err(|error| format!("Failed to resolve app data directory: {error}"))?
-        .join(IMAGE_THUMBNAIL_CACHE_DIR))
+    Ok(thumbnail_cache_dir_in(
+        &app
+            .path()
+            .app_data_dir()
+            .map_err(|error| format!("Failed to resolve app data directory: {error}"))?,
+    ))
 }
 
 /// 解析缩略图缓存目录并统计。
@@ -136,10 +148,15 @@ fn thumbnail_cache_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
 /// 这条能被 `--lib` 单元测试覆盖：command 需要 `tauri::AppHandle`，而本项目
 /// 的 tauri feature 不含 `test`，单元测试构造不出 AppHandle。command 只负责
 /// AppHandle → app_data_dir 的转换。
+///
+/// 入参刻意是 app_data_dir（父目录）而不是 cache_dir：只有拿到父目录，
+/// 下面的测试才能证明「即使 app_data_dir 下摆着 settings.json 和扩展目录，
+/// 统计也不会把它们算进来」。若改成直接收 cache_dir，越界就无从构造，
+/// 测试会变成恒真。
 fn thumbnail_cache_stats_in_app_data_dir(
     app_data_dir: &Path,
 ) -> Result<ThumbnailCacheStats, String> {
-    let cache_dir = app_data_dir.join(IMAGE_THUMBNAIL_CACHE_DIR);
+    let cache_dir = thumbnail_cache_dir_in(app_data_dir);
 
     if !cache_dir.exists() {
         return Ok(ThumbnailCacheStats::default());
@@ -153,8 +170,15 @@ fn thumbnail_cache_stats_in_app_data_dir(
 /// 抽出来的理由同 `thumbnail_cache_stats_in_app_data_dir`。这条尤其关键：
 /// 一旦把 app_data_dir（父目录）而不是 cache_dir 交给清理函数，
 /// 用户的设置文件、扩展数据等都会被一起删掉。
+///
+/// 这里刻意不重置 `IMAGE_THUMBNAIL_CACHE_MAINTENANCE` 的
+/// `checked_once` / `generated_since_check`：手动清理后，缓存必然小于限额，
+/// 下一次自动限额检查无论如何都会判定"无需处理"。不重置的唯一后果是自动
+/// 检查最多推迟 `THUMBNAIL_CACHE_LIMIT_CHECK_INTERVAL` 次生成，不影响正确性；
+/// 换来的是清理路径不必去碰维护状态的内部字段。
 fn clear_thumbnail_cache_in_app_data_dir(app_data_dir: &Path) -> Result<(), String> {
-    let cache_dir = app_data_dir.join(IMAGE_THUMBNAIL_CACHE_DIR);
+    let cache_dir = thumbnail_cache_dir_in(app_data_dir);
+
     if !cache_dir.exists() {
         return Ok(());
     }

@@ -380,7 +380,7 @@ export const useSettingsStore = defineStore('settings', () => {
       {
         key: 'foldersFirst',
         titleKey: 'settings.navigator.foldersFirst',
-        tags: 'settingsTags.navigator',
+        tags: 'settingsTags.folderOrdering',
         component: markRaw(FolderOrderingSection),
         category: 'appearance',
       },
