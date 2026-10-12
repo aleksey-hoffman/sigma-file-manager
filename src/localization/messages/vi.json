@@ -222,7 +222,9 @@
         "enableBoxSelectionDescription": "Kéo trên vùng trống để chọn nhiều mục bằng khung chọn. Giữ Ctrl hoặc Shift để thêm vào vùng chọn; giữ Alt để đảo ngược.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Tăng khoảng cách trong chế độ xem tệp",
-        "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn."
+        "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "Trang khởi động",
@@ -389,8 +391,6 @@
       "sorting": "Sắp xếp",
       "sortAscending": "Tăng dần",
       "sortDescending": "Giảm dần",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "Phạm vi",
       "settingsScopeGlobal": "Toàn cục",
       "settingsScopeThisFolder": "Thư mục này",
@@ -507,7 +507,6 @@
     "clipboard": "bảng nhớ tạm, dán, sao chép, cắt, thanh công cụ, hình ảnh, ảnh chụp màn hình, đường dẫn, tệp",
     "homePageMediaBanner": "trang chủ, trang, phương tiện, biểu ngữ, nền, hình ảnh, video",
     "navigator": "thiết kế, giao diện người dùng, bộ điều hướng, bộ chia, tiêu đề, sắp xếp, chế độ xem, bố cục, danh sách, lưới, mục, tệp, thư mục, di chuột, tỷ lệ, đánh dấu, OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "phím tắt",
     "tabAppearance": "tab, tab đang hoạt động, in đậm, văn bản",
     "globalSearch": "toàn cầu, tìm kiếm, tìm, xem, lọc, quét",
@@ -520,7 +519,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm",
+    "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "tab, không gian làm việc, đóng, tab cuối, tab mặc định",
     "defaultDirectory": "home, locations, máy tính, ổ đĩa, thư mục mặc định, tab mới, đường dẫn tùy chỉnh",
     "startupPage": "trang khởi động, khởi động, mở khi khởi động, trang chủ, bảng điều khiển, navigator, trang gần nhất, khôi phục, trang",

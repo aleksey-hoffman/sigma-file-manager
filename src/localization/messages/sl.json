@@ -251,7 +251,9 @@
         "enableBoxSelectionDescription": "Povlecite po praznem prostoru, da izberete več elementov s kvadratom izbire. Za dodajanje k izbiri držite Ctrl ali Shift; za obrat izbiro Alt.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Povečaj razmike v pogledu datotek",
-        "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje."
+        "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "Stran ob zagonu",
@@ -418,8 +420,6 @@
       "sorting": "Razvrščanje",
       "sortAscending": "Naraščajoče",
       "sortDescending": "Padajoče",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "Obseg",
       "settingsScopeGlobal": "Globalno",
       "settingsScopeThisFolder": "Ta mapa",
@@ -536,7 +536,6 @@
     "clipboard": "odložišče, prilepi, kopiraj, izreži, orodna vrstica, slika, posnetek zaslona, pot, datoteke",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "shortcuts",
     "tabAppearance": "zavihki, aktiven zavihek, krepko, besedilo",
     "globalSearch": "global, search, find, look, filter, scan",
@@ -549,7 +548,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik",
+    "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "zavihki, delovni prostori, zapri, zadnji zavihek, privzet zavihek",
     "defaultDirectory": "domov, locations, ta računalnik, pogoni, privzeta mapa, nov zavihek, pot po meri",
     "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, nadzorna plošča, navigator, zadnja stran, obnovi, stran",

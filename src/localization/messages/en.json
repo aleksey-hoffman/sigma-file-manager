@@ -260,7 +260,9 @@
         "enableBoxSelectionDescription": "Drag on empty space to select multiple items with a selection box. Hold Ctrl or Shift to add to the selection; hold Alt to invert.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Increase file view gaps",
-        "increaseFileViewGapsDescription": "Adds side padding in list layout and increases gaps in grid layout for easier targeting."
+        "increaseFileViewGapsDescription": "Adds side padding in list layout and increases gaps in grid layout for easier targeting.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       }
     },
     "actions": {
@@ -418,8 +420,6 @@
       "sorting": "Sorting",
       "sortAscending": "Ascending",
       "sortDescending": "Descending",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "Scope",
       "settingsScopeGlobal": "Global",
       "settingsScopeThisFolder": "This folder",
@@ -537,7 +537,6 @@
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, full-size, quick view, video, mute, autoplay",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "shortcuts",
     "tabAppearance": "tabs, active tab, bold, text",
     "tabsWorkspaces": "tabs, workspaces, close, last tab, default tab",
@@ -551,7 +550,7 @@
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, startup, boot, login, launch, system, wake",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "file view, box selection, drag selection, list, grid, gaps, padding, spacing",
+    "fileView": "file view, box selection, drag selection, list, grid, gaps, padding, spacing, folder, folders, first, top, sort, sorting, order, ordering, files, file, directory, directories, group, grouping, view, precedence",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },

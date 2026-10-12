@@ -218,7 +218,9 @@
         "enableBoxSelectionDescription": "روی فضای خالی بکشید تا چند مورد را با کادر انتخاب کنید. Ctrl یا Shift را نگه دارید تا به انتخاب اضافه شود؛ Alt برای معکوس کردن.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "افزایش فاصله‌ها در نمای فایل",
-        "increaseFileViewGapsDescription": "padding کناری در نمای فهرست اضافه می‌کند و فاصله‌ها در نمای شبکه‌ای را برای هدف‌گیری آسان‌تر افزایش می‌دهد."
+        "increaseFileViewGapsDescription": "padding کناری در نمای فهرست اضافه می‌کند و فاصله‌ها در نمای شبکه‌ای را برای هدف‌گیری آسان‌تر افزایش می‌دهد.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "صفحه راه‌اندازی",
@@ -385,8 +387,6 @@
       "sorting": "مرتب‌سازی",
       "sortAscending": "صعودی",
       "sortDescending": "نزولی",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "محدوده",
       "settingsScopeGlobal": "سراسری",
       "settingsScopeThisFolder": "این پوشه",
@@ -503,7 +503,6 @@
     "clipboard": "کلیپ‌بورد, چسباندن, کپی, برش, نوار ابزار, تصویر, اسکرین‌شات, مسیر, فایل",
     "homePageMediaBanner": "خانه، صفحه، رسانه، بنر، پس زمینه، تصویر، ویدئو",
     "navigator": "طراحی، رابط کاربری، ناوبر، تقسیم‌کننده‌ها، عنوان‌ها، مرتب‌سازی، نمایش، طرح‌بندی، فهرست، شبکه، آیتم، فایل، فهرست، شناور، مقیاس، برجسته‌سازی، OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "میانبرها",
     "tabAppearance": "برگه‌ها، برگه فعال، پررنگ، متن",
     "globalSearch": "جهانی، جستجو، یافتن، جستجو، فیلتر، اسکن",
@@ -516,7 +515,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding",
+    "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "برگه، فضای کاری، بستن، آخرین برگه، برگه پیش‌فرض",
     "defaultDirectory": "خانه، locations، این رایانه، درایو، پوشه پیش‌فرض، برگه جدید، مسیر سفارشی",
     "startupPage": "صفحه راه‌اندازی، راه‌اندازی، باز کردن هنگام راه‌اندازی، خانه، داشبورد، ناوبری، آخرین صفحه، بازیابی، صفحه",

@@ -251,7 +251,9 @@
         "enableBoxSelectionDescription": "خالی جگہ پر گھسیٹ کر انتخاب باکس سے متعدد آئٹمز منتخب کریں۔ انتخاب میں شامل کرنے کے لیے Ctrl یا Shift دبائے رکھیں؛ الٹنے کے لیے Alt۔",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "فائل منظر کے فاصلے بڑھائیں",
-        "increaseFileViewGapsDescription": "فہرست لے آؤٹ میں سائیڈ padding شامل کرتا ہے اور گرڈ لے آؤٹ میں فاصلے بڑھا کر نشانہ لگانا آسان بناتا ہے۔"
+        "increaseFileViewGapsDescription": "فہرست لے آؤٹ میں سائیڈ padding شامل کرتا ہے اور گرڈ لے آؤٹ میں فاصلے بڑھا کر نشانہ لگانا آسان بناتا ہے۔",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "اسٹارٹ اپ صفحہ",
@@ -418,8 +420,6 @@
       "sorting": "ترتیب",
       "sortAscending": "چڑھتی",
       "sortDescending": "اترتی",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "دائرہ",
       "settingsScopeGlobal": "عالمی",
       "settingsScopeThisFolder": "یہ فولڈر",
@@ -536,7 +536,6 @@
     "clipboard": "کلپ بورڈ, پیسٹ, کاپی, کٹ, ٹول بار, تصویر, اسکرین شاٹ, راستہ, فائل",
     "homePageMediaBanner": "ہوم, میڈیا, بینر, پس منظر",
     "navigator": "نیویگیٹر, لے آؤٹ, فہرست, گرڈ, ترتیب",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "شارٹ کٹس",
     "tabAppearance": "ٹیب, فعال ٹیب, بولڈ, متن",
     "globalSearch": "عالمی تلاش, تلاش, اسکین",
@@ -549,7 +548,7 @@
     "extensions": "ایکسٹینشن, plugins, addons",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding",
+    "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "ٹیب, ورک اسپیس, بند, آخری ٹیب, ڈیفالٹ ٹیب",
     "defaultDirectory": "ہوم, locations, یہ پی سی, کمپیوٹر, ڈرائیو, ڈیفالٹ فولڈر, نیا ٹیب, حسب ضرورت راستہ",
     "startupPage": "اسٹارٹ اپ صفحہ, اسٹارٹ اپ, لانچ پر کھولیں, ہوم, ڈیش بورڈ, نیویگیٹر, آخری صفحہ, بحال, صفحہ",

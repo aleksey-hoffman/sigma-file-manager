@@ -222,7 +222,9 @@
         "enableBoxSelectionDescription": "Trascina su uno spazio vuoto per selezionare più elementi con un riquadro di selezione. Tieni premuto Ctrl o Maiusc per aggiungere alla selezione; Alt per invertire.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Aumenta gli spazi nella vista file",
-        "increaseFileViewGapsDescription": "Aggiunge padding laterale nella vista elenco e aumenta le distanze nella vista griglia per una selezione più facile."
+        "increaseFileViewGapsDescription": "Aggiunge padding laterale nella vista elenco e aumenta le distanze nella vista griglia per una selezione più facile.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "Pagina di avvio",
@@ -389,8 +391,6 @@
       "sorting": "Ordinamento",
       "sortAscending": "Crescente",
       "sortDescending": "Decrescente",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "Ambito",
       "settingsScopeGlobal": "Globale",
       "settingsScopeThisFolder": "Questa cartella",
@@ -507,7 +507,6 @@
     "clipboard": "appunti, incolla, copia, taglia, barra strumenti, immagine, screenshot, percorso, file",
     "homePageMediaBanner": "home, pagina, media, banner, sfondo, immagine, video",
     "navigator": "design, ui, navigatore, divisori, titoli, ordinamento, visualizzazione, layout, elenco, griglia, elemento, file, directory, hover, scala, evidenziazione, OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "scorciatoie",
     "tabAppearance": "schede, scheda attiva, grassetto, testo",
     "globalSearch": "globale, ricerca, trova, visualizza, filtra, scansiona",
@@ -520,7 +519,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding",
+    "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "schede, spazi di lavoro, chiudi, ultima scheda, scheda predefinita",
     "defaultDirectory": "home, locations, questo PC, computer, unità, cartella predefinita, nuova scheda, percorso personalizzato",
     "startupPage": "pagina di avvio, avvio, apri all'avvio, home, dashboard, navigator, ultima pagina, ripristina, pagina",

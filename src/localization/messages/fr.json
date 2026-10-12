@@ -231,7 +231,9 @@
         "enableBoxSelectionDescription": "Faites glisser sur un espace vide pour sélectionner plusieurs éléments avec un cadre de sélection. Maintenez Ctrl ou Maj pour ajouter à la sélection ; Alt pour inverser.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Augmenter les espacements de la vue fichiers",
-        "increaseFileViewGapsDescription": "Ajoute un remplissage latéral en liste et augmente les espacements en grille pour faciliter le ciblage."
+        "increaseFileViewGapsDescription": "Ajoute un remplissage latéral en liste et augmente les espacements en grille pour faciliter le ciblage.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       }
     },
     "actions": {
@@ -389,8 +391,6 @@
       "sorting": "Tri",
       "sortAscending": "Ascendant",
       "sortDescending": "Descendant",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "Portée",
       "settingsScopeGlobal": "Global",
       "settingsScopeThisFolder": "Ce dossier",
@@ -507,7 +507,6 @@
     "clipboard": "presse-papiers, coller, copier, couper, barre d'outils, image, capture, chemin, fichiers",
     "homePageMediaBanner": "accueil, page, média, bannière, arrière-plan, image, vidéo",
     "navigator": "conception, interface utilisateur, navigateur, séparateurs, titres, tri, vue, mise en page, liste, grille, élément, fichier, répertoire, survol, échelle, surbrillance, OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "raccourcis",
     "tabAppearance": "onglets, onglet actif, gras, texte",
     "tabsWorkspaces": "onglets, espaces de travail, fermer, dernier onglet, onglet par défaut",
@@ -523,7 +522,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "vue fichiers, cadre, sélection, glisser, liste, grille, espacements, remplissage",
+    "fileView": "vue fichiers, cadre, sélection, glisser, liste, grille, espacements, remplissage, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {

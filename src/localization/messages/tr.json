@@ -222,7 +222,9 @@
         "enableBoxSelectionDescription": "Boş alanda sürükleyerek bir seçim kutusuyla birden fazla öğe seçin. Seçime eklemek için Ctrl veya Shift'i basılı tutun; tersine çevirmek için Alt.",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "Dosya görünümü boşluklarını artır",
-        "increaseFileViewGapsDescription": "Liste düzeninde yan dolgu ekler ve ızgara düzenindeki boşlukları artırarak hedeflemeyi kolaylaştırır."
+        "increaseFileViewGapsDescription": "Liste düzeninde yan dolgu ekler ve ızgara düzenindeki boşlukları artırarak hedeflemeyi kolaylaştırır.",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "Başlangıç sayfası",
@@ -389,8 +391,6 @@
       "sorting": "Sıralama",
       "sortAscending": "Artan",
       "sortDescending": "Azalan",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "Kapsam",
       "settingsScopeGlobal": "Genel",
       "settingsScopeThisFolder": "Bu klasör",
@@ -507,7 +507,6 @@
     "clipboard": "pano, yapıştır, kopyala, kes, araç çubuğu, görsel, ekran görüntüsü, yol, dosya",
     "homePageMediaBanner": "ana sayfa, sayfa, medya, afiş, arka plan, resim, video",
     "navigator": "tasarım, kullanıcı arabirimi, gezgin, bölücüler, başlıklar, sıralama, görünüm, düzen, liste, ızgara, öğe, dosya, dizin, vurgulu, ölçek, vurgulama, OKB",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "kısayollar",
     "tabAppearance": "sekmeler, etkin sekme, kalın, metin",
     "globalSearch": "global, ara, bul, bak, filtrele, tara",
@@ -520,7 +519,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu",
+    "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "sekmeler, çalışma alanları, kapat, son sekme, varsayılan sekme",
     "defaultDirectory": "ana sayfa, locations, bu bilgisayar, sürücüler, varsayılan klasör, varsayılan dizin, yeni sekme, özel yol",
     "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, pano, gezgin, son sayfa, geri yükle, sayfa",

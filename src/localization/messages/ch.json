@@ -222,7 +222,9 @@
         "enableBoxSelectionDescription": "在空白区域拖动即可用选择框选中多个项目。按住 Ctrl 或 Shift 可添加到选择；按住 Alt 可反选。",
         "boxSelectionEnabledByDefault": "框选已默认启用。若拖拽选择影响你的操作习惯，可在此关闭。",
         "increaseFileViewGaps": "增大文件视图间距",
-        "increaseFileViewGapsDescription": "增加列表布局的左右内边距以及网格布局的间距，便于选择。"
+        "increaseFileViewGapsDescription": "增加列表布局的左右内边距以及网格布局的间距，便于选择。",
+        "foldersFirst": "列表视图中文件夹排在文件之前",
+        "foldersFirstDescription": "仅影响列表视图；网格视图始终按类型分区显示文件夹。"
       },
       "startupPage": {
         "title": "启动页",
@@ -389,8 +391,6 @@
       "sorting": "排序",
       "sortAscending": "升序",
       "sortDescending": "降序",
-      "foldersFirst": "列表视图中文件夹排在文件之前",
-      "foldersFirstDescription": "仅影响列表视图；网格视图始终按类型分区显示文件夹。",
       "settingsScope": "范围",
       "settingsScopeGlobal": "全局",
       "settingsScopeThisFolder": "此文件夹",
@@ -507,7 +507,6 @@
     "clipboard": "剪贴板, 粘贴, 复制, 剪切, 工具栏, 图像, 截图, 路径, 文件",
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",
     "navigator": "设计、用户界面、导航器、分隔线、标题、排序、视图、布局、列表、网格、项目、文件、目录、悬停、缩放、突出显示、强迫症",
-    "folderOrdering": "文件夹, 优先, 置顶, 排序, 顺序, 列表, 文件, 目录, 分组, 视图",
     "shortcuts": "快捷键",
     "tabAppearance": "标签,活动标签,加粗,文本",
     "globalSearch": "全局,搜索,查找,查看,过滤,扫描",
@@ -520,7 +519,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, full-size, quick view, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "文件视图, 框选, 拖动选择, 列表, 网格, 间距, 内边距",
+    "fileView": "文件视图, 框选, 拖动选择, 列表, 网格, 间距, 内边距, 文件夹, 优先, 置顶, 排序, 顺序, 文件, 目录, 分组, 视图",
     "tabsWorkspaces": "标签, 工作区, 关闭, 最后一个标签, 默认标签",
     "defaultDirectory": "主页, locations, 此电脑, 计算机, 驱动器, 默认文件夹, 默认目录, 新标签, 自定义路径",
     "startupPage": "启动页, 启动, 启动时打开, 主页, 仪表板, 导航器, 上次打开的页面, 恢复, 页面",

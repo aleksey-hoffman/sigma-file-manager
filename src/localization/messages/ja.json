@@ -222,7 +222,9 @@
         "enableBoxSelectionDescription": "空白部分をドラッグして、選択ボックスで複数の項目を選択します。Ctrl または Shift を押しながらで追加、Alt を押しながらで反転します。",
         "boxSelectionEnabledByDefault": "Box selection is now enabled by default. If drag-selecting gets in the way, you can turn it off here.",
         "increaseFileViewGaps": "ファイルビューの間隔を広げる",
-        "increaseFileViewGapsDescription": "リスト表示の左右余白を追加し、グリッド表示の間隔を広げて選択しやすくします。"
+        "increaseFileViewGapsDescription": "リスト表示の左右余白を追加し、グリッド表示の間隔を広げて選択しやすくします。",
+        "foldersFirst": "Place folders before files in list view",
+        "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type."
       },
       "startupPage": {
         "title": "起動ページ",
@@ -389,8 +391,6 @@
       "sorting": "並べ替え",
       "sortAscending": "昇順",
       "sortDescending": "降順",
-      "foldersFirst": "Place folders before files in list view",
-      "foldersFirstDescription": "Only affects the list view; the grid view always groups entries by type.",
       "settingsScope": "範囲",
       "settingsScopeGlobal": "グローバル",
       "settingsScopeThisFolder": "このフォルダー",
@@ -507,7 +507,6 @@
     "clipboard": "クリップボード, 貼り付け, コピー, 切り取り, ツールバー, 画像, スクリーンショット, パス, ファイル",
     "homePageMediaBanner": "ホーム、ページ、メディア、バナー、背景、画像、動画",
     "navigator": "デザイン、UI、ナビゲーター、ディバイダー、タイトル、ソート、ビュー、レイアウト、リスト、グリッド、アイテム、ファイル、ディレクトリ、ホバー、スケール、ハイライト、OCD",
-    "folderOrdering": "folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "shortcuts": "ショートカット",
     "tabAppearance": "タブ、アクティブなタブ、太字、テキスト",
     "globalSearch": "グローバル、検索、検索、検索、フィルター、スキャン",
@@ -520,7 +519,7 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白",
+    "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "タブ, ワークスペース, 閉じる, 最後のタブ, デフォルトタブ",
     "defaultDirectory": "ホーム, locations, このPC, コンピュータ, ドライブ, デフォルトフォルダー, デフォルトディレクトリ, 新しいタブ, カスタムパス",
     "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, ダッシュボード, ナビゲーター, 最後のページ, 復元, ページ",
