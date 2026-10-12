@@ -418,8 +418,14 @@ git commit -m "feat(navigator): 框选迁移强制开启（上游 #465）
 **Interfaces:**
 - Consumes: 无
 - Produces: 两个 Tauri command
-  - `thumbnail_cache_stats(app: AppHandle) -> Result<ThumbnailCacheStats, String>`，返回 `{ itemCount: number, sizeBytes: number }`
+  - `get_thumbnail_cache_stats(app: AppHandle) -> Result<ThumbnailCacheStats, String>`，返回 `{ itemCount: number, sizeBytes: number }`
   - `clear_thumbnail_cache(app: AppHandle) -> Result<(), String>`
+
+  ⚠️ **命令名是 `get_thumbnail_cache_stats`，不是 `thumbnail_cache_stats`** —— 后者与内部私有函数同名会冲突。
+  本段原先写的是旧名，与同文件 Step 4 的推荐自相矛盾，按旧名调用会 404。前端务必以本段订正后的名称为准。
+
+  ⚠️ **清理范围含视频缩略图**：图片与视频缩略图共用同一 cache_dir，`clear_thumbnail_cache` 会一并清除。
+  设置页的确认文案需体现这一点，否则用户会以为只清了图片缓存。
 
 ⚠️ **清理范围仅限 `thumbnail_cache_dir(&app)`**，该函数返回 `app_data_dir()/IMAGE_THUMBNAIL_CACHE_DIR`，位于应用数据目录下，**不接触用户文件**。实现时不得改为遍历其它路径。
 
