@@ -940,6 +940,7 @@
       "pasteToPane2": "Colar no painel 2",
       "delete": "Excluir",
       "openWith": "Abrir com...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Propriedades",
       "propertiesFailed": "Não foi possível abrir as propriedades",
       "quickView": "Visualização rápida",

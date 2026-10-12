@@ -971,6 +971,7 @@
       "pasteToPane2": "फलक 2 पर चिपकाएँ",
       "delete": "मिटाना",
       "openWith": "के साथ खोलें...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "गुण",
       "propertiesFailed": "गुण खोले नहीं जा सके",
       "quickView": "त्वरित देखें",

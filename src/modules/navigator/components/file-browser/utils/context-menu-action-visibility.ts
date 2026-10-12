@@ -90,9 +90,15 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     selectionTypes: ['multiple'],
     entryTypes: ['file', 'directory'],
   },
+  // FORK-MODIFICATION: 「打开文件所在目录」仅 file 类型可见（对目录无意义——目录即所在目录本身）
+  {
+    action: 'open-containing-directory',
+    selectionTypes: ['single', 'multiple'],
+    entryTypes: ['file'],
+  },
 ];
 
-const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties']);
+const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties', 'open-containing-directory']);
 
 function getSelectionStats(entries: DirEntry[]) {
   const selectionType: SelectionType = entries.length === 1 ? 'single' : 'multiple';

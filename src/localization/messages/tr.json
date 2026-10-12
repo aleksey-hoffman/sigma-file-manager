@@ -941,6 +941,7 @@
       "pasteToPane2": "Panel 2'e yapıştır",
       "delete": "Sil",
       "openWith": "Birlikte aç...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Özellikler",
       "propertiesFailed": "Özellikler açılamadı",
       "quickView": "Hızlı görünüm",

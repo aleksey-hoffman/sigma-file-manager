@@ -8,6 +8,7 @@ import type { ContextMenuAction } from '@/modules/navigator/components/file-brow
 import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
+import { revealInExplorer } from '@/utils/open-in-explorer';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { markRaw } from 'vue';
@@ -128,6 +129,21 @@ export function useFileBrowserActions(options: {
 
       if (entries.length > 0) {
         void openProperties(entries);
+      }
+
+      return;
+    }
+
+    if (action === 'open-containing-directory') {
+      const entries = options.contextMenu.value.selectedEntries;
+
+      // 仅 file 节点触发（visibility 规则已保证 directory 不会进来）
+      for (const entry of entries) {
+        if (!entry.is_dir) {
+          void revealInExplorer(entry.path).catch((err: unknown) => {
+            console.error('revealInExplorer failed:', err);
+          });
+        }
       }
 
       return;

@@ -971,6 +971,7 @@
       "pasteToPane2": "Вставить в панель 2",
       "delete": "Удалить",
       "openWith": "Открыть с помощью...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Свойства",
       "propertiesFailed": "Не удалось открыть свойства",
       "quickView": "Быстрый просмотр",

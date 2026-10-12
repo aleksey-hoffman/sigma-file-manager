@@ -143,3 +143,23 @@ pub fn path_volume_is_case_sensitive(path: String) -> Result<bool, String> {
 pub fn path_comparison_volume_roots() -> Result<Vec<String>, String> {
     super::path_volume::resolve_path_comparison_volume_roots()
 }
+
+// FORK-MODIFICATION: 在 Windows Explorer 中选中文件（explorer.exe /select,<path>）。
+// 用于目录树右键菜单的「打开文件所在目录」action。非 Windows 平台返回不支持错误。
+#[tauri::command]
+pub fn reveal_in_explorer(path: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        std::process::Command::new("explorer.exe")
+            .arg(format!("/select,{}", path))
+            .spawn()
+            .map_err(|e| format!("explorer.exe spawn failed: {e}"))?;
+        return Ok(());
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = path;
+        Err("reveal_in_explorer is only supported on Windows".to_string())
+    }
+}

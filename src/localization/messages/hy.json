@@ -974,6 +974,7 @@
       "pasteToPane2": "Տեղադրել 2-րդ վահանակում",
       "delete": "Ջնջել",
       "openWith": "Բացել․․․",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Հատկություններ",
       "propertiesFailed": "Չհաջողվեց բացել հատկությունները",
       "quickView": "Արագ դիտում",

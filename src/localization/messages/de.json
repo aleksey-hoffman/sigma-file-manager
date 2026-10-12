@@ -943,6 +943,7 @@
       "pasteToPane2": "In Bereich 2 einfügen",
       "delete": "Löschen",
       "openWith": "Öffnen mit...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Eigenschaften",
       "propertiesFailed": "Eigenschaften konnten nicht geöffnet werden",
       "quickView": "Schnellansicht",

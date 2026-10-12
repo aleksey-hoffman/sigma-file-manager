@@ -42,7 +42,7 @@ export interface GroupedEntries {
   others: DirEntry[];
 }
 
-export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect';
+export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

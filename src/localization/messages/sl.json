@@ -971,6 +971,7 @@
       "pasteToPane2": "Prilepi v podokno 2",
       "delete": "Izbriši",
       "openWith": "Odpri z...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Lastnosti",
       "propertiesFailed": "Lastnosti ni bilo mogoče odpreti",
       "quickView": "Hitri pregled",

@@ -38,6 +38,20 @@ vi.mock('@/utils/virtual-locations', () => ({
 // store's loadErrorPaths handling without spinning up Tauri.
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
+  // FORK-MODIFICATION: tree-view 引入 useClipboardStore → user-settings → useTheme.init()
+  // 会调 window.matchMedia。jsdom 没默认实现，按项目惯例（见 user-settings.test.ts）补桩。
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
 });
 
 describe('FileBrowserTreeView (store-driven sync)', () => {

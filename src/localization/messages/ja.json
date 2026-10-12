@@ -941,6 +941,7 @@
       "pasteToPane2": "ペイン2に貼り付け",
       "delete": "削除",
       "openWith": "アプリで開く...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "プロパティ",
       "propertiesFailed": "プロパティを開けませんでした",
       "quickView": "クイックビュー",

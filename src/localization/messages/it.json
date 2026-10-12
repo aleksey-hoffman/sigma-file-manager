@@ -941,6 +941,7 @@
       "pasteToPane2": "Incolla nel pannello 2",
       "delete": "Elimina",
       "openWith": "Apri con...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Proprietà",
       "propertiesFailed": "Impossibile aprire le proprietà",
       "quickView": "Anteprima rapida",

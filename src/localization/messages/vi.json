@@ -941,6 +941,7 @@
       "pasteToPane2": "Dán vào bảng 2",
       "delete": "Xóa",
       "openWith": "Mở bằng...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Thuộc tính",
       "propertiesFailed": "Không thể mở thuộc tính",
       "quickView": "Xem nhanh",

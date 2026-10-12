@@ -974,6 +974,7 @@
       "pasteToPane2": "הדבק לחלונית 2",
       "delete": "מחק",
       "openWith": "פתח באמצעות...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "מאפיינים",
       "propertiesFailed": "לא ניתן היה לפתוח את המאפיינים",
       "quickView": "תצוגה מהירה",

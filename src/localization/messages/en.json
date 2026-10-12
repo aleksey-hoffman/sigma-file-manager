@@ -975,6 +975,7 @@
       "pasteToPane2": "Paste to pane 2",
       "delete": "Delete",
       "openWith": "Open with...",
+      "openContainingDirectory": "Open containing directory",
       "properties": "Properties",
       "propertiesFailed": "Could not open properties",
       "quickView": "Quick view",

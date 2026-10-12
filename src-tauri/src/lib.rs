@@ -313,6 +313,7 @@ pub fn run() {
             dir_reader::paths_are_directories,
             dir_reader::path_volume_is_case_sensitive,
             dir_reader::path_comparison_volume_roots,
+            dir_reader::reveal_in_explorer,
             dir_reader::get_mountable_devices,
             dir_reader::mount_drive,
             dir_reader::unmount_drive,

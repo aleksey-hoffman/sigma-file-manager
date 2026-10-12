@@ -14,7 +14,7 @@ list and loaded. Failures surface via `store.markLoadError` and the row
 stays visible (just with no children). See handoff-2026-09-26-tree-sync-retro.
 -->
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   ChevronRightIcon,
   ChevronDownIcon,
@@ -28,6 +28,14 @@ import {
   useFolderTreeStore,
 } from '@/stores/runtime/folder-tree';
 import { useFileTree } from '@/modules/navigator/composables/use-file-tree';
+import {
+  ContextMenu,
+} from '@/components/ui/context-menu';
+import { revealInExplorer } from '@/utils/open-in-explorer';
+import { openNativeProperties } from '@/utils/open-native-properties';
+import { useClipboardStore } from '@/stores/runtime/clipboard';
+import FileTreeContextMenu from './file-tree-context-menu.vue';
+import type { DirEntry } from '@/types/dir-entry';
 
 const props = withDefaults(defineProps<{
   /** Root directory paths (typically the drives from `useDrives()`).
@@ -54,6 +62,87 @@ const emit = defineEmits<{
 
 const folderTreeStore = useFolderTreeStore();
 const { expandedPaths, selectedPath } = storeToRefs(folderTreeStore);
+
+// FORK-MODIFICATION: 目录树右键菜单（C 范围）。详见 spec §5.4。
+// tree 节点的 FileTreeFlatRow 不是完整 DirEntry；右键菜单只需 path + isDirectory。
+const clipboardStore = useClipboardStore();
+
+interface TreeMenuTarget {
+  path: string;
+  isDirectory: boolean;
+}
+interface ContextMenuState {
+  open: boolean;
+  target: TreeMenuTarget | null;
+}
+const contextMenu = ref<ContextMenuState>({ open: false, target: null });
+
+function openContextMenu(row: { path: string; isDirectory: boolean }) {
+  contextMenu.value = {
+    open: true,
+    target: { path: row.path, isDirectory: row.isDirectory },
+  };
+}
+
+function closeContextMenu() {
+  contextMenu.value = { open: false, target: null };
+}
+
+async function handleContextAction(name: string) {
+  const target = contextMenu.value.target;
+  closeContextMenu();
+  if (!target) {
+    return;
+  }
+
+  switch (name) {
+    case 'copy-path': {
+      await navigator.clipboard.writeText(target.path).catch((err: unknown) => {
+        console.error('clipboard writeText failed:', err);
+      });
+      break;
+    }
+    case 'paste': {
+      if (clipboardStore.pasteItems && target.isDirectory) {
+        try {
+          await clipboardStore.pasteItems(target.path);
+        }
+        catch (err) {
+          console.error('paste failed:', err);
+        }
+      }
+      break;
+    }
+    case 'open-containing-directory': {
+      if (!target.isDirectory) {
+        try {
+          await revealInExplorer(target.path);
+        }
+        catch (err) {
+          console.error('revealInExplorer failed:', err);
+        }
+      }
+      break;
+    }
+    case 'properties': {
+      if (target.isDirectory) {
+        // 对目录构造最小 DirEntry（openNativeProperties 接受数组）
+        const fakeEntry = {
+          path: target.path,
+          name: target.path.split(/[\\/]/).pop() ?? '',
+          is_dir: true,
+        } as unknown as DirEntry;
+        await openNativeProperties([fakeEntry]).catch((err: unknown) => {
+          console.error('openNativeProperties failed:', err);
+        });
+      }
+      break;
+    }
+    default:
+      // 其他 action 由父级扩展；本轮范围 C 不覆盖
+      break;
+  }
+}
 
 // Set for O(1) drive-path lookup during template render.
 const drivePathSet = computed<Set<string>>(() => new Set(props.drivePaths ?? []));
@@ -151,6 +240,7 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
       :data-selected="isRowSelected(row.path) || undefined"
       :title="row.path"
       @click="onRowClick(row)"
+      @contextmenu.prevent="openContextMenu(row)"
     >
       <component
         :is="row.isDirectory && row.isExpanded ? ChevronDownIcon : ChevronRightIcon"
@@ -172,6 +262,15 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
       >!</span>
     </div>
   </div>
+
+  <!-- FORK-MODIFICATION: 目录树右键菜单（C 范围） -->
+  <ContextMenu v-if="contextMenu.open && contextMenu.target" v-model:open="contextMenu.open">
+    <FileTreeContextMenu
+      :target="contextMenu.target"
+      @action="handleContextAction"
+      @close="closeContextMenu"
+    />
+  </ContextMenu>
 </template>
 
 <style scoped>

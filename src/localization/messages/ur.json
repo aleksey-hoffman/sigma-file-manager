@@ -971,6 +971,7 @@
       "pasteToPane2": "پین 2 میں چسپاں",
       "delete": "حذف",
       "openWith": "اس کے ساتھ کھولیں…",
+      "openContainingDirectory": "Open containing directory",
       "properties": "خصوصیات",
       "propertiesFailed": "خصوصیات نہیں کھل سکیں",
       "quickView": "فوری نظر",
