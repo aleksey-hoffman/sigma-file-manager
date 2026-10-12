@@ -37,7 +37,7 @@
 | `src/modules/navigator/components/file-browser/composables/use-file-browser.ts` | 两个调用点传入设置值 | 1 |
 | `src/modules/settings/ui/categories/appearance/folder-ordering.vue` | 新建：混合排序开关 | 1 |
 | `src/stores/runtime/settings.ts` | 设置项注册（三处） | 1, 4 |
-| `src/stores/schemas/user-settings.ts` | schema 迁移 v24→v25 | 2 |
+| `src/stores/schemas/user-settings.ts` | schema 迁移 v27→v28 | 2 |
 | `src/modules/settings/ui/categories/general/file-view.vue` | 框选说明文案 | 2 |
 | `src-tauri/src/image_thumbnails.rs` | `ThumbnailCacheStats` 可序列化 + 两个新 command | 3 |
 | `src-tauri/src/lib.rs` | command 注册 | 3 |
@@ -319,7 +319,7 @@ grep -n "USER_SETTINGS_SCHEMA_VERSION" src/stores/schemas/user-settings.ts
 在 `src/stores/schemas/__tests__/user-settings.test.ts` 追加：
 
 ```ts
-it('forces box selection on when migrating from v24 to v25 even if the user had disabled it', async () => {
+it('forces box selection on when migrating to the latest schema even if the user had disabled it', async () => {
   const storage = createMockStorage({
     'navigator.enableBoxSelection': false,
   });
@@ -345,8 +345,8 @@ Expected: FAIL —— 版本号仍是 24，迁移未写入。
 
 在 `src/stores/schemas/user-settings.ts`：
 
-1. `USER_SETTINGS_SCHEMA_VERSION` 由 `24` 改为 `25`
-2. 在 v23→v24 分支之后追加：
+1. `USER_SETTINGS_SCHEMA_VERSION` 由 `27` 改为 `28`（实施时以实际值为准；Task 1 已把版本推到 27）
+2. 在既有最后一个迁移分支之后追加：
 
 ```ts
   if (fromVersion === 24 && toVersion === 25) {
@@ -400,7 +400,7 @@ git add -A src src/localization
 git commit -m "feat(navigator): 框选迁移强制开启（上游 #465）
 
 框选功能早已实现且含单测，但 navigator.enableBoxSelection 默认为 false，
-用户无法在不进入设置的情况下使用（上游 #465）。schema 升 v24→v25，迁移中
+用户无法在不进入设置的情况下使用（上游 #465）。schema 升 v27→v28，迁移中
 覆盖写为 true。
 
 已确认的代价：曾主动关闭框选的用户会被重新打开。补偿措施是设置项下方的

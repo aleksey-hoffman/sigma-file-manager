@@ -72,8 +72,8 @@ const dirsFirst = (entryA.is_dir === entryB.is_dir) ? 0 : (entryA.is_dir ? -1 : 
 
 **改动**：
 
-1. `USER_SETTINGS_SCHEMA_VERSION` v24 → v25
-2. 新增迁移分支：v24 → v25，将 `navigator.enableBoxSelection` 置为 `true`（**覆盖写，不是 setDefault**）
+1. `USER_SETTINGS_SCHEMA_VERSION` **27 → 28**
+2. 新增迁移分支：v27 → v28，将 `navigator.enableBoxSelection` 置为 `true`（**覆盖写，不是 setDefault**）
 3. `stores/storage/user-settings.ts` 默认值 `false` → `true`
 4. 迁移单测更新：原 `user-settings.test.ts:196` 断言 `toBe(false)` 需改为 `toBe(true)`
 
@@ -110,7 +110,7 @@ fn clear_thumbnail_cache(app: tauri::AppHandle) -> Result<(), String>           
 ### 4.1 单元测试
 
 - 排序：`foldersFirst` 为 true / false 两个方向各一例；`true` 时必须与改动前行为逐字节一致
-- 迁移：v24 → v25 后 `enableBoxSelection` 为 `true`，含「原本为 false」与「键不存在」两种起点
+- 迁移：v27 → v28 后 `enableBoxSelection` 为 `true`，含「原本为 false」与「键不存在」两种起点
 - command 包装：stats 正常返回、clear 在空目录上不报错
 
 ### 4.2 判别性验证（硬要求）
