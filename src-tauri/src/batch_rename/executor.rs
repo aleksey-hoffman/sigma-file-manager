@@ -756,6 +756,76 @@ impl MoveBackend for FailOnceOnTempSource {
         assert!(!after.keys().any(|k| k.starts_with("__afm_tmp_")), "{after:?}");
     }
 
+    /// 阶段二失败时，**归位映射本身含交换**的分支。
+    ///
+    /// 其余几个回滚测试的 `restore` 都不是交换：
+    /// - `failure_in_stage_two_restores_original_state_on_real_fs`：阶段二第一条就失败，
+    ///   没有任何条目落位，`restore` 是 `__afm_tmp_* → 原名`，目标全空。
+    /// - `three_cycle_failure_in_stage_two_also_restores`：两条已落位、末条在临时名，
+    ///   `restore` 是链式 `b→a, c→b, tmp→c`。
+    ///
+    /// 而 [`rollback_to_original`] 的注释明确写着「归位本身也可能是个交换
+    /// （`a↔b` 反向后还是交换），所以要复用 detect 与 build_staging_plan，
+    /// 而不是简单逆序」——**这条最绕的路径此前没有任何测试走过**。
+    ///
+    /// # 为什么必须是「两个独立的环」，单个环做不到
+    ///
+    /// `restore` 出现闭环 `b.txt→a.txt` 且 `a.txt→b.txt`，前提是 **a、b 两条都已落位**
+    /// （落位后 `current_location` 才会分别落在对方原名上）。而失败发生在某条操作上，
+    /// 所以这个环里的每一条操作都成功了 ⇒ 失败必然在**环外**。
+    ///
+    /// 环外的条目分两种，阶段二顺序（[`build_staging_plan`] 先跑不腾空的、再跑临时名）：
+    /// - **不腾空**的（如 `z.txt→9.txt`）排在**第一条**，它失败时环还没开始落位 ⇒ `restore` 是链式；
+    /// - **要腾空**的只能排进环所在的队列，位置由 `detect` 的 `needs_staging` 决定。
+    ///
+    /// 所以用**两个互相独立**的 2 环，让失败落在第二个环的最后一条：
+    /// 此时第一个环已完整互换落位，`restore` 里必然出现闭环。
+    #[test]
+    fn rollback_of_a_swap_batch_restores_through_a_second_staging_round() {
+        let dir = tempfile::tempdir().unwrap();
+        make_file(dir.path(), "a.txt", "原本是A");
+        make_file(dir.path(), "b.txt", "原本是B");
+        make_file(dir.path(), "c.txt", "原本是C");
+        make_file(dir.path(), "d.txt", "原本是D");
+        let before = snapshot(dir.path());
+
+        let entries = vec![
+            entry(dir.path(), "a.txt", "b.txt"),
+            entry(dir.path(), "b.txt", "a.txt"),
+            entry(dir.path(), "c.txt", "d.txt"),
+            entry(dir.path(), "d.txt", "c.txt"),
+        ];
+        let report = crate::batch_rename::conflict::detect(&entries, &HashSet::new());
+        assert!(report.is_executable(), "前置条件：批次本身不该被阻断: {report:?}");
+        assert_eq!(
+            report.needs_staging,
+            vec![0, 1, 2, 3],
+            "四条全部互相撞名，都要腾空: {report:?}"
+        );
+
+        // 调用序：阶段一 #0..#3 四个腾空；
+        // 阶段二 #4 tmp_a→b、#5 tmp_b→a、#6 tmp_c→d、#7 tmp_d→c。
+        // 在 #7 注入一次性失败 —— 此时 a、b 已经互换落位，d 还在临时名。
+        let outcome = execute(&entries, &report.needs_staging, dir.path(), &FailOnceByCallCount::new(7));
+
+        assert!(!outcome.is_fully_successful(), "{outcome:?}");
+        assert_eq!(outcome.failed.len(), 1);
+        assert_eq!(outcome.failed[0].entry_index, 3, "应指向 d.txt 那一条");
+
+        assert!(
+            outcome.rollback.attempted && outcome.rollback.succeeded,
+            "含交换的归位也必须还原成功: {:?}",
+            outcome.rollback
+        );
+
+        let after = snapshot(dir.path());
+        assert_eq!(after, before, "归位含交换，必须也走两阶段才能完整还原: {after:?}");
+        assert!(
+            !after.keys().any(|k| k.starts_with("__afm_tmp_")),
+            "临时名必须清理干净: {after:?}"
+        );
+    }
+
     #[test]
     fn file_name_of_handles_both_separators() {
         assert_eq!(file_name_of("C:\\dir\\a.txt"), "a.txt");
