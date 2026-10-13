@@ -1,8 +1,9 @@
 {
   "app": {
     "name": "Alpha File Manager",
-    "description": "\"Alpha File Manager\" is developed on top of \"Sigma File Manager\", with added features like directory tree, popup path focus, batch rename and more — a better file manager application.",
-    "copyright": "Credits to Aleksey Hoffman"
+    "description": "is developed on top of Sigma File Manager, adding practical features such as a directory tree, quick switching (path focus sync for file dialogs) and batch rename. Many details have been refined to deliver a more complete file manager experience.",
+    "copyright": "Credits to the original author Aleksey Hoffman.",
+    "developer": "Developed by Duan Yi"
   },
   "units": {
     "px": "पिक्सल"

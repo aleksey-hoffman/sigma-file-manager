@@ -1,8 +1,9 @@
 {
   "app": {
     "name": "Alpha File Manager",
-    "description": "\"Alpha File Manager\" 在 \"Sigma File Manage\" 基础上开发，添加了目录树、弹窗路径聚焦、批量重命名等功能，是一款更好用的文件管理器应用程序。",
-    "copyright": "鸣谢 Aleksey Hoffman"
+    "description": "基于 Sigma File Manager 二次开发，新增目录树、快速切换（文件对话框路径焦点同步）、批量重命名等实用能力，对很多细节进行了优化，打造体验更完善的文件管理器。",
+    "copyright": "鸣谢原作者 Aleksey Hoffman。",
+    "developer": "开发：段燚"
   },
   "units": {
     "px": "px"

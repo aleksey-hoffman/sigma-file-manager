@@ -16,21 +16,25 @@ const { t } = useI18n();
     <div class="settings-header__title-section">
       <p class="settings-header__description">
         <!--
-          FORK-MODIFICATION: 修设置页文案重复。
-          `app.description` 在 17 个语言包里均以 `"Alpha File Manager" ...` 开头,
-          而模板同时在前面输出 `app.name`,会渲染成两个连续的
-          `"Alpha File Manager" "Alpha File Manager" 在 ...`。
-          修法:模板里 `app.description` 用正则去掉开头的引语,
-          保留 strong 版的 app.name 即可。
+          FORK-MODIFICATION: 2026-10-13 换用用户给定的简介文案。
+
+          原文案在 17 个语言包里都以 `"Alpha File Manager" ...` 开头,模板又在前面
+          输出一次 app.name,于是渲染出两个连续的 `"Alpha File Manager"`,
+          当初用 `.replace(/^"[^"]*"\s*/, '')` 把开头引语剥掉绕过。
+
+          新文案本身已经是「加粗的品牌名 + 空格 + 正文」的结构:
+            **Alpha File Manager** 基于 Sigma File Manager 二次开发,……
+          所以 app.description 不再重复品牌名,引语也不需要了——
+          正则与它对应的 FORK-MODIFICATION 注释一并删除,避免留下永不生效的兼容代码。
         -->
-        <strong>"{{ t('app.name') }}"</strong>
-        {{ t('app.description').replace(/^"[^"]*"\s*/, '') }}
-        <br>{{ t('app.copyright') }}
+        <strong>{{ t('app.name') }}</strong>
+        {{ t('app.description') }}
         <!--
           FORK-MODIFICATION: 验收反馈 2026-10-13 — 末尾增加官网链接。
           链接用 tauri-plugin-opener 的 open_external(若有),这里先用普通 <a target="_blank">。
         -->
         <br>
+        {{ t('app.copyright') }} {{ t('app.developer') }} ——
         <a
           class="settings-header__link"
           href="https://www.aiec.fun"
