@@ -26,6 +26,17 @@ const { t } = useI18n();
         <strong>"{{ t('app.name') }}"</strong>
         {{ t('app.description').replace(/^"[^"]*"\s*/, '') }}
         <br>{{ t('app.copyright') }}
+        <!--
+          FORK-MODIFICATION: 验收反馈 2026-10-13 — 末尾增加官网链接。
+          链接用 tauri-plugin-opener 的 open_external(若有),这里先用普通 <a target="_blank">。
+        -->
+        <br>
+        <a
+          class="settings-header__link"
+          href="https://www.aiec.fun"
+          target="_blank"
+          rel="noopener noreferrer"
+        >https://www.aiec.fun</a>
       </p>
     </div>
   </div>
@@ -54,6 +65,15 @@ const { t } = useI18n();
   margin: 0;
   color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
+}
+
+.settings-header__link {
+  color: hsl(var(--primary));
+  text-decoration: none;
+}
+
+.settings-header__link:hover {
+  text-decoration: underline;
 }
 
 @media (width <= 768px) {

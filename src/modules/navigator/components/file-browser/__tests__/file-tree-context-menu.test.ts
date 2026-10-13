@@ -20,6 +20,8 @@ vi.mock('@/localization', () => ({
   messages: {},
 }));
 
+// clipboard store 是受控 mock;调用 setClipboard 即记录。
+const setClipboardMock = vi.fn();
 const hasItemsMock = vi.fn();
 const canPasteToMock = vi.fn();
 
@@ -27,6 +29,7 @@ vi.mock('@/stores/runtime/clipboard', () => ({
   useClipboardStore: () => ({
     get hasItems() { return hasItemsMock(); },
     canPasteTo: (path: string) => canPasteToMock(path),
+    setClipboard: setClipboardMock,
   }),
 }));
 
@@ -34,10 +37,14 @@ function createTarget(target: TreeMenuTarget): TreeMenuTarget {
   return target;
 }
 
+// FORK-MODIFICATION: stub 必须把 DOM click 转发成 `select` 事件,
+// 否则 @select="handleCopy" 挂在 stub 上永远不会被触发 —— 探针打不中,
+// 测试会平凡地失败(规则 J 深化:探针本身也可能是平凡的)。
 const StubItem = {
   name: 'ContextMenuItem',
-  template: '<div class="context-menu-item-stub" :data-test="$attrs[\'data-test\']"><slot /></div>',
+  template: '<div class="context-menu-item-stub" :data-test="$attrs[\'data-test\']" @click="$emit(\'select\')"><slot /></div>',
   inheritAttrs: false,
+  emits: ['select'],
 };
 const StubSeparator = {
   name: 'ContextMenuSeparator',
@@ -62,35 +69,56 @@ function mountContextMenu(target: TreeMenuTarget) {
 }
 
 describe('file-tree-context-menu', () => {
-  it('renders 3 items for a file (copy-path + open-containing-directory + properties)', () => {
+  it('renders 5 items for a file: copy / cut / rename / open-containing-directory / properties', () => {
     hasItemsMock.mockReturnValue(false);
     canPasteToMock.mockReturnValue(false);
     const wrapper = mountContextMenu(createTarget({ path: 'C:/file.txt', isDirectory: false }));
     const items = wrapper.findAllComponents(StubItem);
-    expect(items.length).toBe(3);
+    expect(items.length).toBe(5);
   });
 
-  it('renders 2 items for a directory without clipboard items (no paste, no open-containing-directory)', () => {
+  it('renders 4 items for a directory without clipboard items (no paste)', () => {
     hasItemsMock.mockReturnValue(false);
     canPasteToMock.mockReturnValue(false);
     const wrapper = mountContextMenu(createTarget({ path: 'C:/dir', isDirectory: true }));
     const items = wrapper.findAllComponents(StubItem);
-    expect(items.length).toBe(2);
+    expect(items.length).toBe(4);
   });
 
-  it('renders 3 items for a directory when clipboard has items (copy-path + paste + properties)', () => {
+  it('renders 5 items for a directory when clipboard has items (copy / cut / paste / rename / properties)', () => {
     hasItemsMock.mockReturnValue(true);
     canPasteToMock.mockReturnValue(true);
     const wrapper = mountContextMenu(createTarget({ path: 'C:/dir', isDirectory: true }));
     const items = wrapper.findAllComponents(StubItem);
-    expect(items.length).toBe(3);
+    expect(items.length).toBe(5);
   });
 
-  it('emits close and action when an option is clicked via @select', async () => {
-    // 直接用 emit 路径绕过 stub：emit('select') 在 stub 上不冒泡，但 emit('update:open') 同理不冒泡
-    // 我们通过 emit() 直接调用 item 的逻辑更稳：找 ContextMenuItem stub 并 dispatchEvent 不便，
-    // 这里改成在真实 mount 下断言 ContextMenuItem 渲染数量（含 disabled 状态语义由 stub 化即可）。
-    // 这一项覆盖渲染分支已够 —— emit 路径通过更上层的真实 e2e 覆盖。
-    expect(true).toBe(true);
+  // 验收反馈 2026-10-13:点击"复制"应调 clipboardStore.setClipboard('copy', ...)。
+  it('copy: invokes setClipboard with copy type and emits action', async () => {
+    hasItemsMock.mockReturnValue(false);
+    canPasteToMock.mockReturnValue(false);
+    setClipboardMock.mockClear();
+    const wrapper = mountContextMenu(createTarget({ path: 'C:/a.txt', isDirectory: false }));
+    await wrapper.find('[data-test="ctx-tree-copy"]').trigger('click');
+    expect(setClipboardMock).toHaveBeenCalledWith(
+      'copy',
+      expect.any(Array),
+      'tree-context-menu',
+    );
+    const emitted = wrapper.emitted('action');
+    expect(emitted).toEqual([['copy']]);
+  });
+
+  it('cut: invokes setClipboard with move type', async () => {
+    hasItemsMock.mockReturnValue(false);
+    canPasteToMock.mockReturnValue(false);
+    setClipboardMock.mockClear();
+    const wrapper = mountContextMenu(createTarget({ path: 'C:/a.txt', isDirectory: false }));
+    await wrapper.find('[data-test="ctx-tree-cut"]').trigger('click');
+    expect(setClipboardMock).toHaveBeenCalledWith(
+      'move',
+      expect.any(Array),
+      'tree-context-menu',
+    );
   });
 });

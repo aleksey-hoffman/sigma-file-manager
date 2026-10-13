@@ -497,17 +497,18 @@ function preventPopoverClose(event: Event) {
 .home-banner__actions {
   position: absolute;
   z-index: 3;
-  /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 距 banner 底 20px,与下方内容保持间距。 */
-  bottom: 20px;
+  /* FORK-MODIFICATION: 验收反馈 2026-10-13 — 距 banner 底 28px,标题与下方内容留更明显间距。 */
+  bottom: 28px;
   left: 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .home-banner__title {
   color: hsl(var(--foreground));
-  font-size: 20px;
+  /* FORK-MODIFICATION: 验收反馈 2026-10-13 — 标题字号从 20px 加大到 32px,更醒目。 */
+  font-size: 32px;
   font-weight: 600;
   /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 渐变已去,文字阴影也不再需要,移除。 */
 }

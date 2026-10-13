@@ -296,3 +296,97 @@ describe('sortFileBrowserEntries foldersFirst', () => {
     expect(sorted.map(e => e.name)).toEqual(preChangeOrder.map(e => e.name));
   });
 });
+
+// FORK-MODIFICATION: 验收反馈 2026-10-13 — locations 视图按盘符序号排序。
+// 用户原话:"请默认采用磁盘序号排序,即 C → D →E → F → ……这种排序方式"。
+// 判别点是"按显示名排会得到完全不同的顺序":显示名里 'photos (G:)' 的 p 排在
+// 'Win (C:)' 的 W 之前(Intl.Collator 大小写不敏感),所以按名排会得到 G 在最前。
+describe('sortFileBrowserEntries — locations drive letter order', () => {
+  function mkDriveEntry(name: string, path: string, driveLetterIndex: number): DirEntry {
+    return {
+      name,
+      path,
+      is_file: false,
+      is_dir: true,
+      size: 100,
+      item_count: null,
+      created_time: 0,
+      modified_time: 0,
+      accessed_time: 0,
+      ext: null,
+      mime: null,
+      is_hidden: false,
+      is_symlink: false,
+      drive_metadata: {
+        drive_type: 'HDD',
+        is_removable: false,
+        is_mounted: true,
+        mount_point: path,
+        device_path: `\\\\.\\${path[0]}:`,
+        available_space: 50,
+        drive_letter_index: driveLetterIndex,
+      },
+    } as unknown as DirEntry;
+  }
+
+  it('orders drives by letter (C → D → E → F → G), not by display name', () => {
+    // 故意让显示名顺序与盘符顺序相反:'photos' (p) < 'Win' (W) < '数据'(Z)。
+    const entries = [
+      mkDriveEntry('photos (G:)', 'G:/', 7),
+      mkDriveEntry('Win (C:)', 'C:/', 3),
+      mkDriveEntry('数据 (F:)', 'F:/', 6),
+      mkDriveEntry('Office (E:)', 'E:/', 5),
+      mkDriveEntry('Program (D:)', 'D:/', 4),
+    ];
+
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
+
+    expect(sorted.map(e => e.name)).toEqual([
+      'Win (C:)',
+      'Program (D:)',
+      'Office (E:)',
+      '数据 (F:)',
+      'photos (G:)',
+    ]);
+  });
+
+  it('keeps non-letter entries (WSL / UNC) after lettered drives', () => {
+    const entries = [
+      mkDriveEntry('//wsl.localhost/Ubuntu', '//wsl.localhost/Ubuntu', 0),
+      mkDriveEntry('Win (C:)', 'C:/', 3),
+      mkDriveEntry('Data (D:)', 'D:/', 4),
+    ];
+
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
+
+    expect(sorted.map(e => e.name)).toEqual([
+      'Win (C:)',
+      'Data (D:)',
+      '//wsl.localhost/Ubuntu',
+    ]);
+  });
+
+  it('reverses letter order when direction is desc', () => {
+    const entries = [
+      mkDriveEntry('Win (C:)', 'C:/', 3),
+      mkDriveEntry('Program (D:)', 'D:/', 4),
+      mkDriveEntry('Office (E:)', 'E:/', 5),
+    ];
+
+    const sorted = sortFileBrowserEntries(entries, 'name', 'desc', true);
+
+    expect(sorted.map(e => e.name)).toEqual(['Office (E:)', 'Program (D:)', 'Win (C:)']);
+  });
+
+  it('does not apply letter order when entries are not drives', () => {
+    // 判别性反例:没有 drive_metadata 的普通目录必须仍按显示名排。
+    const entries = [
+      { name: 'zzz', path: '/zzz', is_dir: true } as unknown as DirEntry,
+      { name: 'aaa', path: '/aaa', is_dir: true } as unknown as DirEntry,
+    ];
+
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc', true);
+
+    expect(sorted.map(e => e.name)).toEqual(['aaa', 'zzz']);
+  });
+});

@@ -32,6 +32,43 @@ vi.mock('@/utils/virtual-locations', () => ({
   resolveDirectoryContents: vi.fn(),
 }));
 
+// FORK-MODIFICATION: 验收反馈 2026-10-13 — tree-view 加"重命名"后挂载
+// FileBrowserRenameDialog，它内部 useI18n() 但本测试没装 vue-i18n plugin。
+// stub RenameDialog 掉，避免为一个弹窗把整条 i18n 链拉进来。
+vi.mock('../file-browser-rename-dialog.vue', () => ({
+  default: {
+    name: 'FileBrowserRenameDialog',
+    props: ['open', 'entry'],
+    emits: ['update:open', 'confirm', 'cancel'],
+    template: '<div class="stub-rename-dialog" />',
+  },
+}));
+
+// FORK-MODIFICATION: 验收反馈 2026-10-13 — tree-view 加"重命名"后引入
+// useDirEntryActions，它内部会拉 clipboard / userSettings / Tauri IPC 一整条链。
+// 本测试只关心树的渲染 / 点击 / 展开行为，所以整体 mock 掉，只保留 renameItem 形状。
+vi.mock('@/composables/use-dir-entry-actions', () => ({
+  useDirEntryActions: () => ({
+    renameItem: vi.fn().mockResolvedValue(true),
+    openEntriesInNewTabs: vi.fn(),
+    createNewItem: vi.fn().mockResolvedValue(true),
+    pasteItems: vi.fn(),
+    conflictDialogState: { isOpen: false, conflicts: [] },
+    handleConflictResolution: vi.fn(),
+    handleConflictCancel: vi.fn(),
+    topLevelNameConflictDialogState: { isOpen: false, conflicts: [] },
+    handleTopLevelNameConflictRename: vi.fn(),
+    handleTopLevelNameConflictMerge: vi.fn(),
+    handleTopLevelNameConflictCancel: vi.fn(),
+    permanentDeleteConfirm: {
+      isOpen: false,
+      pendingEntries: [],
+      handleOpenChange: vi.fn(),
+      handleConfirm: vi.fn(),
+    },
+  }),
+}));
+
 // Stub the Tauri IPC entry that resolveDirectoryContents uses in production.
 // In jsdom there is no window.__TAURI__ so reading `.invoke` throws — we
 // surface that as a controlled "permission denied" so we can assert the

@@ -77,6 +77,11 @@ describe('virtual-locations', () => {
       is_mounted: true,
       mount_point: 'C:\\',
       device_path: '\\\\.\\C:',
+      // FORK-MODIFICATION: 验收反馈 2026-10-13 — drive_metadata 补两个字段:
+      //   available_space  → UI 显示"磁盘空余空间"(替代 "X 项 · 总容量")
+      //   drive_letter_index → 'C:' → 3,供 locations 视图按盘符排序
+      available_space: 500,
+      drive_letter_index: 3,
     });
     expect(driveEntry.item_count).toBeNull();
   });

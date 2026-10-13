@@ -12,8 +12,9 @@ export interface FileBrowserProps {
   layout?: 'list' | 'grid' | 'tree';
 }
 
-// FORK-MODIFICATION: 缩略图大小三档（与 navigator.thumbnailSize 对齐）
-export type ThumbnailSize = 'small' | 'medium' | 'large';
+// FORK-MODIFICATION: 缩略图大小四档（与 navigator.thumbnailSize 对齐）
+// 验收反馈 2026-10-12:增加 54 像素档（xlarge）。
+export type ThumbnailSize = 'small' | 'medium' | 'large' | 'xlarge';
 
 export interface FileBrowserEmits {
   'update:selectedEntries': [entries: DirEntry[]];

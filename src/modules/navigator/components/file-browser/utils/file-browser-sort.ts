@@ -23,6 +23,10 @@ export type FileBrowserEntrySortTagContext = {
 
 const nameCollator = new Intl.Collator(undefined, { numeric: true });
 
+// FORK-MODIFICATION: 验收反馈 2026-10-13 — locations 盘符排序里代表"没有盘符"的哨兵值。
+// 排在所有 A-Z(1..26)之后,让 WSL / UNC / 网络盘落到盘符列表末尾。
+const NO_DRIVE_LETTER_INDEX = 999;
+
 export function getFileBrowserEntryResolvedSizeBytes(entry: DirEntry, dirSizesStore: DirSizesStore): number {
   if (entry.is_file) {
     return Number(entry.size) || 0;
@@ -57,6 +61,26 @@ export function sortFileBrowserEntries(
   const getLinkSortFields = tagContext?.getLinkSortFields;
 
   return [...items].sort((entryA, entryB) => {
+    // FORK-MODIFICATION: 验收反馈 2026-10-13 — locations 视图（sfm://locations）
+    // 按盘符序号排序：C → D → E → F ...，而不是按显示名（"Win (C:)" 会排到
+    // "photos (G:)" 前面 —— 用户原话"按磁盘序号排序"）。
+    //
+    // 只在两个 entry 都带 drive_metadata 时生效 —— 那正是 locations 虚拟目录的形状
+    // （见 utils/virtual-locations.ts::driveInfoToDirEntry）。普通目录不受影响。
+    // direction 依然生效:desc 时盘符倒序,与用户点击排序表头的预期一致。
+    //
+    // 非盘符路径(WSL `//wsl.localhost/...` / UNC `//server/share`)的
+    // drive_letter_index 是 0,这里当成 NO_DRIVE_LETTER_INDEX(=999) 排到盘符之后 ——
+    // 否则 0 会让 WSL 抢到 C: 前面。字段缺失的老数据同样落 999,保持原有相对次序。
+    if (entryA.drive_metadata && entryB.drive_metadata) {
+      const indexA = entryA.drive_metadata.drive_letter_index || NO_DRIVE_LETTER_INDEX;
+      const indexB = entryB.drive_metadata.drive_letter_index || NO_DRIVE_LETTER_INDEX;
+
+      if (indexA !== indexB) {
+        return (indexA - indexB) * multiplier;
+      }
+    }
+
     // FORK-MODIFICATION: 可关闭的文件夹优先排序（上游 #529/#481/#482）
     // foldersFirst 为 true 时与改动前的 dirsFirst 表达式逐字节等价。
     if (foldersFirst && entryA.is_dir !== entryB.is_dir) {

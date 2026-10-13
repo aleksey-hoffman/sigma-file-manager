@@ -35,6 +35,8 @@ import {
 import { revealInExplorer } from '@/utils/open-in-explorer';
 import { openNativeProperties } from '@/utils/open-native-properties';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
+import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileTreeContextMenu from './file-tree-context-menu.vue';
 import type { DirEntry } from '@/types/dir-entry';
 
@@ -68,12 +70,38 @@ const { expandedPaths, selectedPath } = storeToRefs(folderTreeStore);
 // tree 节点的 FileTreeFlatRow 不是完整 DirEntry；右键菜单只需 path + isDirectory。
 // reka-ui ContextMenuRoot 自己管 open 状态,这里只记 target 即可。
 const clipboardStore = useClipboardStore();
+const { renameItem } = useDirEntryActions();
 
 interface TreeMenuTarget {
   path: string;
   isDirectory: boolean;
 }
 const contextMenuTarget = ref<TreeMenuTarget | null>(null);
+const renameTarget = ref<DirEntry | null>(null);
+const renameDialogOpen = ref(false);
+
+// FORK-MODIFICATION: 验收反馈 2026-10-13 — 目录树右键加"重命名"。
+// tree 节点只有 path + isDirectory,重命名时构造一个最小 DirEntry 喂给现成的
+// FileBrowserRenameDialog（与 file-browser-context-menu 的 rename 走同一条组件路径）。
+function buildFakeEntry(target: TreeMenuTarget): DirEntry {
+  const path = target.path;
+  const name = path.split(/[\\/]/).pop() ?? '';
+  return {
+    name,
+    path,
+    ext: '',
+    is_dir: target.isDirectory,
+    is_file: !target.isDirectory,
+    is_hidden: false,
+    is_symlink: false,
+    size: 0,
+    created_time: 0,
+    modified_time: 0,
+    accessed_time: 0,
+    item_count: null,
+    mime: null,
+  } as unknown as DirEntry;
+}
 
 function openContextMenu(row: { path: string; isDirectory: boolean }) {
   contextMenuTarget.value = { path: row.path, isDirectory: row.isDirectory };
@@ -91,12 +119,12 @@ async function handleContextAction(name: string) {
   }
 
   switch (name) {
-    case 'copy-path': {
-      await navigator.clipboard.writeText(target.path).catch((err: unknown) => {
-        console.error('clipboard writeText failed:', err);
-      });
+    case 'copy-path':
+    case 'copy':
+    case 'cut':
+      // copy / cut 由 FileTreeContextMenu 内部已经调 clipboardStore.setClipboard
+      // 后 emit 上来,这里不再重复处理(避免剪贴板状态被覆盖)。
       break;
-    }
     case 'paste': {
       if (clipboardStore.pasteItems && target.isDirectory) {
         try {
@@ -106,6 +134,11 @@ async function handleContextAction(name: string) {
           console.error('paste failed:', err);
         }
       }
+      break;
+    }
+    case 'rename': {
+      renameTarget.value = buildFakeEntry(target);
+      renameDialogOpen.value = true;
       break;
     }
     case 'open-containing-directory': {
@@ -272,6 +305,22 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
       @close="closeContextMenu"
     />
   </ContextMenu>
+
+  <!-- FORK-MODIFICATION: 验收反馈 2026-10-13 — 目录树右键菜单加"重命名"项,
+       复用 FileBrowserRenameDialog(与 file-browser 一致组件)。 -->
+  <FileBrowserRenameDialog
+    v-model:open="renameDialogOpen"
+    :entry="renameTarget"
+    @confirm="async (newName) => {
+      const target = renameTarget;
+      renameDialogOpen = false;
+      renameTarget = null;
+      if (target) {
+        await renameItem(target, newName);
+      }
+    }"
+    @cancel="() => { renameDialogOpen = false; renameTarget = null; }"
+  />
 </template>
 
 <style scoped>

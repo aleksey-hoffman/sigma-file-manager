@@ -22,7 +22,7 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-display-src';
 import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
 import { getImageSrc } from './utils';
-import { getDriveEntryVolumeSizeBytes } from '@/utils/drive-icon';
+import { getDriveEntryVolumeSizeBytes, getDriveEntryAvailableSpaceBytes } from '@/utils/drive-icon';
 
 const DEFAULT_GRID_THUMBNAIL_SIZE = {
   width: 340,
@@ -221,6 +221,15 @@ function cancelPreviewThumbnail(): void {
 }
 
 function getDirSizeDisplay(entry: DirEntry): string | null {
+  // FORK-MODIFICATION: 验收反馈 2026-10-13 — 磁盘条目（locations 视图）改为只显示
+  // "空余空间"，不再显示 "X 项 · 总容量"。用户原话:"显示出磁盘空余空间大小,
+  // 可以不显示'*项'"。
+  const driveAvailableSpace = getDriveEntryAvailableSpaceBytes(entry);
+
+  if (driveAvailableSpace !== null) {
+    return formatBytes(driveAvailableSpace);
+  }
+
   const itemCount = getDirItemCount(entry);
   const itemCountStr = itemCount !== null ? t('fileBrowser.itemCountShort', { count: itemCount }) : null;
   const driveVolumeSize = getDriveEntryVolumeSizeBytes(entry);
