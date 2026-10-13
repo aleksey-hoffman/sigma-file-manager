@@ -966,6 +966,7 @@
     "actions": {
       "rename": "Preimenuj",
       "copy": "Kopiraj",
+      "cut": "Izreži",
       "move": "Premakni",
       "paste": "Prilepi",
       "pasteToPane1": "Prilepi v podokno 1",

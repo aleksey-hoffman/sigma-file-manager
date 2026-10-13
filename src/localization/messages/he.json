@@ -968,6 +968,7 @@
     "actions": {
       "rename": "שנה שם",
       "copy": "העתק",
+      "cut": "גזור",
       "move": "העבר",
       "createLink": "צור קישור",
       "paste": "הדבק",

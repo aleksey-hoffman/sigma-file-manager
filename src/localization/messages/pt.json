@@ -935,6 +935,7 @@
     "actions": {
       "rename": "Renomear",
       "copy": "Copiar",
+      "cut": "Recortar",
       "move": "Mover",
       "paste": "Colar",
       "pasteToPane1": "Colar no painel 1",

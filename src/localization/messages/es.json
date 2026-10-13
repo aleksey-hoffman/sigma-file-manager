@@ -938,6 +938,7 @@
     "actions": {
       "rename": "Renombrar",
       "copy": "Copiar",
+      "cut": "Cortar",
       "move": "Mover",
       "paste": "Pegar",
       "pasteToPane1": "Pegar en panel 1",

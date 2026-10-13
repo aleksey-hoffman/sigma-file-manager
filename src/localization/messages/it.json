@@ -936,6 +936,7 @@
     "actions": {
       "rename": "Rinomina",
       "copy": "Copia",
+      "cut": "Taglia",
       "move": "Sposta",
       "paste": "Incolla",
       "pasteToPane1": "Incolla nel pannello 1",

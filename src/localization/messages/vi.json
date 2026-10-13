@@ -936,6 +936,7 @@
     "actions": {
       "rename": "Đổi tên",
       "copy": "Sao chép",
+      "cut": "Cắt",
       "move": "Di chuyển",
       "paste": "Dán",
       "pasteToPane1": "Dán vào bảng 1",

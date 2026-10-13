@@ -936,6 +936,7 @@
     "actions": {
       "rename": "重命名",
       "copy": "复制",
+      "cut": "剪切",
       "move": "移动",
       "paste": "粘贴",
       "pasteToPane1": "粘贴到面板 1",

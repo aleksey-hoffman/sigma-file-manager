@@ -936,6 +936,7 @@
     "actions": {
       "rename": "名前を変更",
       "copy": "コピー",
+      "cut": "切り取り",
       "move": "移動",
       "paste": "貼り付け",
       "pasteToPane1": "ペイン1に貼り付け",

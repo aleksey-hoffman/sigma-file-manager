@@ -936,6 +936,7 @@
     "actions": {
       "rename": "Yeniden adlandır",
       "copy": "Kopyala",
+      "cut": "Kes",
       "move": "Taşı",
       "paste": "Yapıştır",
       "pasteToPane1": "Panel 1'e yapıştır",

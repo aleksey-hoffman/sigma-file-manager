@@ -969,6 +969,7 @@
     "actions": {
       "rename": "Rename",
       "copy": "Copy",
+      "cut": "Cut",
       "move": "Move",
       "createLink": "Create link",
       "paste": "Paste",

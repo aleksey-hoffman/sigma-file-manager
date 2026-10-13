@@ -938,6 +938,7 @@
     "actions": {
       "rename": "Umbenennen",
       "copy": "Kopieren",
+      "cut": "Ausschneiden",
       "move": "Verschieben",
       "paste": "Einfügen",
       "pasteToPane1": "In Bereich 1 einfügen",
