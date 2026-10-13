@@ -245,6 +245,13 @@ async function handleClick(event: MouseEvent) {
   }
 }
 
+// FORK-MODIFICATION: 验收反馈 2026-10-13 — 点击主题图本体打开背景管理弹窗。
+// 弹窗(BackgroundManagerDialog)里已经有:内置图列表 + 本地选图
+// (openFilePicker / 拖放区 / URL 输入),所以这里只是补一个入口。
+function openBackgroundManager() {
+  isMediaEditorOpen.value = true;
+}
+
 function handleDropdownOpenChange(open: boolean) {
   if (!open && isPositionPopoverOpen.value) {
     return;
@@ -268,7 +275,19 @@ function preventPopoverClose(event: Event) {
 
 <template>
   <div class="home-banner">
-    <div class="home-banner__media-container">
+    <!--
+      FORK-MODIFICATION: 验收反馈 2026-10-13 — 用户找不到背景管理入口
+      (原来只在 banner 左下角 28px 的齿轮按钮里,且上一轮把 banner 缩到 28vh 后
+      按钮挤在角落更不明显)。改成:点主题图本体即可打开背景管理弹窗。
+      弹窗内已有内置图列表 + 本地选图(openFilePicker / 拖放区 / URL 输入),
+      所以这里只补入口,不改数据流。
+      视频走同样入口(它也可能是用户换上去的)。
+    -->
+    <div
+      class="home-banner__media-container home-banner__media-container--clickable"
+      :title="t('home.backgroundManager')"
+      @click="openBackgroundManager"
+    >
       <img
         v-if="currentMediaType === 'image' && currentMediaUrl"
         :src="currentMediaUrl"
@@ -297,7 +316,16 @@ function preventPopoverClose(event: Event) {
       修法:删两个 overlay div + 对应 CSS;actions 容器 position 仍 absolute,保持原视觉锚点。
     -->
 
-    <div class="home-banner__actions">
+    <!--
+      FORK-MODIFICATION: 验收反馈 2026-10-13 — @click.stop:标题行里的
+      刷新 / 齿轮按钮不该触发"点图打开背景管理"。两者在 DOM 上是兄弟节点
+      (actions 不在 media-container 里),正常不会冒泡过去,但 stop 让这条
+      不变量显式化 —— 后续有人把 actions 挪进 media-container 时不会静默坏掉。
+    -->
+    <div
+      class="home-banner__actions"
+      @click.stop
+    >
       <span class="home-banner__title">
         {{ t('pages.home') }}
       </span>
@@ -460,23 +488,40 @@ function preventPopoverClose(event: Event) {
 </template>
 
 <style>
+/* FORK-MODIFICATION: 验收反馈 2026-10-13 — 原来 banner 用固定 height + overflow:hidden,
+   .home-banner__actions 靠 position:absolute 压在图片上,标题和两个按钮直接叠在图里
+   看不清。现在改成「图片在上、标题行在下」的正常流布局,容器不再裁剪。
+
+   - .home-banner 不再设 height / overflow:hidden —— 图片自身定高,actions 顺排。
+   - .home-banner__media-container 保留 height(图片显示区)。
+   - .home-banner__actions 去掉 absolute,改为 flex 行 + 上间距。 */
 .home-banner {
   position: relative;
-  overflow: hidden;
   width: 100%;
-  /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 缩小 banner 高度,留出与"主页"标题
-     / 下方 UserDirectories / Drives 区的视觉呼吸感。原 50vh / min 300 / max 500。 */
-  height: 28vh;
-  min-height: 180px;
-  max-height: 280px;
+  margin-bottom: 20px;
 }
 
 .home-banner__media-container {
+  /* 图片显示区高度:比上一轮略高一点,给下方标题行留出空间后仍然保持紧凑。 */
   width: 100%;
-  height: 100%;
+  height: 24vh;
+  min-height: 150px;
+  max-height: 240px;
   padding: 6px;
   padding-left: 0;
   border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* FORK-MODIFICATION: 验收反馈 2026-10-13 — 主题图可点击换图,给指针光标 +
+   hover 时轻微提亮,让"这张图能点"这件事一眼可见。 */
+.home-banner__media-container--clickable {
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.home-banner__media-container--clickable:hover {
+  filter: brightness(1.06);
 }
 
 .home-banner__media {
@@ -494,36 +539,41 @@ function preventPopoverClose(event: Event) {
   原 .home-banner__overlay / --top / --bottom 全部移除(对应 template 的 div 也已删)。
 */
 
+/* FORK-MODIFICATION: 验收反馈 2026-10-13 — 从"绝对定位压在图上"改为"图片下方的正常流
+   标题行":去掉 position:absolute / z-index / bottom / left,改为 flex 行 + 上间距。
+   这样标题"主页"和两个按钮都在图下方，不再和主题图重叠看不清。 */
 .home-banner__actions {
-  position: absolute;
+  position: relative;
   z-index: 3;
-  /* FORK-MODIFICATION: 验收反馈 2026-10-13 — 距 banner 底 28px,标题与下方内容留更明显间距。 */
-  bottom: 28px;
-  left: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  margin-top: 14px;
+  padding-inline-start: 6px;
+  gap: 10px;
 }
 
 .home-banner__title {
   color: hsl(var(--foreground));
-  /* FORK-MODIFICATION: 验收反馈 2026-10-13 — 标题字号从 20px 加大到 32px,更醒目。 */
-  font-size: 32px;
+  /* FORK-MODIFICATION: 验收反馈 2026-10-13 — 32px 标题移到图片下方的正常流里,
+     不再压在图上,所以不需要 text-shadow 兜底对比度(渐变与阴影在 10-12 两轮已删)。 */
+  font-size: 28px;
   font-weight: 600;
-  /* FORK-MODIFICATION: 验收反馈 2026-10-12 — 渐变已去,文字阴影也不再需要,移除。 */
 }
 
 .home-banner__action-button {
-  width: 28px;
-  height: 28px;
+  /* FORK-MODIFICATION: 验收反馈 2026-10-13 — 按钮已移到图下方正常流,不再压图,
+     所以背景改成实心 card 色 + border(与主页卡片视觉一致),去掉 backdrop-filter
+     和 margin-top(原先是给 absolute 定位调的)。 */
+  width: 32px;
+  height: 32px;
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius-sm);
-  margin-top: 4px;
-  backdrop-filter: blur(4px);
-  background-color: hsl(var(--background) / 10%);
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
 }
 
 .home-banner__action-button:hover {
-  background-color: hsl(var(--background) / 50%);
+  background-color: hsl(var(--muted));
 }
 
 .home-banner__action-icon {
