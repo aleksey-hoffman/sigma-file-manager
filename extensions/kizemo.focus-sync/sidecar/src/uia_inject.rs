@@ -64,6 +64,7 @@ use windows::Win32::System::Com::{
 };
 use windows::Win32::UI::Accessibility::{
     CUIAutomation, IUIAutomation, IUIAutomationElement,
+    IUIAutomationElementArray,
     IUIAutomationInvokePattern, IUIAutomationValuePattern,
     TreeScope_Descendants, UIA_ButtonControlTypeId, UIA_EditControlTypeId,
     UIA_InvokePatternId, UIA_ValuePatternId,
@@ -934,6 +935,54 @@ fn is_winui3_wrapped_signature(has_filename_host: bool, has_1001: bool) -> bool 
     has_filename_host && has_1001
 }
 
+/// v0.5.10: 判定「Windows 11 传统外壳文件对话框」（打开 / 另存为 / 浏览文件夹）。
+///
+/// 这是一次取证驱动的修正。2026-10-13 之前，所有非 WinUI 3 包装的对话框都被
+/// 判成「非包装」而直接掉进 F3，理由记在 `inject_via_uia` 的 BUG-2 注释里：
+/// 「首次注入时 `FileNameControlHost` / `50003` 还没进 UIA 树，wrapper 检测不到」。
+///
+/// 2026-10-13 真机取到的 UIA 树**推翻了这个解释**（`_acceptance/uia-open-dialog.txt`，
+/// 135 个节点，Ctrl+L 前后各取一次）：传统外壳对话框里 `FileNameControlHost` 与
+/// `50003` **一次都没有出现过**。不是竞态，是这两种标记压根不属于它：
+/// 它们是 WinUI 3 的壳，而「打开」对话框走的是 shell 自带的 `IFileDialog`
+/// （class `#32770` + `DUIViewWndClassName`），UI 完全是另一套。
+///
+/// 实测形态（同一棵树里三个关键控件互不重叠）：
+///   - `aid='1148'` `class='ComboBoxEx32'` —— 文件名框（`ComboBox` → `Edit` 三层同 aid）
+///   - `aid='1090'` `class='Static'` `name='文件名(N):'` —— 文件名标签
+///   - `aid='41477'` `class='Address Band Root'` —— 地址栏（面包屑态，无 ValuePattern）
+///   - `aid='1001'` `class='ToolbarWindow32'` `name='地址: <当前目录>'` —— 地址栏本体
+///
+/// 注意 `1001` 在两种对话框里含义**相反**：WinUI 3 包装的另存为里它是文件名框，
+/// 传统外壳里它是地址栏。所以本函数**不以 `1001` 为条件**，只用「文件名框是 1148」
+/// 加「存在地址栏」两条。
+///
+/// 关于「不影响另存为」——准确的说法（2026-10-13 修正，勿再夸大）：
+/// 两个签名**不是结构性互斥**的。`is_winui3_wrapped_signature` 完全不看 `1148`，
+/// 所以一个同时带 `FileNameControlHost`、`1001`、`1148`、`41477` 的假想对话框
+/// 会让两者同时为真。单测 `signatures_can_cofire_and_that_is_harmless` 把这个
+/// 事实钉住了。
+///
+/// 真正成立、且是另存为不受影响的依据是一条**实测**事实：Chromium / WinUI 3
+/// 包装的另存为对话框里**不存在 `aid='1148'` 的文件名框**（它的文件名框是
+/// `1001`），因此 `is_classic_shell_signature` 对它恒为 false。
+///
+/// 万一两者同时为真，后果也是安全的：路由条件是 `||`，两者进的是**同一条**
+/// H1/H2 链，由 H1 内部的守卫（前台校验 + 文件名框读回）决定成败，
+/// 与走哪条分支无关。
+fn is_classic_shell_signature(has_1148: bool, has_address_band: bool) -> bool {
+    has_1148 && has_address_band
+}
+
+/// v0.5.10: 把形态判定收敛成一个可打印的字符串，供路由日志使用。
+fn dialog_shape_label(is_winui3_wrapped: bool, is_classic_shell: bool) -> &'static str {
+    match (is_winui3_wrapped, is_classic_shell) {
+        (true, _) => "winui3-wrapped",
+        (_, true) => "classic-shell",
+        _ => "unclassified",
+    }
+}
+
 /// Round 19f: try COM IFileDialog::SetFolder first. Returns true on success.
 fn try_set_folder_via_com(dialog_hwnd: u32, target_path: &str) -> bool {
     use windows::Win32::UI::Accessibility::AccessibleObjectFromWindow;
@@ -1123,8 +1172,9 @@ fn inject_via_uia(
   // WinUI 3 wrapped dialog BEFORE we decide which fallback layer to start at.
     let mut has_filename_host = false;
     let mut has_1001 = false;
-    let mut best_edit: Option<IUIAutomationElement> = None;
-    let mut best_edit_score = i32::MIN;
+    // v0.5.10: 传统外壳对话框的两个判据（见 is_classic_shell_signature）。
+    let mut has_1148 = false;
+    let mut has_address_band = false;
     let mut best_button: Option<IUIAutomationElement> = None;
     let mut best_button_score = i32::MIN;
 
@@ -1149,23 +1199,19 @@ fn inject_via_uia(
         if aid == "1001" {
             has_1001 = true;
         }
+        // v0.5.10: 传统外壳（#32770 + IFileDialog）形态判据。
+        // 1148 = 文件名框 ComboBoxEx32；41477 = Address Band Root（地址栏外壳）。
+        // 两者都在同一棵 135 节点的树里实测确认，且 FileNameControlHost/50003 全程缺席。
+        if aid == "1148" {
+            has_1148 = true;
+        }
+        if aid == "41477" {
+            has_address_band = true;
+        }
 
-        if control_type == UIA_EditControlTypeId {
-            // v0.5.5 (Mavis Round 25 Q-4, Round 26 S-1): 41477 is Chromium
-            // address bar ComboBox, UIA ValuePattern SetValue is APPEND not
-            // replace — writing to it pollutes the address bar with
-            // "<current>C:\\" instead of navigating. Exclude from best_edit
-            // candidates entirely. Reuse the `aid` variable computed at
-            // line 573 (avoid redundant UIA COM call per element).
-            if aid == "41477" {
-                continue;
-            }
-            let score = filename_edit_score(&element);
-            if score > best_edit_score {
-                best_edit_score = score;
-                best_edit = Some(element);
-            }
-        } else if control_type == UIA_ButtonControlTypeId {
+        // v0.5.10: 文件名框的挑选改由 `pick_filename_edit` 统一负责，
+        // 与 `reader::read_path` 共用同一份规则。本循环里只留按钮打分。
+        if control_type == UIA_ButtonControlTypeId {
             let score = confirm_button_score(&element);
             if score > best_button_score {
                 best_button_score = score;
@@ -1174,13 +1220,36 @@ fn inject_via_uia(
         }
     }
 
-    let is_winui3_wrapped = is_winui3_wrapped_signature(has_filename_host, has_1001);
+    // v0.5.10: 与读取端共用的文件名框选择。
+    let best_edit = pick_filename_edit(&elements);
+    let best_edit_aid = best_edit
+        .as_ref()
+        .map_or("<none>".to_string(), current_automation_id);
 
-    // D5 [MEDIUM]: 4-layer fallback chain for WinUI 3 wrapped dialogs.
-    if is_winui3_wrapped {
+    let is_winui3_wrapped = is_winui3_wrapped_signature(has_filename_host, has_1001);
+    // v0.5.10: 传统外壳「打开」对话框形态。恒与 is_winui3_wrapped 互斥。
+    let is_classic_shell = is_classic_shell_signature(has_1148, has_address_band);
+
+    // v0.5.10 路由判定日志 —— 无论走哪条分支都打这一行。
+    //
+    // 加它的原因：此前判断「为什么这个对话框没同步」只有一个办法，就是把
+    // `WinUI 3 wrapped detected` 这条 debug 行找出来反证它**不存在**。
+    // 而 `EnvFilter` 是 `info,spike=debug`，一旦有人调过级别，那条 debug 就没了，
+    // 「没打出来」和「没检测到」在日志里长得一模一样。现在形态判定是 info 级、
+    // 带全部原始判据，任何一次注入都能一眼看出走了哪条路。
+    info!(
+        "v0.5.10 ROUTE hwnd={dialog_hwnd} shape={} \
+         (has_filename_host={has_filename_host} has_1001={has_1001} \
+         has_1148={has_1148} has_address_band={has_address_band} \
+         filename_aid={best_edit_aid} nodes={count})",
+        dialog_shape_label(is_winui3_wrapped, is_classic_shell),
+    );
+
+    // D5 [MEDIUM]: 4-layer fallback chain. v0.5.10: 门从「仅 WinUI 3 包装」
+    // 放宽为「WinUI 3 包装 或 传统外壳」—— 后者是「打开」对话框此前被漏掉的唯一原因。
+    if is_winui3_wrapped || is_classic_shell {
         debug!(
-            "WinUI 3 wrapped detected (has_filename_host={has_filename_host} has_1001={has_1001}); \
-             entering 4-layer fallback chain"
+            "wrapped-family dialog detected; entering 4-layer fallback chain"
         );
 
         // H1 — SendInput Ctrl+L + path, then GUARDED Enter (v0.5.7 F-0).
@@ -1213,8 +1282,8 @@ fn inject_via_uia(
 
         // F3 — fall through to the v0.5.0 baseline SetValue path below.
         warn!(
-            "v0.5.1: H1 + H2 failed; falling back to v0.5.0 SetValue 1001 \
-             (filename pollution expected on WinUI 3 wrapped dialogs)"
+            "v0.5.10: H1 + H2 failed; falling back to v0.5.0 SetValue on the \
+             filename box (filename pollution expected)"
         );
     }
 
@@ -1240,13 +1309,24 @@ fn inject_via_uia(
     //   - H2's last execution anywhere in the logs is 2026-10-07T07:24Z,
     //     before the F-1 foreground fix made H1 stop aborting into it.
     //
-    // WHY this line is reached at all: the whole H1 -> H2 chain is gated on
-    // `is_winui3_wrapped`. On the FIRST injection into a freshly opened
-    // dialog the `FileNameControlHost` / `50003` marker is not in the UIA tree
-    // yet, so the wrapper is not detected, the H1/H2 chain is skipped, and
-    // control falls straight through here — i.e. F3 runs exactly when the
-    // dialog is least ready. That race is the reason to fix this line rather
-    // than only logging.
+    // WHY this line is reached at all — CORRECTED 2026-10-13 (v0.5.10).
+    //
+    // The original note here claimed a RACE: "on the FIRST injection into a
+    // freshly opened dialog the `FileNameControlHost` / `50003` marker is not
+    // in the UIA tree yet". That explanation is now REFUTED by measurement.
+    // A real Win11 shell "打开" dialog was dumped twice (before and after
+    // Ctrl+L, 135 nodes each, `_acceptance/uia-open-dialog*.txt`):
+    // `FileNameControlHost` and `50003` never appear in it AT ALL. They are
+    // WinUI 3 shell markers; a classic `#32770` + `DUIViewWndClassName`
+    // IFileDialog simply does not have them. So for classic-shell dialogs
+    // `is_winui3_wrapped` was false on every single injection, not just the
+    // first — which is why F3 kept winning and the user kept seeing the path
+    // sitting in `文件名(N):` instead of the dialog navigating.
+    //
+    // The gate now also accepts `is_classic_shell_signature` (1148 + 41477),
+    // which is disjoint from the WinUI 3 signature by construction, so Save As
+    // routing is unchanged. The restore contract below stays as-is: it is still
+    // the correct behaviour whenever H1+H2 genuinely fail.
     //
     // The fix is the same contract H2 has always had, minus the blind faith:
     // put the path in, let the dialog parse it, take the field BACK, and prove
@@ -1361,12 +1441,72 @@ fn compute_score_for_name(name: &str) -> i32 {
     1
 }
 
-fn filename_edit_score(element: &IUIAutomationElement) -> i32 {
+/// v0.5.10: 提到 `pub(crate)`，供 `reader::read_path` 复用。
+///
+/// 「哪个 Edit 才是文件名框」必须有唯一一份定义。写入端和读取端各写一套，
+/// 结果就是 2026-10-13 观察到的：写入端正确地写进了 `aid='1148'`，读取端却
+/// 读回了 `path='.github'` —— 同一个对话框，两边说的不是同一件事。
+pub(crate) fn filename_edit_score(element: &IUIAutomationElement) -> i32 {
     let aid = current_automation_id(element);
     if let Some(score) = compute_score_for_automation_id(&aid) {
         return score;
     }
     compute_score_for_name(&current_name(element))
+}
+
+/// v0.5.10: 从一批 UIA 元素里挑出「文件名框」，写入端与读取端共用。
+///
+/// 这是本次修复里唯一真正需要收敛的东西。2026-10-13 之前的两个调用方：
+///   - 写入端：按 `UIA_EditControlTypeId` 过滤后打分，取最高分
+///   - 读取端：**取树里遇到的第一个 Edit**
+/// 规则不同 = 对话框可以同时被「正确写入」和「错误读出」，而日志里两者都不报错。
+/// 现在只有这一份实现。
+///
+/// 关于 `UIA_EditControlTypeId` 过滤：**保持不放宽**。
+///
+/// 曾经想过「命中 1148/1001 就跳过 ControlType 判断」，理由是托管 UIA 把
+/// `1148` 那串报成 `ControlType.Pane`。但那条证据来自 PowerShell 的
+/// `UIAutomationClient`，而本进程走的是原生 `IUIAutomation`，两者不是一回事；
+/// 而真机日志里旧代码（纯 ControlType 过滤）**本来就选中了 `1148`**。
+///
+/// 更要命的是 `1001` 的含义会翻转：传统外壳对话框里 `1001` 是地址栏
+/// （`class='ToolbarWindow32' name='地址: ...'`，见 uia-open-dialog.txt [126]）。
+/// 放宽之后，一个「只有 1001 地址栏、没有 1148」的对话框会让写入端
+/// 把路径 SetValue 进地址栏 —— 正是 v0.5.5 排除 41477 要防的 APPEND 污染，
+/// 只是换了个 id。
+///
+/// 所以：**宁可少认，不可认错。** 认不出来时 F3 会因 `no best_edit` 明确报错，
+/// 不会悄悄写坏地址栏。
+pub(crate) fn pick_filename_edit(
+    elements: &IUIAutomationElementArray,
+) -> Option<IUIAutomationElement> {
+    let count = unsafe { elements.Length() }.ok()?;
+    let mut best: Option<IUIAutomationElement> = None;
+    let mut best_score = i32::MIN;
+
+    for i in 0..count {
+        let element = match unsafe { elements.GetElement(i) } {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        let aid = current_automation_id(&element);
+        if aid == "41477" {
+            continue;
+        }
+        let control_type = match unsafe { element.CurrentControlType() } {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
+        if control_type != UIA_EditControlTypeId {
+            continue;
+        }
+        let score = filename_edit_score(&element);
+        if score > best_score {
+            best_score = score;
+            best = Some(element);
+        }
+    }
+    best
 }
 
 /// Score candidate confirm button: IDOK highest, then name matches.
@@ -1671,5 +1811,112 @@ mod tests {
             assert_eq!(ki.wScan, 0x4E2D);
             assert_eq!(ki.dwFlags.0, KEYEVENTF_UNICODE.0);
         }
+    }
+
+    // ===== v0.5.10：对话框形态判定 =====
+
+    /// 真机实测的「打开」对话框判据（`_acceptance/uia-open-dialog.txt`，135 节点）：
+    /// 有 `1148`（文件名框）与 `41477`（地址栏），但**没有** `FileNameControlHost`/`50003`。
+    const OPEN_DIALOG_HAS_1148: bool = true;
+    const OPEN_DIALOG_HAS_ADDRESS_BAND: bool = true;
+    const OPEN_DIALOG_HAS_FILENAME_HOST: bool = false;
+    const OPEN_DIALOG_HAS_1001: bool = true;
+
+    #[test]
+    fn classic_shell_signature_matches_measured_open_dialog() {
+        assert!(is_classic_shell_signature(
+            OPEN_DIALOG_HAS_1148,
+            OPEN_DIALOG_HAS_ADDRESS_BAND
+        ));
+    }
+
+    /// 另存为（WinUI 3 / Chromium 包装）实测判据：文件名框是 `1001`，
+    /// 有 `FileNameControlHost` 或 `50003`，**没有** `1148`。
+    ///
+    /// 这是「绝不影响另存为」的实际依据：新分支对它恒为 false，
+    /// 于是 `is_winui3_wrapped || is_classic_shell` 与改动前的
+    /// `is_winui3_wrapped` 在该对话框上取值完全相同。
+    #[test]
+    fn classic_shell_signature_never_fires_on_winui3_save_as() {
+        // Save As: has_filename_host=true, has_1001=true, has_1148=false, has_address_band=true
+        assert!(is_winui3_wrapped_signature(true, true));
+        assert!(!is_classic_shell_signature(false, true));
+    }
+
+    #[test]
+    fn classic_shell_signature_requires_both_signals() {
+        // 只有文件名框、没有地址栏 → 不认（可能是别的控件恰好叫 1148）
+        assert!(!is_classic_shell_signature(true, false));
+        // 只有地址栏、没有 1148 文件名框 → 不认（WinUI 3 另存为就是这个形态）
+        assert!(!is_classic_shell_signature(false, true));
+        // 两个都没有 → 不认
+        assert!(!is_classic_shell_signature(false, false));
+    }
+
+    /// 两个签名**可以同时命中** —— 这不是 bug，但必须写下来，
+    /// 因为「结构性互斥」是一个很容易顺手写进注释、而且几乎没人会去证伪的说法。
+    ///
+    /// 同时命中时行为是安全的：路由条件是 `||`，两者进的是同一条 H1/H2 链。
+    #[test]
+    fn signatures_can_cofire_and_that_is_harmless() {
+        let a = is_winui3_wrapped_signature(true, true);
+        let b = is_classic_shell_signature(true, true);
+        assert!(a && b, "假想的混合对话框会同时命中两个签名 —— 这是事实，不是断言");
+    }
+
+    /// 两个**实测**对话框各自落到正确分支，且恰好只有一个分支为真。
+    /// 这是路由表本身的可执行版本。
+    #[test]
+    fn measured_dialogs_route_to_exactly_one_branch() {
+        // 打开：host=false 1001=true 1148=true band=true
+        let open_wrapped = is_winui3_wrapped_signature(
+            OPEN_DIALOG_HAS_FILENAME_HOST,
+            OPEN_DIALOG_HAS_1001,
+        );
+        let open_classic = is_classic_shell_signature(
+            OPEN_DIALOG_HAS_1148,
+            OPEN_DIALOG_HAS_ADDRESS_BAND,
+        );
+        assert!(!open_wrapped && open_classic);
+        assert_eq!(dialog_shape_label(open_wrapped, open_classic), "classic-shell");
+
+        // 另存为：host=true 1001=true 1148=false band=true
+        let save_wrapped = is_winui3_wrapped_signature(true, true);
+        let save_classic = is_classic_shell_signature(false, true);
+        assert!(save_wrapped && !save_classic);
+        assert_eq!(dialog_shape_label(save_wrapped, save_classic), "winui3-wrapped");
+    }
+
+    /// 旧代码里写死的那句注释（"On the FIRST injection ... the marker is not in
+    /// the UIA tree yet"）已经被真机 dump 推翻。这里把实测值固定下来，
+    /// 免得以后又有人照着注释把门改回去。
+    #[test]
+    fn measured_open_dialog_has_no_winui3_marker() {
+        assert!(!OPEN_DIALOG_HAS_FILENAME_HOST, "真机 dump 里 FileNameControlHost/50003 全程缺席");
+        // 即便 1001 存在，包装签名仍为 false —— 这正是旧门失效的原因。
+        assert!(!is_winui3_wrapped_signature(
+            OPEN_DIALOG_HAS_FILENAME_HOST,
+            OPEN_DIALOG_HAS_1001
+        ));
+    }
+
+    #[test]
+    fn dialog_shape_label_names_the_branch() {
+        assert_eq!(dialog_shape_label(true, false), "winui3-wrapped");
+        assert_eq!(dialog_shape_label(false, true), "classic-shell");
+        assert_eq!(dialog_shape_label(false, false), "unclassified");
+    }
+
+    /// 读取端与写入端现在共用 `pick_filename_edit`。这个断言锁住它们的
+    /// 一致性前提：文件名框的 id 得分必须高于任何普通 Edit，
+    /// 否则读回来的会是文件列表里的某个文件名（2026-10-13 的 `path='.github'`）。
+    #[test]
+    fn filename_box_outscores_generic_edits() {
+        let s1148 = compute_score_for_automation_id("1148").expect("1148 是已知文件名框 id");
+        let s1001 = compute_score_for_automation_id("1001").expect("1001 是已知文件名框 id");
+        assert!(s1148 > s1001);
+        assert!(s1001 > compute_score_for_name("某个单元格"));
+        assert_eq!(compute_score_for_name("文件名(N):"), 80);
+        assert_eq!(compute_score_for_name("file name"), 80);
     }
 }

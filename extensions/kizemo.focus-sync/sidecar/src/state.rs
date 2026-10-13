@@ -104,6 +104,25 @@ pub struct AppState {
     // not-yet-started extension stops it.
     pub last_health_poll_ts: AtomicU64,
 
+    // ---- v0.5.11: host-app process identity (second, independent liveness signal)
+    //
+    // See `hostproc` for the full incident write-up. Short version: on
+    // 2026-10-13 the extension's `/ext_alive` loop died silently while Sigma FM
+    // kept running, `extension_alive` went false, and the 60s gate then rejected
+    // *every* write including the verified-working download dialog.
+    //
+    // `host_pid_at_contact` is the PID we saw the last time the extension proved
+    // it was alive (ping or push). `host_app_stable()` re-probes tasklist and
+    // reports true only when the SAME process instance is still running. A
+    // Sigma FM restart yields a new PID, so the gate re-closes until the new
+    // instance makes contact -- preserving the v0.5.8 protection exactly.
+    pub host_pid_at_contact: Mutex<Option<u32>>,
+
+    // Cache for the tasklist probe. The dialog monitor retries a failed write
+    // roughly every 1.2s (the resync loop), and spawning a process that often
+    // is wasteful; 3s is far below any window we care about.
+    host_probe: Mutex<(Instant, Option<u32>)>,
+
     // ---- v0.5.7 G-2: is a write-back currently executing?
     //
     // The monitor polls every 8ms while tracking a dialog; one UIA+SendInput
@@ -150,6 +169,8 @@ impl AppState {
             first_push_received: AtomicBool::new(false),
             foreground_dialog_hwnd: AtomicI64::new(0),
             last_health_poll_ts: AtomicU64::new(0),
+            host_pid_at_contact: Mutex::new(None),
+            host_probe: Mutex::new((Instant::now() - std::time::Duration::from_secs(60), None)),
             sync_in_progress: AtomicBool::new(false),
         }
     }
@@ -266,6 +287,52 @@ impl AppState {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
         self.last_health_poll_ts.store(ts, Ordering::Relaxed);
+        // v0.5.11: contact just proved the extension is alive, so bind the host
+        // process identity to this moment. A later Sigma FM restart changes the
+        // PID and re-closes the secondary gate on its own.
+        self.note_host_contact();
+    }
+
+    // ---- v0.5.11 host-app identity ----
+
+    /// v0.5.11 — remember which host process instance just proved the extension
+    /// is alive. Called from both `/ext_alive` and `/set_path`: a path push is
+    /// just as strong evidence of liveness as a ping, and it is the signal that
+    /// still works when only the health timer has died.
+    pub fn note_host_contact(&self) {
+        if let Some(pid) = self.probe_host_pid() {
+            let mut guard = self.host_pid_at_contact.lock().unwrap_or_else(|e| e.into_inner());
+            *guard = Some(pid);
+        }
+    }
+
+    /// Cached tasklist probe. 3s TTL — see the `host_probe` field comment.
+    fn probe_host_pid(&self) -> Option<u32> {
+        let mut guard = self.host_probe.lock().unwrap_or_else(|e| e.into_inner());
+        if guard.0.elapsed() < std::time::Duration::from_secs(3) {
+            return guard.1;
+        }
+        let pid = crate::hostproc::host_pid();
+        *guard = (Instant::now(), pid);
+        pid
+    }
+
+    /// v0.5.11 — is the host app still the SAME process instance we last had
+    /// contact with?
+    ///
+    /// Returns false when we have never had contact (fresh sidecar, or the
+    /// extension has never pinged/pushed) — that preserves the v0.5.8 rule that
+    /// a sidecar which has never heard from the extension has nothing worth
+    /// injecting.
+    ///
+    /// Returns false when the PID changed: Sigma FM restarted, so the path we
+    /// hold belongs to the previous session and must not be injected.
+    pub fn host_app_stable(&self) -> bool {
+        let Some(current) = self.probe_host_pid() else {
+            return false; // host app not running at all
+        };
+        let guard = self.host_pid_at_contact.lock().unwrap_or_else(|e| e.into_inner());
+        guard.is_some_and(|seen| seen == current)
     }
 
     /// v0.5.8 — raw value of the last extension ping (0 if never seen).
@@ -289,6 +356,26 @@ impl AppState {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
         now.saturating_sub(last) <= window_ms
+    }
+
+    /// v0.5.11 — combined gate verdict: would a write be allowed right now?
+    ///
+    /// Defined here so `/health` and `writer::write_path` can never disagree
+    /// about whether the gate is open. `write_path` still inspects the two
+    /// signals separately for logging, but the decision is this one value.
+    pub fn gate_open(&self, window_ms: u64) -> bool {
+        self.extension_alive(window_ms) || self.host_app_stable()
+    }
+
+    /// v0.5.11 — current host PID (0 if not running). For `/health`.
+    pub fn host_pid(&self) -> u32 {
+        self.probe_host_pid().unwrap_or(0)
+    }
+
+    /// v0.5.11 — PID recorded at the last proven contact (0 if never). For `/health`.
+    pub fn host_pid_at_contact(&self) -> u32 {
+        let guard = self.host_pid_at_contact.lock().unwrap_or_else(|e| e.into_inner());
+        guard.unwrap_or(0)
     }
 
     pub fn get_current_path(&self) -> String {        let guard = self.current_path.lock().unwrap_or_else(|e| e.into_inner());
@@ -557,4 +644,20 @@ mod tests {
         }
         assert_eq!(state.health_snapshot().unsupported_dialog_count, 100);
     }
+
+    // -------------------------------------------------------------------
+    // 2026-10-13 真机事故复盘（v0.5.11 dedup 已回滚,本块保留作历史文档）：
+    //
+    // v0.5.11 曾在 should_opened_write_back 末尾追加
+    // `&& last_written_path(hwnd).as_deref() != Some(current_path)` 这条去重子句。
+    // 真机 3.0.3 (sha256=6C28735E5B56A45F03BCEEA4F43F910DB0C44627A3C1C57DAA67A86865DAAA98)
+    // 暴露:main.rs:464-473 的 `if !wrote_back` 分支用 initial_path(文件名)
+    // 覆盖 last_known_path,导致 iter 3 时 last_written=文件名 != current=目录
+    // → 又判 true → 形成新闪动环路（真机 07:50:08–07:50:12 复现）。
+    //
+    // 已回滚到 v0.5.10 行为:readback != current 即写,这是上一 release 的已知形态,
+    // 闪动幅度受 monitor 1.2s cooldown 限制。v0.5.11 这两条测试已删除。
+    // 若未来重新设计去重,必须在「读 + 覆盖 + 再读」三步的几何形状下验证
+    // main.rs:464-473 同步修好。
+    // -------------------------------------------------------------------
 }

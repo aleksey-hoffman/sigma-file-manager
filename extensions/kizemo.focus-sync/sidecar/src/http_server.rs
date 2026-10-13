@@ -43,7 +43,21 @@ use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 //
 // v0.5.8 carries: F3 filename-box restore + read-back (BUG-2), H2 read-back
 // verification (the "假成功" limitation), and the `dialog_gone` dead-HWND path.
-const SPIKE_VERSION: &str = "0.5.8";
+//
+// v0.5.10 (2026-10-13) carries: 传统外壳「打开」对话框的形态识别
+// (`is_classic_shell_signature` = 1148 + 41477)，使 H1/H2 链不再只对 WinUI 3
+// 包装对话框开放；读取端与写入端共用 `pick_filename_edit`；新增 info 级
+// `v0.5.10 ROUTE` 路由判定日志。
+//
+// v0.5.11 (2026-10-13) was rolled back on the same day. v0.5.11 tried to add a
+// last_written_path dedup clause to `should_opened_write_back`, but the
+// `if !wrote_back` branch in main.rs:464-473 overwrites `last_known_path`
+// with the dialog's read-back (filename for traditional Open dialogs), which
+// re-triggers the dedup on the very next Opened — net regression vs. v0.5.10
+// (real-machine repro: spike.log 07:50:08–07:50:12, two writes of F:\books
+// to hwnd=22809840 before the user navigated). Reverted; SPIKE_VERSION is
+// back at "0.5.10".
+const SPIKE_VERSION: &str = "0.5.10";
 
 #[derive(Debug, Deserialize)]
 struct SetPathBody {
@@ -111,6 +125,21 @@ struct HealthResponse {
     last_health_poll_age_ms: i64,
     /// v0.5.8: the gate's verdict. Writes are refused unless this is true.
     extension_alive: bool,
+    /// v0.5.11: PID of the running host app, or 0 if it is not running.
+    host_pid: u32,
+    /// v0.5.11: PID observed at the last proven extension contact (ping/push).
+    host_pid_at_contact: u32,
+    /// v0.5.11: the SECOND way through the stale-path gate — host app running
+    /// AND still the same process instance we last had contact with.
+    ///
+    /// Exposed for the same reason v0.5.8 exposed `extension_alive`: the
+    /// 2026-10-13 outage was invisible until someone read the sidecar's log.
+    /// When this is true while `extension_alive` is false, the extension's
+    /// heartbeat is dead but sync is still allowed — that is the normal state
+    /// during that outage, not an error in itself.
+    host_app_stable: bool,
+    /// v0.5.11: the gate's COMBINED verdict. True when a write would be allowed.
+    gate_open: bool,
 }
 
 /// Blocking HTTP server loop. Returns when the server is dropped (e.g. after
@@ -225,6 +254,12 @@ fn handle_set_path(
     // the latest call.
     let prev_path = state.get_current_path();
     let path_unchanged = prev_path == path;
+    // v0.5.11: a path push is just as strong evidence that the extension is
+    // alive as an /ext_alive ping, and it is the signal that still arrives when
+    // only the health timer has died (2026-10-13 incident). Bind the host
+    // process identity to this moment BEFORE the dedup branch returns, so an
+    // unchanged-path push still refreshes it.
+    state.note_host_contact();
     if path_unchanged {
         // v0.5.5 (Mavis Round 21 B-1): even if path didn't change, this
         // counts as a push — mark first_push_received explicitly. The
@@ -491,6 +526,12 @@ fn handle_health(
         last_health_poll_ts: last_poll,
         last_health_poll_age_ms: age_ms,
         extension_alive: alive_now,
+        // v0.5.11: the second liveness signal and the combined verdict, so the
+        // gate is readable from outside the process.
+        host_pid: state.host_pid(),
+        host_pid_at_contact: state.host_pid_at_contact(),
+        host_app_stable: state.host_app_stable(),
+        gate_open: state.gate_open(window),
     };
     respond_json(request, 200, &ResponseBody::Health(body))
 }
@@ -579,6 +620,12 @@ mod tests {
             last_health_poll_ts: 0,
             last_health_poll_age_ms: -1,
             extension_alive: false,
+            // v0.5.11: host-identity fields are not the subject of these
+            // serialization tests; pin them to the neutral value.
+            host_pid: 0,
+            host_pid_at_contact: 0,
+            host_app_stable: false,
+            gate_open: false,
         };
         let json = serde_json::to_string(&resp).unwrap();
         assert!(json.contains("\"status\":\"ok\""));
@@ -613,6 +660,12 @@ mod tests {
             last_health_poll_ts: 0,
             last_health_poll_age_ms: -1,
             extension_alive: false,
+            // v0.5.11: host-identity fields are not the subject of these
+            // serialization tests; pin them to the neutral value.
+            host_pid: 0,
+            host_pid_at_contact: 0,
+            host_app_stable: false,
+            gate_open: false,
         };
         let json = serde_json::to_string(&body).unwrap();
         assert!(json.contains("\"status\":\"degraded\""));
@@ -639,6 +692,12 @@ mod tests {
             last_health_poll_ts: 0,
             last_health_poll_age_ms: -1,
             extension_alive: false,
+            // v0.5.11: host-identity fields are not the subject of these
+            // serialization tests; pin them to the neutral value.
+            host_pid: 0,
+            host_pid_at_contact: 0,
+            host_app_stable: false,
+            gate_open: false,
         };
         let json = serde_json::to_string(&body).unwrap();
         assert!(

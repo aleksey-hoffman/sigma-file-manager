@@ -23,6 +23,7 @@ pub mod config;
 pub mod detector;
 pub mod events;
 pub mod fg_bypass;
+pub mod hostproc;
 pub mod http_server;
 pub mod logger;
 pub mod reader;
