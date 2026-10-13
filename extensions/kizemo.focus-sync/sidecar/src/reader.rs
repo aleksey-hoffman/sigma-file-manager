@@ -2,7 +2,8 @@
 
 use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::Accessibility::{
-    IUIAutomation, IUIAutomationValuePattern, TreeScope_Descendants, UIA_ValuePatternId,
+    IUIAutomation, IUIAutomationElement, IUIAutomationValuePattern, TreeScope_Descendants,
+    UIA_EditControlTypeId, UIA_ValuePatternId,
 };
 use windows::core::Result as WinResult;
 
@@ -38,14 +39,16 @@ fn read_via_uia(uia: &IUIAutomation, hwnd: HWND) -> WinResult<String> {
     let root = unsafe { uia.ElementFromHandle(hwnd) }?;
     let condition = unsafe { uia.CreateTrueCondition() }?;
     let elements = unsafe { root.FindAll(TreeScope_Descendants, &condition) }?;
+    let count = unsafe { elements.Length() }?;
 
-    // v0.5.10: 原来这里是「树里遇到的第一个 Edit」，那在传统外壳对话框里是
-    // 文件列表的某个单元格外壳（`System.ItemNameDisplay` / `UIProperty`），
-    // 于是 2026-10-13 读出来的是 `path='.github'`、`path='DingConference'` ——
-    // 选中项的名字，不是对话框当前所在的目录。
-    //
-    // 现在直接复用写入端的 `pick_filename_edit`，两边不可能再漂移。
-    let best_edit = crate::uia_inject::pick_filename_edit(&elements);
+    let mut best_edit: Option<IUIAutomationElement> = None;
+    for i in 0..count {
+        let element = unsafe { elements.GetElement(i) }?;
+        let control_type = unsafe { element.CurrentControlType() }?;
+        if control_type == UIA_EditControlTypeId && best_edit.is_none() {
+            best_edit = Some(element);
+        }
+    }
 
     let edit = best_edit.ok_or_else(|| {
         windows::core::Error::from(windows::Win32::Foundation::E_FAIL)

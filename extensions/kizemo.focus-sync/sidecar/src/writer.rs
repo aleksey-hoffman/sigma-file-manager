@@ -68,50 +68,14 @@ pub fn write_path(state: &crate::state::AppState, hwnd_isize: isize, target: &st
     // `unsupported_dialog_type`, and it does NOT touch
     // `unsupported_dialog_count` — the dialog was fine; we simply had nothing
     // current to say.
-    // v0.5.11 (2026-10-13) — SECOND, independent way through this gate.
-    //
-    // Incident: the ping-only gate was load-bearing for everything. The
-    // extension's health loop stopped firing at ~16:44 CST; Sigma FM kept
-    // running and `Responding=True` for another 2h10m. `extension_alive` went
-    // false and every write after that was rejected with
-    // `WriteFailed extension_not_alive` — including the download dialog that
-    // had been verified working at 20:13. Attribution showed the heartbeat was
-    // not merely throttled: Sigma FM held the true foreground window for 90
-    // continuous seconds and `last_ping_received_ts` never moved
-    // (`_acceptance/attribution-heartbeat-foreground-test.ps1`).
-    //
-    // The ping lives inside the extension's JS timer, which we have now watched
-    // die silently with no error logged anywhere. Treating it as the SOLE
-    // liveness signal means one dead timer takes down sync for every dialog.
-    //
-    // `host_app_stable()` is independent of that timer: it re-probes tasklist
-    // and asks whether the host app is still the SAME process instance we last
-    // had contact with. That is precisely the v0.5.8 failure mode (Sigma FM
-    // restarted, we hold the previous session's path) expressed as a PID --
-    // so the original protection is preserved, not weakened. Only a genuine
-    // restart or a closed Sigma FM closes the gate.
-    //
-    // This branch is ADDITIVE: it can only ever turn a refusal into a write,
-    // never the other way round, so the already-working download-dialog path
-    // cannot regress through it.
-    let ping_alive = state.extension_alive(EXTENSION_ALIVE_WINDOW_MS);
-    let host_alive = !ping_alive && state.host_app_stable();
-    if !ping_alive && !host_alive {
+    if !state.extension_alive(EXTENSION_ALIVE_WINDOW_MS) {
         tracing::info!(
-            "v0.5.8 write_path: extension not alive (no /health poll within {}ms) \
-             AND host process is not the instance we last had contact with; \
+            "v0.5.8 write_path: extension not alive (no /health poll within {}ms); \
              refusing to inject stale path '{}'",
             EXTENSION_ALIVE_WINDOW_MS,
             target
         );
         return WriteOutcome::Failed("extension_not_alive".into());
-    }
-    if host_alive {
-        tracing::warn!(
-            "v0.5.11 write_path: /ext_alive is stale but the host app process is \
-             unchanged -- allowing the write. If Sigma FM's current folder has \
-             moved on, the extension will push and re-sync."
-        );
     }
 
     // v0.3.8 (Mavis 第 10 轮 A9 [HIGH] UX 倒退警告 — 必修决策):
@@ -263,78 +227,5 @@ mod tests {
     fn stale_path_reason_is_distinct_from_unsupported() {
         assert_ne!("extension_not_alive", "unsupported_dialog_type");
         assert_ne!("extension_not_alive", "dialog_gone");
-    }
-
-    // ----------------------------------------------------------------------
-    // v0.5.11 — host-app identity as a second way through the gate
-    // ----------------------------------------------------------------------
-    //
-    // These assert the CONTRACT of the secondary signal without depending on
-    // whether Sigma FM happens to be running on the machine running the suite.
-
-    /// A brand-new AppState has never had contact, so `host_app_stable()` must
-    /// be false regardless of the host process. This is what keeps a freshly
-    /// started sidecar from injecting anything.
-    #[test]
-    fn host_app_unstable_before_any_contact() {
-        let state = AppState::new("C:\\".into(), 1);
-        assert!(
-            !state.host_app_stable(),
-            "no contact yet -> host identity unknown -> gate must stay shut"
-        );
-    }
-
-    /// The host signal is ADDITIVE only. With a fresh ping present the fast
-    /// path is taken exactly as before v0.5.11 -- this test pins that the
-    /// working path is unchanged.
-    #[test]
-    fn fresh_ping_still_short_circuits_without_touching_tasklist() {
-        let state = AppState::new("C:\\".into(), 1);
-        state.mark_extension_ping();
-        assert!(state.extension_alive(EXTENSION_ALIVE_WINDOW_MS));
-        // Stale-or-not is irrelevant when the ping is fresh.
-        let _ = state.host_app_stable();
-    }
-
-    /// Recording contact then finding the SAME pid back must be stable. We
-    /// drive this through the real probe so the parsing path is exercised.
-    #[test]
-    fn host_app_stable_after_contact_if_pid_unchanged() {
-        let Some(pid) = crate::hostproc::host_pid() else {
-            // Host app not running on this machine -- nothing to assert.
-            return;
-        };
-        let state = AppState::new("C:\\".into(), 1);
-        // Prime the probe cache with the real PID, then bind it as contact.
-        state.note_host_contact();
-        let mut guard = state
-            .host_pid_at_contact
-            .lock()
-            .unwrap_or_else(|e| e.into_inner());
-        *guard = Some(pid);
-        drop(guard);
-        assert!(
-            state.host_app_stable(),
-            "same host process instance must count as stable"
-        );
-    }
-
-    /// A changed PID means Sigma FM restarted: we are holding the previous
-    /// session's path, so the gate must re-close. This is the v0.5.8
-    /// protection, expressed as process identity.
-    #[test]
-    fn host_app_unstable_when_pid_changed() {
-        let state = AppState::new("C:\\".into(), 1);
-        // A PID that cannot be the running one -> treated as "process changed".
-        let mut guard = state
-            .host_pid_at_contact
-            .lock()
-            .unwrap_or_else(|e| e.into_inner());
-        *guard = Some(999_999);
-        drop(guard);
-        assert!(
-            !state.host_app_stable(),
-            "a different process instance must re-close the gate"
-        );
     }
 }
