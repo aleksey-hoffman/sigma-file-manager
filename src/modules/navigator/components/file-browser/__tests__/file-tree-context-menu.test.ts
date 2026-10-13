@@ -100,10 +100,17 @@ describe('file-tree-context-menu', () => {
     setClipboardMock.mockClear();
     const wrapper = mountContextMenu(createTarget({ path: 'C:/a.txt', isDirectory: false }));
     await wrapper.find('[data-test="ctx-tree-copy"]').trigger('click');
+    // 2026-10-13 修复:第三参是 options { syncToSystemClipboard?: boolean },不是来源标识字符串。
+    // 两参断言在真的传了三参时会失败,因此这条同时守住"不多传参数"——
+    // 即树菜单复制与文件浏览器 copyItems 行为一致(默认同步系统剪贴板)。
     expect(setClipboardMock).toHaveBeenCalledWith(
       'copy',
-      expect.any(Array),
-      'tree-context-menu',
+      [expect.objectContaining({
+        path: 'C:/a.txt',
+        name: 'a.txt',
+        is_file: true,
+        is_dir: false,
+      })],
     );
     const emitted = wrapper.emitted('action');
     expect(emitted).toEqual([['copy']]);
@@ -117,8 +124,7 @@ describe('file-tree-context-menu', () => {
     await wrapper.find('[data-test="ctx-tree-cut"]').trigger('click');
     expect(setClipboardMock).toHaveBeenCalledWith(
       'move',
-      expect.any(Array),
-      'tree-context-menu',
+      [expect.objectContaining({ path: 'C:/a.txt', is_file: true })],
     );
   });
 });

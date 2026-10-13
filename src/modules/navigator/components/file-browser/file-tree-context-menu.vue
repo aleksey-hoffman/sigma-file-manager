@@ -8,8 +8,8 @@ FORK-MODIFICATION: 目录树右键菜单。
   改"将准备复制/移动的项目传输到此处"为"粘贴",新增"剪切"、"重命名"。
 
   最终菜单项(6):
-    1. 复制          (copy)            → setClipboard('copy', [entry], ...)
-    2. 剪切          (cut)             → setClipboard('move', [entry], ...)
+    1. 复制          (copy)            → setClipboard('copy', [entry])
+    2. 剪切          (cut)             → setClipboard('move', [entry])
     3. 粘贴          (paste, 条件)     → 已支持
     4. 重命名        (rename)          → 弹 FileBrowserRenameDialog
     5. 属性          (properties)      → 已支持
@@ -80,13 +80,16 @@ function buildEntry(): DirEntry {
   } as unknown as DirEntry;
 }
 
+// 签名说明(2026-10-13 修复):setClipboard 第三参是 options { syncToSystemClipboard?: boolean },
+// 不是"来源标识"字符串。此处必须省略第三参,行为才与文件浏览器的 copyItems/cutItems 一致
+// —— 即默认同步到系统剪贴板,在资源管理器里可直接 Ctrl+V 粘贴。
 function handleCopy() {
-  clipboardStore.setClipboard('copy', [buildEntry()], 'tree-context-menu');
+  clipboardStore.setClipboard('copy', [buildEntry()]);
   emitAction('copy');
 }
 
 function handleCut() {
-  clipboardStore.setClipboard('move', [buildEntry()], 'tree-context-menu');
+  clipboardStore.setClipboard('move', [buildEntry()]);
   emitAction('cut');
 }
 
