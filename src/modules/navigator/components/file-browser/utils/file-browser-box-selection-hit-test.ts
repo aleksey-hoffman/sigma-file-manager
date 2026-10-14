@@ -91,6 +91,8 @@ export function collectFileBrowserBoxSelectionEntries(options: {
   virtualContentOffset: number;
   scrollTop: number;
   increaseFileViewGaps: boolean;
+  // FORK-MODIFICATION: 网格列宽随缩略图档位变化，必须由调用方传入当前档位的最小列宽。
+  gridMinColumnWidth: number;
 }): DirEntry[] {
   const normalizedBox = normalizeSelectionBox(options.selectionBox);
   const matchedEntries: DirEntry[] = [];
@@ -148,7 +150,11 @@ export function collectFileBrowserBoxSelectionEntries(options: {
   }
 
   const gridGap = getFileBrowserGridGap(options.increaseFileViewGaps);
-  const { columnWidth } = getFileBrowserGridLayoutMetrics(options.contentWidth, gridGap);
+  const { columnWidth } = getFileBrowserGridLayoutMetrics(
+    options.contentWidth,
+    gridGap,
+    options.gridMinColumnWidth,
+  );
 
   for (const row of candidateRows) {
     if (row.type !== 'grid-items') {

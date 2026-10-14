@@ -97,6 +97,8 @@ export function useFileBrowserBoxSelection(options: {
   scrollTop: Ref<number>;
   virtualRows: ComputedRef<FileBrowserVirtualRow[]>;
   increaseFileViewGaps: ComputedRef<boolean>;
+  // FORK-MODIFICATION: 网格列宽随缩略图档位变化，命中测试必须吃当前档位的最小列宽。
+  gridMinColumnWidth: ComputedRef<number>;
   getSelectedEntries: () => DirEntry[];
   applySelection: (entries: DirEntry[]) => void;
   clearSelection: () => void;
@@ -175,6 +177,7 @@ export function useFileBrowserBoxSelection(options: {
       virtualContentOffset: options.virtualContentOffset.value,
       scrollTop,
       increaseFileViewGaps: options.increaseFileViewGaps.value,
+      gridMinColumnWidth: options.gridMinColumnWidth.value,
     });
 
     options.applySelection(

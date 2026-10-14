@@ -49,6 +49,7 @@ import {
   type NavigatorSortSource,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
+import { resolveThumbnailMetrics } from '../utils/file-browser-thumbnail-sizes';
 
 function createNavigatorSortSettingsComputed(
   getSource: () => NavigatorSortSource,
@@ -280,6 +281,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const increaseFileViewGaps = computed(
     () => userSettingsStore.userSettings.navigator.increaseFileViewGaps,
   );
+  // FORK-MODIFICATION: 框选命中测试必须和虚拟布局用同一档位的最小列宽，
+  // 否则列数变了框选还会按旧列宽选到另一张卡片。
+  const thumbnailMetrics = computed(
+    () => resolveThumbnailMetrics(userSettingsStore.userSettings.navigator.thumbnailSize),
+  );
 
   const dataSource = isExternalMode
     ? setupExternalDataSource(options)
@@ -419,6 +425,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     scrollTop: virtualLayout.scrollTop,
     virtualRows: virtualLayout.rows,
     increaseFileViewGaps,
+    gridMinColumnWidth: computed(() => thumbnailMetrics.value.gridMinColumnWidth),
     getSelectedEntries: () => selection.selectedEntries.value,
     applySelection: selection.setSelection,
     clearSelection: selection.clearSelection,

@@ -94,6 +94,7 @@ function createBoxSelectionHarness(): {
         scrollTop: ref(0),
         virtualRows: computed<FileBrowserVirtualRow[]>(() => []),
         increaseFileViewGaps: computed(() => false),
+        gridMinColumnWidth: computed(() => 170),
         getSelectedEntries: () => [],
         applySelection: vi.fn<(entries: DirEntry[]) => void>(),
         clearSelection: vi.fn<() => void>(),

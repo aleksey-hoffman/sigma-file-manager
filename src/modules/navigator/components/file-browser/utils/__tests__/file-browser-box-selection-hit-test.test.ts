@@ -7,6 +7,12 @@ import type { DirEntry } from '@/types/dir-entry';
 import { createFileBrowserVirtualRows } from '../../composables/use-file-browser-virtual-layout';
 import { collectFileBrowserBoxSelectionEntries } from '../file-browser-box-selection-hit-test';
 import { findVirtualRowRangeOverlappingContentSpan } from '../file-browser-virtual-rows';
+import { resolveThumbnailMetrics } from '../file-browser-thumbnail-sizes';
+
+// FORK-MODIFICATION: 列表行高来自缩略图档位度量表，写死像素值会在改档位时静默失配。
+function getMediumListRowTop(): number {
+  return 200 + resolveThumbnailMetrics('medium').listRowHeight;
+}
 
 function createEntry(path: string): DirEntry {
   return {
@@ -40,14 +46,15 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
     });
     const contentRect = new DOMRect(100, 200, 800, 600);
     const viewportRect = new DOMRect(100, 200, 800, 600);
+    const rowTop = getMediumListRowTop();
 
     const selectedEntries = collectFileBrowserBoxSelectionEntries({
       rows,
       selectionBox: {
         left: 100,
-        top: 242,
+        top: rowTop + 2,
         right: 900,
-        bottom: 270,
+        bottom: rowTop + 28,
       },
       layout: 'list',
       contentRect,
@@ -56,6 +63,7 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       virtualContentOffset: 0,
       scrollTop: 0,
       increaseFileViewGaps: false,
+      gridMinColumnWidth: 170,
     });
 
     expect(selectedEntries.map(entry => entry.path)).toEqual(['/tmp/b']);
@@ -97,6 +105,7 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       virtualContentOffset: 0,
       scrollTop: 0,
       increaseFileViewGaps: false,
+      gridMinColumnWidth: 170,
     });
 
     expect(selectedEntries.map(entry => entry.path)).toEqual(['/tmp/b']);
@@ -116,6 +125,7 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       virtualContentOffset: 0,
       scrollTop: 0,
       increaseFileViewGaps: false,
+      gridMinColumnWidth: 170,
     });
 
     expect(gapOnlySelection).toEqual([]);
@@ -130,11 +140,12 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
     });
     const contentRect = new DOMRect(100, 200, 800, 600);
     const viewportRect = new DOMRect(100, 200, 800, 600);
+    const rowTop = getMediumListRowTop();
     const selectionBox = {
       left: 100,
-      top: 242,
+      top: rowTop + 2,
       right: 900,
-      bottom: 270,
+      bottom: rowTop + 28,
     };
     const { startIndex, endIndex } = findVirtualRowRangeOverlappingContentSpan(
       rows,
@@ -154,9 +165,60 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       virtualContentOffset: 0,
       scrollTop: 0,
       increaseFileViewGaps: false,
+      gridMinColumnWidth: 170,
     });
 
     expect(selectedEntries).toHaveLength(1);
     expect(selectedEntries[0]?.path).toBe('/tmp/item-1');
+  });
+
+  // FORK-MODIFICATION: 需求 3.6 —— 列数随档位变化后，框选必须用同一套列宽，
+  // 否则选中的会是另一张卡片。用同一个选框在两种列宽下必须选到不同条目。
+  it('follows the thumbnail size when mapping a box to grid columns', () => {
+    const entries = [
+      createEntry('/tmp/a'),
+      createEntry('/tmp/b'),
+      createEntry('/tmp/c'),
+      createEntry('/tmp/d'),
+    ];
+    const rows = createFileBrowserVirtualRows({
+      entries,
+      layout: 'grid',
+      viewportWidth: 800,
+    });
+    const contentRect = new DOMRect(100, 200, 800, 600);
+    const viewportRect = new DOMRect(100, 200, 800, 600);
+    const gridGap = 12;
+    const rowTop = 200 + 42 + gridGap;
+    // medium：4 列，列宽 (800 - 3*12)/4 = 191，第 4 列左边界 100 + 3*(191+12) = 709
+    const selectionBox = {
+      left: 711,
+      top: rowTop + 2,
+      right: 898,
+      bottom: rowTop + 40,
+    };
+    const shared = {
+      rows,
+      selectionBox,
+      layout: 'grid' as const,
+      contentRect,
+      viewportRect,
+      contentWidth: 800,
+      virtualContentOffset: 0,
+      scrollTop: 0,
+      increaseFileViewGaps: false,
+    };
+
+    expect(collectFileBrowserBoxSelectionEntries({
+      ...shared,
+      gridMinColumnWidth: 170,
+    })
+      .map(entry => entry.path)).toEqual(['/tmp/d']);
+    // xlarge：2 列，列宽 (800 - 12)/2 = 394，同一 x 区间落在第 2 列（/tmp/b）
+    expect(collectFileBrowserBoxSelectionEntries({
+      ...shared,
+      gridMinColumnWidth: 283,
+    })
+      .map(entry => entry.path)).toEqual(['/tmp/b']);
   });
 });
