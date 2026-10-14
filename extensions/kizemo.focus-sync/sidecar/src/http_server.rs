@@ -54,10 +54,17 @@ use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 // held permanently, `should_opened_write_back` was permanently true, and one
 // dialog wrote the SAME target 29 times in 31 seconds (hwnd=722614). It now
 // reads the address bar's Name (`aid=1001`, "地址: <path>") with a shape guard.
-// Still NOT fixed by this version: the write itself still does not navigate —
-// measured directly, the address bar is identical before and after a write.
-// Bumping separately so "same version, different behaviour" cannot recur.
-const SPIKE_VERSION: &str = "0.5.13";
+// v0.5.14: the WRITER is fixed — path following now actually moves the dialog.
+// H1 was gated behind `is_winui3_wrapped`, which requires a `FileNameControlHost`
+// marker that a classic `#32770` dialog never publishes; all 1265 dialogs ever
+// logged are `#32770`, so the gate was constant-false and H1 never ran. Every
+// write therefore landed on F3, which writes the FILENAME box and immediately
+// takes it back (`restore_filename_verified`) without sending Enter — measured
+// DID NOT NAVIGATE, while still logging `Write strategy=uia`. H1 is now tried
+// for every dialog: it targets the ADDRESS bar, read-backs before Enter, never
+// steals foreground, and never invokes the Save button. The v0.5.1 incident that
+// caused H1 to be demoted was `commit_save_button`, which is still absent.
+const SPIKE_VERSION: &str = "0.5.14";
 
 #[derive(Debug, Deserialize)]
 struct SetPathBody {

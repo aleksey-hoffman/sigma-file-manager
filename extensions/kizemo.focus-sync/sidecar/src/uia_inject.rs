@@ -521,6 +521,15 @@ fn restore_filename_verified(edit: &IUIAutomationElement, original: &str) -> boo
 ///   actually answers the question ("did the path land in the filename box?").
 ///
 /// Returns true iff SendInput accepted every INPUT.
+/// v0.5.14 — the FILENAME box on a classic shell `#32770` dialog.
+///
+/// Measured on a real `打开` dialog (sidecar's own native `IUIAutomation`):
+///   `aid=1148 ct=50003 class=ComboBox name="文件名(N):"`  + `aid=1148 ct=50004 class=Edit`
+/// On a Chromium-family 另存为 dialog the same role is `1001`. So `1148` is the
+/// one id that unambiguously means "the box the user's file name goes in", and
+/// it is exactly the control DIRECT-1 must refuse to touch.
+const FILENAME_BOX_AID: &str = "1148";
+
 fn try_send_path_via_sendinput(
     state: &crate::state::AppState,
     dialog_hwnd: u32,
@@ -632,7 +641,32 @@ fn try_send_path_via_sendinput(
                 break;
             }
             if let Some(loc) = foreground_focus_element() {
-                if write_edit_value(&loc, target_path) {
+                // ===== v0.5.14 GUARD — DIRECT-1 must never touch the FILENAME box ====
+                //
+                // Before v0.5.14 this loop only ever ran on Chromium-family dialogs,
+                // where Ctrl+L reliably lands the address Edit (`41477`). H1 is now
+                // reached on EVERY dialog, including classic-shell `打开` dialogs,
+                // and there `1148` is the filename box. If Ctrl+L ever fails to
+                // land, focus is still on `1148`, `write_edit_value` would put the
+                // whole target path into the filename box, the read-back would
+                // CONFIRM it (the value really did land), and the guarded Enter
+                // would then SUBMIT that value — on an `打开` dialog that is an
+                // attempt to open a file named after the path, and on `另存为` it is
+                // the v0.5.8 "路径不存在" incident all over again.
+                //
+                // The read-back guard cannot catch this by itself: it only proves
+                // the write succeeded, not that it went to the right control. So
+                // the control has to be checked first. Not rejecting here would
+                // trade "sync silently never happens" (the current, visible,
+                // recoverable failure) for "the user gets a dirtied filename box
+                // and an unsolicited Enter" — strictly worse.
+                let focus_aid = current_automation_id(&loc);
+                if focus_aid == FILENAME_BOX_AID {
+                    warn!(
+                        "v0.5.14 H1: Ctrl+L did not move focus off the filename box \
+                         (aid='{focus_aid}'); refusing to write there, retrying"
+                    );
+                } else if write_edit_value(&loc, target_path) {
                     // Read-back: only believe the replacement if it actually stuck.
                     if read_edit_value(&loc).as_deref() == Some(target_path) {
                         direct_ok = true;
@@ -1175,30 +1209,79 @@ fn inject_via_uia(
     }
 
     let is_winui3_wrapped = is_winui3_wrapped_signature(has_filename_host, has_1001);
+    debug!(
+        "dialog shape: has_filename_host={has_filename_host} has_1001={has_1001} \
+         is_winui3_wrapped={is_winui3_wrapped}"
+    );
 
-    // D5 [MEDIUM]: 4-layer fallback chain for WinUI 3 wrapped dialogs.
+    // ===== v0.5.14 — H1 is no longer gated on the WinUI 3 signature ==========
+    //
+    // WHY (measured, not inferred — see `_acceptance/analyze-open-dialog.mjs` and
+    // `sidecar/src/bin/open_dialog_probe.rs`):
+    //
+    // Edge/Chromium file dialogs come in TWO structural families, and BOTH log as
+    // class `#32770`, which is exactly why they were conflated for weeks:
+    //
+    //   family A — Chromium's own dialog (另存为 / 下载):
+    //       `automation_id='FileNameControlHost'` (ComboBox 50003) wrapping
+    //       `automation_id='1001'` (Edit, ct=50004) as the FILENAME box.
+    //       => `has_filename_host = true`, `has_1001 = true`
+    //       => `is_winui3_wrapped = true`  => H1 ran  => path following WORKED.
+    //       Inventory evidence: 27/27 logged dialog inventories with a `保存(S)`
+    //       default button carry FileNameControlHost; 0/27 carry 1148 or 41477.
+    //
+    //   family B — classic shell dialog (打开 / browser upload):
+    //       `automation_id='1148'` (ComboBox+Edit) is the FILENAME box;
+    //       `automation_id='1001'` is the breadcrumb toolbar (ct=50021, Custom);
+    //       `automation_id='41477'` is `Address Band Root`.
+    //       => NO FileNameControlHost, no `50003` id anywhere
+    //       => `has_filename_host = false` => `is_winui3_wrapped = false`
+    //       => H1 was SKIPPED, always, for every 打开/upload dialog.
+    //       Measured live on a real `IFileOpenDialog`: `has_filename_host=false,
+    //       has_1001=true, is_winui3_wrapped=false`, and a 105-node walk with zero
+    //       FileNameControlHost / 50003 / "file name control host" hits.
+    //
+    // So the gate was not "structurally constant-false" — it was constant-false for
+    // ONE family and constant-true for the other. That is the whole bug: downloads
+    // and Save As synced, uploads and Open never did, and both looked identical in
+    // the logs because the only logged discriminator was the window class.
+    //
+    // The H1 recipe is the SAME for both families, proven on family B by the probe:
+    //   Ctrl+L -> focus moves off `1148` onto `41477` (ct=50004, class=Edit) within
+    //   100ms, `SendInput` returns 4/4 -> WM_SETTEXT/SetValue the target ->
+    //   read-back matches -> Enter -> the breadcrumb changes and the FILENAME box
+    //   is still empty. One run: current_dir "文档" -> "C:\Windows", NAVIGATED=true.
+    //   (Alt+D was measured as a dead end: no address edit appeared.)
+    //
+    // Why H1 is safe on the newly-reachable family B:
+    //   * H1 never touches the filename box. It presses Ctrl+L, sets the ADDRESS
+    //     bar, read-backs, and only then sends Enter — so on a dialog where the
+    //     user already typed a filename, that filename survives and the Enter
+    //     navigates rather than submits. The v0.5.1 incident ("下载启动后,跳过了
+    //     路径选择步骤,直接启动下载") was `commit_save_button` invoking the Save
+    //     button; that call is still absent, and must stay absent.
+    //   * DIRECT-1 additionally refuses `aid=1148` outright (see the guard in
+    //     `try_send_path_via_sendinput`), so a failed Ctrl+L can never route the
+    //     path into the filename box.
+    //   * H1 never steals foreground. `await_dialog_foreground` waits for the
+    //     USER to bring the dialog forward and aborts otherwise.
+    //
+    // H2 and F3 remain exactly where they were, as fallbacks for dialogs where
+    // the address bar cannot be addressed (no focus element, no ValuePattern).
+    if try_send_path_via_sendinput(state, dialog_hwnd, target_path, best_edit.as_ref()) {
+        info!("v0.5.14 H1 succeeded: address bar set + guarded Enter sent (navigate only)");
+        // v0.5.1: NEVER auto-Invoke Save after H1. Even if should_commit=true,
+        // we do not commit. (Future: maybe re-enable should_commit if
+        // a new "trusted auto-confirm" user setting is added.)
+        return Ok(());
+    }
+    warn!(
+        "v0.5.14 H1 did not navigate: dialog not in foreground, or its address bar \
+         exposes no usable ValuePattern. Falling back to the filename-box layers."
+    );
+
     if is_winui3_wrapped {
-        debug!(
-            "WinUI 3 wrapped detected (has_filename_host={has_filename_host} has_1001={has_1001}); \
-             entering 4-layer fallback chain"
-        );
-
-        // H1 — SendInput Ctrl+L + path, then GUARDED Enter (v0.5.7 F-0).
-        // The guard reads the filename box back after typing; Enter is only
-        // sent when the path provably went to the address bar, so it can only
-        // ever NAVIGATE. It never invokes the Save button. This is what
-        // separates v0.5.7 from the reverted v0.5.1 "直接启动下载" behaviour.
-        // v0.5.1 (2026-10-05): user feedback "下载启动后,跳过了路径选择步骤,
-        // 直接启动下载" — that was Enter + commit_save_button with no guard.
-        // Both were removed. We re-add ONLY the guarded, guarded-only Enter.
-        if try_send_path_via_sendinput(state, dialog_hwnd, target_path, best_edit.as_ref()) {
-            info!("v0.5.7 H1 succeeded: address bar set + Enter sent (navigate only)");
-            // v0.5.1: NEVER auto-Invoke Save after H1. Even if should_commit=true,
-            // we do not commit. (Future: maybe re-enable should_commit if
-            // a new "trusted auto-confirm" user setting is added.)
-            return Ok(());
-        }
-        warn!("v0.5.7 H1 failed: SendInput did not reach the dialog, or Ctrl+L missed the address bar (foreground lock?)");
+        debug!("WinUI 3 wrapped dialog; H1 already attempted above, trying H2");
 
         // H2 — write target_path then restore the original filename.
         // v0.5.1 (2026-10-05): user wants manual confirmation. Do not
@@ -1213,7 +1296,7 @@ fn inject_via_uia(
 
         // F3 — fall through to the v0.5.0 baseline SetValue path below.
         warn!(
-            "v0.5.1: H1 + H2 failed; falling back to v0.5.0 SetValue 1001 \
+            "v0.5.1: H2 failed; falling back to v0.5.0 SetValue \
              (filename pollution expected on WinUI 3 wrapped dialogs)"
         );
     }
@@ -1240,13 +1323,14 @@ fn inject_via_uia(
     //   - H2's last execution anywhere in the logs is 2026-10-07T07:24Z,
     //     before the F-1 foreground fix made H1 stop aborting into it.
     //
-    // WHY this line is reached at all: the whole H1 -> H2 chain is gated on
-    // `is_winui3_wrapped`. On the FIRST injection into a freshly opened
-    // dialog the `FileNameControlHost` / `50003` marker is not in the UIA tree
-    // yet, so the wrapper is not detected, the H1/H2 chain is skipped, and
-    // control falls straight through here — i.e. F3 runs exactly when the
-    // dialog is least ready. That race is the reason to fix this line rather
-    // than only logging.
+    // WHY this line is reached at all: until v0.5.14 the whole H1 -> H2 chain was
+    // gated on `is_winui3_wrapped`, which family B (classic-shell `打开` / upload)
+    // never satisfies — not because of a race on first injection, which is what
+    // this comment previously claimed, but because that family publishes no
+    // `FileNameControlHost` / `50003` at any point in its lifetime. So every
+    // upload dialog landed here and stayed put. F3 remains the correct last
+    // resort for dialogs whose address bar cannot be addressed at all; it is just
+    // no longer the *only* option that such dialogs ever get.
     //
     // The fix is the same contract H2 has always had, minus the blind faith:
     // put the path in, let the dialog parse it, take the field BACK, and prove
