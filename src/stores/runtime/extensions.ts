@@ -74,6 +74,8 @@ import {
 } from '@/modules/extensions/utils/toast-utils';
 import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
 import { syncManifestBinariesForExtension } from '@/modules/extensions/runtime/manifest-binaries';
+import { setWorkerDiagnosticSink } from '@/modules/extensions/runtime/worker-diagnostics';
+import { createPersistingWorkerDiagnosticSink } from '@/modules/extensions/utils/worker-diagnostic-persistence';
 import { reconcileCustomBinaryPreferences } from '@/modules/extensions/utils/reconcile-custom-binary-preferences';
 import {
   getPlatformBinaryDefinitions,
@@ -104,6 +106,14 @@ import { resetNavigatorIconThemesForExtension } from '@/modules/icon-theme/navig
 
 export const useExtensionsStore = defineStore('extensions', () => {
   const storageStore = useExtensionsStorageStore();
+
+  // Webview console output never reaches the application log in this project,
+  // so a worker that fails to load used to fail completely silently. Persist the
+  // worker lifecycle ring into each extension's own settings file, which is the
+  // only externally readable channel available.
+  setWorkerDiagnosticSink(
+    createPersistingWorkerDiagnosticSink(storageStore),
+  );
 
   const registry = ref<ExtensionRegistry | null>(null);
   const registryFetchedAt = ref<number | null>(null);

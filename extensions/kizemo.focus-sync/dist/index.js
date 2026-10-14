@@ -180,6 +180,21 @@ let autoConfirm = false; // focus-18: default OFF (safe)
 let pushTimer = null;
 let healthCheckTimer = null;
 let notifiedSinceLastFailure = false;
+// v0.5.11: require N consecutive transport failures before raising the red banner.
+//
+// WHY: the banner used to fire on the FIRST failed /health probe after the 30s
+// boot grace. Measured 2026-10-13 during an install: Alpha started 15:10:49,
+// PREINSTALL killed the sidecar, the task only came back at 15:11:33 — a ~45s
+// window with 37421 closed, longer than BOOT_GRACE_MS. The grace expired while
+// the sidecar was still legitimately being replaced, one poll failed, and the
+// user got "Sidecar not reachable. Open Task Scheduler -> ... Run, or restart
+// your PC." — a false alarm we caused ourselves with our own installer.
+//
+// A single dropped poll is not evidence of a broken sidecar; three in a row
+// (45s at the 15s cadence) is. Suppressing the transient case is the fix; the
+// banner still appears quickly when the sidecar is genuinely gone.
+const HEALTH_FAILURES_BEFORE_NOTIFY = 3;
+let consecutiveHealthFailures = 0;
 // focus-19: track the last-seen unsupported_dialog_count from /health so we
 // only notify on INCREASE (sidecar's counter is monotonic for the process
 // lifetime). Initial value -1 means "never observed"; first poll establishes
@@ -299,6 +314,7 @@ async function checkHealth() {
         return;
     }
     notifiedSinceLastFailure = false;
+    consecutiveHealthFailures = 0;
 
     // focus-19: parse unsupported_dialog_count and notify on increase.
     let parsed = null;
@@ -455,10 +471,16 @@ async function pingSidecarWithBody() {
         return r;
     } catch (e) {
         trace('N04.health.err', { msg: String(e).slice(0, 200) });
-        // Transport failure: notify on first occurrence (banner pattern).
-        // v0.3.5 (Mavis N2): suppress during boot grace period so the
-        // banner doesn't fire next to the Edge tip during first activation.
-        if (!notifiedSinceLastFailure && !inGracePeriod()) {
+        // Transport failure: notify only after N consecutive failures.
+        // v0.5.11: see HEALTH_FAILURES_BEFORE_NOTIFY — one dropped poll during
+        // an install-time sidecar restart must not raise a red banner.
+        consecutiveHealthFailures += 1;
+        trace('N04.health.consecutive', { n: consecutiveHealthFailures });
+        if (
+            consecutiveHealthFailures >= HEALTH_FAILURES_BEFORE_NOTIFY &&
+            !notifiedSinceLastFailure &&
+            !inGracePeriod()
+        ) {
             try {
                 sigma.ui.showNotification({
                     title: 'Focus Sync',
@@ -728,18 +750,16 @@ const activate = async () => {
     // this delay ONLY applies to the very first ping.
     setTimeout(() => {
         void pingSidecar().then((ok) => {
-            if (!ok && !notifiedSinceLastFailure && !inGracePeriod()) {
-                try {
-                    sigma.ui.showNotification({
-                        title: 'Focus Sync',
-                        description:
-                            'Sidecar not reachable. Open Task Scheduler → KizemoFocusSync → Run.',
-                        type: 'error',
-                        duration: 15000,
-                    });
-                    notifiedSinceLastFailure = true;
-                } catch (e) {}
-            }
+            // v0.5.11: this first ping must NOT raise the banner on its own.
+            //
+            // It is a single sample taken 5s after activation, i.e. exactly the
+            // moment an in-progress install or a just-restarted Scheduled Task
+            // can still have 37421 closed. Raising a red banner from one sample
+            // is what produced the false alarm measured on 2026-10-13. Count it
+            // and let the periodic check decide (it needs 3 consecutive
+            // failures, which a genuinely dead sidecar will reach in ~45s).
+            consecutiveHealthFailures = ok ? 0 : consecutiveHealthFailures + 1;
+            trace('N01.initialPing', { ok, consecutive: consecutiveHealthFailures });
         });
     }, 5000);
     startHealthCheck();

@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import type { SigmaExtensionAPI } from '@/modules/extensions/api';
+import { stripCommentsAndLiterals } from '@/modules/extensions/runtime/strip-non-code';
 
 export type ExtensionSandbox = {
   extensionId: string;
@@ -283,8 +284,13 @@ export function validateExtensionCode(code: string): {
     },
   ];
 
+  // Scan executable code only. Comments and literals are inert, so matching
+  // against them produced false rejections — notably the word "self" inside an
+  // English comment tripping the `self` rule below.
+  const scannable = stripCommentsAndLiterals(code);
+
   for (const { pattern, message } of dangerousPatterns) {
-    if (pattern.test(code)) {
+    if (pattern.test(scannable)) {
       errors.push(message);
     }
   }

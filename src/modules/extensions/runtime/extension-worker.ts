@@ -1081,8 +1081,19 @@ async function initializeExtensionModule(entryUrl: string): Promise<void> {
 
   restrictWorkerGlobals();
 
-  const importedModule = await import(/* @vite-ignore */ entryUrl);
-  extensionModule = importedModule as ExtensionModule;
+  try {
+    const importedModule = await import(/* @vite-ignore */ entryUrl);
+    extensionModule = importedModule as ExtensionModule;
+  }
+  catch (error) {
+    // The host never sees webview console output, so the failure detail has to
+    // travel back through the `bridge-response` error channel to stay visible.
+    const reason = error instanceof Error ? error.message : String(error);
+
+    console.error(`[Extensions] failed to import extension entry: ${entryUrl}`, error);
+
+    throw new Error(`Failed to import extension entry (${entryUrl}): ${reason}`);
+  }
 }
 
 async function handleWorkerMessage(message: HostToWorkerMessage): Promise<void> {

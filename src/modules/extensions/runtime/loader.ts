@@ -21,6 +21,10 @@ import {
 import { type ExtensionSandbox, validateExtensionCode } from './sandbox';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { createWorkerHost, type WorkerHost } from '@/modules/extensions/runtime/worker-runtime';
+import {
+  describeError as describeLoaderError,
+  recordWorkerDiagnostic,
+} from '@/modules/extensions/runtime/worker-diagnostics';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import { parseExtensionPermissions } from '@/modules/extensions/utils/parse-extension-permissions';
 import normalizePath from '@/utils/normalize-path';
@@ -343,7 +347,7 @@ async function loadApiExtension(
     httpAllowedHosts: parsedPermissions.httpAllowedHosts,
   });
   runtime.api = api;
-  runtime.workerHost = createWorkerHost(api);
+  runtime.workerHost = createWorkerHost(api, { extensionId });
 
   try {
     const fileContent = await invokeAsExtension<number[]>(extensionId, 'read_extension_file', {
@@ -351,10 +355,32 @@ async function loadApiExtension(
       filePath: mainFile,
     });
 
+    recordWorkerDiagnostic({
+      extensionId,
+      stage: 'module.read',
+      message: `read ${mainFile} (${fileContent.length} bytes)`,
+    });
+
     const decoder = new TextDecoder();
     const code = decoder.decode(new Uint8Array(fileContent));
     const validationResult = validateExtensionCode(code);
+
+    recordWorkerDiagnostic({
+      extensionId,
+      stage: 'module.validate',
+      level: validationResult.valid ? 'info' : 'error',
+      message: validationResult.valid
+        ? 'code validation passed'
+        : `code validation failed: ${validationResult.errors.join(', ')}`,
+    });
+
     const moduleEntry = await createBlobModuleEntry(extensionId, mainFile);
+
+    recordWorkerDiagnostic({
+      extensionId,
+      stage: 'module.entry',
+      message: `blob entry created for ${mainFile}`,
+    });
 
     if (!validationResult.valid) {
       throw new Error(`Extension code validation failed: ${validationResult.errors.join(', ')}`);
@@ -399,8 +425,18 @@ async function loadApiExtension(
       runtime.disposeModuleUrls = null;
     }
 
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`Failed to load extension ${extensionId}: ${message}`);
+    const described = describeLoaderError(error);
+
+    console.error(`Failed to load extension ${extensionId}: ${described.message}`);
+
+    recordWorkerDiagnostic({
+      extensionId,
+      stage: 'load.fail',
+      level: 'error',
+      message: described.message,
+      detail: described.detail,
+    });
+
     throw error;
   }
 }

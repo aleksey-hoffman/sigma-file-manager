@@ -8,6 +8,10 @@ import type { Disposable, ExtensionActivateContext, ModalHandle } from '@/types/
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
 import { cloneBridgeResult } from '@/modules/extensions/utils/worker-message-clone';
+import {
+  describeError as describeWorkerError,
+  recordWorkerDiagnostic,
+} from '@/modules/extensions/runtime/worker-diagnostics';
 import type {
   HostToWorkerMessage,
   WorkerRuntimeMessage,
@@ -63,8 +67,10 @@ function postWorkerRequest<T>(
 
 export function createWorkerHost(
   api: SigmaExtensionAPI,
+  options?: { extensionId?: string },
 ): WorkerHost {
   const methodMap = createExtensionApiMethodMap(api);
+  const diagnosticExtensionId = options?.extensionId ?? 'unknown';
   const worker = createWorker();
   const pendingRequests = new Map<string, PendingRequest>();
   const pendingHandlerCalls = new Map<string, PendingRequest>();
@@ -72,6 +78,58 @@ export function createWorkerHost(
   const modalHandles = new Map<string, ModalHandle>();
   const activeProgressTasks = new Map<string, HostProgressTask>();
   const activeShellTasks = new Map<string, HostShellTask>();
+
+  /**
+   * Without this, a worker that fails to load rejects nobody: every
+   * `postWorkerRequest` promise stays pending forever and `initialize()`
+   * never settles, so the extension silently never activates.
+   */
+  function rejectAllPending(error: Error): void {
+    for (const pending of pendingRequests.values()) {
+      pending.reject(error);
+    }
+
+    pendingRequests.clear();
+
+    for (const pending of pendingHandlerCalls.values()) {
+      pending.reject(error);
+    }
+
+    pendingHandlerCalls.clear();
+  }
+
+  worker.onerror = (event: ErrorEvent) => {
+    const message = event.message || 'Extension worker failed to load';
+    const detailParts = [
+      event.filename ?? '',
+      event.lineno ? `line ${event.lineno}:${event.colno}` : '',
+      event.error instanceof Error ? (event.error.stack ?? event.error.message) : '',
+    ].filter(Boolean);
+
+    recordWorkerDiagnostic({
+      extensionId: diagnosticExtensionId,
+      stage: 'worker.error',
+      level: 'error',
+      message,
+      detail: detailParts.join(' | '),
+    });
+
+    rejectAllPending(new Error(`Extension worker error: ${message}`));
+  };
+
+  worker.onmessageerror = (event: MessageEvent) => {
+    const message = 'Extension worker sent a message that could not be deserialized';
+
+    recordWorkerDiagnostic({
+      extensionId: diagnosticExtensionId,
+      stage: 'worker.messageerror',
+      level: 'error',
+      message,
+      detail: String(event?.data ?? ''),
+    });
+
+    rejectAllPending(new Error(message));
+  };
 
   worker.onmessage = async (event: MessageEvent<WorkerRuntimeMessage>) => {
     const message = event.data;
@@ -461,17 +519,71 @@ export function createWorkerHost(
   };
 
   return {
-    initialize(entryUrl) {
-      return postWorkerRequest<void>(worker, pendingRequests, {
-        type: 'initialize',
-        entryUrl,
+    async initialize(entryUrl) {
+      recordWorkerDiagnostic({
+        extensionId: diagnosticExtensionId,
+        stage: 'initialize.start',
+        message: `posting initialize for ${entryUrl.slice(0, 64)}`,
       });
+
+      try {
+        await postWorkerRequest<void>(worker, pendingRequests, {
+          type: 'initialize',
+          entryUrl,
+        });
+
+        recordWorkerDiagnostic({
+          extensionId: diagnosticExtensionId,
+          stage: 'initialize.ok',
+          message: 'worker initialized',
+        });
+      }
+      catch (error) {
+        const described = describeWorkerError(error);
+
+        recordWorkerDiagnostic({
+          extensionId: diagnosticExtensionId,
+          stage: 'initialize.fail',
+          level: 'error',
+          message: described.message,
+          detail: described.detail,
+        });
+
+        throw error;
+      }
     },
-    activate(context) {
-      return postWorkerRequest<void>(worker, pendingRequests, {
-        type: 'activate',
-        context,
+    async activate(context) {
+      recordWorkerDiagnostic({
+        extensionId: diagnosticExtensionId,
+        stage: 'activate.start',
+        message: 'posting activate',
       });
+
+      try {
+        await postWorkerRequest<void>(worker, pendingRequests, {
+          type: 'activate',
+          context,
+        });
+
+        recordWorkerDiagnostic({
+          extensionId: diagnosticExtensionId,
+          stage: 'activate.ok',
+          message: 'extension activated',
+        });
+      }
+      catch (error) {
+        const described = describeWorkerError(error);
+
+        recordWorkerDiagnostic({
+          extensionId: diagnosticExtensionId,
+          stage: 'activate.fail',
+          level: 'error',
+          message: described.message,
+          detail: described.detail,
+        });
+
+        throw error;
+      }
     },
     deactivate() {
       return postWorkerRequest<void>(worker, pendingRequests, {
@@ -489,6 +601,12 @@ export function createWorkerHost(
       activeShellTasks.clear();
     },
     destroy() {
+      recordWorkerDiagnostic({
+        extensionId: diagnosticExtensionId,
+        stage: 'worker.destroy',
+        message: 'terminating worker',
+      });
+
       for (const disposable of resourceDisposables.values()) {
         disposable.dispose();
       }
