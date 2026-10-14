@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.1.1] - October 2026
+
+**Summary:** Makes path following work when uploading a file, not just when saving one, stops dialogs from flickering, and fixes upgrades dying halfway through.
+
+### Path Following Now Works When Uploading
+
+With the Focus Sync extension enabled, a file dialog follows the folder you are browsing in Sigma FM. Until now that worked for **download and Save As** dialogs only. The picker a browser opens when you **upload** a file never moved.
+
+Those two are not the same control. Edge and Chrome draw their Save As dialog themselves, but when they need you to pick an existing file they hand the job to Windows, which draws a different one. Both report themselves as the same kind of window, so the extension could not tell them apart and skipped the navigation step on the Windows-drawn ones. That step now runs on every dialog.
+
+The path is also never written into the **file name** box any more. If the dialog has not put the keyboard into its address bar, the extension gives up instead of typing the path into the field where you are naming your file.
+
+### Dialogs Stopped Flickering
+
+A dialog could flash and re-sort dozens of times in a single minute. The extension was reading the name of the **first file in the list** instead of the folder the dialog was showing, so it believed the folder had changed and wrote the same path again, and again. One dialog went from 205 reads over four and a half minutes to a single read.
+
+### Upgrades No Longer Die Halfway
+
+Installing over an existing copy could stop part-way through with no error shown. The installer's own cleanup step was killing the installer itself. This is fixed, and an upgrade now runs to completion.
+
 ## [3.1.0] - October 2026
 
 **Summary:** Makes the folder tree, the layout switch and thumbnail sizes behave the way people expect, and fixes the Focus Sync extension being unable to start at all.
