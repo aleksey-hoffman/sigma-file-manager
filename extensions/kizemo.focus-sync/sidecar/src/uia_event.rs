@@ -55,7 +55,7 @@ use windows::core::w;
 /// 8ms tick `last_written == pending` and this returns false. Without that,
 /// the monitor would push `Opened` every tick — the exact flash loop the
 /// round-18 dedup was added to prevent.
-fn should_resync_known_dialog(known_same: bool, pending: &str, last_written: Option<&str>) -> bool {
+pub(crate) fn should_resync_known_dialog(known_same: bool, pending: &str, last_written: Option<&str>) -> bool {
     known_same && !pending.is_empty() && last_written != Some(pending)
 }
 

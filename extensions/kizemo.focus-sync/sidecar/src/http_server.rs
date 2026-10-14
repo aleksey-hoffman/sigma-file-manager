@@ -43,7 +43,10 @@ use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 //
 // v0.5.8 carries: F3 filename-box restore + read-back (BUG-2), H2 read-back
 // verification (the "假成功" limitation), and the `dialog_gone` dead-HWND path.
-const SPIKE_VERSION: &str = "0.5.8";
+// v0.5.12: a refused write no longer marks the dialog as written-back, so the
+// v0.5.7 G-1 resync channel is reachable again and a dialog opened inside the
+// startup window self-heals instead of requiring close-and-reopen.
+const SPIKE_VERSION: &str = "0.5.12";
 
 #[derive(Debug, Deserialize)]
 struct SetPathBody {

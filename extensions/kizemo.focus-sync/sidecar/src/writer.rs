@@ -39,6 +39,19 @@ pub enum WriteOutcome {
 /// enough that a closed Sigma FM stops stale injection promptly.
 pub const EXTENSION_ALIVE_WINDOW_MS: u64 = 60_000;
 
+/// v0.5.12 — 一次 Opened 写回**是否算成功**。
+///
+/// 纯函数抽出来是为了可测：`main.rs` 的决策曾经是无条件的
+/// `wrote_back = true`，失败也被记成「已写入」，从而永久关掉
+/// v0.5.7 G-1 的 resync 通道（真机：弹窗打开后 52 秒零重试）。
+///
+/// 只有真正写入对话框才算成功；被门禁拒绝（`extension_not_alive`）、
+/// 弹窗已消失（`dialog_gone`）、类型不支持（`unsupported_dialog_type`）
+/// 都必须让对话框保持可重试。
+pub fn write_succeeded(outcome: &WriteOutcome) -> bool {
+    !matches!(outcome, WriteOutcome::Failed(_))
+}
+
 pub fn write_path(state: &crate::state::AppState, hwnd_isize: isize, target: &str, auto_confirm: bool) -> WriteOutcome {
     if hwnd_isize == 0 {
         return WriteOutcome::Failed("hwnd is 0".into());
@@ -227,5 +240,134 @@ mod tests {
     fn stale_path_reason_is_distinct_from_unsupported() {
         assert_ne!("extension_not_alive", "unsupported_dialog_type");
         assert_ne!("extension_not_alive", "dialog_gone");
+    }
+
+    /// v0.5.12 REGRESSION — 端到端钉住 Opened 写回的登记决策。
+    ///
+    /// `main.rs` 曾在 match 之外无条件执行 `wrote_back = true` 并登记
+    /// `last_known_path = current`，即被拒绝的写入也被记成「写过了」。
+    /// monitor 的 `should_resync_known_dialog` 随后对该 hwnd 恒为 false，
+    /// v0.5.7 G-1 那个专门负责「注册了但从没写成功」的 resync 通道被废掉。
+    ///
+    /// 真机（2026-10-14 07:22 装包实测）：用户在扩展盖章 `/ext_alive` 前
+    /// 1.5s 打开弹窗 → `WriteFailed{extension_not_alive}` → 该弹窗此后
+    /// **52 秒零重试**，只能关掉重开才恢复。
+    #[test]
+    fn failed_opened_write_keeps_dialog_resyncable() {
+        let target = "F:\\soft\\00selfmade\\filemanager\\sigma-file-manager\\release";
+        // What a Save As dialog reads back: the FILENAME, not a directory.
+        let filename = "dbeaver-ce-26.2.2-windows-x86_64.exe";
+        let state = AppState::new(target.into(), 1);
+        const HWND: u32 = 42_424;
+
+        // A real refusal from the gate: the extension has not stamped
+        // /ext_alive yet, which is exactly the cold-start window.
+        let outcome = write_path(&state, HWND as isize, target, false);
+        assert!(
+            matches!(&outcome, WriteOutcome::Failed(r) if r == "extension_not_alive"),
+            "precondition: a never-polled sidecar must refuse the write, got {outcome:?}"
+        );
+
+        // main.rs's decision, routed through the extracted predicate.
+        let (wrote_back, registered) = if write_succeeded(&outcome) {
+            (true, target)
+        } else {
+            (false, filename)
+        };
+        assert!(
+            !wrote_back,
+            "a refused write must never be recorded as written-back"
+        );
+
+        state.register_dialog(crate::state::DialogInfo {
+            hwnd: HWND,
+            app: "#32770".into(),
+            last_known_path: registered.into(),
+            write_strategy: None,
+        });
+
+        assert!(
+            crate::uia_event::should_resync_known_dialog(
+                true,
+                &state.get_current_path(),
+                state.last_written_path(HWND).as_deref(),
+            ),
+            "a dialog whose write was refused must stay eligible for resync so \
+             the pre-existing 1200ms cooldown can drive the retry"
+        );
+    }
+
+    /// `write_succeeded` must accept exactly the two successful strategies and
+    /// reject every failure reason. Guards the extracted decision itself.
+    #[test]
+    fn write_succeeded_only_for_successful_strategies() {
+        assert!(write_succeeded(&WriteOutcome::UiaSetValue));
+        assert!(write_succeeded(&WriteOutcome::SendInputFallback));
+
+        for reason in [
+            "extension_not_alive",
+            "dialog_gone",
+            "unsupported_dialog_type",
+        ] {
+            assert!(
+                !write_succeeded(&WriteOutcome::Failed(reason.into())),
+                "{reason} must leave the dialog retryable"
+            );
+        }
+    }
+
+    /// Negative control documenting WHY the fix above was necessary: recording
+    /// the *target* path after a failed write disables resync for good. This is
+    /// the exact pre-v0.5.12 behaviour, pinned so it cannot come back.
+    #[test]
+    fn recording_target_path_on_failure_would_permanently_disable_resync() {
+        let target = "F:\\soft\\00selfmade\\filemanager\\sigma-file-manager\\release";
+        let state = AppState::new(target.into(), 1);
+        const HWND: u32 = 42_424;
+
+        // Pre-fix behaviour: registered the target even though nothing was written.
+        state.register_dialog(crate::state::DialogInfo {
+            hwnd: HWND,
+            app: "#32770".into(),
+            last_known_path: target.into(),
+            write_strategy: None,
+        });
+
+        assert!(
+            !crate::uia_event::should_resync_known_dialog(
+                true,
+                &state.get_current_path(),
+                state.last_written_path(HWND).as_deref(),
+            ),
+            "recording the target path after a failed write makes the predicate \
+             permanently false — this is the bug the v0.5.12 fix removes"
+        );
+    }
+
+    /// Loop-safety counterpart: once a write genuinely succeeded, the predicate
+    /// must go false, or the monitor re-writes every 1.2s forever (the round-17
+    /// flash loop).
+    #[test]
+    fn successful_write_makes_dialog_ineligible_for_resync() {
+        let target = "C:\\Users\\";
+        let state = AppState::new(target.into(), 1);
+        const HWND: u32 = 7_777;
+
+        state.register_dialog(crate::state::DialogInfo {
+            hwnd: HWND,
+            app: "#32770".into(),
+            last_known_path: target.into(),
+            write_strategy: None,
+        });
+
+        assert!(
+            !crate::uia_event::should_resync_known_dialog(
+                true,
+                &state.get_current_path(),
+                state.last_written_path(HWND).as_deref(),
+            ),
+            "after a successful write-back the predicate must be false so the \
+             1200ms cooldown governs instead of an endless resync loop"
+        );
     }
 }

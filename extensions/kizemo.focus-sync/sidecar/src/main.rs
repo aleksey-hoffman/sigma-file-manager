@@ -384,6 +384,26 @@ async fn main() -> Result<()> {
                                        // toggles Auto-Confirm only via the toolbar menu,
                                        // which routes through /set_path not Opened.
                             );
+                            // v0.5.12 — 只有真正写入对话框才算「已写入」。
+                            //
+                            // 旧代码在 match 之后无条件执行 `wrote_back = true` 并登记
+                            // `last_known_path: current`，于是被拒绝的写入也被记成
+                            // 「写过了」。monitor 的
+                            // `should_resync_known_dialog(known_same, pending, last_written)`
+                            // 随后恒为 false，v0.5.7 G-1 那个专门负责
+                            // 「注册了但从没写成功」的 resync 通道被彻底废掉。
+                            //
+                            // 真机症状（2026-10-14 07:22 装包实测）：用户在扩展盖章前
+                            // 1.5s 打开弹窗 → WriteFailed{extension_not_alive} →
+                            // 该弹窗此后 **52 秒零重试**，只能关掉重开才恢复。
+                            //
+                            // 保持 `wrote_back == false`，让下面的 `if !wrote_back`
+                            // 分支登记对话框原本的 initial_path，resync 谓词重新为真，
+                            // 交给既有的 1200ms 冷却驱动重试。决策本身抽成
+                            // `writer::write_succeeded` 以便单测覆盖。
+                            //
+                            // 必须在 match 之前求值：match 会把 `reason` 移出 `outcome`。
+                            let write_succeeded = spike::writer::write_succeeded(&outcome);
                             match outcome {
                                 WriteOutcome::UiaSetValue => {
                                     log_event(&Event::Write {
@@ -413,23 +433,25 @@ async fn main() -> Result<()> {
                                     });
                                 }
                             }
-                            // v0.5.7 G-2b: mark that we wrote, so the
-                            // `if !wrote_back` registration below does NOT
-                            // clobber `last_known_path` back to the dialog's
-                            // filename. (This assignment was silently missing:
-                            // the anchor comment used for a scripted patch did
-                            // not match, so the replace was a no-op. Symptom:
-                            // 2026-10-07 22:08 — resync every 1.2s forever,
-                            // address bar accumulating `E:\` each time.)
-                            wrote_back = true;
-                            // Update last_known_path so subsequent Opened events
-                            // for the same hwnd see paths match and skip the write.
-                            state.register_dialog(DialogInfo {
-                                hwnd: hwnd_u32,
-                                app: class.clone(),
-                                last_known_path: current,
-                                write_strategy: None,
-                            });
+                            // v0.5.12: 仅成功路径才登记 current；失败路径落到
+                            // `if !wrote_back` 的 initial_path 登记。
+                            if write_succeeded {
+                                // v0.5.7 G-2b: mark that we wrote, so the
+                                // `if !wrote_back` registration below does NOT
+                                // clobber `last_known_path` back to the dialog's
+                                // filename. (This assignment was silently missing:
+                                // the anchor comment used for a scripted patch did
+                                // not match, so the replace was a no-op. Symptom:
+                                // 2026-10-07 22:08 — resync every 1.2s forever,
+                                // address bar accumulating `E:\` each time.)
+                                wrote_back = true;
+                                state.register_dialog(DialogInfo {
+                                    hwnd: hwnd_u32,
+                                    app: class.clone(),
+                                    last_known_path: current,
+                                    write_strategy: None,
+                                });
+                            }
                         } else if !initial_path.is_empty() && initial_path != current {
                             // v0.5.5 (Mavis Round 21 D): defensive log when
                             // should_opened_write_back returns false on the
