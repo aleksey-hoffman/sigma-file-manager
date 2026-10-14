@@ -26,6 +26,8 @@ import {
   type FileBrowserListVirtualRow,
   type FileBrowserVirtualRow,
 } from '../utils/file-browser-virtual-rows';
+import { resolveThumbnailMetrics } from '../utils/file-browser-thumbnail-sizes';
+import type { ThumbnailSize } from '../types';
 
 export type {
   FileBrowserGridEntryVariant,
@@ -37,20 +39,9 @@ export type {
 } from '../utils/file-browser-virtual-rows';
 export { getGridColumnCount } from '../utils/file-browser-virtual-rows';
 
-// FORK-MODIFICATION: 缩略图四档对应行高。
-//   small/medium = 42 逻辑像素(24/32 px 缩略图嵌入 42 行);
-//   large = 64 逻辑像素(48 px 缩略图 + 内边距);
-//   xlarge = 70 逻辑像素(54 px 缩略图 + 内边距,验收反馈 2026-10-12 用户加档)。
-//   有描述行的 +14 是 description 行高,同理。
-const LIST_ENTRY_HEIGHT_BASE = 42;
-const LIST_ENTRY_HEIGHT_LARGE = 64;
-const LIST_ENTRY_HEIGHT_XLARGE = 70;
-const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_BASE = 56;
-const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_LARGE = 78;
-const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_XLARGE = 84;
+// FORK-MODIFICATION: 缩略图四档的行高 / 卡高 / 最小列宽已全部移入
+// ../utils/file-browser-thumbnail-sizes.ts，这里不再重复任何数字。
 const GRID_SECTION_HEADER_HEIGHT = 42;
-const GRID_DIR_ENTRY_HEIGHT = 52;
-const GRID_ENTRY_HEIGHT = 120;
 const VIRTUAL_OVERSCAN_PX = 420;
 const SCROLL_TO_PATH_DOM_SYNC_ATTEMPTS = 12;
 const STATUS_BAR_BORDER_CLEARANCE = 2;
@@ -138,21 +129,13 @@ function escapeCssAttribute(value: string): string {
 function getEntryDescriptionHeight(
   entry: DirEntry,
   entryDescription?: (entry: DirEntry) => string | undefined,
-  thumbnailSize: 'small' | 'medium' | 'large' | 'xlarge' = 'medium',
+  thumbnailSize: ThumbnailSize = 'medium',
 ): number {
-  const isLarge = thumbnailSize === 'large';
-  const isXLarge = thumbnailSize === 'xlarge';
+  const metrics = resolveThumbnailMetrics(thumbnailSize);
+
   return entryDescription?.(entry)
-    ? (isXLarge
-        ? LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_XLARGE
-        : isLarge
-          ? LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_LARGE
-          : LIST_ENTRY_WITH_DESCRIPTION_HEIGHT_BASE)
-    : (isXLarge
-        ? LIST_ENTRY_HEIGHT_XLARGE
-        : isLarge
-          ? LIST_ENTRY_HEIGHT_LARGE
-          : LIST_ENTRY_HEIGHT_BASE);
+    ? metrics.listRowHeightWithDescription
+    : metrics.listRowHeight;
 }
 
 export function resolveViewportContentWidth(viewport: HTMLElement): number {
@@ -174,7 +157,7 @@ export function resolveViewportContentWidth(viewport: HTMLElement): number {
 function createListRows(
   entries: readonly DirEntry[],
   entryDescription?: (entry: DirEntry) => string | undefined,
-  thumbnailSize: 'small' | 'medium' | 'large' | 'xlarge' = 'medium',
+  thumbnailSize: ThumbnailSize = 'medium',
 ): FileBrowserVirtualRow[] {
   let offset = 0;
 
@@ -248,11 +231,15 @@ function createGridSectionRows(
   };
 }
 
+// FORK-MODIFICATION: 需求 3.6.3 —— 这里以前只吃 columnCount/gridGap，
+// 缩略图档位完全传不进来，所以网格卡片一直是固定的 120/52。
 function createGridRows(
   entries: readonly DirEntry[],
   columnCount: number,
   gridGap: number,
+  thumbnailSize: ThumbnailSize,
 ): FileBrowserVirtualRow[] {
+  const metrics = resolveThumbnailMetrics(thumbnailSize);
   const groupedEntries = groupFileBrowserEntries(entries);
   const sections: GridSectionDefinition[] = [
     {
@@ -260,28 +247,28 @@ function createGridRows(
       variant: 'dir',
       entries: groupedEntries.dirs,
       stickyIndex: 10,
-      entryHeight: GRID_DIR_ENTRY_HEIGHT,
+      entryHeight: metrics.gridDirEntryHeight,
     },
     {
       key: 'images',
       variant: 'image',
       entries: groupedEntries.images,
       stickyIndex: 11,
-      entryHeight: GRID_ENTRY_HEIGHT,
+      entryHeight: metrics.gridEntryHeight,
     },
     {
       key: 'videos',
       variant: 'video',
       entries: groupedEntries.videos,
       stickyIndex: 12,
-      entryHeight: GRID_ENTRY_HEIGHT,
+      entryHeight: metrics.gridEntryHeight,
     },
     {
       key: 'others',
       variant: 'other',
       entries: groupedEntries.others,
       stickyIndex: 13,
-      entryHeight: GRID_ENTRY_HEIGHT,
+      entryHeight: metrics.gridEntryHeight,
     },
   ];
 
@@ -303,19 +290,27 @@ export function createFileBrowserVirtualRows(options: {
   viewportWidth: number;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: boolean;
-  // FORK-MODIFICATION: 缩略图大小档位（与 LIST_ENTRY_HEIGHT 联动）。默认 medium。
-  thumbnailSize?: 'small' | 'medium' | 'large' | 'xlarge';
+  // FORK-MODIFICATION: 缩略图大小档位（同时影响 list 行高与 grid 卡高/列宽）。默认 medium。
+  thumbnailSize?: ThumbnailSize;
 }): FileBrowserVirtualRow[] {
+  const thumbnailSize = options.thumbnailSize ?? 'medium';
+
   if (options.layout === 'grid') {
     const gridGap = getFileBrowserGridGap(!!options.increaseFileViewGaps);
+
     return createGridRows(
       options.entries,
-      getGridColumnCount(options.viewportWidth, gridGap),
+      getGridColumnCount(
+        options.viewportWidth,
+        gridGap,
+        resolveThumbnailMetrics(thumbnailSize).gridMinColumnWidth,
+      ),
       gridGap,
+      thumbnailSize,
     );
   }
 
-  return createListRows(options.entries, options.entryDescription, options.thumbnailSize ?? 'medium');
+  return createListRows(options.entries, options.entryDescription, thumbnailSize);
 }
 
 export function getFileBrowserGridNavigationEntry(
@@ -349,8 +344,8 @@ export function useFileBrowserVirtualLayout(options: {
   layout: () => 'list' | 'grid' | 'tree' | undefined;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: () => boolean;
-  // FORK-MODIFICATION: 缩略图大小档位（影响 list 行高）
-  thumbnailSize?: () => 'small' | 'medium' | 'large' | 'xlarge';
+  // FORK-MODIFICATION: 缩略图大小档位（影响 list 行高与 grid 卡高/列宽）
+  thumbnailSize?: () => ThumbnailSize;
 }) {
   const scrollViewportRef = ref<HTMLElement | null>(null);
   const viewportHeight = ref(0);
@@ -361,7 +356,11 @@ export function useFileBrowserVirtualLayout(options: {
   let viewportResizeObserver: ResizeObserver | null = null;
 
   const gridGap = computed(() => getFileBrowserGridGap(!!options.increaseFileViewGaps?.()));
-  const gridColumnCount = computed(() => getGridColumnCount(viewportWidth.value, gridGap.value));
+  const gridColumnCount = computed(() => getGridColumnCount(
+    viewportWidth.value,
+    gridGap.value,
+    resolveThumbnailMetrics(options.thumbnailSize?.() ?? 'medium').gridMinColumnWidth,
+  ));
 
   const rows = computed<FileBrowserVirtualRow[]>(() => {
     return createFileBrowserVirtualRows({

@@ -3,9 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import type { DirEntry } from '@/types/dir-entry';
-import { FILE_BROWSER_GRID_GAP_DEFAULT } from './file-browser-layout-gaps';
 
-export const GRID_MIN_COLUMN_WIDTH = 170;
 export const GRID_VIEW_PADDING_X = 0;
 
 export type FileBrowserGridSectionKey = 'dirs' | 'images' | 'videos' | 'others';
@@ -51,12 +49,15 @@ export interface FileBrowserGridLayoutMetrics {
   availableWidth: number;
 }
 
+// FORK-MODIFICATION: 最小列宽随缩略图档位变化，这里必须由调用方传入，
+// 不能给默认值 —— 默认值会让漏传的调用方静默按 medium 列数布局。
 export function getGridColumnCount(
   viewportWidth: number,
-  gridGap: number = FILE_BROWSER_GRID_GAP_DEFAULT,
+  gridGap: number,
+  minColumnWidth: number,
 ): number {
   const availableWidth = Math.max(0, viewportWidth - GRID_VIEW_PADDING_X);
-  return Math.max(1, Math.floor((availableWidth + gridGap) / (GRID_MIN_COLUMN_WIDTH + gridGap)));
+  return Math.max(1, Math.floor((availableWidth + gridGap) / (minColumnWidth + gridGap)));
 }
 
 export function getVirtualRowEnd(row: FileBrowserVirtualRow): number {
@@ -110,9 +111,10 @@ export function findVirtualRowRangeOverlappingContentSpan(
 export function getFileBrowserGridLayoutMetrics(
   contentWidth: number,
   gridGap: number,
+  minColumnWidth: number,
 ): FileBrowserGridLayoutMetrics {
   const availableWidth = Math.max(0, contentWidth - GRID_VIEW_PADDING_X);
-  const columnCount = getGridColumnCount(contentWidth, gridGap);
+  const columnCount = getGridColumnCount(contentWidth, gridGap, minColumnWidth);
   const columnWidth = columnCount > 0
     ? (availableWidth - ((columnCount - 1) * gridGap)) / columnCount
     : availableWidth;

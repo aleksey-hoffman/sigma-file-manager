@@ -13,7 +13,8 @@ export interface FileBrowserProps {
 }
 
 // FORK-MODIFICATION: 缩略图大小四档（与 navigator.thumbnailSize 对齐）
-// 验收反馈 2026-10-12:增加 54 像素档（xlarge）。
+// 需求 3.6 四档重定为 32 / 48 / 64 / 80 像素，默认 medium；像素值见
+// utils/file-browser-thumbnail-sizes.ts，这里只声明档位名。
 export type ThumbnailSize = 'small' | 'medium' | 'large' | 'xlarge';
 
 export interface FileBrowserEmits {

@@ -17,6 +17,8 @@ import {
   resolveViewportContentWidth,
   useFileBrowserVirtualLayout,
 } from '../use-file-browser-virtual-layout';
+import type { ThumbnailSize } from '../../types';
+import { resolveThumbnailMetrics } from '../../utils/file-browser-thumbnail-sizes';
 
 function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
   const isDirectory = options.is_dir ?? false;
@@ -54,13 +56,13 @@ describe('createFileBrowserVirtualRows', () => {
       entryDescription: entry => (entry.name === 'second' ? 'Description' : undefined),
     });
 
-    expect(rows.map(row => row.start)).toEqual([0, 42, 98]);
-    expect(rows.map(row => row.size)).toEqual([42, 56, 42]);
+    expect(rows.map(row => row.start)).toEqual([0, 64, 142]);
+    expect(rows.map(row => row.size)).toEqual([64, 78, 64]);
   });
 
-  // FORK-MODIFICATION: 缩略图大小三档，LIST_ENTRY_HEIGHT 与 LIST_ENTRY_WITH_DESCRIPTION_HEIGHT 联动。
+  // FORK-MODIFICATION: 需求 3.6 四档重定 32/48/64/80，行高 = 缩略图 + 16（带说明行 +14）。
   describe('thumbnailSize', () => {
-    it('medium (default): list rows stay 42 / 56', () => {
+    it('medium (default): list rows are 64 / 78', () => {
       const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
       const rows = createFileBrowserVirtualRows({
         entries,
@@ -69,10 +71,10 @@ describe('createFileBrowserVirtualRows', () => {
         entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
         thumbnailSize: 'medium',
       });
-      expect(rows.map(row => row.size)).toEqual([42, 56, 42]);
+      expect(rows.map(row => row.size)).toEqual([64, 78, 64]);
     });
 
-    it('small: list rows stay 42 / 56（与 medium 同）', () => {
+    it('small: list rows shrink to 48 / 62', () => {
       const entries = [createEntry('a'), createEntry('b')];
       const rows = createFileBrowserVirtualRows({
         entries,
@@ -81,10 +83,10 @@ describe('createFileBrowserVirtualRows', () => {
         entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
         thumbnailSize: 'small',
       });
-      expect(rows.map(row => row.size)).toEqual([42, 56]);
+      expect(rows.map(row => row.size)).toEqual([48, 62]);
     });
 
-    it('large: list rows grow to 64 / 78', () => {
+    it('large: list rows grow to 80 / 94', () => {
       const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
       const rows = createFileBrowserVirtualRows({
         entries,
@@ -93,12 +95,10 @@ describe('createFileBrowserVirtualRows', () => {
         entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
         thumbnailSize: 'large',
       });
-      expect(rows.map(row => row.size)).toEqual([64, 78, 64]);
+      expect(rows.map(row => row.size)).toEqual([80, 94, 80]);
     });
 
-    // FORK-MODIFICATION: 验收反馈 2026-10-12 第二轮 — 缩略图 4 档加 xlarge=54 像素,
-    // 行高 70 / with-description 84(均 +6 像素,大 6 px 给 54 px 缩略图留余量)。
-    it('xlarge: list rows grow to 70 / 84', () => {
+    it('xlarge: list rows grow to 96 / 110', () => {
       const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
       const rows = createFileBrowserVirtualRows({
         entries,
@@ -107,9 +107,57 @@ describe('createFileBrowserVirtualRows', () => {
         entryDescription: e => (e.name === 'b' ? 'desc' : undefined),
         thumbnailSize: 'xlarge',
       });
-      expect(rows.map(row => row.size)).toEqual([70, 84, 70]);
+      expect(rows.map(row => row.size)).toEqual([96, 110, 96]);
     });
-});
+
+    // FORK-MODIFICATION: 需求 3.6.3 —— 档位以前对网格完全无效，
+    // createGridRows 根本没收到 thumbnailSize。
+    // 1 个目录 + 3 张图片 ⇒ 4 行：目录段头 / 目录行 / 图片段头 / 图片行。
+    // 目录行高 = gridDirEntryHeight + gap；图片行高 = gridEntryHeight + gap。
+    it.each([
+      ['small', 16, [0, 54, 101, 155], [54, 47, 54, 92]],
+      ['medium', 11, [0, 54, 118, 172], [54, 64, 54, 132]],
+      ['xlarge', 6, [0, 54, 153, 207], [54, 99, 54, 212]],
+    ] as Array<[ThumbnailSize, number, number[], number[]]>)(
+      'grid rows scale with thumbnailSize %s',
+      (thumbnailSize, columns, expectedStarts, expectedSizes) => {
+        const entries = [
+          createEntry('dir-1', {
+            is_dir: true,
+            is_file: false,
+          }),
+          createEntry('image-1', {
+            ext: 'jpg',
+            mime: 'image/jpeg',
+          }),
+          createEntry('image-2', {
+            ext: 'jpg',
+            mime: 'image/jpeg',
+          }),
+          createEntry('image-3', {
+            ext: 'jpg',
+            mime: 'image/jpeg',
+          }),
+        ];
+        const rows = createFileBrowserVirtualRows({
+          entries,
+          layout: 'grid',
+          viewportWidth: 2000,
+          thumbnailSize,
+        });
+
+        expect(
+          getGridColumnCount(
+            2000,
+            12,
+            resolveThumbnailMetrics(thumbnailSize).gridMinColumnWidth,
+          ),
+        ).toBe(columns);
+        expect(rows.map(row => row.start)).toEqual(expectedStarts);
+        expect(rows.map(row => row.size)).toEqual(expectedSizes);
+      },
+    );
+  });
 
   it('creates grid section and item rows from responsive columns', () => {
     const entries = [
@@ -205,9 +253,17 @@ describe('getFileBrowserGridNavigationEntry', () => {
 
 describe('getGridColumnCount', () => {
   it('derives column count from minimum card width and gap', () => {
-    expect(getGridColumnCount(500)).toBe(2);
-    expect(getGridColumnCount(850)).toBe(4);
-    expect(getGridColumnCount(950)).toBe(5);
+    expect(getGridColumnCount(500, 12, 170)).toBe(2);
+    expect(getGridColumnCount(850, 12, 170)).toBe(4);
+    expect(getGridColumnCount(950, 12, 170)).toBe(5);
+  });
+
+  // FORK-MODIFICATION: 列数必须随缩略图档位变化，否则大卡片会被挤成窄条。
+  it('derives fewer columns as the minimum column width grows', () => {
+    expect(getGridColumnCount(2000, 12, 113)).toBe(16);
+    expect(getGridColumnCount(2000, 12, 170)).toBe(11);
+    expect(getGridColumnCount(2000, 12, 227)).toBe(8);
+    expect(getGridColumnCount(2000, 12, 283)).toBe(6);
   });
 });
 
@@ -271,8 +327,8 @@ describe('resolveViewportContentWidth', () => {
     });
 
     expect(resolveViewportContentWidth(viewport)).toBe(860);
-    expect(getGridColumnCount(resolveViewportContentWidth(viewport))).toBe(4);
-    expect(getGridColumnCount(entriesContainer.clientWidth)).toBe(5);
+    expect(getGridColumnCount(resolveViewportContentWidth(viewport), 12, 170)).toBe(4);
+    expect(getGridColumnCount(entriesContainer.clientWidth, 12, 170)).toBe(5);
   });
 
   it('falls back to content inner width while entries container is absent', () => {
@@ -292,8 +348,8 @@ describe('resolveViewportContentWidth', () => {
     });
 
     expect(resolveViewportContentWidth(viewport)).toBe(850);
-    expect(getGridColumnCount(resolveViewportContentWidth(viewport))).toBe(4);
-    expect(getGridColumnCount(viewport.clientWidth)).toBe(5);
+    expect(getGridColumnCount(resolveViewportContentWidth(viewport), 12, 170)).toBe(4);
+    expect(getGridColumnCount(viewport.clientWidth, 12, 170)).toBe(5);
   });
 
   it('updates content width when increased gaps change entry padding', async () => {
