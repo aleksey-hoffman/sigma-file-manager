@@ -1,5 +1,76 @@
 # Changelog
 
+## [3.1.0] - October 2026
+
+**Summary:** Makes the folder tree, the layout switch and thumbnail sizes behave the way people expect, and fixes the Focus Sync extension being unable to start at all.
+
+### Folder Tree Context Menu
+
+Right-clicking any node in the folder tree -- a drive, a folder or a file -- now offers six actions.
+
+- **Copy / Cut / Paste / Rename**: all four work on the node you right-clicked. Previously the clipboard commands were wired to the wrong signatures, so they appeared in the menu but did nothing, and the interface showed the raw translation key instead of the action name;
+- **Open containing folder**: reveals the file in Windows Explorer;
+- **Properties**: opens the Windows property sheet for that node.
+
+### Layout Is Per Folder
+
+The layout switch moved from the window toolbar to the tab toolbar, next to the refresh button.
+
+- **It now applies to the current folder only**, not globally. Two folders in two tabs can each keep their own layout, and switching tabs no longer resets the other tab's view;
+- **Still reachable from the collapsed toolbar** via the overflow menu, for narrow windows;
+- **Global scope moved to the settings page**, under the file view section, for anyone who does want one layout everywhere.
+
+### Four Thumbnail Sizes
+
+Thumbnail size is now selectable with four steps: **small 24 / medium 32 / large 48 / extra large 54 pixels**.
+
+- Reachable from the tab toolbar, and from *View > File thumbnails > Thumbnail size* in the main menu;
+- **The row height follows the thumbnail**, so a larger thumbnail no longer shifts the row out of alignment;
+- Thumbnails are only generated once a file scrolls into the visible area, and a directory with 1000 images loads about 30 on the first screen and fills in the rest as you scroll.
+
+### Drives Show Free Space
+
+Under *Locations*, the drive row no longer shows only the entry count. It now shows `147.1 GB / 931.3 GB` -- free space and total capacity in one glance.
+
+### Home And Settings
+
+- **The home page title moved out of the theme image** and is now large enough to read, and clicking the theme image itself opens background management;
+- **The settings page now links the official site and the source repository**, and the top of the page was rewritten: this build is *Alpha File Manager*, a file manager built on Sigma File Manager, not a generic one.
+
+### Fixed
+
+- **Focus Sync no longer gives up after a single rejected write.** Previously the sidecar marked a dialog as "already written" even when the write had been refused, so its own retry channel was permanently disabled and the dialog stayed out of sync until you closed and reopened it. A refused write is now treated as a refusal, and a failed write is never recorded as a success;
+- **The Focus Sync extension can now load at all.** The extension code scanner treated a `self` occurrence inside an English *comment* as a direct `self` access, so the whole extension was rejected before its worker was created -- which made path sync look entirely broken. The scanner now strips comments, strings, template literals and regular expressions, and only inspects executable code;
+- **Fixed Copy/Cut in the folder tree context menu**, which raised a signature error and never applied;
+- **Fixed: installing over an existing version no longer kills the installer.** When an upgrade ran the previous version's uninstaller, that uninstaller's process-kill step treated the installer itself as a leftover process and terminated it mid-install. The install then failed with no readable error. Any process named `*setup.exe` or `uninstall.exe` is now excluded from that kill, regardless of where it sits in the process tree, while the application itself is still terminated so its executable is not held open;
+- **The update dialog now matches the installed version.** `CHANGELOG.md` had not been updated since 2.2.0, so every release from 3.0.0 onward silently displayed the oldest entry in the file. The lookup now falls back to the English entry when a translation predates the running version, and a `verify-changelog` check fails the build if the changelog does not cover the current version;
+- The settings intro text now uses the wording you supplied instead of the upstream placeholder.
+
+## [3.0.2] - October 2026
+
+**Summary:** Thumbnails reach the list view, the layout switch becomes a toolbar button, and thumbnail cache storage becomes visible and clearable.
+
+### Thumbnails In The List View
+
+- **Images and videos now show a thumbnail directly in the list view**, instead of only being visible in the grid view. Folders, documents and PDFs keep their type icons, so the row height stays stable and the list does not shift when thumbnails change. Thumbnails are generated only once a file scrolls into the visible area;
+- The switch lives under *View > File thumbnails* in the main menu, and in *Appearance > File view* on the settings page.
+
+### Layout Switch In The Toolbar
+
+The layout switch moved out of the gear menu into the toolbar, next to the refresh button: icon+text tells you where you are, and icons only stay as a tooltip and as a success signal for "you clicked me to go somewhere".
+
+- **Layout is per folder.** The switch applies to the current folder, not globally, so the same folder can look different in two tabs. The global option is available under *Appearance*;
+- The switch is still in the gear menu for *only this folder*, and also reachable from the toolbar button when the toolbar is collapsed.
+
+### Thumbnail Cache Is Visible And Clearable
+
+- *Settings > Data storage > Thumbnail cache* now shows how many files the cache holds and how much space it uses, plus a one-click clear button. Image and video thumbnails share one cache directory, and after clearing they are regenerated on the next browse.
+
+### Also Adjusted
+
+- **Folders show by default.** The folder toggle existed but defaulted to off; it now defaults to on since the release, and can still be turned off under *Appearance > File thumbnails*;
+- **Files sort before folders.** The *Folders first* option moved from the sort settings into the *View > File thumbnails* menu and now sits at the top of the list view's context menu, so it is easier to reach.
+
 ## [3.0.1] - October 2026
 
 **Summary:** Fixes a data-loss bug in batch rename, found while testing 3.0.0.

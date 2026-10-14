@@ -36,6 +36,35 @@
   disjoint, so behaviour is identical to the old `taskkill /T`, including the
   WebView2 cleanup that Tauri's CheckIfAppIsRunning depends on.
 
+  v3.1.1 (2026-10-14): the "caller + descendants" rule ALONE was not enough,
+  and it killed the installer during an upgrade. Real-machine log:
+
+      08:33:30.529  caller pid resolved to 121796
+      08:33:30.563  SKIP protected PID=121796 uninstall.exe
+      08:33:30.667  terminated PID=83836 Alpha File Manager_3.1.0_x64-setup.exe
+      08:33:30.708  OUTCOME=ok exit=0
+
+  Why: during an upgrade hooks.nsh:667 runs the SAME macro through
+  `un.AlphaTerminateAppProcesses`, so the caller is `uninstall.exe`, not the
+  setup process. Its protected subtree is only itself + nsExec + conhost. The
+  setup process is an ANCESTOR of the uninstaller (setup launched it), and
+  Get-Descendants only walks downward, so setup was never protected. When the
+  user had launched the setup from inside the app, setup was additionally a
+  descendant of alpha-file-manager.exe, so it landed in the VICTIM set and was
+  terminated mid-install. The install then failed with no readable error.
+
+  The fix is NOT "protect the whole ancestor chain". That would also protect
+  alpha-file-manager.exe itself, the app would survive, keep its exe locked, and
+  Tauri CheckIfAppIsRunning would abort the install with "Failed to kill". The
+  test in _acceptance/test-kill-protects-installer.ps1 asserts BOTH halves for
+  exactly this reason.
+
+  The fix is an image-name invariant that does not care about tree position:
+  any process whose image ends in `setup.exe` or `uninstall.exe` is an installer
+  or uninstaller and is never a victim. It covers the upgrade case above, the
+  mirror case (a parallel uninstaller during a plain install), and a user who
+  double-clicks the setup twice.
+
   ASCII ONLY, ON PURPOSE.
   This file is embedded verbatim into installer/hooks.nsh and materialised at
   run time with NSIS FileWrite, which converts strings through the system ANSI
@@ -74,6 +103,12 @@
 param(
   [int]$SelfPid = 0,
 
+  # Test-only override for the log destination. Production calls never pass it
+  # and keep using %TEMP%\alpha-file-manager-kill.log. It exists so the
+  # regression harness in _acceptance/ can assert on its own log without
+  # interleaving entries into the production log that real installs rely on.
+  [string]$LogFileOverride = '',
+
   [string[]]$AppImages = @(
     'alpha-file-manager.exe',
     'SigmaFileManager.exe',
@@ -105,7 +140,9 @@ $ErrorActionPreference = 'Continue'
 #
 # ASCII + no backslashes is still mandatory (see embed-kill-script.mjs), so the
 # path is built with Join-Path rather than written literally.
-$ScriptLogFile = Join-Path $env:TEMP 'alpha-file-manager-kill.log'
+$ScriptLogFile = if ($LogFileOverride) { $LogFileOverride } else {
+  Join-Path $env:TEMP 'alpha-file-manager-kill.log'
+}
 
 function Write-Log {
   param([string]$Message)
@@ -189,6 +226,25 @@ Write-Log "    [kill-app-tree] caller pid resolved to $SelfPid (this script pid=
 
 if ($protected.Count -gt 1) {
   Write-Log "    [kill-app-tree] protected subtree: $($protected.Count) processes (installer itself + descendants)"
+}
+
+# --- 2b. installer / uninstaller images are never victims --------------------
+# v3.1.1 (2026-10-14). See .DESCRIPTION for the 08:33:30 log this fixes.
+#
+# The subtree rule above is caller-relative, and during an upgrade the caller
+# is uninstall.exe while the process that must survive is its ANCESTOR. Walking
+# ancestors instead would over-protect: alpha-file-manager.exe sits on that same
+# ancestor chain and must still die, or the install cannot overwrite its exe.
+#
+# So the invariant is stated on the image name, which is position-independent:
+# nothing named *setup.exe or *uninstall.exe is ever terminated by this script.
+$InstallerImagePattern = '(?i)(setup|uninstall)\.exe$'
+
+foreach ($p in $procs.Values) {
+  if ($p.Name -notmatch $InstallerImagePattern) { continue }
+  if ($protected.ContainsKey($p.Pid)) { continue }
+  Write-Log "    [kill-app-tree] SKIP PID=$($p.Pid) $($p.Name) (installer/uninstaller image; never a kill target)"
+  $protected[$p.Pid] = $true
 }
 
 # --- 3. targets --------------------------------------------------------------

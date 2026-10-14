@@ -162,7 +162,24 @@ export function useChangelog() {
   const userSettingsStore = useUserSettingsStore();
 
   const currentRelease = computed(() => {
-    return releases.value.find(release => release.version === appVersion.value) || releases.value[0];
+    const localized = releases.value.find(release => release.version === appVersion.value);
+
+    if (localized) {
+      return localized;
+    }
+
+    // A localized changelog that predates the running version must NOT be
+    // presented as the notes for this version. Falling back to releases[0]
+    // would show whatever the oldest entry in that file happens to be.
+    //
+    // Real instance (2026-10-14): CHANGELOG.md had no entry for 3.1.0, and all
+    // 14 files under public/changelog/ stopped at 3.0.1, so the dialog kept
+    // showing 3.0.1 content after a successful 3.1.0 install. scripts/
+    // verify-changelog.mjs now fails the build on that class of drift; this
+    // branch is the runtime backstop for locales we have not translated yet.
+    const english = releasesEn.find(release => release.version === appVersion.value);
+
+    return english ?? releases.value[0];
   });
 
   const hasUnseenUpdate = computed(() => {

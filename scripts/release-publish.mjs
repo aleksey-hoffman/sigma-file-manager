@@ -326,17 +326,13 @@ async function verify() {
   console.log(`[verify] 发布日期  ：${manifest.pub_date ?? '(无)'}`);
   console.log(`[verify] 清单 sha256：${manifest.sha256 ?? '(无)'}`);
 
-  const head = await fetch(installerUrl, { method: 'HEAD' });
-  if (!head.ok) fail(`安装包地址不可达：${installerUrl} HTTP ${head.status}`);
-  const remoteSize = Number(head.headers.get('content-length') ?? '0');
-
   const installer = latestInstaller(path.join(repoRoot, 'release'));
   let verdict = '仅完成连通性校验';
 
   if (installer) {
+    const localSize = fs.statSync(installer.full).size;
     const localHash = sha256File(installer.full);
-    console.log(`[verify] 本地包    ：${installer.name}  ${fs.statSync(installer.full).size} 字节`);
-    console.log(`[verify] 线上包大小：${remoteSize} 字节`);
+    console.log(`[verify] 本地包    ：${installer.name}  ${localSize} 字节`);
     console.log(`[verify] 本地 sha256：${localHash}`);
 
     if (manifest.sha256 && manifest.sha256 !== localHash) {
@@ -345,10 +341,58 @@ async function verify() {
         + '  应用下载后会因校验失败删除文件，必须重新 prepare。',
       );
     }
-    if (remoteSize > 0 && remoteSize !== fs.statSync(installer.full).size) {
-      fail(`线上包大小 ${remoteSize} 与本地 ${fs.statSync(installer.full).size} 不一致`);
+
+    // 两个变体必须分开回读，否则无法区分两种完全不同的故障。
+    //
+    // 2026-10-14 实测踩中过：旧写法只 HEAD 一次不带 cache-busting 的 URL，
+    // 于是 Cloudflare 边缘缓存里那个还没过期的旧包被读出来，报成
+    // 「线上包大小 18099260 与本地 18107423 不一致」——
+    // 看起来像上传失败，实际上 SFTP 回读十个文件全部 md5+size 一致，
+    // 源站早就是新包了。上传脚本自己第 200 行就写着这个坑。
+    //
+    // 带 cache-busting 的那次读**绕过**缓存，反映源站真实内容 —— 它不一致
+    // 才是真的上传没成功。不带的那次读**命中**用户实际下载的路径。
+    const bust = Date.now();
+    const originHead = await fetch(`${installerUrl}?_=${bust}`, { method: 'HEAD' });
+    if (!originHead.ok) fail(`安装包地址不可达：${installerUrl} HTTP ${originHead.status}`);
+
+    const edgeHead = await fetch(installerUrl, { method: 'HEAD' });
+    if (!edgeHead.ok) fail(`安装包地址不可达：${installerUrl} HTTP ${edgeHead.status}`);
+
+    const originSize = Number(originHead.headers.get('content-length') ?? '0');
+    const edgeSize = Number(edgeHead.headers.get('content-length') ?? '0');
+    const cacheStatus = edgeHead.headers.get('cf-cache-status') ?? '(无)';
+    const age = Number(edgeHead.headers.get('age') ?? '0');
+    const maxAge = Number(/max-age=(\d+)/.exec(edgeHead.headers.get('cache-control') ?? '')?.[1] ?? '0');
+
+    console.log(`[verify] 源站包大小：${originSize} 字节（绕过缓存，用户看不到这个）`);
+    console.log(`[verify] 边缘包大小：${edgeSize} 字节（CF-Cache-Status=${cacheStatus}${age ? `, Age=${age}s` : ''}）`);
+
+    if (originSize > 0 && originSize !== localSize) {
+      fail(
+        `源站包大小 ${originSize} 与本地 ${localSize} 不一致。\n`
+        + '  这是真的上传失败，SFTP 回读没通过，请重新 upload。',
+      );
     }
-    verdict = '版本号 / 大小 / sha256 三项均一致';
+
+    if (edgeSize > 0 && edgeSize !== localSize) {
+      // 源站是对的，只是边缘还拿着旧的。绝不能 fail —— 这不是发布失败。
+      const wait = maxAge > age ? Math.ceil((maxAge - age) / 60) : null;
+      console.warn('');
+      console.warn(`[verify] 警告：Cloudflare 边缘仍在返回旧安装包（${edgeSize} 字节）。`);
+      console.warn('  源站已经是新包，上传本身成功；但用户此刻下载会拿到旧包，');
+      console.warn('  而清单报的是新 sha256 —— 应用本地校验不通过会直接删文件。');
+      if (wait) {
+        console.warn(`  Cache-Control: max-age=${maxAge}，Age=${age}s，约 ${wait} 分钟后自然过期。`);
+      }
+      console.warn('  期间内请不要对外发布该版本的更新提示；如需立即生效可 purge 该 URL');
+      console.warn('  或改用带 cache-busting 的下载链接。');
+      console.warn('');
+      verdict = `源站一致，边缘缓存未过期（约 ${wait ?? '?'} 分钟后自愈）`;
+    }
+    else {
+      verdict = '版本号 / 大小 / sha256 三项均一致（源站与边缘都已生效）';
+    }
   }
 
   console.log(`[verify] 通过：${verdict}`);

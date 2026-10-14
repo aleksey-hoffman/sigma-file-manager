@@ -8,9 +8,12 @@ Alpha File Manager 的更新渠道：**主源是自建站 `https://www.aiec.fun/
 
 ## 一、日常发版（最常用）
 
-写好本版的更新说明后，**四条**命令：
+写好本版的更新说明后，**五条**命令：
 
 ```powershell
+# 0) 先补 CHANGELOG.md（首启更新弹窗读它，与 version.json 的 notes 是两套数据）
+npm run verify-changelog
+
 # 1) 升版本号 + 打包 + 写站点源（version.json 与安装包副本）
 npm run release:prepare -- --bump patch --notes-file ./_notes.md
 
@@ -23,6 +26,9 @@ npm run release:upload
 # 4) 发布 / 更新 GitHub 兜底 release
 npm run release:github
 ```
+
+第 0 步要放在**升版本号之前**：校验会比对 `package.json` 的版本号与 `CHANGELOG.md`，
+顺序反了就会因为「刚 bump、还没来得及写」而误报。
 
 `--bump` 可选 `patch`（默认）/ `minor` / `major` / `none`。`none` 表示版本号不变、只重打包——**仅在重发同版本修复包时使用**。
 
@@ -47,7 +53,7 @@ npm run release:github
 
 ---
 
-## 二、四处状态必须一致
+## 二、五处状态必须一致
 
 一次发版会同时改动这些地方，任何一处漏掉都会产生「看起来成功、实际不一致」的故障：
 
@@ -57,8 +63,30 @@ npm run release:github
 | 2 | `release/Alpha File Manager_<版本>_x64-setup.exe` | `tauri build` 自动 |
 | 3 | 站点源目录的安装包副本 + `version.json` | `release:prepare` |
 | 4 | 服务器上的文件 / GitHub release 资产 | `release:upload` / `release:github` |
+| 5 | `CHANGELOG.md` + `public/changelog/ch/changelog.md` | **人工**（脚本只校验） |
 
 **最阴的一处是 sha256 必须与安装包成对更新。** 应用下载后会本地比 sha256，不匹配就删文件——只换包不同步清单，校验功能反而会挡住正常用户。`release:prepare` 把这两步绑在同一条命令里就是为了这个。
+
+**第 5 处是最容易被忘、后果最直观的一处。** 首启的更新弹窗读的是
+`CHANGELOG.md`（中文用户读 `public/changelog/ch/changelog.md`，locale code 是 `ch` 不是 `zh`），
+**与 `version.json` 的 `notes` 是两套互不相干的数据**。站点清单更新得再漂亮，
+只要 changelog 没有本版条目，弹窗就会静默回退到文件里最旧的那一条。
+
+`use-changelog.ts` 的查找逻辑是 `find(版本) || releases[0]`，找不到不报错、不告警。
+2026-10-14 发完 3.1.0 才发现：`CHANGELOG.md` 从 2.2.0 之后就没再更新过，
+3.0.0 / 3.0.1 / 3.0.2 / 3.0.3 / 3.1.0 **全都没有条目**，14 个语言副本同样停在 3.0.1，
+于是弹窗在装好 3.1.0 之后仍然显示 3.0.1 的内容。
+
+现在有门禁兜底：
+
+```powershell
+npm run verify-changelog   # 已挂进 npm run check
+```
+
+它检查三件事：当前版本号在 `CHANGELOG.md` 里有条目、条目按版本从新到旧排列、
+所有 changelog 文件都没有 BOM 和 U+FFFD 乱码。中文那一份没写时，
+其它 13 种语言会退回到英文条目，而不是显示更旧的本地化内容——
+但**补中文是你自己的活**，脚本不会替你翻译。
 
 ---
 
@@ -72,6 +100,25 @@ npm run release:verify    # 只做公网回读，不改动任何东西
 `verify` 会检查：线上版本号、清单 sha256、线上包 Content-Length、本地包 sha256。四项一致才通过。
 
 > 这个校验**是有判别力的**：拿一个哈希不符的安装包喂给它，会 exit 1 并说明原因。它不是「什么都没做也绿」。
+
+### 安装包要回读两次，因为「源站」和「边缘」是两件事
+
+安装包 URL 回读**两次**：一次带 cache-busting（绕过 Cloudflare，反映**源站**真实内容），
+一次不带（**用户实际下载**走的路径）。两者分开报，因为它们不一致时的含义完全相反：
+
+| 情况 | 含义 | 退出码 |
+|---|---|---|
+| 源站大小 ≠ 本地 | **真的上传失败**，SFTP 回读没通过，重新 upload | exit 1 |
+| 源站一致，边缘 ≠ 本地 | 上传成功，只是 Cloudflare 边缘还拿着旧包 | exit 0 + 警告，报告剩余秒数 |
+
+2026-10-14 踩过第二种：旧写法只 HEAD 一次不带 cache-busting 的 URL，
+读出边缘缓存里的旧包，报成「线上包大小 18099260 与本地 18107423 不一致」，
+**看起来像上传失败，实际 SFTP 回读十个文件全部 md5+size 一致，源站早就是新包了**。
+
+第二种的真实风险要说清楚：这段时间里用户下载会拿到旧包，而清单报的是新 sha256，
+应用本地校验不通过会**直接删文件**，表现为「下载了却装不上」。
+`Cache-Control: max-age=7200`，最长 2 小时窗口。规避方式：purge 该 URL、
+改用带 cache-busting 的下载链接，或接受这段窗口内不推送更新提示。
 
 **每次上线后都要用带时间戳的地址手工回读一次**（脚本内部已这么做）：
 
