@@ -506,8 +506,9 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     await setDefaultEnumIfMissing(storage, 'navigator.thumbnailSize', 'medium', ['small', 'medium', 'large']);
   }
 
-  // FORK-MODIFICATION: 缩略图四档（增加 xlarge = 54 像素）。验收反馈 2026-10-12:
-  // 用户希望再增加一档"中大"以精细化缩略图尺寸,行高 70 逻辑像素。
+  // FORK-MODIFICATION: 缩略图四档（新增 xlarge = 80 像素 / 行高 96 逻辑像素）。
+  // 档位参数（缩略图像素 32/48/64/80、行高 48/64/80/96）的唯一度量来源是
+  // navigator/components/file-browser/utils/file-browser-thumbnail-sizes.ts，这里不重复记录。
   // 仍走 setDefaultEnumIfMissing —— 已有值不动;allowed 扩到 4 档让 schema 校验更松。
   if (fromVersion === 30 && toVersion === 31) {
     await setDefaultEnumIfMissing(storage, 'navigator.thumbnailSize', 'medium', ['small', 'medium', 'large', 'xlarge']);

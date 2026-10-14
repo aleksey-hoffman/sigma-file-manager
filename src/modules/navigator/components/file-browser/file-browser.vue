@@ -65,7 +65,8 @@ const addressBarEditorRef = ref<InstanceType<typeof AddressBarEditorDialog> | nu
 
 const userSettingsStore = useUserSettingsStore();
 // FORK-MODIFICATION: 网格/列表的行高与卡高由 CSS 变量驱动，这里按当前档位覆盖。
-// vars.css 里的静态值是 medium 兜底，注入失败时退化成默认档而不是塌成无高度。
+// 注入没发生时退化到 vars.css 的静态兜底（列表 42px / 网格 52px 与 120px），
+// 刻意不等于 medium 档的 64px：行高量到 42px 就是判定注入失效的信号。
 const thumbnailCssVariables = computed(() => resolveThumbnailCssVariables(
   userSettingsStore.userSettings.navigator.thumbnailSize,
 ));

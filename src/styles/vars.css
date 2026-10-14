@@ -32,9 +32,13 @@
   --info-panel-properties-header-height: 36px;
   --info-panel-properties-rows-min-width: 250px;
   --navigator-sorting-header-height: 36px;
-  /* FORK-MODIFICATION: 以下三个变量是 medium 档的兜底默认值（需求 3.6）。
-     运行时由 file-browser.vue 根元素按 navigator.thumbnailSize 覆盖，
-     取值唯一来源是 utils/file-browser-thumbnail-sizes.ts。改这里请先改那张表。 */
+  /* FORK-MODIFICATION: 以下三个变量是「运行时注入没有发生」时的静态兜底（需求 3.6）。
+     正常路径由 file-browser.vue 根元素按 navigator.thumbnailSize 逐档覆盖，
+     度量唯一来源是 utils/file-browser-thumbnail-sizes.ts —— 要改档位请先改那张表。
+     注意 --navigator-list-view-entry-height 的 42px 不是 medium 档的 64px，
+     这是有意留的，不要「顺手对齐」。42 与 64 的差就是注入有没有生效的判据：
+     真机在 medium 档下列言行高量出 42px，说明注入断了，该去查注入路径而不是改这里的数字；
+     一旦改成 64，这个信号就被永久抹掉了。 */
   --navigator-list-view-entry-height: 42px;
   --navigator-grid-view-dir-entry-height: 52px;
   --navigator-grid-view-entry-height: 120px;
