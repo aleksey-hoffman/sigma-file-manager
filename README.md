@@ -7,16 +7,94 @@ most in Explorer: a real folder tree, and file dialogs that follow you between a
 
 Alpha File Manager is an independent build of
 [Sigma File Manager](https://github.com/aleksey-hoffman/sigma-file-manager),
-maintained by [kizemo](https://github.com/kizemo). It tracks upstream and layers
-on two workflow improvements:
-
-> 🗂️ **"Where am I?"** — a persistent folder tree that always shows the shape of where you are.
-> ⚡ **"Why am I typing this path again?"** — every file dialog follows the folder you're browsing.
+maintained by [kizemo](https://github.com/kizemo). It tracks upstream and layers on
+a folder tree, cross-app dialog path sync, and a long list of day-to-day fixes.
 
 > [!IMPORTANT]
 > **Alpha File Manager is an independent community project.** It is not affiliated
 > with, endorsed by, or supported by the Sigma File Manager project. The base
 > application's features and branding belong to [Aleksey Hoffman](https://github.com/aleksey-hoffman).
+
+---
+
+## ✨ What we added on top of Sigma File Manager
+
+Everything below is ours. Nothing in this section exists upstream.
+
+| | Feature | Since |
+|---|---|---|
+| 🗂️ | **Folder tree sidebar** — persistent, tracks the active pane | 2.2.x |
+| ⚡ | **Focus Sync** — every file dialog follows the folder you're browsing | 2.2.x |
+| 🧭 | **Right-click menu on the folder tree** — 6 actions | **3.1.0** |
+| 🎚️ | **Per-folder layout toggle**, moved into the tab toolbar | **3.1.0** |
+| 🖼️ | **Four thumbnail sizes** — 24 / 32 / 48 / 54 px | **3.1.0** |
+| 🧹 | **Thumbnail cache usage + one-click clear** | 3.0.2 |
+| 🔀 | **Mixed-folder sorting toggle** | 3.0.2 |
+| ✅ | **Box selection on by default** | 3.0.2 |
+| 🧠 | **Batch-rename data-loss fix** — no more silent overwrites | 3.0.1 |
+| 📦 | One-step installer, in-place upgrade, complete uninstall | 3.0.0 |
+
+---
+
+## 🆕 What's new in 3.1.0
+
+**3.1.0 is everything we added after renaming the app to Alpha File Manager.**
+3.0.0 was the rebranding release; 3.0.1 fixed a batch-rename data-loss bug; 3.0.2
+added list thumbnails. This release is the polish pass on top of those.
+
+### 🧭 Navigation
+
+- **The folder tree gets a right-click menu.** Right-click any node — a drive, a
+  folder, a file — and you get **Copy, Cut, Paste, Rename, Open containing
+  directory, Properties**. Paste only appears when your clipboard actually holds
+  something. Rename reuses the same dialog as the file list, so it behaves
+  identically wherever you invoke it from.
+- **The layout toggle moved to the tab toolbar**, next to refresh, and now writes
+  to **the current folder only** instead of globally. Two tabs showing the same
+  folder can sit in different layouts, and switching tabs no longer clobbers the
+  other one's view. If you prefer the old global behaviour, the toggle is still
+  in the collapsed ⋮ menu under "this folder only".
+- **Drives show free space *and* total.** Locations entries display
+  `147.1 GB / 931.3 GB` instead of an item count.
+
+### 🖼️ Thumbnails
+
+- **Four thumbnail sizes.** Small (24 px), Medium (32 px), Large (48 px) and
+  Extra large (54 px) — pick one from the tab toolbar or
+  **Settings → General → File view**. Row height follows the choice (42 / 42 / 64 /
+  70 logical px), so the list never misaligns when you switch.
+- Thumbnails are generated **lazily**: only for rows scrolled into view.
+
+### 🏠 Home & settings
+
+- **The home title sits outside the theme image**, at a readable size. Clicking
+  the image itself now opens background management directly.
+- **Settings links to the official site and this repository.** The about text
+  describes what *this* build adds over Sigma File Manager, rather than the
+  upstream blurb.
+
+### 🔧 Fixes
+
+- **Focus Sync stopped going silent after the app had been running for a few
+  minutes.** The sidecar recorded a dialog as "already written" even when the
+  write had been *refused*, which permanently disabled its own retry path — so
+  after an early failure, every later path change was ignored until you closed
+  the dialog and reopened it. Failed writes are no longer recorded as successes.
+- **The extension loader rejected our own extension.** A code scanner flagged the
+  word `self` inside an English *comment* in the bundled extension, so Focus Sync
+  was refused before its worker ever started — which is what made path sync look
+  broken everywhere at once. The scanner now ignores comments and string
+  literals, while still rejecting real violations in executable code.
+- **Right-click Copy / Cut on the tree threw a signature error** instead of
+  populating the clipboard.
+
+### 📦 Installer
+
+- Upgrades and uninstalls now **terminate the app's whole process tree**, so a
+  leftover helper process can no longer hold a file open and abort the install.
+
+> **Version lineage:** 2.2.x → **3.0.0** rebrand → 3.0.1 rename data-loss fix →
+> 3.0.2 list thumbnails → **3.1.0** this release.
 
 ---
 
@@ -38,9 +116,10 @@ any ancestor in one click.
   without changing directory.
 - **Unambiguous drives** — root nodes show volume label *and* drive letter
   (`Win (C:)`), so multi-drive and WSL setups read at a glance.
+- **Right-clickable** — the six-action menu described above.
 - **Remembers** — show/hide state persists across restarts.
 
-Tracks upstream issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499) · 259 unit tests passing.
+Tracks upstream issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499).
 
 ---
 
@@ -72,14 +151,14 @@ The extension requests only `commands`, `toolbar`, `notifications`, and HTTP to
 
 ## 📦 Getting it
 
-**Prebuilt release:** [`v2.2.0-tree.1`](https://github.com/kizemo/alpha-file-manager/releases/tag/v2.2.0-tree.1)
-— a folder-tree build from 26 Sep 2026.
+**Primary download:** [**www.aiec.fun/alpha-file-manager**](https://www.aiec.fun/alpha-file-manager/)
+— this is the update channel the app itself checks.
 
-> That tag predates the Focus Sync packaging work on `main`: it gives you the
-> tree sidebar but not the current one-step installer. A fresh build is on the way.
+**GitHub releases** carry the same installer and act as a fallback mirror.
 
 Windows builds are unsigned, so SmartScreen reports *"Unknown publisher"* — click
-**More info → Run anyway**.
+**More info → Run anyway**. Upgrading in place keeps your settings, extensions
+and window layout.
 
 ---
 

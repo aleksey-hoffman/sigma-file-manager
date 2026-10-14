@@ -2,19 +2,86 @@
 
 <h1>&nbsp;&nbsp;Alpha File Manager</h1>
 
-**一款面向 Windows 与 Linux 的现代文件管理器 —— 补上资源管理器最缺的两件事:
+**一款面向 Windows 与 Linux 的现代文件管理器 —— 补上资源管理器最缺的两件事：
 一棵真正的目录树,以及会跟着你跨应用走的文件对话框。**
 
 Alpha File Manager 是 [Sigma File Manager](https://github.com/aleksey-hoffman/sigma-file-manager)
-的独立衍生版本,由 [kizemo](https://github.com/kizemo) 维护。它跟随上游同步,并在其上叠加两项改进:
-
-> 🗂️ **「我在哪?」** —— 常驻目录树,永远显示你所在位置的层级结构。
-> ⚡ **「这路径为什么又要手打一遍?」** —— 所有文件对话框自动跟随你正在浏览的目录。
+的独立衍生版本,由 [kizemo](https://github.com/kizemo) 维护。它跟随上游同步,并在其上叠加了
+一棵目录树、跨应用的文件对话框路径同步,以及一长串日常使用中的细节修复。
 
 > [!IMPORTANT]
 > **Alpha File Manager 是独立的社区项目**,与 Sigma File Manager 项目无隶属关系,
 > 未获其认可或官方支持。基础应用的功能与品牌归
 > [Aleksey Hoffman](https://github.com/aleksey-hoffman) 所有。
+
+---
+
+## ✨ 我们在 Sigma File Manager 之上加了什么
+
+下面这些全部由我们实现,上游没有任何一条。
+
+| | 功能 | 起始版本 |
+|---|---|---|
+| 🗂️ | **目录树侧边栏** —— 常驻,跟随当前激活面板 | 2.2.x |
+| ⚡ | **Focus Sync** —— 所有文件对话框跟随你正在浏览的目录 | 2.2.x |
+| 🧭 | **目录树右键菜单** —— 6 个操作项 | **3.1.0** |
+| 🎚️ | **按文件夹的布局切换**,移入选项卡工具栏 | **3.1.0** |
+| 🖼️ | **四档缩略图尺寸** —— 24 / 32 / 48 / 54 像素 | **3.1.0** |
+| 🧹 | **缩略图缓存占用可见 + 一键清理** | 3.0.2 |
+| 🔀 | **混合排序开关** | 3.0.2 |
+| ✅ | **框选默认开启** | 3.0.2 |
+| 🧠 | **批量改名数据丢失修复** —— 不再静默覆盖 | 3.0.1 |
+| 📦 | 一步式安装、原地升级、彻底卸载 | 3.0.0 |
+
+---
+
+## 🆕 3.1.0 新增了什么
+
+**3.1.0 收录的是我们把软件改名为 Alpha File Manager 之后新增的全部内容。**
+3.0.0 是品牌化正式版,3.0.1 修复了批量改名的数据丢失,3.0.2 加入列表缩略图,
+本版本是建立在这些之上的打磨。
+
+### 🧭 导航
+
+- **目录树有了右键菜单。** 在任意节点上右键 —— 盘符、目录、文件 —— 弹出
+  **复制、剪切、粘贴、重命名、打开所在目录、属性**。剪贴板里确实有内容时
+  「粘贴」才会出现。「重命名」复用文件列表同一套对话框,无论从哪里触发,行为完全一致。
+- **布局切换按钮移到选项卡工具栏**,紧挨着刷新按钮,并且改为**只作用于当前文件夹**
+  而非全局。同一个目录的两个选项卡现在可以各用各的布局,切换选项卡也不会再互相覆盖。
+  如果你更习惯原来的全局路径,折叠的 ⋮ 菜单里「仅此文件夹」仍然保留。
+- **磁盘同时显示空余空间与总空间。** locations 里的磁盘条目显示
+  `147.1 GB / 931.3 GB`,不再显示条目计数。
+
+### 🖼️ 缩略图
+
+- **四档缩略图尺寸。** 小(24 像素)、中(32 像素)、大(48 像素)、超大(54 像素) ——
+  可在选项卡工具栏或**「设置 → 常规 → 文件视图」**中选择。行高随档位联动
+  (42 / 42 / 64 / 70 逻辑像素),切换档位时列表不会错位。
+- 缩略图**按需生成**:只为滚动到可见区域的行生成。
+
+### 🏠 主页与设置
+
+- **主页标题移出主题图**,放在图外并放大到可读尺寸。点击主题图本身则直接打开背景管理。
+- **设置页补上官网与源码仓库链接。** 顶部介绍改为描述**本版本**在 Sigma File Manager
+  之上增加了什么,而不是上游的通用简介。
+
+### 🔧 修复
+
+- **Focus Sync 在应用运行几分钟后会"哑掉"。** 伴生进程把一次**被拒绝**的写入也记成了
+  「已写入」,结果把自己的重试通道永久关闭 —— 于是一次早期失败之后,后续所有路径变化
+  都被忽略,直到你关掉对话框重新打开。现在写入失败不再被记成成功。
+- **扩展加载器拒绝了我们自己的扩展。** 代码扫描器把内置扩展里一句英文**注释**中的
+  `self` 当成了违规,于是 Focus Sync 在 Worker 启动之前就被拒绝 —— 这正是路径同步
+  看起来"整体失效"的原因。扫描器现在会跳过注释与字符串字面量,同时也仍然拦截
+  可执行代码里的真实违规。
+- **目录树右键的复制 / 剪切签名错误**,剪贴板拿不到内容。
+
+### 📦 安装器
+
+- 升级与卸载现在会**结束整个应用进程树**,残留的辅助进程无法再占住文件导致安装中断。
+
+> **版本脉络:** 2.2.x → **3.0.0** 品牌化 → 3.0.1 改名数据丢失修复 →
+> 3.0.2 列表缩略图 → **3.1.0** 本版本。
 
 ---
 
@@ -30,9 +97,10 @@ Alpha File Manager 是 [Sigma File Manager](https://github.com/aleksey-hoffman/s
 - **始终紧凑** —— 导航时只保留当前路径的祖先链展开,其余分支自动折叠。
 - **点击语义可预期** —— 点击行内容进入该目录;点击折叠箭头只展开,不改变当前目录。
 - **盘符不混淆** —— 根节点同时显示卷标与盘符(如 `Win (C:)`),多硬盘与 WSL 环境下也一目了然。
+- **可右键操作** —— 即上文所述的六项菜单。
 - **记住你的选择** —— 显示 / 隐藏状态跨重启保存。
 
-对应上游 issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499) · 259 个单元测试通过。
+对应上游 issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499)。
 
 ---
 
@@ -63,14 +131,13 @@ Alpha File Manager 是 [Sigma File Manager](https://github.com/aleksey-hoffman/s
 
 ## 📦 获取
 
-**预构建版本:** [`v2.2.0-tree.1`](https://github.com/kizemo/alpha-file-manager/releases/tag/v2.2.0-tree.1)
-—— 2026-09-26 的目录树构建版。
+**主下载源:** [**www.aiec.fun/alpha-file-manager**](https://www.aiec.fun/alpha-file-manager/)
+—— 应用自身的更新检查也走这个渠道。
 
-> 该 tag 早于 `main` 上的 Focus Sync 打包整合:它带目录树,但没有现在的一步式安装包。
-> 新版构建即将推出。
+**GitHub Releases** 存放同一份安装包,作为兜底镜像。
 
 Windows 构建未做代码签名,SmartScreen 会提示「未知发布者」—— 选择
-**更多信息 → 仍要运行** 即可。
+**更多信息 → 仍要运行** 即可。原地升级会保留你的设置、扩展与窗口布局。
 
 ---
 
@@ -78,7 +145,10 @@ Windows 构建未做代码签名,SmartScreen 会提示「未知发布者」—�
 
 - **上游:** [aleksey-hoffman/sigma-file-manager](https://github.com/aleksey-hoffman/sigma-file-manager),
   作者 [Aleksey Hoffman](https://github.com/aleksey-hoffman)。基础应用本身、其功能与品牌归上游所有。
-- **Focus Sync 扩展:** [kizemo/focus-sync](https://github.com/kizemo/focus-sync)
+- **Focus Sync 扩展:** 位于本仓库的
+  [`extensions/kizemo.focus-sync/`](./extensions/kizemo.focus-sync/) ——
+  含扩展载荷、sidecar 源码与独立安装器。单独发布的安装包归档在
+  [kizemo/focus-sync](https://github.com/kizemo/focus-sync)。
 - **本分支维护者:** [kizemo](https://github.com/kizemo)
 
 另按原始条款复用以下代码:
@@ -97,4 +167,4 @@ Windows 构建未做代码签名,SmartScreen 会提示「未知发布者」—�
 |---|---|
 | Alpha File Manager(本分支) | <https://github.com/kizemo/alpha-file-manager> |
 | Sigma File Manager(基础应用) | <https://github.com/aleksey-hoffman/sigma-file-manager> |
-| Focus Sync 扩展 + sidecar | <https://github.com/kizemo/focus-sync> |
+| Focus Sync 扩展 + sidecar | 本仓库内 `extensions/kizemo.focus-sync/` |
