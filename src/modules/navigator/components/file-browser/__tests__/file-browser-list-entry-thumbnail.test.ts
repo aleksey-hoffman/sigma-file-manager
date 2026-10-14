@@ -115,23 +115,36 @@ describe('file-browser-list-entry-thumbnail', () => {
     enterViewport();
     await wrapper.vm.$nextTick();
 
-    expect(getImageThumbnail).toHaveBeenCalledWith(entry, 32);
+    expect(getImageThumbnail).toHaveBeenCalledWith(entry, 48);
   });
 
-  // FORK-MODIFICATION: 验收反馈 2026-10-12 第二轮 — 缩略图 4 档加 xlarge=54 像素。
-  it('uses 54 px when thumbnailSize is xlarge', async () => {
-    mockThumbnailSize = 'xlarge';
-    const entry = createEntry({ path: 'C:/photo-xl.jpg', ext: 'jpg' });
-    const wrapper = mount(FileBrowserListEntryThumbnail, {
-      props: { entry },
-      global: { stubs: { Teleport: true } },
-    });
+  // FORK-MODIFICATION: 需求 3.6 四档重定为 32/48/64/80。
+  it.each([
+    ['small', 32],
+    ['medium', 48],
+    ['large', 64],
+    ['xlarge', 80],
+  ] as Array<[typeof mockThumbnailSize, number]>)(
+    'requests a %s thumbnail at %i px',
+    async (size, expectedPx) => {
+      mockThumbnailSize = size;
+      // 没有 src 就不会渲染 <img>，width/height 属性无从断言。
+      getImageThumbnail.mockReturnValue('asset://thumb.jpg');
+      const entry = createEntry({ path: `C:/photo-${size}.jpg`, ext: 'jpg' });
+      const wrapper = mount(FileBrowserListEntryThumbnail, {
+        props: { entry },
+        global: { stubs: { Teleport: true } },
+      });
 
-    enterViewport();
-    await wrapper.vm.$nextTick();
+      enterViewport();
+      await wrapper.vm.$nextTick();
 
-    expect(getImageThumbnail).toHaveBeenCalledWith(entry, 54);
-  });
+      expect(getImageThumbnail).toHaveBeenCalledWith(entry, expectedPx);
+      const image = wrapper.find('img.file-browser-list-entry-thumbnail__image');
+      expect(image.attributes('width')).toBe(String(expectedPx));
+      expect(image.attributes('height')).toBe(String(expectedPx));
+    },
+  );
 
   it('swaps to the thumbnail image once the source resolves', async () => {
     getImageThumbnail.mockReturnValue('asset://thumb.jpg');
@@ -189,7 +202,7 @@ describe('file-browser-list-entry-thumbnail', () => {
     wrapper.unmount();
 
     expect(disconnected).toBe(true);
-    expect(cancelImageThumbnail).toHaveBeenCalledWith(entry, 32);
+    expect(cancelImageThumbnail).toHaveBeenCalledWith(entry, 48);
     expect(cancelVideoThumbnail).not.toHaveBeenCalled();
   });
 });

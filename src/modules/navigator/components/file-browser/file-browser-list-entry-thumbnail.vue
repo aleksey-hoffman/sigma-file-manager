@@ -14,11 +14,12 @@ import {
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-display-src';
 import { getImageSrc } from './utils';
+import { resolveThumbnailMetrics } from './utils/file-browser-thumbnail-sizes';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 const props = withDefaults(defineProps<{
   entry: DirEntry;
-  // 显式传入时优先；否则按 navigator.thumbnailSize 设置（small=24 / medium=32 / large=48 / xlarge=54）
+  // 显式传入时优先；否则按 navigator.thumbnailSize 设置（见 utils/file-browser-thumbnail-sizes.ts）
   size?: number;
 }>(), {
   size: undefined,
@@ -35,18 +36,15 @@ const isImage = computed(() => isFileBrowserImageEntry(props.entry));
 const isVideo = computed(() => isFileBrowserVideoEntry(props.entry));
 const isMedia = computed(() => isImage.value || isVideo.value);
 
-// 缩略图档位 → 像素尺寸（与 LIST_ENTRY_HEIGHT 联动，详见 spec §5.3）。
-//   small=24 / medium=32 / large=48 / xlarge=54 像素。
-// 显式传入 props.size 优先（保持向后兼容）；未传则按 setting 计算。
+// 缩略图档位 → 像素尺寸，唯一来源是 utils/file-browser-thumbnail-sizes.ts。
+// 显式传入 props.size 优先（保持向后兼容）；未传则按 setting 查表。
 const effectiveSize = computed<number>(() => {
   if (typeof props.size === 'number') {
     return props.size;
   }
-  const size = userSettingsStore.userSettings.navigator.thumbnailSize;
-  if (size === 'small') return 24;
-  if (size === 'large') return 48;
-  if (size === 'xlarge') return 54;
-  return 32;
+
+  return resolveThumbnailMetrics(userSettingsStore.userSettings.navigator.thumbnailSize)
+    .listThumbnailPx;
 });
 
 const imageThumbnailSrc = computed(() => {
