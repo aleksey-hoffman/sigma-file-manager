@@ -3,7 +3,9 @@
     "name": "Alpha File Manager",
     "description": "is developed on top of Sigma File Manager, adding practical features such as a directory tree, quick switching (path focus sync for file dialogs) and batch rename. Many details have been refined to deliver a more complete file manager experience.",
     "copyright": "Credits to the original author Aleksey Hoffman.",
-    "developer": "Developed by Duan Yi"
+    "developerLabel": "Developed by ",
+    "developer": "kizemo",
+    "repository": "https://github.com/kizemo/alpha-file-manager"
   },
   "units": {
     "px": "पिक्सल"

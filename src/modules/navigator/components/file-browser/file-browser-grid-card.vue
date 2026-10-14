@@ -221,13 +221,25 @@ function cancelPreviewThumbnail(): void {
 }
 
 function getDirSizeDisplay(entry: DirEntry): string | null {
-  // FORK-MODIFICATION: 验收反馈 2026-10-13 — 磁盘条目（locations 视图）改为只显示
-  // "空余空间"，不再显示 "X 项 · 总容量"。用户原话:"显示出磁盘空余空间大小,
-  // 可以不显示'*项'"。
+  // FORK-MODIFICATION: 验收反馈 2026-10-13 — 磁盘条目（locations 视图）显示
+  // "空余空间 / 总空间"。前一轮只显示空余空间,用户要求两个一起看。
+  //
+  // 分隔符刻意用 " / " 而不是 t('freeOf'):
+  //   1) 斜杠是符号,不是词,不需要进 17 个语言包;
+  //   2) ch.json 的 freeOf 曾经是机器翻译残留的 "自由于",渲染成
+  //      "147.1 GB 自由于 931.3 GB"。走语言包就得连带修 17 个包的值,
+  //      而这个位置的语义用斜杠表达更准确。
   const driveAvailableSpace = getDriveEntryAvailableSpaceBytes(entry);
 
   if (driveAvailableSpace !== null) {
-    return formatBytes(driveAvailableSpace);
+    const availableStr = formatBytes(driveAvailableSpace);
+    const driveVolumeSize = getDriveEntryVolumeSizeBytes(entry);
+
+    // 总空间取不到时（老数据的磁盘条目没有 size 字段）退回只显示空余，
+    // 保持上一轮的行为不变，不要退化成 "X / " 这种半截写法。
+    return driveVolumeSize !== null
+      ? `${availableStr} / ${formatBytes(driveVolumeSize)}`
+      : availableStr;
   }
 
   const itemCount = getDirItemCount(entry);
