@@ -266,7 +266,11 @@ const learningNotesUrl = 'http://www.aiec.fun';
 
 - [ ] **Step 3: 改 `actions.vue` 的脚本区**
 
-删除整个 `openDiscussionsPage` 函数（78-80 行）及其上方若有的空行整理。保留 `openChangelogPage`，但把它的实现从 `externalLinks.githubChangelogLink` 改为 `externalLinks.updateChannelSiteUrl`（按需求「更新日志的链接设置为 aiec 上的下载页」）。
+- **删除**整个 `openDiscussionsPage` 函数（78-80 行）。
+- **删除**整个 `openChangelogPage` 函数（82-84 行）。它原本指向 GitHub 的 CHANGELOG.md；
+  「更新日志」改指 aiec 下载页后它与 `openReleasesPage` 完全同义，留着会变成没人调用的函数
+  并触发 eslint `no-unused-vars`。
+- 保留 `openProjectPage`、`openIssuesPage`、`openReleasesPage` 不动。
 
 新增：
 
@@ -276,10 +280,14 @@ function openLearningNotes() {
 }
 ```
 
+> 注意区分：脚本区顶部的 `const { open: openChangelog } = useChangelog()` 与工具栏上那个
+> **火花图标**按钮用的 `openChangelog`（应用内更新弹窗）**保持不动**，它与外链菜单无关。
+
 - [ ] **Step 4: 改 `actions.vue` 的菜单区**
 
 - 删除「讨论」那个 `DropdownMenuItem`（184-193 行区间，含 `discussions` 文案）。
-- 把「更新日志」项（195-201 行）的点击改为 `@click="openReleasesPage"`（两者现指向同一页，避免新增一个同义函数）。
+- 把「更新日志」项（195-201 行）的 `@click="openChangelogPage"` 改为 `@click="openReleasesPage"`
+  （与「所有版本」同指 aiec 下载页）。
 - 在「所有版本」项之后、`</DropdownMenuContent>` 之前新增：
 
 ```vue
