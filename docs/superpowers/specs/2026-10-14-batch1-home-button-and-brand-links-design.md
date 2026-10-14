@@ -92,9 +92,13 @@ file-browser-toolbar-nav-buttons.vue:155   @click="emit('goHome')"
 | 文件 | 改动 |
 |---|---|
 | `use-file-browser-navigation.ts` | 新增 `navigateToLocations()`，内部调 `navigateToResolvedPath(LOCATIONS_VIRTUAL_PATH)`；加入返回值导出 |
-| `use-file-browser-context.ts` | 补 `navigateToLocations` 的类型声明与透传 |
-| `use-file-browser.ts` | 在 composable 聚合处透传（与 `navigateToHome` 同处，文件内 3 个分支：主实现 + 无内容回退 + 聚合导出） |
+| `use-file-browser.ts` | 在 composable 聚合处透传（与 `navigateToHome` 同处，文件内 3 个返回分支 + 1 处类型声明） |
 | `file-browser.vue:262` | `@go-home="fb.navigateToHome"` → `@go-home="fb.navigateToLocations"` |
+
+**不改的文件（2026-10-14 订正）**：`use-file-browser-context.ts` 与 `file-browser.vue` 的
+`provideFileBrowserContext({...})` 对象**不需要动**。该 context 里的 `navigateToHome`
+（`file-browser.vue:193`）只服务于错误页按钮，而 `navigateToLocations` 没有任何消费方，
+进 context 是多余的。
 
 **关于回退分支**：`use-file-browser.ts` 里有一份「无内容」回退对象（约 246–261 行），
 其中 `navigateToHome: async () => {}` 是空实现。新增的 `navigateToLocations` 必须同步补上，
