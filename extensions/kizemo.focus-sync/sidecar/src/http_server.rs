@@ -46,7 +46,18 @@ use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 // v0.5.12: a refused write no longer marks the dialog as written-back, so the
 // v0.5.7 G-1 resync channel is reachable again and a dialog opened inside the
 // startup window self-heals instead of requiring close-and-reopen.
-const SPIKE_VERSION: &str = "0.5.12";
+// v0.5.13: the READER was fixed. `reader.rs` used to return the first
+// UIA_EditControlTypeId it found, which on a classic shell dialog is a per-file
+// property cell inside the file list (`UIProperty` / `System.ItemNameDisplay`)
+// — the name of the first visible item, never a directory. Across 931 logged
+// reads only 12 returned anything dir-shaped, so `initial_path != current_path`
+// held permanently, `should_opened_write_back` was permanently true, and one
+// dialog wrote the SAME target 29 times in 31 seconds (hwnd=722614). It now
+// reads the address bar's Name (`aid=1001`, "地址: <path>") with a shape guard.
+// Still NOT fixed by this version: the write itself still does not navigate —
+// measured directly, the address bar is identical before and after a write.
+// Bumping separately so "same version, different behaviour" cannot recur.
+const SPIKE_VERSION: &str = "0.5.13";
 
 #[derive(Debug, Deserialize)]
 struct SetPathBody {
