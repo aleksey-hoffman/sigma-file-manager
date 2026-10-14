@@ -113,7 +113,7 @@ describe('createFileBrowserVirtualRows', () => {
     // FORK-MODIFICATION: 需求 3.6.3 —— 档位以前对网格完全无效，
     // createGridRows 根本没收到 thumbnailSize。
     // 1 个目录 + 7 张图片，viewportWidth 固定 2000：
-    //   列数 = floor((2000 + 0) / (gridMinColumnWidth + 12))（GRID_VIEW_PADDING_X = 0，gridGap = 12）
+    //   列数 = floor((2000 + gridGap) / (gridMinColumnWidth + gridGap))，gridGap = 12
     //     small 113 → 16 列 / medium 170 → 11 列 / large 227 → 8 列 / xlarge 283 → 6 列
     //   段头行 = 42 + 12 = 54；目录行 = gridDirEntryHeight + 12；图片行 = gridEntryHeight + 12。
     // 图片数必须是 7 而不是 3：只有 xlarge（6 列）会把 7 个条目折成两行，
