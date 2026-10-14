@@ -272,6 +272,11 @@ function prepare(flags) {
   console.log(`[release] 已复制安装包到 ${siteInstaller}（sha256 一致）`);
 
   console.log('\n[release] 下一步：');
+  // 这一步不能省：github 子命令只「读」_release-notes-v<版本>.md，从不生成它。
+  // 唯一的生成入口是 prepare --write-notes。漏掉它不会报错，
+  // 只会安静地发一个正文为空的 release —— 所以必须在这里显式提示。
+  console.log(`  node scripts/release-publish.mjs prepare --write-notes <你的说明文件>`);
+  console.log('    # 生成带大小/sha256 的 _release-notes-v<版本>.md，供 github 读取正文');
   console.log(`  node scripts/release-publish.mjs upload    # 上传到 ${SITE_URL}`);
   console.log(`  node scripts/release-publish.mjs github    # 发布 GitHub 兜底 release v${newVersion}`);
   console.log('\n[release] 提醒：version.json 已改但尚未生效，需上传后用户端才能感知到该版本。');

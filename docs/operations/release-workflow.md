@@ -8,25 +8,40 @@ Alpha File Manager 的更新渠道：**主源是自建站 `https://www.aiec.fun/
 
 ## 一、日常发版（最常用）
 
-写好本版的更新说明后，三条命令：
+写好本版的更新说明后，**四条**命令：
 
 ```powershell
 # 1) 升版本号 + 打包 + 写站点源（version.json 与安装包副本）
 npm run release:prepare -- --bump patch --notes-file ./_notes.md
 
-# 2) 上传到 aiec.fun，并自动做公网回读校验
+# 2) 生成带构建信息的 _release-notes-v<版本>.md —— 不能省，见下
+npm run release:prepare -- --write-notes ./_notes.md
+
+# 3) 上传到 aiec.fun，并自动做公网回读校验
 npm run release:upload
 
-# 3) 发布 / 更新 GitHub 兜底 release
+# 4) 发布 / 更新 GitHub 兜底 release
 npm run release:github
 ```
 
 `--bump` 可选 `patch`（默认）/ `minor` / `major` / `none`。`none` 表示版本号不变、只重打包——**仅在重发同版本修复包时使用**。
 
+### 第 2 步为什么不能省
+
+`release:github` 只**读**站点源目录里的 `_release-notes-v<版本>.md`，它自己从不生成这个文件。
+唯一的生成入口就是 `prepare --write-notes`，而且它必须在 `release:prepare`（打包）**之后**跑 ——
+因为它要把实际的大小与 sha256 追加进说明。
+
+漏掉这一步**不会报任何错**：`github()` 走 `if (fs.existsSync(notesPath))` 的假分支，
+`gh release create` 不带 `--notes-file`，于是安静地发出一个**正文为空**的 release。
+2026-10-14 发 3.1.0 时就是这么中招的，补跑 `--write-notes` + `release:github` 才把正文写回去。
+
+`prepare --write-notes` 在 `prepare()` 之前短路，不会动版本号、不会触发构建，可以安全重跑。
+
 ### `_notes.md` 会被同时用作两处文案
 
 - 写进 `version.json` 的 `notes`，应用设置页与站点下载页都会显示
-- 经 `release:github` 作为 GitHub release 正文
+- 经第 2 步生成说明文件，再由 `release:github` 作为 GitHub release 正文
 
 所以**不要在 notes 里手写大小和 sha256**，脚本会自动把构建信息追加到 GitHub 说明里；`version.json` 里则不需要这两项。
 
