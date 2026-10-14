@@ -255,7 +255,8 @@
       "openAppLogDirectory": "打开应用日志目录",
       "openGlobalSearchIndexDirectory": "打开全局搜索索引目录",
       "changelog": "更新日志",
-      "allReleases": "所有版本"
+      "allReleases": "所有版本",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "视觉效果",
@@ -486,8 +487,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "项目页面",
-    "requestsIssues": "报告问题",
-    "discussions": "讨论"
+    "requestsIssues": "报告问题"
   },
   "settingsTabs": {
     "general": "常规",

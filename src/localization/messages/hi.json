@@ -284,7 +284,8 @@
       "openAppLogDirectory": "ऐप लॉग निर्देशिका खोलें",
       "openGlobalSearchIndexDirectory": "वैश्विक खोज सूचकांक निर्देशिका खोलें",
       "changelog": "बदलाव का",
-      "allReleases": "सभी रिलीज़"
+      "allReleases": "सभी रिलीज़",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "दृश्य प्रभाव",
@@ -515,8 +516,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "प्रोजेक्ट पेज",
-    "requestsIssues": "अनुरोध और मुद्दे",
-    "discussions": "विचार विमर्श"
+    "requestsIssues": "अनुरोध और मुद्दे"
   },
   "settingsTabs": {
     "general": "सामान्य",

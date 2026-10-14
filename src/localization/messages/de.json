@@ -255,7 +255,8 @@
       "openAppLogDirectory": "App-Protokollverzeichnis öffnen",
       "openGlobalSearchIndexDirectory": "Globales Suchindex-Verzeichnis öffnen",
       "changelog": "Änderungsprotokoll",
-      "allReleases": "Alle Versionen"
+      "allReleases": "Alle Versionen",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "Visuelle Effekte",
@@ -486,8 +487,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "Projektseite",
-    "requestsIssues": "Anfragen & Probleme",
-    "discussions": "Diskussionen"
+    "requestsIssues": "Anfragen & Probleme"
   },
   "settingsTabs": {
     "general": "Allgemein",

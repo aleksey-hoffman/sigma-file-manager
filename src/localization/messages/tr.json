@@ -255,7 +255,8 @@
       "openAppLogDirectory": "Uygulama günlük dizinini aç",
       "openGlobalSearchIndexDirectory": "Genel arama dizin dizinini aç",
       "changelog": "Değişiklik günlüğü",
-      "allReleases": "Tüm sürümler"
+      "allReleases": "Tüm sürümler",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "Görsel efektler",
@@ -486,8 +487,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "Proje sayfası",
-    "requestsIssues": "İstekler ve sorunlar",
-    "discussions": "Tartışmalar"
+    "requestsIssues": "İstekler ve sorunlar"
   },
   "settingsTabs": {
     "general": "Genel",

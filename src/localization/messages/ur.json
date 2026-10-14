@@ -284,7 +284,8 @@
       "openAppLogDirectory": "ایپ لاگ فولڈر کھولیں",
       "openGlobalSearchIndexDirectory": "عالمی تلاش انڈیکس فولڈر کھولیں",
       "changelog": "تبدیلیوں کی فہرست",
-      "allReleases": "تمام ریلیز"
+      "allReleases": "تمام ریلیز",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "بصری اثرات",
@@ -515,8 +516,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "پروجیکٹ صفحہ",
-    "requestsIssues": "درخواستیں اور مسائل",
-    "discussions": "بحثیں"
+    "requestsIssues": "درخواستیں اور مسائل"
   },
   "settingsTabs": {
     "general": "عام",

@@ -284,7 +284,8 @@
       "openAppLogDirectory": "Odpri mapo dnevnika aplikacije",
       "openGlobalSearchIndexDirectory": "Odpri mapo indeksov globalnega iskanja",
       "changelog": "Zapis sprememb",
-      "allReleases": "Vse izdaje"
+      "allReleases": "Vse izdaje",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "Vizualni učinki",
@@ -515,8 +516,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "Stran projekta",
-    "requestsIssues": "Zahteve & napake",
-    "discussions": "Razprave"
+    "requestsIssues": "Zahteve & napake"
   },
   "settingsTabs": {
     "general": "Splošno",

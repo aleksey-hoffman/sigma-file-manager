@@ -255,7 +255,8 @@
       "openAppLogDirectory": "アプリログディレクトリを開く",
       "openGlobalSearchIndexDirectory": "グローバル検索インデックスディレクトリを開く",
       "changelog": "変更履歴",
-      "allReleases": "すべてのリリース"
+      "allReleases": "すべてのリリース",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "視覚効果",
@@ -486,8 +487,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "プロジェクトページ",
-    "requestsIssues": "リクエストと問題",
-    "discussions": "ディスカッション"
+    "requestsIssues": "リクエストと問題"
   },
   "settingsTabs": {
     "general": "全般",

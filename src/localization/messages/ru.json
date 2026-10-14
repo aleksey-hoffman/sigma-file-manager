@@ -284,7 +284,8 @@
       "openAppLogDirectory": "Открыть директорию логов приложения",
       "openGlobalSearchIndexDirectory": "Открыть директорию индекса глобального поиска",
       "changelog": "История изменений",
-      "allReleases": "Все релизы"
+      "allReleases": "Все релизы",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "Визуальные эффекты",
@@ -515,8 +516,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "Страница проекта",
-    "requestsIssues": "Запросы и обсуждения",
-    "discussions": "Обсуждения"
+    "requestsIssues": "Запросы и обсуждения"
   },
   "settingsTabs": {
     "general": "Общие",

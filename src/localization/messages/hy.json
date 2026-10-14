@@ -284,7 +284,8 @@
       "openAppLogDirectory": "Բացել ծրագրի լոգերի պանակը",
       "openGlobalSearchIndexDirectory": "Բացել գլոբալ որոնման ինդեքսի պանակը",
       "changelog": "Փոփոխությունների ցանկ",
-      "allReleases": "Բոլոր թողարկումները"
+      "allReleases": "Բոլոր թողարկումները",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "Վիզուալ էֆեկտներ",
@@ -515,8 +516,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "Պրոյեկտի էջ",
-    "requestsIssues": "Հարցումներ և սխալներ",
-    "discussions": "Քննարկումներ"
+    "requestsIssues": "Հարցումներ և սխալներ"
   },
   "settingsTabs": {
     "general": "Հիմնական",

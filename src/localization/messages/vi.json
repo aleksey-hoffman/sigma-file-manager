@@ -255,7 +255,8 @@
       "openAppLogDirectory": "Mở thư mục nhật ký ứng dụng",
       "openGlobalSearchIndexDirectory": "Mở thư mục chỉ mục tìm kiếm toàn cục",
       "changelog": "Nhật ký thay đổi",
-      "allReleases": "Tất cả phiên bản"
+      "allReleases": "Tất cả phiên bản",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "Hiệu ứng hình ảnh",
@@ -486,8 +487,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "Trang dự án",
-    "requestsIssues": "Yêu cầu & vấn đề",
-    "discussions": "Thảo luận"
+    "requestsIssues": "Yêu cầu & vấn đề"
   },
   "settingsTabs": {
     "general": "Chung",

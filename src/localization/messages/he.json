@@ -284,7 +284,8 @@
       "openAppLogDirectory": "פתח את תיקיית יומני היישום",
       "openGlobalSearchIndexDirectory": "פתח את תיקיית האינדקס של החיפוש הגלובלי",
       "changelog": "יומן שינויים",
-      "allReleases": "כל הגרסאות"
+      "allReleases": "כל הגרסאות",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "אפקטים חזותיים",
@@ -515,8 +516,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "דף הפרויקט",
-    "requestsIssues": "בקשות ותקלות",
-    "discussions": "דיונים"
+    "requestsIssues": "בקשות ותקלות"
   },
   "settingsTabs": {
     "general": "כללי",

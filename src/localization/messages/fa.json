@@ -251,7 +251,8 @@
       "openAppLogDirectory": "باز کردن پوشه گزارش‌های برنامه",
       "openGlobalSearchIndexDirectory": "باز کردن پوشه شاخص جستجوی جهانی",
       "changelog": "تاریخچه تغییرات",
-      "allReleases": "همه نسخه‌ها"
+      "allReleases": "همه نسخه‌ها",
+      "learningNotes": "段燚的学习笔记"
     },
     "visualEffects": {
       "title": "جلوههای بصری",
@@ -482,8 +483,7 @@
   },
   "projectGithubButtons": {
     "projectPage": "صفحه پروژه",
-    "requestsIssues": "درخواست ها و مشکلات",
-    "discussions": "بحث"
+    "requestsIssues": "درخواست ها و مشکلات"
   },
   "settingsTabs": {
     "general": "عمومی",
