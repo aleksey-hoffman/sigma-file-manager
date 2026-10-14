@@ -259,7 +259,7 @@ defineExpose({
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"
-      @go-home="fb.navigateToHome"
+      @go-home="fb.navigateToLocations"
       @refresh="fb.refresh"
       @submit-path="fb.handlePathSubmit"
       @navigate-to="fb.navigateToPath"

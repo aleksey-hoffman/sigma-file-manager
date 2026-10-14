@@ -92,6 +92,7 @@ interface DataSource {
   navigateToEntry: (entry: DirEntry) => Promise<void>;
   navigateToParent: () => Promise<void>;
   navigateToHome: () => Promise<void>;
+  navigateToLocations: () => Promise<void>;
   goBack: () => void;
   goForward: () => void;
   refresh: () => void;
@@ -184,6 +185,7 @@ function setupNavigationDataSource(
     navigateToEntry: navigation.navigateToEntry,
     navigateToParent: navigation.navigateToParent,
     navigateToHome: navigation.navigateToHome,
+    navigateToLocations: navigation.navigateToLocations,
     goBack: navigation.goBack,
     goForward: navigation.goForward,
     refresh: navigation.refresh,
@@ -247,6 +249,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     navigateToEntry: async () => {},
     navigateToParent: async () => {},
     navigateToHome: async () => {},
+    navigateToLocations: async () => {},
     goBack: () => {},
     goForward: () => {},
     refresh: () => {},
@@ -581,6 +584,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     navigateToPath: dataSource.navigateToPath,
     navigateToParent: dataSource.navigateToParent,
     navigateToHome: dataSource.navigateToHome,
+    navigateToLocations: dataSource.navigateToLocations,
     goBack: dataSource.goBack,
     goForward: dataSource.goForward,
     refresh: dataSource.refresh,

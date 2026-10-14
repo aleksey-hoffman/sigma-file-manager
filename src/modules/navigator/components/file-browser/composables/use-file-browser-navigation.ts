@@ -43,6 +43,7 @@ import {
   createDefaultDirectoryResolveInput,
   resolveDefaultDirectory,
 } from '@/utils/resolve-default-directory';
+import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -760,6 +761,20 @@ export function useFileBrowserNavigation(
     );
   }
 
+  // FORK-MODIFICATION 2026-10-14：工具栏「小房子」按钮改为跳「此电脑」。
+  //
+  // 原实现跳 userPaths.homeDir。人已经在该目录时 readDir 读到同一个路径，界面无任何变化，
+  // 观感就是「点击没有反应」—— 不是按钮坏了，是目的地选错了。
+  //
+  // LOCATIONS_VIRTUAL_PATH 不是新造概念：设置项「默认目录 → 位置」经 resolveDefaultDirectory
+  // 返回的就是它，再走同一条 navigateToResolvedPath → readDir。
+  //
+  // 刻意不动 navigateToHome：目录读取失败时错误页的「主页」按钮仍调它
+  // （file-browser-content-body.vue:38），那是独立场景，不在本次改动范围内。
+  async function navigateToLocations() {
+    await navigateToResolvedPath(LOCATIONS_VIRTUAL_PATH);
+  }
+
   async function goBack() {
     if (canGoBack.value) {
       cancelPendingDirectoryRecord();
@@ -896,6 +911,7 @@ export function useFileBrowserNavigation(
     navigateToEntry,
     navigateToParent,
     navigateToHome,
+    navigateToLocations,
     goBack,
     goForward,
     refresh,

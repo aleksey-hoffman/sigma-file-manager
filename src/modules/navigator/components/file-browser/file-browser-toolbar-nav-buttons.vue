@@ -152,12 +152,13 @@ function openThumbnailSizeDialog() {
           variant="ghost"
           size="icon"
           class="file-browser-toolbar-nav-buttons__button"
+          data-test="go-locations-button"
           @click="emit('goHome')"
         >
           <HomeIcon class="file-browser-toolbar-nav-buttons__icon" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ t('fileBrowser.goHome') }}</TooltipContent>
+      <TooltipContent>{{ t('locations') }}</TooltipContent>
     </Tooltip>
     <Tooltip>
       <TooltipTrigger as-child>
@@ -274,7 +275,7 @@ function openThumbnailSizeDialog() {
         </DropdownMenuItem>
         <DropdownMenuItem @click="emit('goHome')">
           <HomeIcon :size="14" />
-          {{ t('fileBrowser.goHome') }}
+          {{ t('locations') }}
         </DropdownMenuItem>
         <DropdownMenuItem
           :disabled="isLoading"

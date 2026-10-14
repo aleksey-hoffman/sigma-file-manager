@@ -140,3 +140,20 @@ describe('file-browser-toolbar-nav-buttons · layout toggle', () => {
     expect(wrapper.emitted('toggle-layout')).toBeTruthy();
   });
 });
+
+// FORK-MODIFICATION 2026-10-14：小房子按钮改为跳「此电脑」。
+// 文案换成已存在的顶层 `locations` 键（不新增 i18n key，避免 17 语言包门禁），
+// `fileBrowser.goHome` 从此只服务错误页按钮，不再出现在本组件里。
+describe('file-browser-toolbar-nav-buttons · home button goes to locations', () => {
+  it('labels the home button with the locations key instead of goHome', () => {
+    const wrapper = mountNavButtons();
+    expect(wrapper.text()).toContain('locations');
+    expect(wrapper.text()).not.toContain('fileBrowser.goHome');
+  });
+
+  it('emits goHome once when the home button is clicked', async () => {
+    const wrapper = mountNavButtons();
+    await wrapper.find('[data-test="go-locations-button"]').trigger('click');
+    expect(wrapper.emitted('goHome')).toHaveLength(1);
+  });
+});
