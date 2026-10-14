@@ -35,10 +35,13 @@
   /* FORK-MODIFICATION: 以下三个变量是「运行时注入没有发生」时的静态兜底（需求 3.6）。
      正常路径由 file-browser.vue 根元素按 navigator.thumbnailSize 逐档覆盖，
      度量唯一来源是 utils/file-browser-thumbnail-sizes.ts —— 要改档位请先改那张表。
-     注意 --navigator-list-view-entry-height 的 42px 不是 medium 档的 64px，
-     这是有意留的，不要「顺手对齐」。42 与 64 的差就是注入有没有生效的判据：
+     注意 --navigator-list-view-entry-height 的 42px 不是任何一档的值
+     （四档是 48 / 64 / 80 / 96），这是有意留的，不要「顺手对齐」。
+     42 与 64 的差就是注入有没有生效的判据：
      真机在 medium 档下列言行高量出 42px，说明注入断了，该去查注入路径而不是改这里的数字；
-     一旦改成 64，这个信号就被永久抹掉了。 */
+     一旦改成 64，这个信号就被永久抹掉了。
+     网格两个兜底值 52 / 120 与「小」档相同，这是巧合而非注入判据 ——
+     网格注入是否生效由「小」档量出的值是否随档位变化来判断（medium 应为 78 / 180）。 */
   --navigator-list-view-entry-height: 42px;
   --navigator-grid-view-dir-entry-height: 52px;
   --navigator-grid-view-entry-height: 120px;

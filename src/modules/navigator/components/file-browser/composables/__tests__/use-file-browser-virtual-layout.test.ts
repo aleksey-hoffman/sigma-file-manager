@@ -114,16 +114,18 @@ describe('createFileBrowserVirtualRows', () => {
     // createGridRows 根本没收到 thumbnailSize。
     // 1 个目录 + 7 张图片，viewportWidth 固定 2000：
     //   列数 = floor((2000 + gridGap) / (gridMinColumnWidth + gridGap))，gridGap = 12
-    //     small 113 → 16 列 / medium 170 → 11 列 / large 227 → 8 列 / xlarge 283 → 6 列
+    //     small 170 → 11 列 / medium 225 → 8 列 / large 300 → 6 列 / xlarge 420 → 4 列
     //   段头行 = 42 + 12 = 54；目录行 = gridDirEntryHeight + 12；图片行 = gridEntryHeight + 12。
-    // 图片数必须是 7 而不是 3：只有 xlarge（6 列）会把 7 个条目折成两行，
-    // 换句话说只有 xlarge 这一档会因为「最小列宽被硬编码成 170」而算错。
+    // 图片数必须是 7 而不是 3：large（6 列）和 xlarge（4 列）都会把 7 个条目折成两行，
+    // 换句话说只有这两档会因为「最小列宽被硬编码成 170」而算错。
     // 用 3 张图的话四档都只有一行，无论第三参数写什么都全绿，这段断言等于没有保护。
+    // 2026-10-15：网格四档整体上移一档后，小档的 170 恰好等于旧 medium 的 170，
+    // 所以对小档而言「写死 170」是平凡的 —— 判别力由 large / xlarge 两档承担。
     it.each([
-      ['small', 16, [0, 54, 101, 155], [54, 47, 54, 92], 2],
-      ['medium', 11, [0, 54, 118, 172], [54, 64, 54, 132], 2],
-      ['large', 8, [0, 54, 135, 189], [54, 81, 54, 172], 2],
-      ['xlarge', 6, [0, 54, 153, 207, 419], [54, 99, 54, 212, 212], 3],
+      ['small', 11, [0, 54, 118, 172], [54, 64, 54, 132], 2],
+      ['medium', 8, [0, 54, 144, 198], [54, 90, 54, 192], 2],
+      ['large', 6, [0, 54, 170, 224, 476], [54, 116, 54, 252, 252], 3],
+      ['xlarge', 4, [0, 54, 196, 250, 562], [54, 142, 54, 312, 312], 3],
     ] as Array<[ThumbnailSize, number, number[], number[], number]>)(
       'grid rows scale with thumbnailSize %s',
       (thumbnailSize, columns, expectedStarts, expectedSizes, expectedGridItemsRows) => {
@@ -196,6 +198,10 @@ describe('createFileBrowserVirtualRows', () => {
       viewportWidth: 500,
     });
 
+    // 上面没传 thumbnailSize，落默认 medium：列数 = floor((500 + 12) / (225 + 12)) = 2 列，
+    // 所以 4 个目录与 3 张图片各自折成两行。2026-10-15 网格四档整体上移之前，
+    // 默认档是 170，同样是 2 列 —— 行形没变，但这组数字以前是写死的，
+    // 改档位时不会跟着动，现在改成跟着档位推导。
     expect(rows.map(row => row.type)).toEqual([
       'grid-section',
       'grid-items',
@@ -204,8 +210,8 @@ describe('createFileBrowserVirtualRows', () => {
       'grid-items',
       'grid-items',
     ]);
-    expect(rows.map(row => row.start)).toEqual([0, 54, 118, 182, 236, 368]);
-    expect(rows.map(row => row.size)).toEqual([54, 64, 64, 54, 132, 132]);
+    expect(rows.map(row => row.start)).toEqual([0, 54, 144, 234, 288, 480]);
+    expect(rows.map(row => row.size)).toEqual([54, 90, 90, 54, 192, 192]);
   });
 });
 

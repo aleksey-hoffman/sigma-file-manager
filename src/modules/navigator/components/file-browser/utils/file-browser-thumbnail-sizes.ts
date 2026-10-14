@@ -24,38 +24,56 @@ export interface FileBrowserThumbnailMetrics {
   gridMinColumnWidth: number;
 }
 
+// FORK-MODIFICATION: 网格卡不能按比例往下缩（验收反馈 2026-10-15）。
+// 第一版四档按 0.667 : 1 : 1.333 : 1.667 缩放，把「小」压到了 80 / 35，
+// 而 file-browser-grid-card.vue 的卡片内边距与字号是写死的固定值，不跟着档位走。
+// 全局 line-height 1.5（src/styles/preflight.css），所以名称行 13*1.5 = 19.5、
+// 说明行 11*1.5 = 16.5：
+//   目录卡（flex row，上下各 8px 内边距 + 上下各 1px 边框 = 18）：
+//     内容区只剩 35 - 18 = 17px，而两行字形合计要 19.5 + 2 + 16.5 - 5.5 = 32.5px。
+//     align-items: center 把两行垂直居中后上下同时被裁：名称行还能勉强认出，
+//     说明行只剩上半截 —— 截图里 "3 项 · 19.8 MB" 的 MB 只剩顶部一条。
+//   文档卡（--icon-full，48px 图标 + 8px 外边距 = 56；底部信息层 8 + 19.5 + 2 + 16.5 + 8 = 54）：
+//     80px 装不下 56 + 54 = 110px，图标直接压在文件名上。
+// 所以「小」不再是一个更小的排版，而是把「中」原来的尺寸整体上移一档，
+// 下面的四档依次再放大一档。改这几个数之前先看下面两个下限。
+// GRID_DIR_ENTRY_HEIGHT_FLOOR 的依据是「第一版 medium 档就是 52px，验收通过且
+// 从未被报为截断」，不是一次专门的截断测试 —— 小档沿用它是为了满足"小 = 原中档尺寸"。
+export const GRID_MEDIA_ENTRY_HEIGHT_FLOOR = 110;
+export const GRID_DIR_ENTRY_HEIGHT_FLOOR = 52;
+
 export const FILE_BROWSER_THUMBNAIL_METRICS: Record<ThumbnailSize, FileBrowserThumbnailMetrics> = {
   small: {
     listThumbnailPx: 32,
     listRowHeight: 48,
     listRowHeightWithDescription: 62,
-    gridEntryHeight: 80,
-    gridDirEntryHeight: 35,
-    gridMinColumnWidth: 113,
+    gridEntryHeight: 120,
+    gridDirEntryHeight: 52,
+    gridMinColumnWidth: 170,
   },
   medium: {
     listThumbnailPx: 48,
     listRowHeight: 64,
     listRowHeightWithDescription: 78,
-    gridEntryHeight: 120,
-    gridDirEntryHeight: 52,
-    gridMinColumnWidth: 170,
+    gridEntryHeight: 180,
+    gridDirEntryHeight: 78,
+    gridMinColumnWidth: 225,
   },
   large: {
     listThumbnailPx: 64,
     listRowHeight: 80,
     listRowHeightWithDescription: 94,
-    gridEntryHeight: 160,
-    gridDirEntryHeight: 69,
-    gridMinColumnWidth: 227,
+    gridEntryHeight: 240,
+    gridDirEntryHeight: 104,
+    gridMinColumnWidth: 300,
   },
   xlarge: {
     listThumbnailPx: 80,
     listRowHeight: 96,
     listRowHeightWithDescription: 110,
-    gridEntryHeight: 200,
-    gridDirEntryHeight: 87,
-    gridMinColumnWidth: 283,
+    gridEntryHeight: 300,
+    gridDirEntryHeight: 130,
+    gridMinColumnWidth: 420,
   },
 };
 
