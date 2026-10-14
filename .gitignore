@@ -57,3 +57,18 @@ flatpak/.deb-input/
 flatpak/.build/
 flatpak/.repo/
 flatpak/output/
+
+# --- Verification scratch space (added 2026-10-14) ---
+# `_acceptance/` holds throwaway probe binaries, NSIS probe projects and
+# one-off PowerShell/JS harnesses used to drive real-machine acceptance runs.
+# It reached 263 MB of mostly-disposable .exe probes. The durable write-ups
+# are NOT here: the root-cause and version-node audit reports live in the
+# outer documentation repo under F:\soft\00selfmade\filemanager\_acceptance\.
+/_acceptance/
+
+# Intermediates of the abandoned FileWrite-based kill-script embedding.
+# hooks.nsh now uses `File /oname=...` (byte-exact, no ANSI escaping) driven by
+# embed-kill-script.mjs; these three are leftovers of the approach it replaced.
+src-tauri/installer/_gen_block.txt
+src-tauri/installer/materialized-kill-app-tree.ps1
+src-tauri/installer/embed-kill-script.mjs.parts.json

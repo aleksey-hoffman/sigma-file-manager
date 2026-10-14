@@ -24,7 +24,9 @@
 //   断言会平凡通过。所以「两个空格」这条必须查 rawText。
 //
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  beforeEach, describe, expect, it, vi,
+} from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 import SettingsHeader from '../header.vue';
 import chMessages from '@/localization/messages/ch.json';

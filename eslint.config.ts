@@ -7,7 +7,10 @@ import checkFile from 'eslint-plugin-check-file';
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n';
 
 export default defineConfigWithVueTs(
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/e2e-webdriver/**', 'src-tauri/**']),
+  // `_acceptance/**` 是真机验收的临时探针区（NSIS 探针工程、一次性 .mjs/.ps1 脚本）。
+  // 它与 `.gitignore` 里的 `/_acceptance/` 是同一件事，但 eslint 不读 .gitignore ——
+  // 少了这条规则，光探针脚本就会往门禁里灌进 600 多个错误，把真实问题淹掉。
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/e2e-webdriver/**', 'src-tauri/**', '_acceptance/**']),
   pluginVue.configs['flat/strongly-recommended'],
   vueTsConfigs.recommended,
   pluginStylistic.configs.customize({
