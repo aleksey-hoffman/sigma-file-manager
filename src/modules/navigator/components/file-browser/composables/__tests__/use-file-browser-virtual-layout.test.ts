@@ -112,32 +112,30 @@ describe('createFileBrowserVirtualRows', () => {
 
     // FORK-MODIFICATION: 需求 3.6.3 —— 档位以前对网格完全无效，
     // createGridRows 根本没收到 thumbnailSize。
-    // 1 个目录 + 3 张图片 ⇒ 4 行：目录段头 / 目录行 / 图片段头 / 图片行。
-    // 目录行高 = gridDirEntryHeight + gap；图片行高 = gridEntryHeight + gap。
+    // 1 个目录 + 7 张图片，viewportWidth 固定 2000：
+    //   列数 = floor((2000 + 0) / (gridMinColumnWidth + 12))（GRID_VIEW_PADDING_X = 0，gridGap = 12）
+    //     small 113 → 16 列 / medium 170 → 11 列 / large 227 → 8 列 / xlarge 283 → 6 列
+    //   段头行 = 42 + 12 = 54；目录行 = gridDirEntryHeight + 12；图片行 = gridEntryHeight + 12。
+    // 图片数必须是 7 而不是 3：只有 xlarge（6 列）会把 7 个条目折成两行，
+    // 换句话说只有 xlarge 这一档会因为「最小列宽被硬编码成 170」而算错。
+    // 用 3 张图的话四档都只有一行，无论第三参数写什么都全绿，这段断言等于没有保护。
     it.each([
-      ['small', 16, [0, 54, 101, 155], [54, 47, 54, 92]],
-      ['medium', 11, [0, 54, 118, 172], [54, 64, 54, 132]],
-      ['xlarge', 6, [0, 54, 153, 207], [54, 99, 54, 212]],
-    ] as Array<[ThumbnailSize, number, number[], number[]]>)(
+      ['small', 16, [0, 54, 101, 155], [54, 47, 54, 92], 2],
+      ['medium', 11, [0, 54, 118, 172], [54, 64, 54, 132], 2],
+      ['large', 8, [0, 54, 135, 189], [54, 81, 54, 172], 2],
+      ['xlarge', 6, [0, 54, 153, 207, 419], [54, 99, 54, 212, 212], 3],
+    ] as Array<[ThumbnailSize, number, number[], number[], number]>)(
       'grid rows scale with thumbnailSize %s',
-      (thumbnailSize, columns, expectedStarts, expectedSizes) => {
+      (thumbnailSize, columns, expectedStarts, expectedSizes, expectedGridItemsRows) => {
         const entries = [
           createEntry('dir-1', {
             is_dir: true,
             is_file: false,
           }),
-          createEntry('image-1', {
+          ...Array.from({ length: 7 }, (_unused, index) => createEntry(`image-${index + 1}`, {
             ext: 'jpg',
             mime: 'image/jpeg',
-          }),
-          createEntry('image-2', {
-            ext: 'jpg',
-            mime: 'image/jpeg',
-          }),
-          createEntry('image-3', {
-            ext: 'jpg',
-            mime: 'image/jpeg',
-          }),
+          })),
         ];
         const rows = createFileBrowserVirtualRows({
           entries,
@@ -155,6 +153,7 @@ describe('createFileBrowserVirtualRows', () => {
         ).toBe(columns);
         expect(rows.map(row => row.start)).toEqual(expectedStarts);
         expect(rows.map(row => row.size)).toEqual(expectedSizes);
+        expect(rows.filter(row => row.type === 'grid-items')).toHaveLength(expectedGridItemsRows);
       },
     );
   });

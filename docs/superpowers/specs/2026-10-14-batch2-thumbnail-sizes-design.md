@@ -115,15 +115,25 @@ export function resolveThumbnailCssVariables(size: ThumbnailSize): Record<string
 
 ## 5. CSS 变量的注入策略
 
-**保留 `vars.css` 里的静态值作为 medium 档的兜底**，在文件浏览器根元素上用行内 style
+**保留 `vars.css` 里的静态值作为「注入没有生效」时的兜底**，在文件浏览器根元素上用行内 style
 按当前档位覆盖。
 
-这样做的理由：若注入环节缺失或抛错，布局退化成 medium 档（也就是默认值），
-而不是塌成无高度。属于优雅降级，不是静默出错。
+这样做的理由：若注入环节缺失或抛错，三个变量仍有值，视图不会塌成无高度。
+但降级结果**不是 medium 档**，这一点必须写清楚，别让人照着旧文案去验收：
+
+- `--navigator-list-view-entry-height` 的静态值是 `42px`，**低于全部四档**
+  （48 / 64 / 80 / 96）。注入失效时列举行高是 42px，而虚拟布局仍按当前档位
+  （默认中档 64px）计算行偏移，于是偏移量和实际渲染高度对不上，表现为滚动跳位。
+- `--navigator-grid-view-entry-height`（120px）与 `--navigator-grid-view-dir-entry-height`
+  （52px）恰好等于中档数值 —— 只有这两个变量的降级表现是中档。
+
+**这是有意选的，不是漏改**：42 与 64 的差正是注入有没有生效的判据。
+验收判据保持显式：真机在 medium 档下列举行高量出 42px，即判定注入链路已断，
+该去查注入路径，而不是把 `vars.css` 里的 42「顺手对齐」成 64 —— 一改就把这个信号永久抹掉了。
 
 | 文件 | 改动 |
 |---|---|
-| `styles/vars.css` | 三个变量**保持 medium 档现值不变**，仅补注释说明它们是兜底默认值、运行时会被覆盖 |
+| `styles/vars.css` | 三个变量**保持现值 42 / 52 / 120 不变**，仅补注释说明它们是「注入未生效」时的静态兜底、运行时会被逐档覆盖；并写明 42px 不等于中档 64px 及原因 |
 | `file-browser.vue` | 在根元素绑定 `:style="thumbnailCssVariables"`，值来自 `resolveThumbnailCssVariables(userSettings.navigator.thumbnailSize)` |
 
 `file-browser-grid-card.vue` 与 `file-browser-list-view.vue` **不需要改**——

@@ -165,7 +165,11 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       enableBoxSelection: true,
       // FORK-MODIFICATION: 列表视图缩略图默认开启（上游 #231）
       showListThumbnails: true,
-      // FORK-MODIFICATION: 缩略图大小默认中等档（list 行高 42 像素已留 32 缩略图余量）
+      // FORK-MODIFICATION: 缩略图大小四档（small / medium / large / xlarge），默认 medium（需求 3.6.2）。
+      //   中档 = 48 像素缩略图 / 64 逻辑像素行高（缩略图 + 16 留白），
+      //   不是 32 像素缩略图，也不是 42 像素行高。
+      //   其余档位参数（带说明行高、网格卡高、网格最小列宽）不要在这里抄第二份，
+      //   唯一度量来源是 navigator/components/file-browser/utils/file-browser-thumbnail-sizes.ts。
       thumbnailSize: 'medium',
       increaseFileViewGaps: false,
     },
