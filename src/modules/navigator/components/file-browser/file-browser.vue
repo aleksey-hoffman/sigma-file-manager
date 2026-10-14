@@ -11,6 +11,8 @@ import { getScrollRestorationKey } from '@/stores/runtime/scroll-restoration';
 import { useFileBrowser } from './composables/use-file-browser';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 import { provideFileBrowserContext } from './composables/use-file-browser-context';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { resolveThumbnailCssVariables } from './utils/file-browser-thumbnail-sizes';
 import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
@@ -60,6 +62,13 @@ const emit = defineEmits<{
 
 const fileBrowserRef = ref<HTMLElement | null>(null);
 const addressBarEditorRef = ref<InstanceType<typeof AddressBarEditorDialog> | null>(null);
+
+const userSettingsStore = useUserSettingsStore();
+// FORK-MODIFICATION: 网格/列表的行高与卡高由 CSS 变量驱动，这里按当前档位覆盖。
+// vars.css 里的静态值是 medium 兜底，注入失败时退化成默认档而不是塌成无高度。
+const thumbnailCssVariables = computed(() => resolveThumbnailCssVariables(
+  userSettingsStore.userSettings.navigator.thumbnailSize,
+));
 
 function getScrollStateKey(): string | undefined {
   return props.tab ? getScrollRestorationKey('navigator', props.tab.id, props.paneIndex ?? 0) : undefined;
@@ -243,6 +252,7 @@ defineExpose({
   <div
     ref="fileBrowserRef"
     class="file-browser"
+    :style="thumbnailCssVariables"
   >
     <FileBrowserToolbar
       v-if="!hideToolbar"

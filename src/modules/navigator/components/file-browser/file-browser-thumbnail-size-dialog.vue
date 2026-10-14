@@ -4,7 +4,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 FORK-MODIFICATION: 缩略图大小四档弹窗（small / medium / large / xlarge）。
 详见 docs/superpowers/specs/2026-10-12-navigator-polish-pack-design.md §5.3。
-验收反馈 2026-10-12:用户希望增加 54 像素档（xlarge）。
+2026-10-14 起四档为 32 / 48 / 64 / 80 像素（xlarge = 80px，不再是 54），
+像素与行高的唯一来源是 utils/file-browser-thumbnail-sizes.ts。
 -->
 
 <script setup lang="ts">
