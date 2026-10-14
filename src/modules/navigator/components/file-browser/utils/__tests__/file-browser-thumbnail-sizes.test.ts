@@ -78,6 +78,26 @@ describe('resolveThumbnailMetrics', () => {
     expect(resolveThumbnailMetrics('huge' as ThumbnailSize))
       .toBe(FILE_BROWSER_THUMBNAIL_METRICS.medium);
   });
+
+  // 常量表是普通对象字面量，会继承 Object.prototype，
+  // 所以 constructor / toString / __proto__ 这些键取值并不是 undefined，
+  // 用 `?? ` 兜底会被绕过、悄悄把原型对象当度量用。
+  it.each([
+    '__proto__',
+    'constructor',
+    'toString',
+    'valueOf',
+    'hasOwnProperty',
+  ])('falls back to medium for the inherited key %s', (key) => {
+    const metrics = resolveThumbnailMetrics(key as ThumbnailSize);
+
+    // 用 `toBe` 锁定"返回的就是 medium 那一档对象本身，不是新拷贝"，
+    // 再钉住具体数值，避免断言退化成"没抛异常就算过"。
+    expect(metrics).toBe(FILE_BROWSER_THUMBNAIL_METRICS.medium);
+    expect(metrics).not.toBe(Object.prototype);
+    expect(metrics.listThumbnailPx).toBe(48);
+    expect(metrics.listRowHeight).toBe(64);
+  });
 });
 
 describe('resolveThumbnailCssVariables', () => {
@@ -95,5 +115,19 @@ describe('resolveThumbnailCssVariables', () => {
       '--navigator-grid-view-entry-height': '120px',
       '--navigator-grid-view-dir-entry-height': '52px',
     });
+  });
+
+  // 兜底一旦被原型键绕过，产物就是 `${undefined}px` 这种静默失效的 CSS 声明，
+  // 所以这里逐值断言，不接受"字符串里带 px 就算过"。
+  it('never emits undefined px for inherited keys', () => {
+    const inheritedKeys: string[] = ['__proto__', 'constructor', 'toString'];
+
+    for (const key of inheritedKeys) {
+      expect(resolveThumbnailCssVariables(key as ThumbnailSize)).toEqual({
+        '--navigator-list-view-entry-height': '64px',
+        '--navigator-grid-view-entry-height': '120px',
+        '--navigator-grid-view-dir-entry-height': '52px',
+      });
+    }
   });
 });
