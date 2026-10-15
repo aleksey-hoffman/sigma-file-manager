@@ -29,6 +29,7 @@ import type { Tab } from '@/types/workspaces';
 import { useFileBrowserNavigation } from './use-file-browser-navigation';
 import { useFileBrowserSelection } from './use-file-browser-selection';
 import { useFileBrowserEntries } from './use-file-browser-entries';
+import { useFileBrowserSearchOptions } from './use-file-browser-search-options';
 import { useFileBrowserFilter } from './use-file-browser-filter';
 import { useFileBrowserFocus } from './use-file-browser-focus';
 import { useFileBrowserDialogs } from './use-file-browser-dialogs';
@@ -305,6 +306,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
   let openPropertiesForSelection: (entries: DirEntry[]) => void = () => {};
 
+  // FORK-MODIFICATION: 「添加到收藏」要多一步选分类，而分类对话框挂在 file-browser.vue 上，
+  // selection 自己拿不到。与 openPropertiesForSelection 同一套「先占位、后回填」的接法。
+  let openFavoriteCategoryDialogForSelection: (entries: DirEntry[]) => void = () => {};
+
   const selection = useFileBrowserSelection(
     visualEntries,
     dataSource.currentPath,
@@ -324,6 +329,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     },
     (entries) => {
       openPropertiesForSelection(entries);
+    },
+    (entries) => {
+      openFavoriteCategoryDialogForSelection(entries);
     },
     dataSource.silentRefresh,
     options.layout,
@@ -452,6 +460,12 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     },
   });
 
+  // FORK-MODIFICATION: 需求反馈 2 —— 搜索选项在这里单独建一份，供工具栏的选项面板读写。
+  // useFileBrowserEntries 内部也建了一份，但那份只用于**过滤**，不用于 UI：
+  // 让 UI 拿「过滤实际用的那份」而不是另取一遍，避免以后有人改了其中一处忘了另一处，
+  // 于是面板上的勾和列表里的结果对不上（那种 bug 从界面上完全看不出来）。
+  const fileBrowserSearch = useFileBrowserSearchOptions();
+
   const actions = useFileBrowserActions({
     contextMenu: selection.contextMenu,
     selectedEntries: selection.selectedEntries,
@@ -469,6 +483,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
   openPropertiesForSelection = (entries) => {
     void actions.openProperties(entries);
+  };
+
+  openFavoriteCategoryDialogForSelection = (entries) => {
+    dialogs.openFavoriteCategoryDialog(entries);
   };
 
   const keyboardNav = useFileBrowserKeyboardNavigation({
@@ -623,6 +641,13 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     clearFilterInputFocusRequest: dataSource.clearFilterInputFocusRequest,
     closeFilter: dataSource.closeFilter,
 
+    // FORK-MODIFICATION: 需求反馈 2 —— 与全局搜索同款的搜索选项（面板 + 写侧）。
+    searchOptions: fileBrowserSearch.searchOptions,
+    setIncludeFiles: fileBrowserSearch.setIncludeFiles,
+    setIncludeDirectories: fileBrowserSearch.setIncludeDirectories,
+    setExactMatch: fileBrowserSearch.setExactMatch,
+    setResultLimit: fileBrowserSearch.setResultLimit,
+
     selectedEntries: selection.selectedEntries,
     contextMenu: selection.contextMenu,
     renameState: selection.renameState,
@@ -677,11 +702,15 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     isNewItemDialogOpen: dialogs.isNewItemDialogOpen,
     isBatchRenameDialogOpen: dialogs.isBatchRenameDialogOpen,
     batchRenameState: dialogs.batchRenameState,
+    favoriteCategoryDialogState: dialogs.favoriteCategoryDialogState,
+    isFavoriteCategoryDialogOpen: dialogs.isFavoriteCategoryDialogOpen,
     openOpenWithDialog: dialogs.openOpenWithDialog,
     closeOpenWithDialog: dialogs.closeOpenWithDialog,
     openNewItemDialog: dialogs.openNewItemDialog,
     openBatchRenameDialog: dialogs.openBatchRenameDialog,
     closeBatchRenameDialog: dialogs.closeBatchRenameDialog,
+    openFavoriteCategoryDialog: dialogs.openFavoriteCategoryDialog,
+    closeFavoriteCategoryDialog: dialogs.closeFavoriteCategoryDialog,
     handleRenameConfirm: dialogs.handleRenameConfirm,
     handleRenameCancel: dialogs.handleRenameCancel,
     handleNewItemConfirm: dialogs.handleNewItemConfirm,

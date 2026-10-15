@@ -13,7 +13,10 @@ import { useForcedListLayout } from './composables/use-forced-list-layout';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 import { provideFileBrowserContext } from './composables/use-file-browser-context';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+// FORK-MODIFICATION: 右键「添加到收藏」要先选分类，收藏的写入口只有这个 store。
+import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { resolveThumbnailCssVariables } from './utils/file-browser-thumbnail-sizes';
+import { resolveFavoriteCategorySelection } from './utils/file-browser-favorites';
 import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
@@ -22,6 +25,7 @@ import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileBrowserBatchRenameDialog from './file-browser-batch-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
+import FileBrowserFavoriteCategoryDialog from './file-browser-favorite-category-dialog.vue';
 import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from './file-browser-top-level-conflict-dialog.vue';
@@ -179,6 +183,54 @@ async function revealAddressBarEntry(parentPath: string, entryPath: string) {
   await fb.navigateToPath(parentPath);
 }
 
+const userStatsStore = useUserStatsStore();
+
+// FORK-MODIFICATION: 右键「添加到收藏」→ 选分类 → 真正落盘。
+// 决策逻辑（三条规则：新分类优先 / 重名落未分类 / 跳过已收藏）在
+// utils/file-browser-favorites.ts 里并有单测覆盖，这里只做接线。
+async function handleFavoriteCategoryConfirm(
+  categoryId: string | null,
+  newCategoryName: string | null,
+) {
+  const entries = fb.favoriteCategoryDialogState.value.entries;
+
+  if (entries.length === 0) {
+    return;
+  }
+
+  const created = newCategoryName?.trim()
+    ? await userStatsStore.createFavoriteCategory(newCategoryName.trim())
+    : null;
+
+  resolveFavoriteCategorySelection(
+    entries,
+    categoryId,
+    created ? created.name : null,
+    {
+      isFavorite: path => userStatsStore.isFavorite(path),
+      // 分类已经建好了，所以这里回传现成的 id，不再建一次。
+      createFavoriteCategory: () => created,
+      addToFavorites: async (path, isFile, resolvedCategoryId) => {
+        await userStatsStore.addToFavorites(path, isFile, resolvedCategoryId);
+      },
+    },
+  );
+}
+
+const favoriteCategoryEntries = computed(() => {
+  return fb.favoriteCategoryDialogState.value.entries;
+});
+
+const favoriteCategoryEntryNames = computed(() => {
+  return favoriteCategoryEntries.value.map(entry => entry.name);
+});
+
+// FORK-MODIFICATION: 需求反馈 2 —— 搜索选项面板上的「命中 N 项」。
+// 非搜索态传 -1 让面板把这一行藏掉：空过滤框下面写「0 项」会被读成「搜了没结果」。
+const searchMatchCount = computed(() => {
+  return fb.filterQuery.value.trim() ? fb.entries.value.length : -1;
+});
+
 provideFileBrowserContext({
   entries: fb.entries,
   directoryEntryCount: computed(() => fb.dirContents.value?.total_count ?? 0),
@@ -288,6 +340,11 @@ defineExpose({
       :is-loading="fb.isLoading.value || fb.isRefreshing.value"
       :is-split-view="props.isSplitView"
       :current-layout="currentLayout"
+      :search-include-files="fb.searchOptions.value.includeFiles"
+      :search-include-directories="fb.searchOptions.value.includeDirectories"
+      :search-exact-match="fb.searchOptions.value.exactMatch"
+      :search-result-limit="fb.searchOptions.value.resultLimit"
+      :search-match-count="searchMatchCount"
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"
@@ -300,6 +357,10 @@ defineExpose({
       @create-new-directory="fb.openNewItemDialog('directory')"
       @create-new-file="fb.openNewItemDialog('file')"
       @filter-input-focused="fb.clearFilterInputFocusRequest"
+      @update:search-include-files="fb.setIncludeFiles"
+      @update:search-include-directories="fb.setIncludeDirectories"
+      @update:search-exact-match="fb.setExactMatch"
+      @update:search-result-limit="fb.setResultLimit"
       @toggle-layout="setLayout(currentLayout === 'grid' ? 'list' : 'grid')"
     />
     <AddressBarEditorDialog
@@ -354,6 +415,13 @@ defineExpose({
       v-model:open="fb.openWithState.value.isOpen"
       :entries="fb.openWithState.value.entries"
       @close="fb.closeOpenWithDialog"
+    />
+
+    <FileBrowserFavoriteCategoryDialog
+      v-model:open="fb.isFavoriteCategoryDialogOpen.value"
+      :categories="userStatsStore.favoriteCategories"
+      :entry-names="favoriteCategoryEntryNames"
+      @confirm="handleFavoriteCategoryConfirm"
     />
 
     <Transition name="cross-pane-drop-overlay">

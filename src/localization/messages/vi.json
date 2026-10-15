@@ -1061,7 +1061,20 @@
     "linkMetadataPerformanceWarning": "Có thể tăng mức sử dụng bộ nhớ và giảm hiệu năng.",
     "fillColumnWidth": "Fill available width",
     "setMinimumColumnWidths": "Đặt độ rộng tối thiểu",
-    "items": "Mục"
+    "items": "Mục",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Tùy chọn tìm kiếm",
+      "matchCount": "{n} kết quả khớp"
+    }
   },
   "openWith": {
     "loadingPrograms": "Đang tải chương trình...",

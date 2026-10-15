@@ -1061,7 +1061,20 @@
       "unsupported": "Nicht unterstützt"
     },
     "linkMetadataPerformanceWarning": "Kann die Speichernutzung erhöhen und die Leistung verringern.",
-    "items": "Elemente"
+    "items": "Elemente",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Suchoptionen",
+      "matchCount": "{n} Treffer"
+    }
   },
   "openWith": {
     "loadingPrograms": "Programme werden geladen...",

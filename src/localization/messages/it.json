@@ -1061,7 +1061,20 @@
     "linkMetadataPerformanceWarning": "Può aumentare l'uso della memoria e ridurre le prestazioni.",
     "fillColumnWidth": "Riempi la larghezza disponibile",
     "setMinimumColumnWidths": "Imposta larghezze minime",
-    "items": "Elementi"
+    "items": "Elementi",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Opzioni di ricerca",
+      "matchCount": "{n} corrispondenze"
+    }
   },
   "openWith": {
     "loadingPrograms": "Caricamento programmi...",

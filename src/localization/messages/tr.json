@@ -1061,7 +1061,20 @@
     "linkMetadataPerformanceWarning": "Bellek kullanımını artırabilir ve performansı düşürebilir.",
     "fillColumnWidth": "Fill available width",
     "setMinimumColumnWidths": "Minimum genişlikleri ayarla",
-    "items": "Öğeler"
+    "items": "Öğeler",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Arama seçenekleri",
+      "matchCount": "{n} eşleşme"
+    }
   },
   "openWith": {
     "loadingPrograms": "Programlar yükleniyor...",

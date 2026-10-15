@@ -44,6 +44,7 @@ import {
 } from '../utils/file-browser-range-selection';
 import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
 import { refreshDrives } from '@/modules/home/composables/use-drives';
+import { shouldOpenFavoriteCategoryDialog } from '@/modules/navigator/components/file-browser/utils/file-browser-favorites';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -53,6 +54,9 @@ export function useFileBrowserSelection(
   onSelect: (entries: DirEntry[]) => void,
   onOpen: (entry: DirEntry) => void,
   onOpenProperties: (entries: DirEntry[]) => void,
+  // FORK-MODIFICATION: 用户反馈（2026-10-15）——「添加到收藏」多一步选分类。
+  // 由 use-file-browser.ts 回填成 dialogs.openFavoriteCategoryDialog。
+  onRequestFavoriteCategoryDialog: (entries: DirEntry[]) => void,
   onRefresh: () => void,
   layout?: () => 'list' | 'grid' | 'tree' | undefined,
 ) {
@@ -1033,13 +1037,17 @@ export function useFileBrowserSelection(
   async function toggleFavorites(entries: DirEntry[]) {
     const allAreFavorites = entries.every(entry => userStatsStore.isFavorite(entry.path));
 
+    // FORK-MODIFICATION: 用户反馈（2026-10-15）——收藏时要多一步选分类，
+    // 于是「加」走分类对话框，「取消收藏」仍然直接做：取消不需要挑分类，
+    // 多弹一次框只会让人以为还有别的事没做完。
+    // 判定本身在 utils 里（可单测），这里只做接线。
+    if (shouldOpenFavoriteCategoryDialog(entries, path => userStatsStore.isFavorite(path))) {
+      onRequestFavoriteCategoryDialog(entries);
+      return;
+    }
+
     for (const entry of entries) {
-      if (allAreFavorites) {
-        await userStatsStore.removeFromFavorites(entry.path);
-      }
-      else if (!userStatsStore.isFavorite(entry.path)) {
-        await userStatsStore.addToFavorites(entry.path);
-      }
+      await userStatsStore.removeFromFavorites(entry.path);
     }
 
     const message = allAreFavorites

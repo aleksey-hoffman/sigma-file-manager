@@ -1061,7 +1061,20 @@
     "linkMetadataPerformanceWarning": "可能会增加内存使用量并降低性能。",
     "fillColumnWidth": "填充可用宽度",
     "setMinimumColumnWidths": "设置最小宽度",
-    "items": "项目"
+    "items": "项目",
+    "favoriteCategoryDialog": {
+      "title": "添加到收藏",
+      "categoryLabel": "选择分类",
+      "uncategorized": "未分类",
+      "newCategoryLabel": "或新建分类",
+      "newCategoryPlaceholder": "输入新分类名称",
+      "confirm": "添加到收藏",
+      "multipleEntries": "以及另外 {n} 个项目"
+    },
+    "searchOptions": {
+      "title": "搜索选项",
+      "matchCount": "无匹配 | 匹配 1 项 | 匹配 {n} 项"
+    }
   },
   "openWith": {
     "loadingPrograms": "正在加载程序...",

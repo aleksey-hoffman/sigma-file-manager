@@ -1061,7 +1061,20 @@
       "unsupported": "Non pris en charge"
     },
     "linkMetadataPerformanceWarning": "Peut augmenter l'utilisation de la mémoire et réduire les performances.",
-    "items": "Éléments"
+    "items": "Éléments",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Options de recherche",
+      "matchCount": "{n} correspondances"
+    }
   },
   "openWith": {
     "loadingPrograms": "Chargement des programmes...",

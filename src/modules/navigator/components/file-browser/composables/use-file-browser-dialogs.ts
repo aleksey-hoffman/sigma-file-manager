@@ -34,6 +34,27 @@ export function useFileBrowserDialogs(options: {
     entries: [] as DirEntry[],
   });
 
+  // FORK-MODIFICATION: 用户反馈（2026-10-15）——「添加到收藏」多一步选分类。
+  // 与 batchRenameState 分开而不是合并：批量改名的风险等级是「改坏文件名」，
+  // 收藏只是加一条记录，两者混在一个 state 里会逼 openBatchRenameDialog
+  // 顺手改写分类字段。
+  const favoriteCategoryDialogState = ref({
+    isOpen: false,
+    entries: [] as DirEntry[],
+  });
+
+  const isFavoriteCategoryDialogOpen = computed({
+    get: () => favoriteCategoryDialogState.value.isOpen,
+    set: (value: boolean) => {
+      if (value) {
+        favoriteCategoryDialogState.value.isOpen = true;
+      }
+      else {
+        closeFavoriteCategoryDialog();
+      }
+    },
+  });
+
   const isBatchRenameDialogOpen = computed({
     get: () => batchRenameState.value.isOpen,
     set: (value: boolean) => {
@@ -131,19 +152,38 @@ export function useFileBrowserDialogs(options: {
     };
   }
 
+  /** 打开时对选中项做一份拷贝：对话框开着的时候选择可能变，不能让它看到活的数组。 */
+  function openFavoriteCategoryDialog(entries: DirEntry[]) {
+    favoriteCategoryDialogState.value = {
+      isOpen: true,
+      entries: [...entries],
+    };
+  }
+
+  function closeFavoriteCategoryDialog() {
+    favoriteCategoryDialogState.value = {
+      isOpen: false,
+      entries: [],
+    };
+  }
+
   return {
     openWithState,
     newItemDialogState,
     batchRenameState,
+    favoriteCategoryDialogState,
     isRenameDialogOpen,
     isNewItemDialogOpen,
     isBatchRenameDialogOpen,
+    isFavoriteCategoryDialogOpen,
     openOpenWithDialog,
     closeOpenWithDialog,
     openNewItemDialog,
     closeNewItemDialog,
     openBatchRenameDialog,
     closeBatchRenameDialog,
+    openFavoriteCategoryDialog,
+    closeFavoriteCategoryDialog,
     handleRenameConfirm,
     handleRenameCancel,
     handleNewItemConfirm,

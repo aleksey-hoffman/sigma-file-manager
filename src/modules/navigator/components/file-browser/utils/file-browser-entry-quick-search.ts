@@ -18,6 +18,7 @@ import {
   parseQuickSearchItemsPredicate,
   parseQuickSearchSizePredicate,
 } from './file-browser-quick-search-numeric';
+import { fileBrowserEntryMatchesExactSearch } from './file-browser-search-options';
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
@@ -324,6 +325,9 @@ export function createFileBrowserQuickSearchMatcher(
   filterQueryRaw: string,
   dirSizesStore: DirSizesStore,
   cache?: FileBrowserQuickSearchCache,
+  // FORK-MODIFICATION: 需求反馈 2 —— 精确匹配开关。默认关闭，调用方不传时行为与
+  // 加这个开关之前逐字一致，避免影响其余单测与 tree view 等既有调用点。
+  options?: { exactMatch?: boolean },
 ): (entry: DirEntry) => boolean {
   const trimmed = filterQueryRaw.trim();
 
@@ -338,6 +342,12 @@ export function createFileBrowserQuickSearchMatcher(
 
   if (parsed.property !== null && !valueNormalized) {
     return () => true;
+  }
+
+  // 精确匹配只对裸词生效：带 `size:` / `items:` 前缀的查询已经带着自己的比较语义，
+  // 再要求全等会让「size:>1MB」这种查询无法表达，所以直接跳过精确分支。
+  if (options?.exactMatch && parsed.property === null) {
+    return entry => fileBrowserEntryMatchesExactSearch(entry, valueNormalized);
   }
 
   if (parsed.property === 'size') {

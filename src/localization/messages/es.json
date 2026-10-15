@@ -1061,7 +1061,20 @@
       "unsupported": "No compatible"
     },
     "linkMetadataPerformanceWarning": "Puede aumentar el uso de memoria y reducir el rendimiento.",
-    "items": "Elementos"
+    "items": "Elementos",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Opciones de búsqueda",
+      "matchCount": "{n} coincidencias"
+    }
   },
   "openWith": {
     "loadingPrograms": "Cargando programas...",

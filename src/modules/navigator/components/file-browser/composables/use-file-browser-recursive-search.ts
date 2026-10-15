@@ -25,13 +25,19 @@ import {
 } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
+import { clampFileBrowserSearchResultLimit } from '@/modules/navigator/components/file-browser/utils/file-browser-search-options';
 
 // 与 stores/runtime/global-search.ts 的防抖同量级：太短会在每个按键上发起一次
 // 磁盘遍历，太长会让人觉得「没反应」。
 const RECURSIVE_SEARCH_DEBOUNCE_MS = 250;
 
 // 磁盘遍历的结果没有天然上界，必须截断，否则一个十万文件的目录树会把 IPC 通道灌满。
-const RECURSIVE_SEARCH_LIMIT = 500;
+//
+// FORK-MODIFICATION: 需求反馈 2（2026-10-16）——这个 500 原本是写死的，
+// 而全局搜索早就有「结果条数上限」旋钮（userSettings.globalSearch.resultLimit）。
+// 同一个含义两个数字，用户在全局搜索里调到 50，目录内搜索照样捞 500 条，就是「不统一」。
+// 现在改成从设置注入，取值口统一走 clampFileBrowserSearchResultLimit。
+const RECURSIVE_SEARCH_LIMIT_FALLBACK = 500;
 
 interface RecursiveSearchEntry {
   name: string;
@@ -71,6 +77,8 @@ export function useFileBrowserRecursiveSearch(options: {
   currentPath: Ref<string>;
   filterQuery: Ref<string>;
   maxDepth: Ref<number>;
+  // FORK-MODIFICATION: 需求反馈 2 —— 结果条数上限，来自 globalSearch.resultLimit。
+  resultLimit?: Ref<number>;
 }) {
   // 递归命中项。与当前目录的条目并存在同一个列表里，所以对外仍叫 entries。
   const recursiveMatches = shallowRef<DirEntry[]>([]);
@@ -96,12 +104,18 @@ export function useFileBrowserRecursiveSearch(options: {
   async function runSearch(rootPath: string, query: string, sequence: number) {
     isRecursiveSearching.value = true;
 
+    // 上限在**每次请求时**读，而不是只在 setup 时读一次：用户在搜索结果还开着的时候
+    // 把上限调小，下一次按键就应该按新上限走。缓存成常量会让旋钮看起来「时灵时不灵」。
+    const limit = clampFileBrowserSearchResultLimit(
+      options.resultLimit?.value ?? RECURSIVE_SEARCH_LIMIT_FALLBACK,
+    );
+
     try {
       const rawResults = await invoke<RecursiveSearchEntry[]>('search_directory_recursive', {
         rootPath,
         query,
         maxDepth: options.maxDepth.value,
-        limit: RECURSIVE_SEARCH_LIMIT,
+        limit,
       });
 
       if (sequence !== requestSequence) {

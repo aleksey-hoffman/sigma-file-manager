@@ -1091,7 +1091,20 @@
     "linkMetadataPerformanceWarning": "میموری کے استعمال کو بڑھا سکتا ہے اور کارکردگی کو کم کر سکتا ہے۔",
     "fillColumnWidth": "Fill available width",
     "setMinimumColumnWidths": "کم از کم چوڑائیاں مقرر کریں",
-    "items": "اشیاء"
+    "items": "اشیاء",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "تلاش کے اختیارات",
+      "matchCount": "{n} نتائج"
+    }
   },
   "openWith": {
     "loadingPrograms": "پروگرامز لوڈ ہو رہے ہیں…",

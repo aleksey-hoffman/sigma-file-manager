@@ -21,7 +21,12 @@ import {
   createFileBrowserQuickSearchCache,
   createFileBrowserQuickSearchMatcher,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-entry-quick-search';
+import {
+  isEntryAllowedBySearchKind,
+  limitFileBrowserSearchResults,
+} from '@/modules/navigator/components/file-browser/utils/file-browser-search-options';
 import { useFileBrowserRecursiveSearch } from '@/modules/navigator/components/file-browser/composables/use-file-browser-recursive-search';
+import { useFileBrowserSearchOptions } from '@/modules/navigator/components/file-browser/composables/use-file-browser-search-options';
 import { isAlwaysHiddenWindowsSystemEntry } from '@/utils/is-always-hidden-windows-system-entry';
 
 type DirectoryContents = {
@@ -52,6 +57,14 @@ export function useFileBrowserEntries(
   const recursiveMaxDepth = toRef(
     () => Math.max(1, userSettingsStore.userSettings.globalSearch?.scanDepth ?? 7),
   );
+
+  // FORK-MODIFICATION: 需求反馈 2 —— 与全局搜索共用同一组选项。
+  //
+  // 这四个键本来就在 `userSettings.globalSearch.*` 里且已被持久化，所以「统一」不需要
+  // 动 settings schema，也不存在两处各存一份、互相漂移的风险 —— 用户在全局搜索里
+  // 调过的值，目录内搜索直接就是同一个值。读侧与写侧在 use-file-browser-search-options 里。
+  const { searchOptions } = useFileBrowserSearchOptions();
+
   const {
     recursiveMatches,
     isRecursiveSearching,
@@ -60,6 +73,7 @@ export function useFileBrowserEntries(
     currentPath: recursiveSearchRoot,
     filterQuery,
     maxDepth: recursiveMaxDepth,
+    resultLimit: toRef(() => searchOptions.value.resultLimit),
   });
 
   watch(dirContents, () => {
@@ -85,6 +99,8 @@ export function useFileBrowserEntries(
         filterQuery.value,
         dirSizesStore,
         quickSearchCache.value,
+        // FORK-MODIFICATION: 需求反馈 2 —— 精确匹配开关接入。关闭时行为与之前逐字相同。
+        { exactMatch: searchOptions.value.exactMatch },
       );
 
       items = items.filter(matchesQuickSearch);
@@ -101,6 +117,12 @@ export function useFileBrowserEntries(
 
         items = [...items, ...nestedMatches];
       }
+
+      // FORK-MODIFICATION: 需求反馈 2 —— 「显示文件 / 显示目录」接入。
+      // 放在合并之后而不是 matcher 里：这两个开关与查询语义无关（管的是结果集里
+      // 有哪类条目），混进 matcher 会让「精确匹配 + 只看文件」两个开关的组合
+      // 变成一段谁也读不懂的布尔表达式。
+      items = items.filter(item => isEntryAllowedBySearchKind(item, searchOptions.value));
     }
 
     if (applySort.value) {
@@ -129,6 +151,14 @@ export function useFileBrowserEntries(
       );
     }
 
+    // FORK-MODIFICATION: 需求反馈 2 —— 结果条数上限接入。
+    // 放在排序**之后**：上限说的是「最多显示多少条」，那么被保留的就该是排序后的前 N 条。
+    // 放在排序之前会把「原始顺序的前 N 条」截下来再排，用户看到的头几条就是随机的。
+    // 只在搜索态生效 —— 平时浏览目录不该被一个搜索设置裁掉。
+    if (filterQuery.value.trim()) {
+      items = limitFileBrowserSearchResults(items, searchOptions.value.resultLimit);
+    }
+
     return items;
   });
 
@@ -142,5 +172,6 @@ export function useFileBrowserEntries(
     isDirectoryEmpty,
     isRecursiveSearching,
     recursiveSearchUnavailable,
+    searchOptions,
   };
 }

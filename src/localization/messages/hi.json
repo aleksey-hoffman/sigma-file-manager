@@ -1091,7 +1091,20 @@
     "linkMetadataPerformanceWarning": "मेमोरी उपयोग बढ़ा सकता है और प्रदर्शन घटा सकता है।",
     "fillColumnWidth": "उपलब्ध चौड़ाई भरें",
     "setMinimumColumnWidths": "न्यूनतम चौड़ाई सेट करें",
-    "items": "सामान"
+    "items": "सामान",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "खोज विकल्प",
+      "matchCount": "{n} मेल"
+    }
   },
   "openWith": {
     "loadingPrograms": "प्रोग्राम लोड हो रहे हैं...",

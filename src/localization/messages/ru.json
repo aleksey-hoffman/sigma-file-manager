@@ -1091,7 +1091,20 @@
     "linkMetadataPerformanceWarning": "Может увеличить использование памяти и снизить производительность.",
     "fillColumnWidth": "Fill available width",
     "setMinimumColumnWidths": "Установить минимальную ширину",
-    "items": "Элементы"
+    "items": "Элементы",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Параметры поиска",
+      "matchCount": "{n} совпадений"
+    }
   },
   "openWith": {
     "loadingPrograms": "Загрузка программ...",

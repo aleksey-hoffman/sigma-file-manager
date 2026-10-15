@@ -1091,7 +1091,20 @@
       "unsupported": "לא נתמך"
     },
     "linkMetadataPerformanceWarning": "עלול להגדיל את צריכת הזיכרון ולפגוע בביצועים.",
-    "items": "פריטים"
+    "items": "פריטים",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "אפשרויות חיפוש",
+      "matchCount": "{n} התאמות"
+    }
   },
   "openWith": {
     "loadingPrograms": "טוען תוכניות...",

@@ -1091,7 +1091,20 @@
     "linkMetadataPerformanceWarning": "Lahko poveča porabo pomnilnika in zmanjša zmogljivost.",
     "fillColumnWidth": "Fill available width",
     "setMinimumColumnWidths": "Nastavi minimalne širine",
-    "items": "Predmeti"
+    "items": "Predmeti",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Možnosti iskanja",
+      "matchCount": "{n} zadetkov"
+    }
   },
   "openWith": {
     "loadingPrograms": "Nalagam programe...",

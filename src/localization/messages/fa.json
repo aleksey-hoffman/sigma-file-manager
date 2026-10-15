@@ -1057,7 +1057,20 @@
     "linkMetadataPerformanceWarning": "ممکن است مصرف حافظه را افزایش دهد و عملکرد را کاهش دهد.",
     "fillColumnWidth": "پر کردن عرض موجود",
     "setMinimumColumnWidths": "تنظیم حداقل عرض‌ها",
-    "items": "موارد"
+    "items": "موارد",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "گزینه‌های جستجو",
+      "matchCount": "{n} نتیجه"
+    }
   },
   "openWith": {
     "loadingPrograms": "در حال بارگذاری برنامه‌ها...",

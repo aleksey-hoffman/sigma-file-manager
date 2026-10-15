@@ -16,7 +16,13 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
-import { TextSearchIcon, XIcon, ChevronDownIcon } from '@lucide/vue';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  NumberField, NumberFieldContent, NumberFieldDecrement,
+  NumberFieldIncrement, NumberFieldInput,
+} from '@/components/ui/number-field';
+import { SlidersHorizontalIcon, TextSearchIcon, XIcon, ChevronDownIcon } from '@lucide/vue';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import {
   QUICK_SEARCH_PROPERTY_KEYS,
@@ -24,17 +30,29 @@ import {
   toggleQuickSearchPropertyInQuery,
   type QuickSearchProperty,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-quick-search-query';
+import { SEARCH_CONSTANTS } from '@/constants';
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 
 const props = defineProps<{
   filterQuery: string;
   isFilterOpen: boolean;
   focusInput: boolean;
+  // FORK-MODIFICATION: 需求反馈 2 —— 与全局搜索同款的四个搜索选项。
+  searchIncludeFiles: boolean;
+  searchIncludeDirectories: boolean;
+  searchExactMatch: boolean;
+  searchResultLimit: number;
+  // 命中数；父组件在非搜索态传 -1，面板据此隐藏这一行而不是显示「0 项」。
+  searchMatchCount: number;
 }>();
 
 const emit = defineEmits<{
   (event: 'update:filterQuery', value: string): void;
   (event: 'update:isFilterOpen', value: boolean): void;
+  (event: 'update:searchIncludeFiles', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchIncludeDirectories', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchExactMatch', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchResultLimit', value: string | number | undefined): void;
   (event: 'filterInputFocused'): void;
 }>();
 
@@ -44,15 +62,23 @@ const shortcutsStore = useShortcutsStore();
 const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
 const filterTriggerRef = ref<HTMLElement | ComponentPublicInstance | null>(null);
 const isPropertyPanelOpen = ref(false);
+const isOptionsPanelOpen = ref(false);
 const shouldFocusOnButtonOpen = ref(false);
 const isSmallScreen = useIsSmallScreen();
 
 const activeProperty = computed(() => parseQuickSearchQuery(props.filterQuery.trim()).property);
 const quickSearchPopoverSide = computed<'bottom' | 'left'>(() => isSmallScreen.value ? 'bottom' : 'left');
 
+// 面板标题右侧的命中数。传入 -1（父组件不在搜索态）时整个数字块不渲染 ——
+// 在一个空过滤框下面写「0 项」会被读成「搜了没结果」，与真实状态相反。
+const matchCountText = computed(() => props.searchMatchCount < 0
+  ? null
+  : t('fileBrowser.searchOptions.matchCount', { n: props.searchMatchCount }));
+
 watch(() => [props.isFilterOpen, props.focusInput] as const, async ([open, focusInput]) => {
   if (!open) {
     isPropertyPanelOpen.value = false;
+    isOptionsPanelOpen.value = false;
     shouldFocusOnButtonOpen.value = false;
     return;
   }
@@ -131,6 +157,25 @@ function handleFilterInteractOutside(event: Event) {
 
 function togglePropertyPanel() {
   isPropertyPanelOpen.value = !isPropertyPanelOpen.value;
+
+  // 两个面板互斥。它们的内容都是「在同一次搜索里怎么筛」，同时展开会让弹窗长到
+  // 需要滚动，而 340px 宽的弹窗一滚动就正好盖住底下的过滤输入框。
+  if (isPropertyPanelOpen.value) {
+    isOptionsPanelOpen.value = false;
+  }
+}
+
+// FORK-MODIFICATION: 需求反馈 2 —— 搜索选项面板（与全局搜索的滑块面板同构）。
+function toggleOptionsPanel() {
+  isOptionsPanelOpen.value = !isOptionsPanelOpen.value;
+
+  if (isOptionsPanelOpen.value) {
+    isPropertyPanelOpen.value = false;
+  }
+}
+
+function setResultLimit(value: string | number | undefined) {
+  emit('update:searchResultLimit', value);
 }
 
 function selectProperty(property: QuickSearchProperty) {
@@ -207,6 +252,27 @@ function selectProperty(property: QuickSearchProperty) {
               {{ t('fileBrowser.quickSearchFilterByColumn') }}
             </TooltipContent>
           </Tooltip>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="file-browser-toolbar-filter__suffix-btn"
+                :class="{
+                  'file-browser-toolbar-filter__suffix-btn--active': isOptionsPanelOpen,
+                }"
+                :aria-expanded="isOptionsPanelOpen"
+                :aria-label="t('fileBrowser.searchOptions.title')"
+                @click="toggleOptionsPanel"
+              >
+                <SlidersHorizontalIcon :size="16" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ t('fileBrowser.searchOptions.title') }}
+            </TooltipContent>
+          </Tooltip>
           <Button
             v-if="filterQuery"
             variant="ghost"
@@ -252,6 +318,87 @@ function selectProperty(property: QuickSearchProperty) {
                 {{ tooltipForProperty(property) }}
               </TooltipContent>
             </Tooltip>
+          </div>
+        </div>
+
+        <!-- FORK-MODIFICATION: 需求反馈 2 —— 与全局搜索同款的搜索选项面板。
+             四个开关的值存在 userSettings.globalSearch.*，与全局搜索共用，不是副本。 -->
+        <div
+          v-show="isOptionsPanelOpen"
+          class="file-browser-toolbar-filter__options-panel"
+          role="group"
+          :aria-label="t('fileBrowser.searchOptions.title')"
+        >
+          <div class="file-browser-toolbar-filter__options-panel-title">
+            <span>{{ t('fileBrowser.searchOptions.title') }}</span>
+            <span
+              v-if="matchCountText !== null"
+              class="file-browser-toolbar-filter__options-panel-count"
+            >
+              {{ matchCountText }}
+            </span>
+          </div>
+
+          <div class="file-browser-toolbar-filter__options-row">
+            <Checkbox
+              id="file-browser-search-include-files"
+              :model-value="searchIncludeFiles"
+              @update:model-value="emit('update:searchIncludeFiles', $event)"
+            />
+            <Label
+              for="file-browser-search-include-files"
+              class="file-browser-toolbar-filter__option-label"
+            >
+              {{ t('globalSearch.showFiles') }}
+            </Label>
+          </div>
+
+          <div class="file-browser-toolbar-filter__options-row">
+            <Checkbox
+              id="file-browser-search-include-directories"
+              :model-value="searchIncludeDirectories"
+              @update:model-value="emit('update:searchIncludeDirectories', $event)"
+            />
+            <Label
+              for="file-browser-search-include-directories"
+              class="file-browser-toolbar-filter__option-label"
+            >
+              {{ t('globalSearch.showDirectories') }}
+            </Label>
+          </div>
+
+          <div class="file-browser-toolbar-filter__options-row">
+            <Checkbox
+              id="file-browser-search-exact-match"
+              :model-value="searchExactMatch"
+              @update:model-value="emit('update:searchExactMatch', $event)"
+            />
+            <Label
+              for="file-browser-search-exact-match"
+              class="file-browser-toolbar-filter__option-label"
+            >
+              {{ t('globalSearch.exactMatch') }}
+            </Label>
+          </div>
+
+          <div class="file-browser-toolbar-filter__options-limit-row">
+            <span class="file-browser-toolbar-filter__option-label">
+              {{ t('settings.globalSearch.resultLimit') }}
+            </span>
+            <NumberField
+              :model-value="searchResultLimit"
+              class="file-browser-toolbar-filter__options-limit-field"
+              :min="SEARCH_CONSTANTS.MIN_RESULT_LIMIT"
+              :max="SEARCH_CONSTANTS.MAX_RESULT_LIMIT"
+              :step="10"
+              @update:model-value="setResultLimit"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
           </div>
         </div>
       </PopoverContent>
@@ -350,6 +497,60 @@ function selectProperty(property: QuickSearchProperty) {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.file-browser-toolbar-filter__options-panel {
+  padding: 4px;
+  border-top: 1px solid hsl(var(--border) / 50%);
+  margin-top: 4px;
+}
+
+.file-browser-toolbar-filter__options-panel-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.file-browser-toolbar-filter__options-panel-count {
+  color: hsl(var(--muted-foreground) / 80%);
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.file-browser-toolbar-filter__options-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 2px;
+}
+
+.file-browser-toolbar-filter__option-label {
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.file-browser-toolbar-filter__options-limit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px solid hsl(var(--border) / 40%);
+}
+
+.file-browser-toolbar-filter__options-limit-field {
+  width: 6.5rem;
+  flex-shrink: 0;
 }
 </style>
 

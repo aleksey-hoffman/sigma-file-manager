@@ -1092,7 +1092,20 @@
       "unsupported": "Unsupported"
     },
     "linkMetadataPerformanceWarning": "May increase memory usage and reduce performance.",
-    "items": "Items"
+    "items": "Items",
+    "favoriteCategoryDialog": {
+      "title": "Add to favorites",
+      "categoryLabel": "Choose a category",
+      "uncategorized": "Uncategorized",
+      "newCategoryLabel": "Or create a new category",
+      "newCategoryPlaceholder": "Type a name for the new category",
+      "confirm": "Add to favorites",
+      "multipleEntries": "and {n} more items"
+    },
+    "searchOptions": {
+      "title": "Search options",
+      "matchCount": "no matches | 1 match | {n} matches"
+    }
   },
   "openWith": {
     "loadingPrograms": "Loading programs...",
