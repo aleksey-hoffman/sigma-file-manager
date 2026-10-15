@@ -202,8 +202,34 @@
     "daysAgo": "{n}天前 | {n}天前 | {n}天前 | {n}天前",
     "openedCount": "已打开{n}次 | 已打开{n}次 | 已打开{n}次 | 已打开{n}次",
     "actions": {
-      "clearAll": "从此列表中删除全部"
-    }
+      "clearAll": "从此列表中删除全部",
+      "newFavorite": "新建收藏",
+      "newCategory": "新建分类",
+      "newTag": "新建标记",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "moveToCategory": "移到分类",
+      "removeFavorite": "取消收藏",
+      "removeTag": "移除标记",
+      "renameCategory": "重命名分类",
+      "deleteCategory": "删除分类",
+      "uncategorized": "未分类"
+    },
+    "newFavoriteDialog": {
+      "title": "添加到收藏",
+      "pathLabel": "文件或文件夹路径",
+      "pathPlaceholder": "粘贴完整路径",
+      "pathNotFound": "路径不存在",
+      "pathAlreadyFavorite": "已在收藏中",
+      "confirm": "添加"
+    },
+    "nameDialog": {
+      "nameLabel": "名称",
+      "namePlaceholder": "请输入名称",
+      "duplicateName": "“{name}”已存在",
+      "confirm": "创建"
+    },
+    "categoryDeleteNote": "该分类下的收藏会回到「未分类」，不会删除任何收藏。"
   },
   "settingsCategories": {
     "navigation": "导航"

@@ -17,6 +17,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
   ArrowRightIcon,
+  FolderIcon,
   HistoryIcon,
   StarIcon,
   TagIcon,
@@ -44,6 +45,7 @@ import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
 import { haveSameKeyOrder, reorderMatchingItems } from '@/utils/reorder-matching-items';
 import { normalizeQuickAccessSectionOrder } from '../utils/quick-access-section-order';
+import { groupFavoritesByCategory } from '../utils/group-favorites-by-category';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -74,8 +76,19 @@ onUnmounted(() => {
 });
 
 const favoriteItems = computed(() => userStatsStore.favorites);
+const favoriteCategories = computed(() => userStatsStore.favoriteCategories);
 const taggedItems = computed(() => userStatsStore.taggedItems);
 const tags = computed(() => userStatsStore.tags);
+
+// FORK-MODIFICATION: 反馈 5（2026-10-15）——侧边栏收藏夹按分类分组。
+// 之前是一列平铺：分类在仪表盘建好之后，侧边栏这边完全看不出来，
+// 于是「收藏」和「标记」这两种组织只有仪表盘页才有。
+// 分组规则本身放在 utils/group-favorites-by-category.ts（可单测），
+// 这里只负责把结果渲染成「分组标题 + 组内独立 SortableList」。
+const favoriteGroups = computed(() => {
+  return groupFavoritesByCategory(favoriteItems.value, favoriteCategories.value);
+});
+
 // FORK-MODIFICATION: 需求 N3② —— 「常用」「历史」两个 section 的数据源，
 // 与仪表盘页用的是同两个 store 字段，上限 100 也一致。
 const frequentItems = computed(() => userStatsStore.sortedFrequentItems);
@@ -103,10 +116,9 @@ const orphanedTaggedItems = computed(() => {
   );
 });
 
-const totalTaggedItemCount = computed(() => {
-  return new Set(taggedItems.value.map(item => item.path)).size;
-});
-
+// FORK-MODIFICATION: 反馈 5（2026-10-15）——原来这里还有一个
+// totalTaggedItemCount 专门喂给标题右侧的计数徽标，徽标去掉后就没有消费方了，
+// 整段删除而不是留着当死代码。
 const hasTaggedSectionContent = computed(() => {
   return tagGroups.value.length > 0 || orphanedTaggedItems.value.length > 0;
 });
@@ -225,8 +237,17 @@ function handleSectionsReorder(nextItems: QuickAccessSectionId[]) {
   userSettingsStore.set('quickAccessSectionOrder', nextOrder);
 }
 
-function handleFavoritesReorder(nextItems: FavoriteItem[]) {
-  userStatsStore.setFavorites(nextItems);
+// FORK-MODIFICATION: 反馈 5（2026-10-15）——分组之后，拖拽换位必须**限定在组内**。
+// 直接 setFavorites(nextItems) 会把别的组的条目一起顶掉：侧边栏的分组是按
+// 「favoriteCategories 的顺序 + 未分类」拼出来的，而 favorites 是**一个扁平数组**，
+// 组内重排只能靠 reorderMatchingItems 把「出现在 nextItems 里的那批 path」
+// 原地替换回扁平列表的对应位置——和下面 handleTaggedItemsReorder 同一套路。
+function handleFavoriteGroupReorder(nextItems: FavoriteItem[]) {
+  userStatsStore.setFavorites(reorderMatchingItems(
+    favoriteItems.value,
+    nextItems,
+    item => item.path,
+  ));
 }
 
 function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
@@ -299,7 +320,6 @@ function getHistoryEntryProps(item: HistoryItem) {
               v-model:open="favoritesOpen"
               :icon="StarIcon"
               :title="t('quickAccess.favorites')"
-              :count="favoriteItems.length"
               :empty-text="t('quickAccess.emptyFavorites')"
               :is-empty="favoriteItems.length === 0"
             >
@@ -313,20 +333,39 @@ function getHistoryEntryProps(item: HistoryItem) {
                   <ArrowRightIcon :size="14" />
                 </button>
               </template>
-              <SortableList
-                :items="favoriteItems"
-                :get-key="getItemKey"
-                @set="handleFavoritesReorder"
-                @drag-start="emit('drag-start')"
-                @drag-end="handleItemDragEnd"
+              <!-- FORK-MODIFICATION: 反馈 5（2026-10-15）——按分类分组渲染。
+                   分组标题不给计数，与去掉的四个分组计数徽标保持一致。 -->
+              <div
+                v-for="group in favoriteGroups"
+                :key="group.key"
+                class="quick-access-panel__tag-group quick-access-panel__subgroup"
               >
-                <template #item="{ item }">
-                  <QuickAccessEntry
-                    v-bind="getFavoriteEntryProps(item)"
-                    @open="openFavoriteItem(item)"
+                <div class="quick-access-panel__tag-subtitle quick-access-panel__subgroup-subtitle">
+                  <FolderIcon
+                    :size="12"
+                    class="quick-access-panel__category-icon"
                   />
-                </template>
-              </SortableList>
+                  <span class="quick-access-panel__tag-name">
+                    {{ group.category?.name ?? t('dashboard.actions.uncategorized') }}
+                  </span>
+                </div>
+                <div class="quick-access-panel__subgroup-items">
+                  <SortableList
+                    :items="group.items"
+                    :get-key="getItemKey"
+                    @set="handleFavoriteGroupReorder"
+                    @drag-start="emit('drag-start')"
+                    @drag-end="handleItemDragEnd"
+                  >
+                    <template #item="{ item }">
+                      <QuickAccessEntry
+                        v-bind="getFavoriteEntryProps(item)"
+                        @open="openFavoriteItem(item)"
+                      />
+                    </template>
+                  </SortableList>
+                </div>
+              </div>
             </QuickAccessSection>
 
             <QuickAccessSection
@@ -334,7 +373,6 @@ function getHistoryEntryProps(item: HistoryItem) {
               v-model:open="tagsOpen"
               :icon="TagIcon"
               :title="t('quickAccess.tagged')"
-              :count="totalTaggedItemCount"
               :empty-text="t('quickAccess.emptyTagged')"
               :is-empty="!hasTaggedSectionContent"
             >
@@ -351,54 +389,56 @@ function getHistoryEntryProps(item: HistoryItem) {
               <div
                 v-for="group in tagGroups"
                 :key="group.tag.id"
-                class="quick-access-panel__tag-group"
+                class="quick-access-panel__tag-group quick-access-panel__subgroup"
               >
-                <div class="quick-access-panel__tag-subtitle">
+                <div class="quick-access-panel__tag-subtitle quick-access-panel__subgroup-subtitle">
                   <span
                     class="quick-access-panel__tag-dot"
                     :style="{ backgroundColor: group.tag.color }"
                   />
                   <span class="quick-access-panel__tag-name">{{ group.tag.name }}</span>
-                  <span class="quick-access-panel__tag-count">{{ group.items.length }}</span>
                 </div>
-                <SortableList
-                  :items="group.items"
-                  :get-key="getItemKey"
-                  @set="handleTaggedItemsReorder"
-                  @drag-start="emit('drag-start')"
-                  @drag-end="handleItemDragEnd"
-                >
-                  <template #item="{ item }">
-                    <QuickAccessEntry
-                      v-bind="getTaggedEntryProps(item)"
-                      @open="openTaggedItem(item)"
-                    />
-                  </template>
-                </SortableList>
+                <div class="quick-access-panel__subgroup-items">
+                  <SortableList
+                    :items="group.items"
+                    :get-key="getItemKey"
+                    @set="handleTaggedItemsReorder"
+                    @drag-start="emit('drag-start')"
+                    @drag-end="handleItemDragEnd"
+                  >
+                    <template #item="{ item }">
+                      <QuickAccessEntry
+                        v-bind="getTaggedEntryProps(item)"
+                        @open="openTaggedItem(item)"
+                      />
+                    </template>
+                  </SortableList>
+                </div>
               </div>
               <div
                 v-if="orphanedTaggedItems.length > 0"
-                class="quick-access-panel__tag-group"
+                class="quick-access-panel__tag-group quick-access-panel__subgroup"
               >
-                <div class="quick-access-panel__tag-subtitle">
+                <div class="quick-access-panel__tag-subtitle quick-access-panel__subgroup-subtitle">
                   <span class="quick-access-panel__tag-dot quick-access-panel__tag-dot--muted" />
                   <span class="quick-access-panel__tag-name">{{ t('quickAccess.unknownTagGroup') }}</span>
-                  <span class="quick-access-panel__tag-count">{{ orphanedTaggedItems.length }}</span>
                 </div>
-                <SortableList
-                  :items="orphanedTaggedItems"
-                  :get-key="getItemKey"
-                  @set="handleTaggedItemsReorder"
-                  @drag-start="emit('drag-start')"
-                  @drag-end="handleItemDragEnd"
-                >
-                  <template #item="{ item }">
-                    <QuickAccessEntry
-                      v-bind="getTaggedEntryProps(item)"
-                      @open="openTaggedItem(item)"
-                    />
-                  </template>
-                </SortableList>
+                <div class="quick-access-panel__subgroup-items">
+                  <SortableList
+                    :items="orphanedTaggedItems"
+                    :get-key="getItemKey"
+                    @set="handleTaggedItemsReorder"
+                    @drag-start="emit('drag-start')"
+                    @drag-end="handleItemDragEnd"
+                  >
+                    <template #item="{ item }">
+                      <QuickAccessEntry
+                        v-bind="getTaggedEntryProps(item)"
+                        @open="openTaggedItem(item)"
+                      />
+                    </template>
+                  </SortableList>
+                </div>
               </div>
             </QuickAccessSection>
 
@@ -409,7 +449,6 @@ function getHistoryEntryProps(item: HistoryItem) {
               v-model:open="frequentOpen"
               :icon="TrendingUpIcon"
               :title="t('quickAccess.frequent')"
-              :count="frequentItems.length"
               :empty-text="t('quickAccess.emptyFrequent')"
               :is-empty="frequentItems.length === 0"
             >
@@ -437,7 +476,6 @@ function getHistoryEntryProps(item: HistoryItem) {
               v-model:open="historyOpen"
               :icon="HistoryIcon"
               :title="t('quickAccess.history')"
-              :count="historyItems.length"
               :empty-text="t('quickAccess.emptyHistory')"
               :is-empty="historyItems.length === 0"
             >
@@ -567,13 +605,40 @@ function getHistoryEntryProps(item: HistoryItem) {
   white-space: nowrap;
 }
 
-.quick-access-panel__tag-count {
-  flex-shrink: 0;
-  padding: 2px 6px;
+/* FORK-MODIFICATION: 反馈 6（2026-10-15）——分类 / 标记分组与其下条目的层级区分。
+
+   之前分组标题和它下面的条目左对齐、字号接近，扫一眼分不出谁属于谁；
+   分类标题又是个和收藏条目同款的灰色文件夹图标，混淆得更彻底。
+
+   三个信号叠在一起，任一单独都不够：
+     * 上间距 —— 分组之间断开，不看样式也知道「这里换了一个组」；
+     * 圆角浅灰底 —— 标题读起来是**一条带子**而不是一个可点条目；
+     * 条目缩进 + 左侧竖线 —— 文件树式的父子关系，最直接的归属线索。
+
+   收藏按分类、标记按 tag 是同一个概念，所以两处共用这组类，
+   避免面板里出现两套层级语言。 */
+.quick-access-panel__subgroup {
+  margin-top: 10px;
+}
+
+.quick-access-panel__subgroup-subtitle {
   border-radius: var(--radius-sm);
-  background-color: hsl(var(--primary) / 20%);
+  background-color: hsl(var(--foreground) / 5%);
+  padding-inline: 8px;
+}
+
+.quick-access-panel__subgroup-items {
+  margin-inline-start: 10px;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid hsl(var(--foreground) / 12%);
+}
+
+/* FORK-MODIFICATION: 反馈 5（2026-10-15）——收藏分组标题前的文件夹图标。
+   不能复用 __tag-dot：那个类给标记用的是**背景色圆点**，靠 inline
+   backgroundColor 上色；分类这里要的是描边图标，得走 color。
+   刻意用主色，和收藏条目自己的灰图标拉开距离。 */
+.quick-access-panel__category-icon {
+  flex-shrink: 0;
   color: hsl(var(--primary));
-  font-size: 0.6875rem;
-  font-weight: 600;
 }
 </style>

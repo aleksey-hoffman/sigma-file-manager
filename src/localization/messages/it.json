@@ -202,8 +202,34 @@
     "daysAgo": "{n} giorno fa | {n} giorni fa | {n} giorni fa | {n} giorni fa",
     "openedCount": "Aperto {n} volta | Aperto {n} volte | Aperto {n} volte | Aperto {n} volte",
     "actions": {
-      "clearAll": "Rimuovi tutto da questa lista"
-    }
+      "clearAll": "Rimuovi tutto da questa lista",
+      "newFavorite": "New favorite",
+      "newCategory": "New category",
+      "newTag": "New tag",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moveToCategory": "Move to category",
+      "removeFavorite": "Remove from favorites",
+      "removeTag": "Remove tag",
+      "renameCategory": "Rename category",
+      "deleteCategory": "Delete category",
+      "uncategorized": "Uncategorized"
+    },
+    "newFavoriteDialog": {
+      "title": "Add to favorites",
+      "pathLabel": "File or folder path",
+      "pathPlaceholder": "Paste a full path",
+      "pathNotFound": "Path does not exist",
+      "pathAlreadyFavorite": "Already in favorites",
+      "confirm": "Add"
+    },
+    "nameDialog": {
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter a name",
+      "duplicateName": "\"{name}\" already exists",
+      "confirm": "Create"
+    },
+    "categoryDeleteNote": "Favorites in this category return to \"Uncategorized\". Nothing is deleted."
   },
   "settingsCategories": {
     "navigation": "Navigazione"

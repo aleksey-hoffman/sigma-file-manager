@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -47,6 +48,15 @@ function handleClearAll() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <!-- FORK-MODIFICATION: 反馈 4 —— 「新建收藏 / 新建分类 / 新建标记」的入口。
+               这一条把「清空」独占的菜单变成可扩展的：条目本身仍由各页签通过
+               #menu-items 插槽提供，本组件只负责分隔线与「清空」的固定位置。 -->
+          <slot name="menu-items" />
+
+          <DropdownMenuSeparator
+            v-if="$slots['menu-items']"
+          />
+
           <DropdownMenuItem
             :disabled="isEmpty"
             class="dashboard-action-bar__menu-item dashboard-action-bar__menu-item--destructive"

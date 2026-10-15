@@ -9,6 +9,7 @@ import { ref, computed } from 'vue';
 import { useUserPathsStore } from './user-paths';
 import type {
   UserStats,
+  FavoriteCategory,
   FavoriteItem,
   HistoryItem,
   FrequentItem,
@@ -51,6 +52,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
   let deferredMaintenancePromise: Promise<void> | null = null;
 
   const favorites = computed(() => userStats.value.favorites);
+  // FORK-MODIFICATION: 反馈 4 —— 收藏分类。
+  const favoriteCategories = computed(() => userStats.value.favoriteCategories);
   const tags = computed(() => userStats.value.tags);
   const taggedItems = computed(() => userStats.value.taggedItems);
   const history = computed(() => userStats.value.history);
@@ -98,6 +101,14 @@ export const useUserStatsStore = defineStore('userStats', () => {
         (userStats.value as Record<string, unknown>)[key] = statsRecord[key];
       }
     }
+
+    // FORK-MODIFICATION: 反馈 4 —— 收藏条目新增 isFile / categoryId 后，老记录
+    // 缺这两个键。归一化放在这里（读入的唯一入口）而不是各读取点，
+    // 保证内存里的 FavoriteItem 形状永远一致。
+    userStats.value.favorites = normalizeFavorites(userStats.value.favorites);
+    userStats.value.favoriteCategories = normalizeFavoriteCategories(
+      userStats.value.favoriteCategories,
+    );
   }
 
   async function loadStatsFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): Promise<boolean> {
@@ -165,6 +176,12 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
       if (userStatsStorage.value) {
         await userStatsStorage.value.set('favorites', userStats.value.favorites);
+        // FORK-MODIFICATION: 反馈 4 —— 这一行是修一个已发出去的数据丢失缺陷。
+        // 加 favoriteCategories 到 DEFAULT_USER_STATS 只修好了「读」这一侧
+        // （USER_STATS_TOP_LEVEL_KEYS 由它派生），写这一侧是下面这串显式的
+        // set()，漏掉它就变成：新建分类 -> 界面出现 -> 刷新/重启后消失，
+        // 不报错、不落盘。加新顶层字段时读白名单和写列表要一起改。
+        await userStatsStorage.value.set('favoriteCategories', userStats.value.favoriteCategories);
         await userStatsStorage.value.set('tags', userStats.value.tags);
         await userStatsStorage.value.set('taggedItems', userStats.value.taggedItems);
         await userStatsStorage.value.set('history', userStats.value.history);
@@ -181,12 +198,92 @@ export const useUserStatsStore = defineStore('userStats', () => {
     return userStats.value.favorites.some(item => item.path === path);
   }
 
-  async function addToFavorites(path: string) {
+  // FORK-MODIFICATION: 反馈 4 —— 老收藏记录没有 isFile / categoryId。
+  // 在**读入一处**补齐，而不是让每个读取点判 undefined：仪表盘原来把
+  // 「路径含 `.`」当文件判定，复制到多处就等于把这个误判复制到多处。
+  // 老数据只能按老规则兜底（拿不到别的信息），新数据一律用调用方给的 isFile。
+  function inferLegacyFavoriteIsFile(path: string): boolean {
+    return !path.endsWith('/') && path.includes('.');
+  }
+
+  function normalizeFavorites(favorites: unknown): FavoriteItem[] {
+    if (!Array.isArray(favorites)) {
+      return [];
+    }
+
+    const normalized: FavoriteItem[] = [];
+
+    for (const rawItem of favorites) {
+      if (!rawItem || typeof rawItem !== 'object') {
+        continue;
+      }
+
+      const record = rawItem as Record<string, unknown>;
+
+      if (typeof record.path !== 'string' || record.path.length === 0) {
+        continue;
+      }
+
+      normalized.push({
+        path: record.path,
+        addedAt: typeof record.addedAt === 'number' ? record.addedAt : 0,
+        isFile: typeof record.isFile === 'boolean'
+          ? record.isFile
+          : inferLegacyFavoriteIsFile(record.path),
+        categoryId: typeof record.categoryId === 'string' ? record.categoryId : null,
+      });
+    }
+
+    return normalized;
+  }
+
+  function normalizeFavoriteCategories(categories: unknown): FavoriteCategory[] {
+    if (!Array.isArray(categories)) {
+      return [];
+    }
+
+    const knownIds = new Set<string>();
+    const normalized: FavoriteCategory[] = [];
+
+    for (const rawItem of categories) {
+      if (!rawItem || typeof rawItem !== 'object') {
+        continue;
+      }
+
+      const record = rawItem as Record<string, unknown>;
+
+      if (typeof record.id !== 'string' || record.id.length === 0) {
+        continue;
+      }
+
+      if (typeof record.name !== 'string' || record.name.trim().length === 0) {
+        continue;
+      }
+
+      // 重复 id 会让「按分类过滤」把同一条收藏显示两遍，直接丢掉后来的。
+      if (knownIds.has(record.id)) {
+        continue;
+      }
+
+      knownIds.add(record.id);
+      normalized.push({
+        id: record.id,
+        name: record.name,
+        createdAt: typeof record.createdAt === 'number' ? record.createdAt : 0,
+      });
+    }
+
+    return normalized;
+  }
+
+  async function addToFavorites(path: string, isFile = false, categoryId: string | null = null) {
     if (isFavorite(path)) return;
 
     const newFavorite: FavoriteItem = {
       path,
       addedAt: Date.now(),
+      isFile,
+      categoryId,
     };
 
     userStats.value.favorites.push(newFavorite);
@@ -202,15 +299,132 @@ export const useUserStatsStore = defineStore('userStats', () => {
     }
   }
 
-  async function toggleFavorite(path: string): Promise<boolean> {
+  async function toggleFavorite(path: string, isFile = false): Promise<boolean> {
     if (isFavorite(path)) {
       await removeFromFavorites(path);
       return false;
     }
     else {
-      await addToFavorites(path);
+      await addToFavorites(path, isFile);
       return true;
     }
+  }
+
+  // FORK-MODIFICATION: 反馈 4 —— 收藏的编辑能力（排序 / 改归属分类）。
+
+  /**
+   * 在**当前分类内**把收藏上移/下移一位。
+   *
+   * 为什么在分类内而不是整个列表：仪表盘收藏是 grid 布局，跨分类移动会让
+   * 卡片「跳」到另一个分组里，用户预期是「在我这组里挪一格」。分类之间要挪
+   * 用 `moveFavoriteToCategory`。
+   */
+  async function moveFavoriteWithinCategory(path: string, direction: -1 | 1) {
+    const favorites = userStats.value.favorites;
+    const index = favorites.findIndex(item => item.path === path);
+
+    if (index === -1) {
+      return;
+    }
+
+    const currentCategoryId = favorites[index].categoryId;
+    const siblingIndexes = favorites
+      .map((item, itemIndex) => (item.categoryId === currentCategoryId ? itemIndex : -1))
+      .filter(itemIndex => itemIndex !== -1);
+
+    const positionInCategory = siblingIndexes.indexOf(index);
+
+    if (positionInCategory === -1) {
+      return;
+    }
+
+    const targetPosition = positionInCategory + direction;
+
+    if (targetPosition < 0 || targetPosition >= siblingIndexes.length) {
+      return;
+    }
+
+    const targetIndex = siblingIndexes[targetPosition];
+    const moved = favorites[index];
+    const displaced = favorites[targetIndex];
+
+    favorites[index] = displaced;
+    favorites[targetIndex] = moved;
+
+    await saveStats();
+  }
+
+  async function moveFavoriteToCategory(path: string, categoryId: string | null) {
+    const favorite = userStats.value.favorites.find(item => item.path === path);
+
+    if (!favorite || favorite.categoryId === categoryId) {
+      return;
+    }
+
+    favorite.categoryId = categoryId;
+    await saveStats();
+  }
+
+  function hasFavoriteCategoryNameConflict(name: string, excludedId: string | null = null): boolean {
+    const normalizedName = name.trim().toLowerCase();
+
+    return userStats.value.favoriteCategories.some(
+      category => category.id !== excludedId && category.name.toLowerCase() === normalizedName,
+    );
+  }
+
+  async function createFavoriteCategory(name: string): Promise<FavoriteCategory | null> {
+    const trimmed = name.trim();
+
+    if (!trimmed || hasFavoriteCategoryNameConflict(trimmed)) {
+      return null;
+    }
+
+    const newCategory: FavoriteCategory = {
+      id: `favcat-${Date.now()}`,
+      name: trimmed,
+      createdAt: Date.now(),
+    };
+
+    userStats.value.favoriteCategories.push(newCategory);
+    await saveStats();
+    return newCategory;
+  }
+
+  async function renameFavoriteCategory(categoryId: string, name: string) {
+    const trimmed = name.trim();
+    const category = userStats.value.favoriteCategories.find(item => item.id === categoryId);
+
+    if (!category || !trimmed || hasFavoriteCategoryNameConflict(trimmed, categoryId)) {
+      return;
+    }
+
+    category.name = trimmed;
+    await saveStats();
+  }
+
+  /**
+   * 删除分类。**其下的收藏回到「未分类」，不连带删除。**
+   *
+   * 连带删除会静默丢用户数据，而且是不可逆的（收藏没法恢复）；回到未分类
+   * 完全可逆 —— 用户重新建一个同名分类就能复原布局。
+   */
+  async function deleteFavoriteCategory(categoryId: string) {
+    const categoryIndex = userStats.value.favoriteCategories.findIndex(item => item.id === categoryId);
+
+    if (categoryIndex === -1) {
+      return;
+    }
+
+    userStats.value.favoriteCategories.splice(categoryIndex, 1);
+
+    for (const favorite of userStats.value.favorites) {
+      if (favorite.categoryId === categoryId) {
+        favorite.categoryId = null;
+      }
+    }
+
+    await saveStats();
   }
 
   function getItemTags(path: string): ItemTag[] {
@@ -629,6 +843,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
   return {
     userStats,
     favorites,
+    favoriteCategories,
     tags,
     taggedItems,
     history,
@@ -641,6 +856,12 @@ export const useUserStatsStore = defineStore('userStats', () => {
     addToFavorites,
     removeFromFavorites,
     toggleFavorite,
+    // FORK-MODIFICATION: 反馈 4 —— 收藏分类与收藏的编辑能力。
+    moveFavoriteWithinCategory,
+    moveFavoriteToCategory,
+    createFavoriteCategory,
+    renameFavoriteCategory,
+    deleteFavoriteCategory,
     getItemTags,
     addTagToItem,
     removeTagFromItem,

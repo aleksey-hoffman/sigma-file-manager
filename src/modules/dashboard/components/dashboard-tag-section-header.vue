@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: GPL-3.0-or-later
+﻿<!-- SPDX-License-Identifier: GPL-3.0-or-later
 License: GNU GPLv3 or later. See the license file in the project root for more information.
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
@@ -6,18 +6,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PencilIcon, Trash2Icon } from '@lucide/vue';
+import { ArrowDownIcon, ArrowUpIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
 import type { ItemTag } from '@/types/user-stats';
 import { useTagInlineEditor, stopSpaceKeyPropagation } from '@/composables/use-tag-inline-editor';
 
+// FORK-MODIFICATION: 反馈 4 —— canMoveUp / canMoveDown 支撑「标记排序」。
+// 用户要的是「在签页可以对已经添加的收藏、标记进行排序」；已标记页的分区就是
+// 标记本身，所以排序入口放在分区标题上，而不是卡片上。
 const props = defineProps<{
   tag: ItemTag;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }>();
 
 const emit = defineEmits<{
   'rename-tag': [tagId: string, name: string];
   'delete-tag': [tagId: string];
   'update-tag-color': [tagId: string, color: string];
+  'move-up': [tagId: string];
+  'move-down': [tagId: string];
 }>();
 
 const { t } = useI18n();
@@ -89,6 +96,24 @@ const {
       @pointerdown.stop
     >
     <div class="tag-selector__item-actions">
+      <button
+        type="button"
+        class="tag-selector__edit"
+        :disabled="!canMoveUp"
+        :title="t('dashboard.actions.moveUp')"
+        @click="emit('move-up', tag.id)"
+      >
+        <ArrowUpIcon :size="16" />
+      </button>
+      <button
+        type="button"
+        class="tag-selector__edit"
+        :disabled="!canMoveDown"
+        :title="t('dashboard.actions.moveDown')"
+        @click="emit('move-down', tag.id)"
+      >
+        <ArrowDownIcon :size="16" />
+      </button>
       <button
         type="button"
         class="tag-selector__edit"
