@@ -41,8 +41,10 @@
     "history": "History",
     "emptyFrequent": "No frequently used items",
     "emptyHistory": "No history yet",
+    "openFavoritesTab": "Open Favorites tab in dashboard",
     "openFrequentTab": "Open Frequent tab in dashboard",
-    "openHistoryTab": "Open History tab in dashboard"
+    "openHistoryTab": "Open History tab in dashboard",
+    "openTaggedTab": "Open Tagged tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Nenhuma unidade encontrada",

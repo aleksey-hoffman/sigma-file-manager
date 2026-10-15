@@ -232,11 +232,15 @@ function handleTaggedItemsReorder(nextItems: TaggedItem[]) {
   ));
 }
 
-// FORK-MODIFICATION: 需求 N3⑤（决策 D4）——点「常用」「历史」的标题时切到
+// FORK-MODIFICATION: 需求 N3⑤（决策 D4）——点各分组标题右侧的箭头时切到
 // 仪表盘对应页签。先跳到仪表盘路由，再设 activeTab：
 // 仪表盘页若尚未挂载，页内 setup 时的一次性读取会取到这个值；
 // 若已挂载，由 `useRestoredActiveTab` 里新增的反向 watch 接住（否则点了没反应）。
-function openDashboardTab(tab: 'frequent' | 'history') {
+// 四个 id 与 dashboard.vue 的 TabsTrigger value 一一对应：favorites/tagged/
+// frequent/history，别的地方要跳页签也走这里，别自己拼字符串。
+type DashboardTabId = 'favorites' | 'tagged' | 'frequent' | 'history';
+
+function openDashboardTab(tab: DashboardTabId) {
   void router.push({ name: 'dashboard' }).then(() => {
     scrollRestorationStore.setActiveTab('dashboard', tab);
   });
@@ -283,6 +287,8 @@ function getHistoryEntryProps(item: HistoryItem) {
               v-if="isNotFirstSection(sectionId)"
               class="quick-access-panel__separator"
             />
+            <!-- FORK-MODIFICATION: 需求 N3⑤（决策 D4）——标题右侧的箭头切到
+                 仪表盘对应页签。四个分组一视同仁：收藏夹/已标记/常用/历史。 -->
             <QuickAccessSection
               v-if="sectionId === 'favorites'"
               v-model:open="favoritesOpen"
@@ -292,6 +298,16 @@ function getHistoryEntryProps(item: HistoryItem) {
               :empty-text="t('quickAccess.emptyFavorites')"
               :is-empty="favoriteItems.length === 0"
             >
+              <template #header-action>
+                <button
+                  type="button"
+                  class="quick-access-panel__section-action"
+                  :title="t('quickAccess.openFavoritesTab')"
+                  @click.stop="openDashboardTab('favorites')"
+                >
+                  <ArrowRightIcon :size="14" />
+                </button>
+              </template>
               <SortableList
                 :items="favoriteItems"
                 :get-key="getItemKey"
@@ -317,6 +333,16 @@ function getHistoryEntryProps(item: HistoryItem) {
               :empty-text="t('quickAccess.emptyTagged')"
               :is-empty="!hasTaggedSectionContent"
             >
+              <template #header-action>
+                <button
+                  type="button"
+                  class="quick-access-panel__section-action"
+                  :title="t('quickAccess.openTaggedTab')"
+                  @click.stop="openDashboardTab('tagged')"
+                >
+                  <ArrowRightIcon :size="14" />
+                </button>
+              </template>
               <div
                 v-for="group in tagGroups"
                 :key="group.tag.id"

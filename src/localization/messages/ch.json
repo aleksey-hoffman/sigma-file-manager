@@ -41,8 +41,10 @@
     "history": "历史",
     "emptyFrequent": "无常用项目",
     "emptyHistory": "暂无历史记录",
+    "openFavoritesTab": "在仪表盘打开「收藏夹」页签",
     "openFrequentTab": "在仪表盘打开「常用」页签",
-    "openHistoryTab": "在仪表盘打开「历史」页签"
+    "openHistoryTab": "在仪表盘打开「历史」页签",
+    "openTaggedTab": "在仪表盘打开「已标记」页签"
   },
   "placeholders": {
     "noDrivesFound": "未找到驱动器",
