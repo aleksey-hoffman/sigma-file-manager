@@ -20,7 +20,9 @@
 // 代价要说清楚：`size:>1MB` 这类**不含文件名关键词**的查询，粗筛阶段不会命中，
 // 所以只能搜到当前层。这是「递归」与「全谓词」之间的取舍，不是遗漏。
 
-import { onUnmounted, ref, shallowRef, watch, type Ref } from 'vue';
+import {
+  onUnmounted, ref, shallowRef, watch, type Ref,
+} from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 
