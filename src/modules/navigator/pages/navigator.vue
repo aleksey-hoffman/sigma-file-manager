@@ -267,6 +267,23 @@ watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   }
 });
 
+// FORK-MODIFICATION: 拆分视图下「哪个 pane 是当前」有两份状态 ——
+// `currentTabIndex` 住在 store 里，`activeTabId` 是本页局部 ref，只有
+// `activateTabPane`（用户点面板）才会同时写两者。于是 store 侧被别的代码改动时
+// 本页不知情：搜索结果「打开所属目录」（utils/open-navigator-directory.ts 的
+// openNavigatorRevealEntry）先 toggleSplitView 再 setCurrentTabIndex(1)，
+// activeTabId 却还停在原值，随后 getNavigatorPaneRef 落到 tabGroup[0]，
+// 选中就出现在**左侧**面板而不是刚打开的右侧面板。
+// 这里把 store 侧的变化同步回来；用户点面板时 activateTabPane 已经写过同样的值，
+// 所以这条 watch 只是补上「外部改动」这条路，不会和点击互相打架。
+watch(() => workspacesStore.currentTab?.id, (newCurrentTabId) => {
+  if (!isSplitView.value || !newCurrentTabId) {
+    return;
+  }
+
+  activeTabId.value = newCurrentTabId;
+});
+
 const infoPanelEntry = computed(() => {
   if (selectedEntries.value.length > 0) {
     return selectedEntries.value[selectedEntries.value.length - 1];

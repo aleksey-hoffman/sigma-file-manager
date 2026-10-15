@@ -10,23 +10,32 @@ import type { Router } from 'vue-router';
 import type { DirEntry } from '@/types/dir-entry';
 
 const {
+  currentTabGroupRef,
   getDirEntryMock,
   openNewTabGroupMock,
   openPathInCurrentTabMock,
+  setCurrentTabIndexMock,
   setPendingLaunchRevealMock,
+  toggleSplitViewMock,
 } = vi.hoisted(() => ({
+  currentTabGroupRef: { value: [] as unknown[] },
   getDirEntryMock: vi.fn(),
   openNewTabGroupMock: vi.fn(),
   openPathInCurrentTabMock: vi.fn(),
+  setCurrentTabIndexMock: vi.fn(),
   setPendingLaunchRevealMock: vi.fn(),
+  toggleSplitViewMock: vi.fn(),
 }));
 
 vi.mock('@/stores/storage/workspaces', () => ({
   useWorkspacesStore: () => ({
+    get currentTabGroup() { return currentTabGroupRef.value; },
     getDirEntry: getDirEntryMock,
     openNewTabGroup: openNewTabGroupMock,
     openPathInCurrentTab: openPathInCurrentTabMock,
+    setCurrentTabIndex: setCurrentTabIndexMock,
     setPendingLaunchReveal: setPendingLaunchRevealMock,
+    toggleSplitView: toggleSplitViewMock,
   }),
 }));
 
@@ -34,7 +43,12 @@ vi.mock('@/router/routes', () => ({
   loadNavigatorRoute: vi.fn(async () => ({})),
 }));
 
-import { openNavigatorPath, openNavigatorPathInNewTab, preloadNavigatorRoute } from '@/utils/open-navigator-directory';
+import {
+  openNavigatorPath,
+  openNavigatorPathInNewTab,
+  openNavigatorRevealEntry,
+  preloadNavigatorRoute,
+} from '@/utils/open-navigator-directory';
 import { loadNavigatorRoute } from '@/router/routes';
 
 function createRouter(routeName: string | symbol | null | undefined): Router {
@@ -182,6 +196,109 @@ describe('openNavigatorPathInNewTab', () => {
 
     await vi.waitFor(() => {
       expect(openNewTabGroupMock).toHaveBeenCalledWith('D:/');
+    });
+  });
+});
+
+// 真机验收（2026-10-15）推翻了这里的旧实现：原先调 openNewTabGroup，实测结果是
+// 标签条上多出一个新标签、内容区仍只有一个面板。导航器的并排面板是遍历
+// **当前 tabGroup 内的每个 tab** 渲染的（navigator.vue 的
+// isSplitView === currentTabGroup.length > 1），所以「右侧多一个面板」要靠
+// toggleSplitView 在当前 tabGroup 里加第二个 tab，而不是新开标签组。
+describe('openNavigatorRevealEntry', () => {
+  beforeEach(() => {
+    currentTabGroupRef.value = [];
+    openNewTabGroupMock.mockReset().mockResolvedValue(undefined);
+    openPathInCurrentTabMock.mockReset().mockResolvedValue(undefined);
+    setCurrentTabIndexMock.mockReset();
+    setPendingLaunchRevealMock.mockReset();
+    toggleSplitViewMock.mockReset();
+  });
+
+  it('splits the current tab group and points the right pane at the parent directory', async () => {
+    currentTabGroupRef.value = [
+      {
+        id: 'tab-1',
+        path: 'C:/Users/aleks',
+      },
+    ];
+
+    const router = createRouter('navigator');
+
+    openNavigatorRevealEntry(router, 'C:/Users/aleks/Downloads/report.pdf');
+
+    await vi.waitFor(() => {
+      expect(openPathInCurrentTabMock).toHaveBeenCalledWith('C:/Users/aleks/Downloads');
+    });
+
+    expect(toggleSplitViewMock).toHaveBeenCalledTimes(1);
+    expect(setCurrentTabIndexMock).toHaveBeenCalledWith(1);
+    expect(openNewTabGroupMock).not.toHaveBeenCalled();
+  });
+
+  it('does not toggle again when the group is already split', async () => {
+    currentTabGroupRef.value = [
+      {
+        id: 'tab-1',
+        path: 'C:/Users/aleks',
+      },
+      {
+        id: 'tab-2',
+        path: 'D:/',
+      },
+    ];
+
+    const router = createRouter('navigator');
+
+    openNavigatorRevealEntry(router, 'D:/notes.md');
+
+    await vi.waitFor(() => {
+      expect(openPathInCurrentTabMock).toHaveBeenCalledWith('D:/');
+    });
+
+    // toggleSplitView on an already-split group collapses the panes back.
+    expect(toggleSplitViewMock).not.toHaveBeenCalled();
+    expect(setCurrentTabIndexMock).toHaveBeenCalledWith(1);
+  });
+
+  it('reveals the entry itself, not its parent, after the split', async () => {
+    currentTabGroupRef.value = [
+      {
+        id: 'tab-1',
+        path: 'C:/Users/aleks',
+      },
+    ];
+
+    const router = createRouter('navigator');
+
+    openNavigatorRevealEntry(router, 'C:/Users/aleks/Downloads/report.pdf');
+
+    await vi.waitFor(() => {
+      expect(setPendingLaunchRevealMock).toHaveBeenCalledWith(
+        'C:/Users/aleks/Downloads',
+        'C:/Users/aleks/Downloads/report.pdf',
+      );
+    });
+  });
+
+  it('uses the parent of a directory result so the directory itself stays selected', async () => {
+    currentTabGroupRef.value = [
+      {
+        id: 'tab-1',
+        path: 'C:/Users/aleks',
+      },
+    ];
+
+    const router = createRouter('navigator');
+
+    openNavigatorRevealEntry(router, 'C:/Users/aleks/Downloads');
+
+    await vi.waitFor(() => {
+      expect(openPathInCurrentTabMock).toHaveBeenCalledWith('C:/Users/aleks');
+      expect(setPendingLaunchRevealMock).toHaveBeenCalledWith(
+        'C:/Users/aleks',
+        'C:/Users/aleks/Downloads',
+      );
     });
   });
 });

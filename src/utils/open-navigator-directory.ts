@@ -132,9 +132,17 @@ export function openNavigatorPath(
 // 本动作的语义恰恰相反——目录的父目录才是目标，且目录本身要被选中。
 // 所以这里直接构造参数，两种条目类型走同一条逻辑。
 //
-// 为什么不用 `applyLaunchTarget`：它的分支是「已在导航器路由就当前标签页打开，
-// 否则新开标签组」。用户要的是**恒定拆分**，右侧留一份原位置上下文，
-// 所以这里不走那个分支，直接 openNewTabGroup（标签组在导航器里是并排的，即右侧）。
+// 真机验收（2026-10-15）推翻了本函数原先的假设，这里记下来免得再走一遍：
+// 导航器的「拆分」**不是**多开一个标签组。真机实测用 `openNewTabGroup` 的结果是
+// 标签条上多出一个新标签、内容区仍只有一个面板 —— 因为
+// `navigator.vue` 里 `isSplitView === currentTabGroup.length > 1`，
+// 并排的两个 `ResizablePanel` 是**遍历当前 tabGroup 里的每个 tab** 渲染出来的。
+// 标签组（tabGroups）决定标签条上几个标签，tabGroup 内的 tab 才决定几个并排面板。
+// 所以「右侧多一个面板」= 在当前 tabGroup 里多一个 tab：
+//   - 没拆分过就 `toggleSplitView()` 一次（它把 tabGroup[0] clone 成第二个 tab）；
+//     已经拆分过就**不能再调**，因为同一函数在已拆分时会走 disableSplitView 把面板合回去。
+//   - 把激活 pane 切到 index 1，再用 `openPathInCurrentTab` 把它改成父目录 ——
+//     这个方法改的是 `currentTabGroup[currentTabIndex]`，正好是右侧那个 pane。
 export function openNavigatorRevealEntry(router: Router, entryPath: string): void {
   ensureNavigatorRoute(router);
 
@@ -142,7 +150,12 @@ export function openNavigatorRevealEntry(router: Router, entryPath: string): voi
   const workspacesStore = useWorkspacesStore();
 
   runNavigatorOpenTask(async () => {
-    await workspacesStore.openNewTabGroup(parentPath);
+    if ((workspacesStore.currentTabGroup?.length ?? 0) < 2) {
+      workspacesStore.toggleSplitView();
+    }
+
+    workspacesStore.setCurrentTabIndex(1);
+    await workspacesStore.openPathInCurrentTab(parentPath);
     workspacesStore.setPendingLaunchReveal(parentPath, normalizePath(entryPath));
   });
 }
