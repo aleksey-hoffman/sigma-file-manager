@@ -947,6 +947,7 @@
       "delete": "Sil",
       "openWith": "Birlikte aç...",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "Özellikler",
       "propertiesFailed": "Özellikler açılamadı",
       "quickView": "Hızlı görünüm",

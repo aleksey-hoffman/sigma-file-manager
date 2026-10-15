@@ -151,4 +151,48 @@ describe('isContextMenuActionVisible', () => {
       expect(isContextMenuActionVisible('batch-rename', entries, { platform: 'windows' })).toBe(false);
     });
   });
+
+  // ---- FORK-MODIFICATION: 搜索结果「打开所属目录」 ----
+
+  describe('open-containing-directory-in-app', () => {
+    const searchFile = {
+      ...createDirectoryEntry('D:/docs/a.txt'),
+      is_dir: false,
+    };
+    const searchDirectory = createDirectoryEntry('D:/docs/folder');
+
+    it('shows in a search results view for both files and directories', () => {
+      const options = { platform: 'windows', isSearchResultsView: true };
+
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', [searchFile], options)).toBe(true);
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', [searchDirectory], options)).toBe(true);
+    });
+
+    it('stays hidden in a plain directory view, where the parent is already shown', () => {
+      // 这是本项需求的核心护栏：普通目录视图里不能多出一个点了没用的菜单项。
+      const options = { platform: 'windows', isSearchResultsView: false };
+
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', [searchFile], options)).toBe(false);
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', [searchDirectory], options)).toBe(false);
+    });
+
+    it('defaults to hidden when no options are passed at all', () => {
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', [searchFile])).toBe(false);
+    });
+
+    it('is not Windows-only, unlike the explorer variant', () => {
+      // 资源管理器那条是 Windows 专属；应用内跳转在别的平台同样成立。
+      const options = { platform: 'linux', isSearchResultsView: true };
+
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', [searchFile], options)).toBe(true);
+      expect(isContextMenuActionVisible('open-containing-directory', [searchFile], options)).toBe(false);
+    });
+
+    it('requires a single selection', () => {
+      const options = { platform: 'windows', isSearchResultsView: true };
+      const twoFiles = [searchFile, { ...createDirectoryEntry('D:/docs/b.txt'), is_dir: false }];
+
+      expect(isContextMenuActionVisible('open-containing-directory-in-app', twoFiles, options)).toBe(false);
+    });
+  });
 });

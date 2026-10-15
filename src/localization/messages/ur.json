@@ -977,6 +977,7 @@
       "delete": "حذف",
       "openWith": "اس کے ساتھ کھولیں…",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "خصوصیات",
       "propertiesFailed": "خصوصیات نہیں کھل سکیں",
       "quickView": "فوری نظر",

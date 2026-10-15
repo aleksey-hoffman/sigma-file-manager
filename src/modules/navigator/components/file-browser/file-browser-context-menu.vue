@@ -81,6 +81,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
       :is-current-directory-context="isCurrentDirectoryContext"
+      :is-search-results-view="ctx.isSearchResultsView.value"
       @action="handleAction"
       @create-link="handleCreateLink"
       @open-custom-dialog="handleOpenCustomDialog"

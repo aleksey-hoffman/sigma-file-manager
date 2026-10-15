@@ -96,9 +96,21 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     selectionTypes: ['single', 'multiple'],
     entryTypes: ['file'],
   },
+  // FORK-MODIFICATION: 应用内「打开所属目录」——跳到父目录并选中该条目。
+  // 仅在搜索结果视图里出现：那里条目的父目录不在当前视图内，这个动作才有意义；
+  // 普通目录视图里父目录就是当前目录，跳过去等于什么都不做。
+  // 文件和目录都允许：目录的父目录同样需要「跳过去并选中它」。
+  {
+    action: 'open-containing-directory-in-app',
+    selectionTypes: ['single'],
+    entryTypes: ['file', 'directory'],
+  },
 ];
 
 const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties', 'open-containing-directory']);
+
+// FORK-MODIFICATION: 只在搜索结果视图里出现的动作。见上方 `open-containing-directory-in-app` 的说明。
+const SEARCH_RESULTS_ONLY_ACTIONS = new Set<ContextMenuAction>(['open-containing-directory-in-app']);
 
 function getSelectionStats(entries: DirEntry[]) {
   const selectionType: SelectionType = entries.length === 1 ? 'single' : 'multiple';
@@ -123,6 +135,8 @@ export function isContextMenuActionVisible(
   options?: {
     platform?: string | null;
     disableDestructiveActions?: boolean;
+    /** FORK-MODIFICATION: 当前 FileBrowser 是否在渲染搜索结果（全局搜索或目录内过滤）。 */
+    isSearchResultsView?: boolean;
   },
 ): boolean {
   if (entries.length === 0) {
@@ -165,6 +179,11 @@ export function isContextMenuActionVisible(
   }
 
   if (WINDOWS_ONLY_ACTIONS.has(action) && platform !== 'windows') {
+    return false;
+  }
+
+  // FORK-MODIFICATION: 搜索结果专属动作在普通目录视图里必须隐藏
+  if (SEARCH_RESULTS_ONLY_ACTIONS.has(action) && !options?.isSearchResultsView) {
     return false;
   }
 

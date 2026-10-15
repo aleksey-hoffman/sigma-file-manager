@@ -980,6 +980,7 @@
       "delete": "Ջնջել",
       "openWith": "Բացել․․․",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "Հատկություններ",
       "propertiesFailed": "Չհաջողվեց բացել հատկությունները",
       "quickView": "Արագ դիտում",

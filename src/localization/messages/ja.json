@@ -947,6 +947,7 @@
       "delete": "削除",
       "openWith": "アプリで開く...",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "プロパティ",
       "propertiesFailed": "プロパティを開けませんでした",
       "quickView": "クイックビュー",

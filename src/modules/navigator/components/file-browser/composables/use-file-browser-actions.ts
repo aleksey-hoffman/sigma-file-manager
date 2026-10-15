@@ -7,8 +7,11 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { useGlobalSearchStore } from '@/stores/runtime/global-search';
+import { useRouter } from 'vue-router';
 import { openNativeProperties } from '@/utils/open-native-properties';
 import { revealInExplorer } from '@/utils/open-in-explorer';
+import { openNavigatorRevealEntry } from '@/utils/open-navigator-directory';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { markRaw } from 'vue';
@@ -38,6 +41,8 @@ export function useFileBrowserActions(options: {
 }) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
+  const globalSearchStore = useGlobalSearchStore();
+  const router = useRouter();
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
     return isContextMenuActionVisible(action, entries, {
@@ -145,6 +150,22 @@ export function useFileBrowserActions(options: {
           });
         }
       }
+
+      return;
+    }
+
+    // FORK-MODIFICATION: 搜索结果「打开所属目录」——在应用内跳到父目录并选中该条目。
+    // 先关掉全局搜索面板，否则导航结果被面板挡住，用户看不到发生了什么。
+    if (action === 'open-containing-directory-in-app') {
+      const entries = options.contextMenu.value.selectedEntries;
+      const targetEntry = entries[0];
+
+      if (!targetEntry) {
+        return;
+      }
+
+      globalSearchStore.close();
+      openNavigatorRevealEntry(router, targetEntry.path);
 
       return;
     }

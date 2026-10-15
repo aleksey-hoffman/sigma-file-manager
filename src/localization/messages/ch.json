@@ -947,6 +947,7 @@
       "delete": "删除",
       "openWith": "打开方式...",
       "openContainingDirectory": "打开文件所在目录",
+      "openContainingDirectoryInApp": "在 Alpha 中打开所属目录",
       "properties": "属性",
       "propertiesFailed": "无法打开属性",
       "quickView": "快速查看",

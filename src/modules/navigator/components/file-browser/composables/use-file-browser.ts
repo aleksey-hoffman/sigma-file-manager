@@ -572,8 +572,15 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     }, { deep: true });
   }
 
+  // FORK-MODIFICATION: 「打开所属目录」只在搜索结果视图里有意义 —— 那里条目的父目录不在当前视图内。
+  // 两条搜索通道都算：externalEntries（全局搜索结果）与工具栏快速过滤（目录搜索）。
+  const isSearchResultsView = computed(() => {
+    return isExternalMode || !!dataSource.filterQuery.value.trim();
+  });
+
   return {
     isExternalMode,
+    isSearchResultsView,
 
     entries: visualEntries,
     currentPath: dataSource.currentPath,

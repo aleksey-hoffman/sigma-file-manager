@@ -25,6 +25,8 @@ export interface FileBrowserContext {
   selectedEntries: Ref<DirEntry[]>;
   isEntrySelected: (entry: DirEntry) => boolean;
   contextMenu: Ref<ContextMenuState>;
+  /** FORK-MODIFICATION: 当前是否在渲染搜索结果（全局搜索 externalEntries 或目录内过滤）。 */
+  isSearchResultsView: ComputedRef<boolean>;
 
   getImageThumbnail: (entry: DirEntry, maxDimension?: number) => string | undefined;
   getImageThumbnailPlaceholder: (entry: DirEntry, maxDimension?: number) => string | undefined;

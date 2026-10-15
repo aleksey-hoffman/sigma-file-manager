@@ -13,7 +13,11 @@ import {
 
 export function useContextMenuItems(
   selectedEntries: Ref<DirEntry[]>,
-  options?: { disableDestructiveActions?: Ref<boolean> },
+  options?: {
+    disableDestructiveActions?: Ref<boolean>;
+    /** FORK-MODIFICATION: 供 `SEARCH_RESULTS_ONLY_ACTIONS` 判定当前是否在搜索结果视图。 */
+    isSearchResultsView?: Ref<boolean>;
+  },
 ) {
   const platformStore = usePlatformStore();
 
@@ -23,6 +27,7 @@ export function useContextMenuItems(
     return isContextMenuActionVisible(action, selectedEntries.value, {
       platform: platformStore.currentPlatform,
       disableDestructiveActions: options?.disableDestructiveActions?.value,
+      isSearchResultsView: options?.isSearchResultsView?.value,
     });
   }
 

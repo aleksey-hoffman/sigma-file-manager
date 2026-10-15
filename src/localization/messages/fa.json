@@ -943,6 +943,7 @@
       "delete": "حذف",
       "openWith": "باز کردن با...",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "ویژگی‌ها",
       "propertiesFailed": "ویژگی‌ها باز نشد",
       "quickView": "نمای سریع",

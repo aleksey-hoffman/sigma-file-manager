@@ -21,6 +21,7 @@ import {
   Share2Icon,
   SquarePlusIcon,
   StarIcon,
+  FolderSearchIcon,
   UnplugIcon,
   InfoIcon,
   TextCursorInputIcon,
@@ -65,9 +66,12 @@ const props = withDefaults(defineProps<{
   menuSeparatorComponent: object;
   disableDestructiveActions?: boolean;
   isCurrentDirectoryContext?: boolean;
+  /** FORK-MODIFICATION: 供「打开所属目录」判定是否在搜索结果视图。 */
+  isSearchResultsView?: boolean;
 }>(), {
   disableDestructiveActions: false,
   isCurrentDirectoryContext: false,
+  isSearchResultsView: false,
 });
 
 const emit = defineEmits<{
@@ -103,7 +107,10 @@ const { inlineEndSide } = useTextDirection();
 
 const { isActionVisible, selectionStats } = useContextMenuItems(
   selectedEntriesRef,
-  { disableDestructiveActions: toRef(props, 'disableDestructiveActions') },
+  {
+    disableDestructiveActions: toRef(props, 'disableDestructiveActions'),
+    isSearchResultsView: toRef(props, 'isSearchResultsView'),
+  },
 );
 
 const allSelectedAreFavorites = computed(() => {
@@ -415,6 +422,14 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   >
     <SquarePlusIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('open-containing-directory-in-app')"
+    @select="emitAction('open-containing-directory-in-app')"
+  >
+    <FolderSearchIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.openContainingDirectoryInApp') }}</span>
   </component>
   <component
     :is="menuItemComponent"

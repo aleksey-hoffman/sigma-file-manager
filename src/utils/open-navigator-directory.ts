@@ -124,12 +124,36 @@ export function openNavigatorPath(
   });
 }
 
+// FORK-MODIFICATION: 搜索结果「打开所属目录」——跳到该条目的父目录并选中它自己。
+//
+// 为什么不用 `openNavigatorPath(..., { resolvePath: true })`：那条路径靠
+// `resolvePathLaunchTarget` 判断条目类型，目录会解析成「进入该目录」且 focusPath 为空。
+// 本动作的语义恰恰相反——目录的父目录才是目标，且目录本身要被选中。
+// 所以这里直接构造 LaunchTarget，两种条目类型走同一条逻辑。
+export function openNavigatorRevealEntry(router: Router, entryPath: string): void {
+  ensureNavigatorRoute(router);
+
+  const parentPath = getParentDirectory(entryPath);
+
+  runNavigatorOpenTask(async () => {
+    const openedNewTabGroup = { value: false };
+
+    await applyLaunchTarget(
+      router,
+      {
+        directoryPath: parentPath,
+        focusPath: normalizePath(entryPath),
+      },
+      openedNewTabGroup,
+    );
+  });
+}
+
 export function openNavigatorNavigablePath(
   router: Router,
   path: string,
   isFile: boolean,
-): void {
-  ensureNavigatorRoute(router);
+): void {  ensureNavigatorRoute(router);
 
   runNavigatorOpenTask(async () => {
     const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);

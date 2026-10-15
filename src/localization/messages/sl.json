@@ -977,6 +977,7 @@
       "delete": "Izbriši",
       "openWith": "Odpri z...",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "Lastnosti",
       "propertiesFailed": "Lastnosti ni bilo mogoče odpreti",
       "quickView": "Hitri pregled",

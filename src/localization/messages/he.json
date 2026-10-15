@@ -980,6 +980,7 @@
       "delete": "מחק",
       "openWith": "פתח באמצעות...",
       "openContainingDirectory": "Open containing directory",
+      "openContainingDirectoryInApp": "Show containing folder in Alpha",
       "properties": "מאפיינים",
       "propertiesFailed": "לא ניתן היה לפתוח את המאפיינים",
       "quickView": "תצוגה מהירה",
