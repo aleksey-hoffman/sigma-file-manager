@@ -32,6 +32,18 @@ const HISTORY_MAX_ITEMS = 100;
 const FREQUENT_ITEMS_MAX = 100;
 const PATH_EXISTS_BATCH_SIZE = 4;
 
+// FORK-MODIFICATION: 顶层字段白名单（预批 0，2026-10-15）。
+// 原来是 `key in userStats.value` —— 判断对象是**运行时实例**，于是：
+//   1) 给 UserStats 加了字段却忘了加进 DEFAULT_USER_STATS，会静默丢数据：
+//      不报错、不落盘、界面上没有任何线索，下一轮加 `categories` 时必踩；
+//   2) `in` 会走原型链，`toString` / `constructor` 这类继承键能通过判断，
+//      顺着写进去就是把原型成员换成用户的脏数据（与 thumbnail-metrics 那次同类）。
+// 现在改成从 DEFAULT_USER_STATS 派生白名单，方向反过来了 ——
+// 遍历「schema 认为合法的字段」并去记录里取值，两个方向的问题一起消失。
+// DEFAULT_USER_STATS 与 UserStats 的字段一致性由
+// __tests__/user-stats.test.ts 里的编译期断言守住，漏改会被 npm run ts 拦下。
+const USER_STATS_TOP_LEVEL_KEYS = Object.keys(DEFAULT_USER_STATS) as Array<keyof UserStats>;
+
 export const useUserStatsStore = defineStore('userStats', () => {
   const userPathsStore = useUserPathsStore();
   const userStatsStorage = ref<LazyStore | null>(null);
@@ -81,9 +93,9 @@ export const useUserStatsStore = defineStore('userStats', () => {
       return;
     }
 
-    for (const [key, value] of Object.entries(statsRecord)) {
-      if (key in userStats.value) {
-        (userStats.value as Record<string, unknown>)[key] = value;
+    for (const key of USER_STATS_TOP_LEVEL_KEYS) {
+      if (Object.hasOwn(statsRecord, key)) {
+        (userStats.value as Record<string, unknown>)[key] = statsRecord[key];
       }
     }
   }

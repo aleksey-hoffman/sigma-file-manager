@@ -9,7 +9,9 @@ import { createPinia, setActivePinia } from 'pinia';
 import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup-storage-bootstrap';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { DEFAULT_USER_STATS } from '@/types/user-stats';
-import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
+import type {
+  FavoriteItem, ItemTag, TaggedItem, UserStats,
+} from '@/types/user-stats';
 import { reorderMatchingItems } from '@/utils/reorder-matching-items';
 
 const {
@@ -92,6 +94,87 @@ function createStatsBootstrap(data: Record<string, unknown>): StartupStorageFile
     error: null,
   };
 }
+
+// FORK-MODIFICATION: 预批 0（2026-10-15）—— applyStatsRecord 的顶层字段白名单。
+//
+// 编译期护栏：DEFAULT_USER_STATS 必须覆盖 UserStats 的每一个字段。
+// 声明这一行就会实例化 AssertNever，所以给 UserStats 加字段却忘了加默认值时，
+// 这里直接是类型错误 —— npm run ts 拦下，不用等运行时丢一次数据才发现。
+// 用 export 而不是普通 type alias，避免被当成未使用声明。
+type MissingDefaultKeys = Exclude<keyof UserStats, keyof typeof DEFAULT_USER_STATS>;
+type AssertNever<TField extends never> = TField;
+export type UserStatsDefaultsCoverEveryField = AssertNever<MissingDefaultKeys>;
+
+// 这组测试守的是「静默丢数据」这种不会报错的坏：白名单若又退回
+// `key in userStats.value`，给 UserStats 加字段忘了加默认值时，
+// 记录里的数据会被无声丢弃，界面上没有任何线索。
+describe('user stats top-level field allowlist', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    storedValues.clear();
+    lazyStoreSaveMock.mockReset();
+    lazyStoreSetMock.mockReset();
+  });
+
+  it('applies every field that the stored record actually has', async () => {
+    const favorites = [createFavorite('/kept')];
+    const store = useUserStatsStore();
+
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      favorites,
+      tags: [createTag('tag-x', 'X')],
+    }));
+
+    expect(store.userStats.favorites).toEqual(favorites);
+    expect(store.userStats.tags).toEqual([createTag('tag-x', 'X')]);
+  });
+
+  it('leaves the default in place for a field the stored record omits', async () => {
+    const store = useUserStatsStore();
+
+    await store.init(createStatsBootstrap({ favorites: [createFavorite('/only-this')] }));
+
+    // 记录里没有的字段必须保持默认值，而不是变成 undefined。
+    expect(store.userStats.tags).toEqual(DEFAULT_USER_STATS.tags);
+    expect(store.userStats.history).toEqual([]);
+    expect(store.userStats.frequentItems).toEqual([]);
+  });
+
+  // 判别性用例：白名单若退回 `key in userStats.value`，
+  // `categories` 会因为「UserStats 类型里还没有、但记录里带了」而被静默丢在门外，
+  // 而这里断言的是它连 key 都不该出现在 state 上 —— 方向反了才对。
+  it('ignores a stored field that the schema does not know about', async () => {
+    const store = useUserStatsStore();
+
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      categories: [{ id: 'cat-1', name: 'Not In Schema Yet' }],
+    }));
+
+    expect(Object.keys(store.userStats)).not.toContain('categories');
+    expect(store.userStats.favorites).toEqual([]);
+  });
+
+  // 判别性用例：`in` 走原型链，旧写法会把 `toString` 这类继承键当成合法字段写进去，
+  // 等于把 Object.prototype 的成员换成用户数据里的值。
+  it('never lets an inherited key overwrite a prototype member', async () => {
+    const store = useUserStatsStore();
+
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      toString: 'polluted',
+      constructor: 'polluted',
+    }));
+
+    const state = store.userStats as unknown as Record<string, unknown>;
+
+    expect(Object.prototype.hasOwnProperty.call(state, 'toString')).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(state, 'constructor')).toBe(false);
+    expect(typeof state.toString).toBe('function');
+    expect(typeof state.constructor).toBe('function');
+  });
+});
 
 describe('user stats reorder setters', () => {
   beforeEach(() => {
