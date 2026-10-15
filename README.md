@@ -25,9 +25,12 @@ Everything below is ours. Nothing in this section exists upstream.
 |---|---|---|
 | 🗂️ | **Folder tree sidebar** — persistent, tracks the active pane | 2.2.x |
 | ⚡ | **Focus Sync** — every file dialog follows the folder you're browsing | 2.2.x |
+| 🧱 | **Directory & non-media rows keep a fixed height** as thumbnail size changes | **3.1.2** |
+| ↕️ | **List columns vertically centred** — item / modified / created / type / link status | **3.1.2** |
+| 🗃️ | **Dashboard favourites grouped by category**, and editable | **3.1.2** |
 | 🧭 | **Right-click menu on the folder tree** — 6 actions | **3.1.0** |
 | 🎚️ | **Per-folder layout toggle**, moved into the tab toolbar | **3.1.0** |
-| 🖼️ | **Four thumbnail sizes** — 24 / 32 / 48 / 54 px | **3.1.0** |
+| 🖼️ | **Four thumbnail sizes** — 32 / 48 / 64 / 80 px | **3.1.0** |
 | 🧹 | **Thumbnail cache usage + one-click clear** | 3.0.2 |
 | 🔀 | **Mixed-folder sorting toggle** | 3.0.2 |
 | ✅ | **Box selection on by default** | 3.0.2 |
@@ -36,7 +39,69 @@ Everything below is ours. Nothing in this section exists upstream.
 
 ---
 
-## 🆕 What's new in 3.1.0
+## 🆕 What's new in 3.1.2
+
+**3.1.2 is a polish pass over how rows and cards behave when you change the
+thumbnail size, plus the folder tree, sidebar and favourites work.**
+
+### 🧱 Rows and cards stop growing for content that has no thumbnail
+
+Changing the thumbnail size used to make **every** row taller — including the ones
+that hold no thumbnail at all, so the extra height was pure whitespace.
+
+- **Grid**: directory cards and non-media file cards now keep a **fixed height** at
+  all four sizes. Non-media cards still change **width** (which decides how many
+  fit per row), just not height.
+- **List**: directory rows and non-media file rows likewise keep a fixed height —
+  the default one. **Image and video rows still scale** with the setting, so
+  thumbnails are never cropped.
+- The **small** step moved up a notch so card content is no longer clipped — the
+  description line used to survive as only its top edge.
+
+All four steps now read their pixel and height values from **one table**, so the
+virtual scroller, the CSS variables and the rendered cards can no longer disagree.
+
+### ↕️ List columns are vertically centred
+
+**Item, Modified, Created, Type and Link status** were pinned to the top of the
+row while Name, Size, Tags and Link count sat centred. All of them are centred now.
+
+This also fixed a stylesheet rule that **had never matched**: the link-status
+column's class name was spelled differently in the component and in the CSS, so
+that column was getting no styling at all.
+
+### 🗂️ Folder tree, sidebar and favourites
+
+- **The folder tree scrolls properly.** It used to overflow the panel with no way
+  to scroll, hiding the last folders. It is a real scroll container now.
+- **The sidebar panel groups things**: *Frequent* and *History* get their own
+  sections, the redundant headings are gone, and clicking a section title jumps to
+  the dashboard. Favourites and Tagged default to expanded; Frequent and History
+  default to collapsed.
+- **Dashboard favourites are grouped by category and can be edited**, and the
+  favourites area distinguishes **categories, directories and files** by icon. The
+  sidebar mirrors the grouping.
+
+### 🔀 Open containing directory splits the window
+
+Right-clicking a search result and choosing *Open containing directory in Alpha*
+used to open a new tab. It now **splits the window: the containing folder on the
+left, the search results on the right**, and the results list is preserved.
+
+### 🩹 Fixed
+
+- **A newly created favourite category no longer disappears after a restart.** The
+  new field was silently dropped by a top-level field allow-list — the UI looked
+  correct and the data was simply gone.
+- **The home button opens This PC** instead of your user folder.
+- **Search inside a folder now recurses** into subfolders.
+- **Box selection follows the grid column width** at every thumbnail size.
+- The settings **external-links menu is branded**, and the dead *Discussions* entry
+  is gone.
+
+---
+
+## What's new in 3.1.0
 
 **3.1.0 is everything we added after renaming the app to Alpha File Manager.**
 3.0.0 was the rebranding release; 3.0.1 fixed a batch-rename data-loss bug; 3.0.2
@@ -59,10 +124,12 @@ added list thumbnails. This release is the polish pass on top of those.
 
 ### 🖼️ Thumbnails
 
-- **Four thumbnail sizes.** Small (24 px), Medium (32 px), Large (48 px) and
-  Extra large (54 px) — pick one from the tab toolbar or
-  **Settings → General → File view**. Row height follows the choice (42 / 42 / 64 /
-  70 logical px), so the list never misaligns when you switch.
+- **Four thumbnail sizes.** Small (32 px), Medium (48 px), Large (64 px) and
+  Extra large (80 px) — pick one from the tab toolbar or
+  **Settings → General → File view**. Row height follows the choice (48 / 64 / 80 /
+  96 logical px for image and video rows), so the list never misaligns when you
+  switch. Directory and non-media rows keep a fixed height — see
+  [3.1.2](#-whats-new-in-312).
 - Thumbnails are generated **lazily**: only for rows scrolled into view.
 
 ### 🏠 Home & settings
@@ -94,7 +161,8 @@ added list thumbnails. This release is the polish pass on top of those.
   leftover helper process can no longer hold a file open and abort the install.
 
 > **Version lineage:** 2.2.x → **3.0.0** rebrand → 3.0.1 rename data-loss fix →
-> 3.0.2 list thumbnails → **3.1.0** this release.
+> 3.0.2 list thumbnails → 3.1.0 navigation & thumbnail sizes → **3.1.2** this
+> release.
 
 ---
 

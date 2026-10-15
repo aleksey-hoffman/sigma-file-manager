@@ -1,5 +1,43 @@
 # Changelog
 
+## [3.1.2] - October 2026
+
+**Summary:** Stops rows and cards growing for content that has no thumbnail, centres the list columns vertically, and delivers the folder tree, sidebar and favourites work.
+
+### Rows And Cards Stop Growing For Content Without A Thumbnail
+
+Changing the thumbnail size used to make every row taller, including rows that hold no thumbnail at all, so the extra height was pure whitespace.
+
+- **Grid**: directory cards and non-media file cards now keep a **fixed height** across all four sizes. Non-media cards still change width, which decides how many fit per row;
+- **List**: directory rows and non-media file rows likewise keep a fixed height, the default one. **Image and video rows still scale** with the setting, so thumbnails are never cropped;
+- The **small** step moved up a notch so card content is no longer clipped.
+
+All four steps now read their pixel and height values from **one table**, so the virtual scroller, the CSS variables and the rendered cards can no longer disagree with each other.
+
+### List Columns Are Vertically Centred
+
+**Item, Modified, Created, Type and Link status** were pinned to the top of the row while Name, Size, Tags and Link count sat centred. All of them are centred now.
+
+This also fixed a stylesheet rule that **had never matched**: the link-status column's class name was spelled differently in the component and in the CSS, so that column was receiving no styling at all.
+
+### Folder Tree, Sidebar And Favourites
+
+- **The folder tree scrolls properly.** It used to overflow the panel with no way to scroll, hiding the last folders;
+- **The sidebar panel groups things** — Frequent and History get their own sections, the redundant headings are gone, and clicking a section title jumps to the dashboard. Favourites and Tagged default to expanded, Frequent and History to collapsed;
+- **Dashboard favourites are grouped by category and can be edited**, and the favourites area distinguishes categories, directories and files by icon. The sidebar mirrors the grouping.
+
+### Open Containing Directory Splits The Window
+
+Right-clicking a search result and choosing *Open containing directory in Alpha* used to open a new tab. It now splits the window: **the containing folder on the left, the search results on the right**, with the results list preserved.
+
+### Fixed
+
+- **A newly created favourite category no longer disappears after a restart.** The new top-level field was silently dropped by a field allow-list — the UI looked correct and the data was simply gone;
+- **The home button opens This PC** instead of the user folder;
+- **Search inside a folder now recurses** into subfolders;
+- **Box selection follows the grid column width** at every thumbnail size;
+- The settings **external-links menu is branded**, and the dead Discussions entry is removed.
+
 ## [3.1.1] - October 2026
 
 **Summary:** Makes path following work when uploading a file, not just when saving one, stops dialogs from flickering, and fixes upgrades dying halfway through.
