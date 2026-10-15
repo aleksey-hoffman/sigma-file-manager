@@ -36,7 +36,13 @@
     "tagged": "С метками",
     "emptyFavorites": "Нет избранного",
     "emptyTagged": "Нет элементов с метками",
-    "unknownTagGroup": "Неизвестная метка"
+    "unknownTagGroup": "Неизвестная метка",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Диски не найдены",

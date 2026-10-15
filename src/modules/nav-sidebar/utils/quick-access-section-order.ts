@@ -7,10 +7,16 @@ import type { QuickAccessSectionId } from '@/types/user-settings';
 export const DEFAULT_QUICK_ACCESS_SECTION_ORDER: QuickAccessSectionId[] = [
   'favorites',
   'tagged',
+  // FORK-MODIFICATION: 需求 N3② —— 新增「常用」「历史」两个 section
+  'frequent',
+  'history',
 ];
 
 function isQuickAccessSectionId(value: unknown): value is QuickAccessSectionId {
-  return value === 'favorites' || value === 'tagged';
+  return value === 'favorites'
+    || value === 'tagged'
+    || value === 'frequent'
+    || value === 'history';
 }
 
 export function normalizeQuickAccessSectionOrder(order: unknown): QuickAccessSectionId[] {

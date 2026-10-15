@@ -36,7 +36,13 @@
     "tagged": "Etiketli",
     "emptyFavorites": "Favori yok",
     "emptyTagged": "Etiketli öğe yok",
-    "unknownTagGroup": "Bilinmeyen etiket"
+    "unknownTagGroup": "Bilinmeyen etiket",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Sürücü bulunamadı",

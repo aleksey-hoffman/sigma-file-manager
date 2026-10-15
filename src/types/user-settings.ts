@@ -175,7 +175,9 @@ export type ClipboardSettings = {
   showToolbarForExternalPaths: boolean;
 };
 
-export type QuickAccessSectionId = 'favorites' | 'tagged';
+// FORK-MODIFICATION: 新增 `frequent` / `history` 两个 section（需求 N3②）。
+// 点击这两个 section 会切到仪表盘对应页签，见 `useRestoredActiveTab` 的反向 watch。
+export type QuickAccessSectionId = 'favorites' | 'tagged' | 'frequent' | 'history';
 
 export type UserSettings = {
   language: LocalizationLanguage;

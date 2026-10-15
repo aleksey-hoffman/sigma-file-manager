@@ -10,7 +10,10 @@ import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { DEFAULT_USER_STATS } from '@/types/user-stats';
 import type {
-  FavoriteItem, ItemTag, TaggedItem, UserStats,
+  FavoriteItem,
+  ItemTag,
+  TaggedItem,
+  UserStats,
 } from '@/types/user-stats';
 import { reorderMatchingItems } from '@/utils/reorder-matching-items';
 
@@ -149,7 +152,12 @@ describe('user stats top-level field allowlist', () => {
 
     await store.init(createStatsBootstrap({
       ...DEFAULT_USER_STATS,
-      categories: [{ id: 'cat-1', name: 'Not In Schema Yet' }],
+      categories: [
+        {
+          id: 'cat-1',
+          name: 'Not In Schema Yet',
+        },
+      ],
     }));
 
     expect(Object.keys(store.userStats)).not.toContain('categories');

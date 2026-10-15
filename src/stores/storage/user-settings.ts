@@ -225,7 +225,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     focusWindowOnDriveConnected: true,
     preventDropdownCloseFocusReturn: false,
     quickAccessOnHover: true,
-    quickAccessSectionOrder: ['favorites', 'tagged'],
+    quickAccessSectionOrder: ['favorites', 'tagged', 'frequent', 'history'],
     tooltipDelayMs: 0,
     launchAtStartup: false,
     launchAtStartupHidden: false,

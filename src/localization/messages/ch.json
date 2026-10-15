@@ -36,7 +36,13 @@
     "tagged": "已标记",
     "emptyFavorites": "无收藏",
     "emptyTagged": "无已标记项目",
-    "unknownTagGroup": "未知标签"
+    "unknownTagGroup": "未知标签",
+    "frequent": "常用",
+    "history": "历史",
+    "emptyFrequent": "无常用项目",
+    "emptyHistory": "暂无历史记录",
+    "openFrequentTab": "在仪表盘打开「常用」页签",
+    "openHistoryTab": "在仪表盘打开「历史」页签"
   },
   "placeholders": {
     "noDrivesFound": "未找到驱动器",

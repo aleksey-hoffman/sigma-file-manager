@@ -36,7 +36,13 @@
     "tagged": "מתויגים",
     "emptyFavorites": "אין מועדפים",
     "emptyTagged": "אין פריטים מתויגים",
-    "unknownTagGroup": "תגית לא ידועה"
+    "unknownTagGroup": "תגית לא ידועה",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "לא נמצאו כוננים",

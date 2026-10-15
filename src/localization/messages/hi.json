@@ -36,7 +36,13 @@
     "tagged": "टैग किए गए",
     "emptyFavorites": "कोई पसंदीदा नहीं",
     "emptyTagged": "कोई टैग किया गया आइटम नहीं",
-    "unknownTagGroup": "अज्ञात टैग"
+    "unknownTagGroup": "अज्ञात टैग",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "कोई ड्राइव नहीं मिली",

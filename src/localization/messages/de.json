@@ -36,7 +36,13 @@
     "tagged": "Markiert",
     "emptyFavorites": "Keine Favoriten",
     "emptyTagged": "Keine markierten Elemente",
-    "unknownTagGroup": "Unbekanntes Tag"
+    "unknownTagGroup": "Unbekanntes Tag",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Keine Laufwerke gefunden",

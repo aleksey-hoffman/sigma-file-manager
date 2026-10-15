@@ -36,7 +36,13 @@
     "tagged": "タグ付き",
     "emptyFavorites": "お気に入りなし",
     "emptyTagged": "タグ付きアイテムなし",
-    "unknownTagGroup": "不明なタグ"
+    "unknownTagGroup": "不明なタグ",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "ドライブが見つかりません",

@@ -153,7 +153,8 @@ export function openNavigatorNavigablePath(
   router: Router,
   path: string,
   isFile: boolean,
-): void {  ensureNavigatorRoute(router);
+): void {
+  ensureNavigatorRoute(router);
 
   runNavigatorOpenTask(async () => {
     const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);

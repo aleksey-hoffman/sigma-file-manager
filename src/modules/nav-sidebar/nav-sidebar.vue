@@ -188,14 +188,10 @@ function getDriveShortLabel(drive: { mount_point: string }): string {
             :collision-padding="6"
             class="nav-sidebar__quick-access-tooltip"
           >
-            <div class="nav-sidebar__quick-access-title">
-              <div class="nav-sidebar__tooltip-row">
-                <span>{{ item.title }}</span>
-                <ContextMenuShortcut v-if="getPageShortcutLabel(item.name)">
-                  {{ getPageShortcutLabel(item.name) }}
-                </ContextMenuShortcut>
-              </div>
-            </div>
+            <!-- FORK-MODIFICATION: 需求 N3① —— 删掉「仪表盘 Alt+3」这行标题。
+                 面板内容本身就是仪表盘快捷入口，标题行是重复信息。
+                 Alt+3 快捷键本身不变（`BUILTIN_NAVIGATION_PAGE_SHORTCUTS`），
+                 仍可用，也仍在设置页展示。 -->
             <QuickAccessPanel
               @drag-start="handleQuickAccessReorderStart"
               @drag-end="handleQuickAccessReorderEnd"
@@ -495,10 +491,8 @@ function getDriveShortLabel(drive: { mount_point: string }): string {
   margin-top: 0;
 }
 
-.nav-sidebar__quick-access-title {
-  padding: 8px 10px;
-  border-bottom: 1px solid hsl(var(--border) / 50%);
-}
+/* FORK-MODIFICATION: 需求 N3① 删掉「仪表盘 Alt+3」标题行后，
+   原 `.nav-sidebar__quick-access-title` 已无对应元素，一并删除。 */
 
 .nav-sidebar-drive-tooltip {
   padding: 0;

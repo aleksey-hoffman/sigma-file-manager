@@ -36,7 +36,13 @@
     "tagged": "Թեգված",
     "emptyFavorites": "Սիրված բան չկա",
     "emptyTagged": "Թեգված բան չկա",
-    "unknownTagGroup": "Անհայտ թեգ"
+    "unknownTagGroup": "Անհայտ թեգ",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Սկավառակ չգտնվեց",

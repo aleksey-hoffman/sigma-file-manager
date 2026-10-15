@@ -36,7 +36,13 @@
     "tagged": "Tagged",
     "emptyFavorites": "No favorites",
     "emptyTagged": "No tagged items",
-    "unknownTagGroup": "Unknown tag"
+    "unknownTagGroup": "Unknown tag",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "No drives found",

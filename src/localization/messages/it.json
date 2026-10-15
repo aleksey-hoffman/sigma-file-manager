@@ -36,7 +36,13 @@
     "tagged": "Con etichette",
     "emptyFavorites": "Nessun preferito",
     "emptyTagged": "Nessun elemento con etichette",
-    "unknownTagGroup": "Etichetta sconosciuta"
+    "unknownTagGroup": "Etichetta sconosciuta",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Nessuna unità trovata",

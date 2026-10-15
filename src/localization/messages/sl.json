@@ -36,7 +36,13 @@
     "tagged": "Označeno",
     "emptyFavorites": "Ni priljubljenih",
     "emptyTagged": "Ni označenih predmetov",
-    "unknownTagGroup": "Neznana oznaka"
+    "unknownTagGroup": "Neznana oznaka",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Ni najdenih pogonov",

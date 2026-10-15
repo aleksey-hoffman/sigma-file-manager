@@ -67,6 +67,10 @@ defineProps<{
           </span>
         </button>
       </CollapsibleTrigger>
+      <!-- FORK-MODIFICATION: 标题右侧的附加动作（需求 N3⑤）。
+           放在 CollapsibleTrigger 外面，避免点击它被折叠切换吞掉。
+           同时给折叠按钮加 stop，让「点标题右侧」与「点标题其余部分」互不干扰。 -->
+      <slot name="header-action" />
     </div>
     <CollapsibleContent class="quick-access-panel__section-content">
       <div

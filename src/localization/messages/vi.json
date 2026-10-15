@@ -36,7 +36,13 @@
     "tagged": "Đã gắn thẻ",
     "emptyFavorites": "Chưa có mục yêu thích",
     "emptyTagged": "Chưa có mục được gắn thẻ",
-    "unknownTagGroup": "Thẻ không xác định"
+    "unknownTagGroup": "Thẻ không xác định",
+    "frequent": "Frequent",
+    "history": "History",
+    "emptyFrequent": "No frequently used items",
+    "emptyHistory": "No history yet",
+    "openFrequentTab": "Open Frequent tab in dashboard",
+    "openHistoryTab": "Open History tab in dashboard"
   },
   "placeholders": {
     "noDrivesFound": "Không tìm thấy ổ đĩa",
