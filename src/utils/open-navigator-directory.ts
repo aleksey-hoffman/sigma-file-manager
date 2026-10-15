@@ -4,6 +4,7 @@
 
 import type { Router } from 'vue-router';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { loadNavigatorRoute } from '@/router/routes';
 import {
   resolvePathLaunchTarget,
@@ -124,37 +125,73 @@ export function openNavigatorPath(
   });
 }
 
-// FORK-MODIFICATION: 搜索结果「打开所属目录」——拆分当前窗口，右侧显示该条目的父目录，
-// 并选中条目本身。
+// FORK-MODIFICATION: 搜索结果「打开所属目录」——把条目的父目录显示在**结果列表旁边**的
+// 导航器 pane 上，并选中该条目；结果列表本身保持打开、内容不变。
 //
 // 为什么不用 `openNavigatorPath(..., { resolvePath: true })`：那条路径靠
 // `resolvePathLaunchTarget` 判断条目类型，目录会解析成「进入该目录」且 focusPath 为空。
 // 本动作的语义恰恰相反——目录的父目录才是目标，且目录本身要被选中。
 // 所以这里直接构造参数，两种条目类型走同一条逻辑。
 //
-// 真机验收（2026-10-15）推翻了本函数原先的假设，这里记下来免得再走一遍：
-// 导航器的「拆分」**不是**多开一个标签组。真机实测用 `openNewTabGroup` 的结果是
-// 标签条上多出一个新标签、内容区仍只有一个面板 —— 因为
-// `navigator.vue` 里 `isSplitView === currentTabGroup.length > 1`，
-// 并排的两个 `ResizablePanel` 是**遍历当前 tabGroup 里的每个 tab** 渲染出来的。
-// 标签组（tabGroups）决定标签条上几个标签，tabGroup 内的 tab 才决定几个并排面板。
-// 所以「右侧多一个面板」= 在当前 tabGroup 里多一个 tab：
-//   - 没拆分过就 `toggleSplitView()` 一次（它把 tabGroup[0] clone 成第二个 tab）；
-//     已经拆分过就**不能再调**，因为同一函数在已拆分时会走 disableSplitView 把面板合回去。
-//   - 把激活 pane 切到 index 1，再用 `openPathInCurrentTab` 把它改成父目录 ——
-//     这个方法改的是 `currentTabGroup[currentTabIndex]`，正好是右侧那个 pane。
+// ── 用户要的是这个布局 ────────────────────────────────────────────────
+//   ┌──────────────────┬──────────────────┐
+//   │  搜索结果列表      │  所属目录导航器    │
+//   │（保持打开、内容不变）│ （选中该条目）      │
+//   └──────────────────┴──────────────────┘
+// 而「先关搜索面板 + 拆分导航器」得到的是
+//   ┌──────────────────┬──────────────────┐
+//   │  导航器原位置      │  导航器所属目录    │
+//   └──────────────────┴──────────────────┘
+//   （搜索面板已关闭）—— 2026-10-15 用户明确指出这是错的。
+//
+// 关键事实：**用户要的布局已经存在，不需要造。**
+// `navigator.vue` 的 `.navigator-page__panes-container` 是 `display: flex`
+// （未声明 `flex-direction`，即默认 row），全局搜索面板是它的第一个子元素、
+// 导航器 pane 组是第二个，搜索一打开天然就是左右并排。
+// 所以本函数的正确工作是「别破坏它」，而不是新开标签组或新开 pane。
+//
+// 两条曾经的错路，别再走：
+//
+// 1. **不要关搜索面板**。调用点原先先 `globalSearchStore.close()`，理由写的是
+//    「否则导航结果被面板挡住」——那是被拆分实现带出来的新问题，不是原有问题。
+//    关掉之后左侧列表整个消失，布局退化成「导航器 + 导航器」。
+//
+// 2. **搜索面板开着时不要拆分**。`navigator.vue` 有一条 watch：搜索打开时若已拆分
+//    就 `toggleSplitView()` 合上（产品上「搜索 + 拆分」互斥）。反过来说，
+//    搜索开着时再拆分，是让左侧搜索面板和右侧两个导航器 pane 挤在一屏里，
+//    用户原位置的上下文也搬到了第二格。此时旁边的导航器 pane 直接复用即可。
+//
+// 什么时候仍然需要拆分：`isSearchResultsView` 有两条通道
+// （`use-file-browser.ts:581`）——全局搜索面板（`externalEntries`）与工具栏目录过滤。
+// 后者没有独立面板，**结果列表就是导航器 pane 自己**，要同时满足「列表不变」和
+// 「显示父目录」只能新开一个 pane。已拆分则复用最右那个（`WORKSPACE_MAX_PANE_COUNT`
+// 是 2，不存在第三个 pane）。
+//
+// 重复点别的搜索结果时**复用同一个 pane**（`openPathInCurrentTab` 改路径），
+// 而不是每次新建 —— 否则点几次就多几格，面板会被撑爆。
 export function openNavigatorRevealEntry(router: Router, entryPath: string): void {
   ensureNavigatorRoute(router);
 
   const parentPath = getParentDirectory(entryPath);
   const workspacesStore = useWorkspacesStore();
+  const globalSearchStore = useGlobalSearchStore();
 
   runNavigatorOpenTask(async () => {
-    if ((workspacesStore.currentTabGroup?.length ?? 0) < 2) {
+    const paneCount = workspacesStore.currentTabGroup?.length ?? 0;
+    const isResultsPanelDedicated = globalSearchStore.isOpen;
+
+    // 结果列表独立在搜索面板里 → 旁边的导航器 pane 复用（最右那个）；
+    // 否则它就是结果列表本身，必须拆出新 pane 才能既保留列表又显示父目录。
+    // paneCount === 0 时不拆：`toggleSplitView` 会去 clone tabGroup[0]，空组上会炸。
+    let targetPaneIndex = Math.max(0, paneCount - 1);
+
+    if (!isResultsPanelDedicated && paneCount === 1) {
       workspacesStore.toggleSplitView();
+      // enableSplitView 是 push 一个 tabGroup[0] 的克隆，新 pane 落在最右 = index 1。
+      targetPaneIndex = 1;
     }
 
-    workspacesStore.setCurrentTabIndex(1);
+    workspacesStore.setCurrentTabIndex(targetPaneIndex);
     await workspacesStore.openPathInCurrentTab(parentPath);
     workspacesStore.setPendingLaunchReveal(parentPath, normalizePath(entryPath));
   });

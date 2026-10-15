@@ -7,7 +7,6 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useRouter } from 'vue-router';
 import { openNativeProperties } from '@/utils/open-native-properties';
 import { revealInExplorer } from '@/utils/open-in-explorer';
@@ -41,7 +40,6 @@ export function useFileBrowserActions(options: {
 }) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
-  const globalSearchStore = useGlobalSearchStore();
   const router = useRouter();
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
@@ -154,8 +152,11 @@ export function useFileBrowserActions(options: {
       return;
     }
 
-    // FORK-MODIFICATION: 搜索结果「打开所属目录」——在应用内跳到父目录并选中该条目。
-    // 先关掉全局搜索面板，否则导航结果被面板挡住，用户看不到发生了什么。
+    // FORK-MODIFICATION: 搜索结果「打开所属目录」——把父目录放进结果列表旁边的
+    // 导航器 pane 并选中该条目。
+    // FORK-MODIFICATION: 这里**不能**关全局搜索面板。搜索面板本身就在布局左侧，
+    // 它就是用户要的「保持打开、内容不变」的那一格；关掉之后 `openNavigatorRevealEntry`
+    // 填进去的是右侧导航器 pane，左侧列表整格消失，正是 2026-10-15 用户指出的错。
     if (action === 'open-containing-directory-in-app') {
       const entries = options.contextMenu.value.selectedEntries;
       const targetEntry = entries[0];
@@ -164,7 +165,6 @@ export function useFileBrowserActions(options: {
         return;
       }
 
-      globalSearchStore.close();
       openNavigatorRevealEntry(router, targetEntry.path);
 
       return;

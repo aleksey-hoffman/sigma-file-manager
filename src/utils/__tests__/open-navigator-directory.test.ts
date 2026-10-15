@@ -17,6 +17,7 @@ const {
   setCurrentTabIndexMock,
   setPendingLaunchRevealMock,
   toggleSplitViewMock,
+  globalSearchIsOpenRef,
 } = vi.hoisted(() => ({
   currentTabGroupRef: { value: [] as unknown[] },
   getDirEntryMock: vi.fn(),
@@ -25,6 +26,7 @@ const {
   setCurrentTabIndexMock: vi.fn(),
   setPendingLaunchRevealMock: vi.fn(),
   toggleSplitViewMock: vi.fn(),
+  globalSearchIsOpenRef: { value: false },
 }));
 
 vi.mock('@/stores/storage/workspaces', () => ({
@@ -36,6 +38,14 @@ vi.mock('@/stores/storage/workspaces', () => ({
     setCurrentTabIndex: setCurrentTabIndexMock,
     setPendingLaunchReveal: setPendingLaunchRevealMock,
     toggleSplitView: toggleSplitViewMock,
+  }),
+}));
+
+// FORK-MODIFICATION: 全局搜索面板开着 = 结果列表独立在布局左侧，旁边的导航器 pane
+// 直接复用（不拆分）。关着 = 结果列表就是导航器 pane 自己，才需要拆出新 pane。
+vi.mock('@/stores/runtime/global-search', () => ({
+  useGlobalSearchStore: () => ({
+    get isOpen() { return globalSearchIsOpenRef.value; },
   }),
 }));
 
@@ -200,14 +210,21 @@ describe('openNavigatorPathInNewTab', () => {
   });
 });
 
-// 真机验收（2026-10-15）推翻了这里的旧实现：原先调 openNewTabGroup，实测结果是
-// 标签条上多出一个新标签、内容区仍只有一个面板。导航器的并排面板是遍历
-// **当前 tabGroup 内的每个 tab** 渲染的（navigator.vue 的
-// isSplitView === currentTabGroup.length > 1），所以「右侧多一个面板」要靠
-// toggleSplitView 在当前 tabGroup 里加第二个 tab，而不是新开标签组。
+// 2026-10-15 真机验收把这个 describe 的前提推翻过一次，别再回退：
+//
+// 导航器的并排面板是遍历**当前 tabGroup 内的每个 tab** 渲染的
+// （`navigator.vue` 的 `isSplitView === currentTabGroup.length > 1`），
+// 所以「多一个面板」= tabGroup 里多一个 tab（`toggleSplitView`），
+// 而不是 `openNewTabGroup`（那会在标签条上加标签、内容区不变）。
+//
+// 但「总是拆分」同样是错的：用户要的是搜索结果列表**保持打开、内容不变**，
+// 父目录显示在它**旁边**。全局搜索面板开着时，这个布局本来就存在
+// （`.navigator-page__panes-container` 是横向 flex），所以这时必须**不拆**。
+// 两条通道由 `globalSearchStore.isOpen` 区分。
 describe('openNavigatorRevealEntry', () => {
   beforeEach(() => {
     currentTabGroupRef.value = [];
+    globalSearchIsOpenRef.value = false;
     openNewTabGroupMock.mockReset().mockResolvedValue(undefined);
     openPathInCurrentTabMock.mockReset().mockResolvedValue(undefined);
     setCurrentTabIndexMock.mockReset();
@@ -215,13 +232,37 @@ describe('openNavigatorRevealEntry', () => {
     toggleSplitViewMock.mockReset();
   });
 
-  it('splits the current tab group and points the right pane at the parent directory', async () => {
+  it('keeps the single pane and reuses it when the search panel owns the result list', async () => {
     currentTabGroupRef.value = [
       {
         id: 'tab-1',
         path: 'C:/Users/aleks',
       },
     ];
+    globalSearchIsOpenRef.value = true;
+
+    const router = createRouter('navigator');
+
+    openNavigatorRevealEntry(router, 'C:/Users/aleks/Downloads/report.pdf');
+
+    await vi.waitFor(() => {
+      expect(openPathInCurrentTabMock).toHaveBeenCalledWith('C:/Users/aleks/Downloads');
+    });
+
+    // 拆分会把「搜索面板 + 两个导航器 pane」挤在一屏，左侧列表虽在但右半屏被劈成两半。
+    expect(toggleSplitViewMock).not.toHaveBeenCalled();
+    expect(setCurrentTabIndexMock).toHaveBeenCalledWith(0);
+    expect(openNewTabGroupMock).not.toHaveBeenCalled();
+  });
+
+  it('splits only when the navigator pane itself is the filtered result list', async () => {
+    currentTabGroupRef.value = [
+      {
+        id: 'tab-1',
+        path: 'C:/Users/aleks',
+      },
+    ];
+    globalSearchIsOpenRef.value = false;
 
     const router = createRouter('navigator');
 
@@ -232,6 +273,7 @@ describe('openNavigatorRevealEntry', () => {
     });
 
     expect(toggleSplitViewMock).toHaveBeenCalledTimes(1);
+    // 新 pane 落在最右（index 1），原 pane 留着过滤结果不动。
     expect(setCurrentTabIndexMock).toHaveBeenCalledWith(1);
     expect(openNewTabGroupMock).not.toHaveBeenCalled();
   });
@@ -261,13 +303,28 @@ describe('openNavigatorRevealEntry', () => {
     expect(setCurrentTabIndexMock).toHaveBeenCalledWith(1);
   });
 
-  it('reveals the entry itself, not its parent, after the split', async () => {
+  it('never splits an empty tab group (toggleSplitView would clone an undefined tab)', async () => {
+    currentTabGroupRef.value = [];
+
+    const router = createRouter('navigator');
+
+    openNavigatorRevealEntry(router, 'C:/Users/aleks/report.pdf');
+
+    await vi.waitFor(() => {
+      expect(setCurrentTabIndexMock).toHaveBeenCalledWith(0);
+    });
+
+    expect(toggleSplitViewMock).not.toHaveBeenCalled();
+  });
+
+  it('reveals the entry itself, not its parent', async () => {
     currentTabGroupRef.value = [
       {
         id: 'tab-1',
         path: 'C:/Users/aleks',
       },
     ];
+    globalSearchIsOpenRef.value = true;
 
     const router = createRouter('navigator');
 
@@ -288,6 +345,7 @@ describe('openNavigatorRevealEntry', () => {
         path: 'C:/Users/aleks',
       },
     ];
+    globalSearchIsOpenRef.value = true;
 
     const router = createRouter('navigator');
 
