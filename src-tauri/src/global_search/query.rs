@@ -12,6 +12,7 @@ use tantivy::query::{AllQuery, BooleanQuery, FuzzyTermQuery, Occur, Query, TermQ
 use tantivy::schema::{IndexRecordOption, Value};
 use tantivy::Term;
 use tauri::Manager;
+use walkdir::WalkDir;
 
 use super::ignore::{builtin_ignored_paths, get_drive_root, normalize_case, IgnoredPathMatcher};
 use super::index::{index_dir, open_or_create_index};
@@ -324,6 +325,177 @@ pub async fn global_search_query_paths(
     })
     .await
     .map_err(|join_error| format!("Global search path query task failed: {join_error}"))?
+}
+
+// FORK-MODIFICATION: 需求反馈 3（2026-10-15）——目录内搜索递归化。
+//
+// 与 global_search_query_paths 的区别有两个，都不是「顺手加上就行」：
+//
+//  1. 前者对每个入参路径只 `read_dir` **一层**（这正是目录内搜索搜不到子目录的
+//     根因），这里用 WalkDir 递归，并尊重 max_depth。
+//  2. 过滤谓词不复用 scan.rs 的 should_scan_walk_entry：那个函数顺带调用
+//     maybe_set_current_scan_path，会去改**全局索引的当前扫描路径**。目录内搜索
+//     跟建索引毫无关系，借用它等于每敲一个字符就污染一次扫描状态。
+//
+// 只做**文件名子串**粗筛：目录内搜索支持 size: / items: / modified: 这类依赖
+// 前端 store（目录大小、条目数、格式化日期）的谓词，把那些复制一份到 Rust
+// 只会得到两份会漂移的语义。前端拿到结果后仍会用既有 matcher 精筛一遍。
+// 代价是 `size:>1MB` 这种不含文件名关键词的查询只覆盖当前层。
+fn should_include_recursive_entry(
+    path: &Path,
+    root_path: &Path,
+    ignored_matcher: &IgnoredPathMatcher,
+) -> bool {
+    if path == root_path {
+        return true;
+    }
+
+    !ignored_matcher.is_ignored(&normalize_path(&path.to_string_lossy()))
+}
+
+fn search_directory_recursive_blocking(
+    root_path: String,
+    query: String,
+    max_depth: u32,
+    limit: u32,
+) -> Result<Vec<GlobalSearchResultEntry>, String> {
+    let root = PathBuf::from(&root_path);
+
+    if !root.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    let normalized_query = normalize_case(&query);
+    let min_score = get_min_score_for_query_length(normalized_query.len());
+    let ignored_paths: Vec<String> = builtin_ignored_paths()
+        .iter()
+        .map(|path| path.to_string())
+        .collect();
+    let ignored_matcher = IgnoredPathMatcher::new(&ignored_paths);
+    let effective_limit = limit.max(1) as usize;
+    // 命中数远超 limit 时提前收工：磁盘遍历没有天然上界，一个十万文件的目录树
+    // 走完再排序既慢又没必要。
+    let collection_cap = effective_limit.saturating_mul(20);
+    let walk_depth = max_depth.max(1) as usize;
+
+    let mut matched: Vec<(f32, GlobalSearchResultEntry)> = Vec::new();
+    let mut seen = 0usize;
+
+    let walk = WalkDir::new(&root)
+        .follow_links(false)
+        .min_depth(1)
+        .max_depth(walk_depth)
+        .into_iter()
+        .filter_entry(|entry| should_include_recursive_entry(entry.path(), &root, &ignored_matcher));
+
+    for entry_result in walk {
+        let entry = match entry_result {
+            Ok(entry) => entry,
+            Err(_) => continue,
+        };
+
+        let path = entry.path();
+
+        // filter_entry 已经保证不进忽略目录，这里再判一次只是为了把根目录
+        // 自身挡在结果之外（min_depth(1) 已经做到了，这里是显式的双重保险）。
+        if path == root {
+            continue;
+        }
+
+        seen += 1;
+        if seen > collection_cap {
+            break;
+        }
+
+        let name = match path.file_name().and_then(|segment| segment.to_str()) {
+            Some(name) => name.to_string(),
+            None => continue,
+        };
+
+        // 粗筛：只看文件名。做模糊匹配是前端 matcher 的职责。
+        if !normalized_query.is_empty() && !normalize_case(&name).contains(&normalized_query) {
+            continue;
+        }
+
+        let metadata = match std::fs::metadata(path) {
+            Ok(metadata) => metadata,
+            Err(_) => continue,
+        };
+
+        let is_file = metadata.is_file();
+        let is_dir = metadata.is_dir();
+
+        if !is_file && !is_dir {
+            continue;
+        }
+
+        let name_score = if normalized_query.is_empty() {
+            1.0_f32
+        } else {
+            // GlobalSearchResultEntry::score is f32, matching the scoring module.
+            calculate_similarity_score(&normalized_query, &name)
+        };
+
+        if name_score < min_score {
+            continue;
+        }
+
+        let (modified_time, accessed_time, created_time) = metadata_times_unix_ms(&metadata);
+        let path_string = path.to_string_lossy().to_string();
+        let normalized_path = normalize_path(&path_string);
+
+        let result = GlobalSearchResultEntry {
+            name,
+            ext: path_extension_lowercase(path),
+            path: normalized_path,
+            size: if is_file { metadata.len() } else { 0 },
+            item_count: None,
+            modified_time,
+            accessed_time,
+            created_time,
+            mime: None,
+            is_file,
+            is_dir,
+            is_symlink: metadata.is_symlink(),
+            is_hidden: is_hidden_path(path),
+            score: name_score,
+        };
+
+        matched.push((name_score, result));
+    }
+
+    matched.par_sort_by(|(score_a, entry_a), (score_b, entry_b)| {
+        // 同分时按路径排，保证同样的输入给出同样的输出（列表顺序不能抖动）。
+        score_b
+            .partial_cmp(score_a)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| entry_a.path.cmp(&entry_b.path))
+    });
+
+    let mut results: Vec<GlobalSearchResultEntry> = matched.into_iter().map(|(_, entry)| entry).collect();
+
+    if results.len() > effective_limit {
+        results.truncate(effective_limit);
+    }
+
+    Ok(results)
+}
+
+pub async fn search_directory_recursive(
+    root_path: String,
+    query: String,
+    max_depth: u32,
+    limit: u32,
+) -> Result<Vec<GlobalSearchResultEntry>, String> {
+    if root_path.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+
+    tauri::async_runtime::spawn_blocking(move || {
+        search_directory_recursive_blocking(root_path, query, max_depth, limit)
+    })
+    .await
+    .map_err(|join_error| format!("Directory recursive search task failed: {join_error}"))?
 }
 
 fn global_search_query_paths_blocking(

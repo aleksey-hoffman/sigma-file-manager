@@ -147,6 +147,9 @@ function setupNavigationDataSource(
   const sortDirection = computed(() => sortSettings.value.direction);
   const applySort = computed(() => shouldApplyNavigatorSort(options.layout()));
   const foldersFirst = computed(() => userSettingsStore.userSettings.navigator.foldersFirst);
+  // FORK-MODIFICATION: 需求反馈 3 —— 递归通道的状态（isRecursiveSearching /
+  // recursiveSearchUnavailable）目前只在 useFileBrowserEntries 内部用于合并结果，
+  // 暂不向上透传：过滤框里没有位置放「正在搜索子目录…」的指示，先不做半成品 UI。
   const {
     entries: filteredEntries,
     isDirectoryEmpty: filteredIsDirectoryEmpty,
@@ -158,6 +161,7 @@ function setupNavigationDataSource(
     sortDirection,
     foldersFirst,
     applySort,
+    navigation.currentPath,
   );
 
   const tabRef = toRef(options.tab);

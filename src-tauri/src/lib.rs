@@ -348,6 +348,7 @@ pub fn run() {
             global_search::global_search_index_paths,
             global_search::global_search_query,
             global_search::global_search_query_paths,
+            global_search::search_directory_recursive,
             image_thumbnails::cache_video_thumbnail,
             image_thumbnails::clear_thumbnail_cache,
             image_thumbnails::generate_image_thumbnail,

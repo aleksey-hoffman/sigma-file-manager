@@ -57,3 +57,16 @@ pub async fn global_search_query_paths(
 ) -> Result<Vec<GlobalSearchResultEntry>, String> {
     super::query::global_search_query_paths(paths, query, options).await
 }
+
+// FORK-MODIFICATION: 需求反馈 3 —— 目录内搜索递归化。
+// 与 global_search_query_paths 分开而不是复用：后者对每个路径只读一层，
+// 且被全局搜索的「优先路径」流程依赖，改它的语义会波及那条链路。
+#[tauri::command]
+pub async fn search_directory_recursive(
+    root_path: String,
+    query: String,
+    max_depth: u32,
+    limit: u32,
+) -> Result<Vec<GlobalSearchResultEntry>, String> {
+    super::query::search_directory_recursive(root_path, query, max_depth, limit).await
+}
