@@ -4,20 +4,42 @@
 > 本文档只记录「这一批做到哪、为什么这么做、下一步做什么」。
 
 - 文档生成时间：2026-10-15 22:55（会话 `mvs_607b7d02d3514c8fbebb5d2c7ed40a73`）
+- 最后更新：2026-10-16 00:05，补完 small 档真机取证 + 记录本轮新踩的坑
 - 仓库：`F:\soft\00selfmade\filemanager\sigma-file-manager`
-- 分支：`feat/batch3-tree-scroll-and-nav`，**HEAD 仍为 `40bb27fb`，本批全部改动未提交**
+- 分支 / HEAD：`main` @ `6b85e2b7`，**已发版 3.1.2**（工作已由用户提交 `99bba3d2` + `6b85e2b7` 并推到 `origin/main`）
 
 ---
 
 ## 0. 一句话现状
 
-反馈 1 / 2 / 2 续 / 3 已完成、过门禁、拿到真机像素证据；**反馈 4 / 5（都是列表视图的问题）代码已写完、门禁已全绿、安装包正在构建，尚未安装与真机取证**。
+批次 3 全部反馈（1 / 2 / 2 续 / 3 / 4 / 5）已实现、过门禁、拿到四档真机像素证据，并已发版 **3.1.2**。
+本文档保留「为什么这么做」与硬提醒，供后续批次复用；**待办清单已清空**（见 §5）。
+
+---
+
+## 0b. 批次 3 真机像素证据（全部四档，同一个脚本量）
+
+`measure-list-rows.ps1` 按「整行深色像素占比 ≥ 0.75」识别分隔线再量行距，DPI 144，**物理像素 ÷ 1.5 = CSS 逻辑像素**。
+夹具 `C:\Users\Duanyi\afm-acceptance-fixtures\grid`（1 个目录 `sub` + 2 张 PNG + 5 个非媒体文件），列表视图，窗口 2200×1400 物理。
+
+| 缩略图档位 | 目录行 + 非媒体文件行 | 图片行（对照） |
+|---|---|---|
+| small | **96px = 64 CSS** ×6 | 72px = **48 CSS** ×2 |
+| medium | **96px = 64 CSS** ×8 | 96px = **64 CSS** ×2 |
+| large | **96px = 64 CSS** ×6 | 120px = **80 CSS** ×2 |
+| xlarge | **96px = 64 CSS** ×6 | 144px = **96 CSS** ×2 |
+
+**这张表就是反馈 4/5 的验收结论，且是判别性的**：媒体行随档位变（48→64→80→96），
+说明档位确实生效了；非媒体行恒定 64，说明不是「所有行都冻住了」这种平凡为真。
+small 那一格是本轮补上的 —— 之前只测了 medium/large/xlarge，而 min-height 地板的 bug **只在 small 显形**。
+
+列对齐：`项目 / 大小 / 修改时间 / 创建 / 标签` 与 `名称` 落在同一水平中线（截图 `afm-fb8-shots\medium.png`）。
 
 ---
 
 ## 1. 项目背景（够用即可，细节看 `AGENTS.md`）
 
-Alpha File Manager 是 Electron 之外用 Tauri + Vue 3 + TypeScript + Naive UI 写的 Windows 文件管理器，产品名与版本已锁定（**Alpha File Manager 3.1.1**，版本号本轮不动）。用户在真实使用中逐条提改进意见，每条都必须：
+Alpha File Manager 是 Electron 之外用 Tauri + Vue 3 + TypeScript + Naive UI 写的 Windows 文件管理器，产品名与版本已锁定（**Alpha File Manager**，批次 3 发版时为 **3.1.2**）。用户在真实使用中逐条提改进意见，每条都必须：
 
 1. 改代码
 2. 补**判别性单测**（注入缺陷后必须红）
@@ -102,23 +124,12 @@ Alpha File Manager 是 Electron 之外用 Tauri + Vue 3 + TypeScript + Naive UI 
 
 ---
 
-## 5. 下一步（新会话要做的事，按顺序）
+## 5. 下一步
 
-1. **等/确认构建产物**。构建日志：`.superpowers\sdd\build-release-fb8.log`（后台任务 `bg_54202044-b310-4578-ac96-efef083632d0`）。
-   安装包路径 `src-tauri\target\release\bundle\nsis\Alpha File Manager_3.1.1_x64-setup.exe`。
-   若该任务已结束，核对文件时间戳是否是本轮之后；不是就重跑
-   `cmd.exe /d /c ".superpowers\sdd\build-fb4.cmd > .superpowers\sdd\build-fb8.log 2>&1"`。
-2. **静默安装 + 重启**：`install-and-launch.ps1`（或直接跑安装包）。冷启动要等 3–5 分钟。
-3. **真机取证（两条都要）**：
-   - **列表行高**：切到列表视图，调缩略图档位 small→xlarge，用 `measure-grid.ps1` 量**目录行**和**非媒体文件行**的高度，四档都应是 **64 CSS（96 物理像素）**；同时确认**图片/视频行仍随档位变**（48/64/80/96 CSS），否则说明缩略图被裁了。
-     - 夹具 `C:\Users\Duanyi\afm-acceptance-fixtures\search`（3 个目录 + 1 个 txt，无图片，量目录/非媒体行最干净）；
-       `...\grid`（2 张 PNG + 5 个非媒体文件 + 1 个子目录，量媒体行对照用）。
-   - **列表列对齐**：截图里 `项目 / 修改时间 / 创建 / 类型 / 链接状态` 五列的文字必须与 `名称 / 大小 / 标签 / 链接数` 在同一水平中线上。**注意 `PrintWindow` 不渲染 hover/overlay 层，但列对齐是常态渲染，抓屏即可。**
-4. **收尾复原**（如果动过用户数据）：
-   - `user-workspaces.json` / `user-settings.json` 备份：`*.fb7-backup`
-   - 夹具痕迹清理脚本：`.superpowers\sdd\strip-fixture-stats.cjs`（必须先**硬杀**进程再跑，优雅退出会把内存里的数据写回去）
-   - 遮挡窗口：`.superpowers\sdd\restore-occluders.ps1`（依据 `occluders.json`）
-5. **是否提交**：用户此前一直说「先不推，我自己看过再决定」。提交必须 `git commit -F <file>`，禁用 `git clean` / `reset --hard` / `stash` / `git add -A`。
+**批次 3 没有遗留待办。** 用户已安装实测、发版 3.1.2、推到 `origin/main`。
+下一批反馈开始时，正常流程是：改代码 → 补判别性单测 → 过门禁 → `tauri build` → 静默安装 → `tauri build` 产物真机取证 → 发版。
+
+验收期间动过用户数据，本轮**已全部复原**（见 §7 第 9 条），复原脚本留在 `.superpowers\sdd\restore-user-data.cjs`。
 
 ---
 
@@ -126,9 +137,14 @@ Alpha File Manager 是 Electron 之外用 Tauri + Vue 3 + TypeScript + Naive UI 
 
 | 文件 | 用途 |
 |---|---|
-| `measure-grid.ps1` | 截图二值化 + 游程编码量卡片/行几何。`-Image -Axis Y\|X -Scan -From -To -Threshold`。本批列表行高也用它量（阈值要按当张截图标定，grid2 用 700） |
+| `pin-shot.ps1` | **量行高/列对齐的首选抓屏脚本**：`MoveWindow` 把窗口钉到指定物理尺寸，再用 `PrintWindow(hwnd,hdc,2)` 直拍。不受遮挡影响，连拍两帧取后一帧 |
+| `measure-list-rows.ps1` | 列表行距测量：`-Image -From -To -X0 -X1 -Threshold -DarkRatio`。靠「整行深色像素占比」认分隔线，文字和缩略图都伪装不出来 |
+| `measure-grid.ps1` | 截图二值化 + 游程编码量网格卡片几何。`-Image -Axis Y\|X -Scan -From -To -Threshold` |
+| `set-list-tier.cjs` | 改 `user-settings.json` 的缩略图档位 + 强制列表布局。**必须先硬杀进程**，否则优雅退出会写回覆盖 |
 | `set-start-dir.cjs` | 把 `user-workspaces.json` 里所有 `type==='directory'` 的 tab 指到某个夹具目录 |
-| `strip-fixture-stats.cjs` | 删掉 `user-stats.json` 里指向验收夹具的收藏/历史/常用项 |
+| `restore-user-data.cjs` | 一键复原工作区 / 设置 / 统计三个文件到验收前状态（见 §7 第 9 条） |
+| `strip-fixture-stats.cjs` | 只删 `user-stats.json` 里指向验收夹具的收藏/历史/常用项 |
+| `build-rust-only.cmd` | 只跑 `cargo build --release`。`build-fb4.cmd` 失败且 tauri 只吐 `failed to build app` 时，用它拿真实错误 |
 | `patch-list-height.cjs` / `patch-list-height-test.cjs` / `break-list-predicate.cjs` | 本批一次性打补丁 / 注入缺陷用，跑完即弃，不必保留 |
 | `type-into-webview.ps1` / `paste-into-webview.ps1` | **两条已证实走不通的路，别再试**（见下） |
 
@@ -149,3 +165,19 @@ Alpha File Manager 是 Electron 之外用 Tauri + Vue 3 + TypeScript + Naive UI 
 6. **验收夹具不要建在 `%TEMP%` 下** —— `builtin_ignored_paths()` 含 `/AppData/Local/Temp`，会把整棵子树剪掉，目录内递归搜索命中恒为 0。
 7. **别用 `Process.MainWindowHandle`** 取主窗口（会落到 15×15 的托盘窗）；必须 `EnumWindows` + class `Tauri Window` + 可见 + 面积最大。
 8. **BitBlt 遮挡守卫白名单必须含应用自己的 `msedgewebview2.exe`**（父进程链能回到主进程的都要放行）。
+9. **量行高/列对齐别用屏幕 BitBlt，用 `PrintWindow`**。本轮 small 档取证被用户的 IDE / Edge 反复卡在遮挡守卫上，
+   `shift-occluders.ps1` 也压不住（窗口会自己弹回来）。`PrintWindow(hwnd, hdc, 2)` 画的是窗口自身内容，
+   **根本不需要遮挡守卫**（`.superpowers\sdd\pin-shot.ps1`）。代价：它不渲染 hover / overlay 层，
+   验快捷面板、右键菜单这类交互仍然只能用屏幕 DC BitBlt。
+10. **`user-settings.json` 是扁平映射，键名带点，不是嵌套对象**。要写的是
+    `"navigator.layout.type": {"name":"list"}`、`"navigator.thumbnailSize": "small"`，
+    **写 `{ navigator: { layout: ... } }` 会被静默忽略**（应用只认扁平键），表现为「设置改了但界面没变」。
+    同理还有 `globalSearch.exactMatch`、`changelog.lastSeenVersion`。
+    顶层 `navigator.folderSettings` 是按目录的布局覆盖，**优先级高于全局**，验收前要清掉。
+11. **动用户数据前先备份，且验收脚本不许「清空」用户的统计**。
+    本轮 `set-list-tier.cjs` 的早期版本顺手把 `user-stats.json` 的 `history` 整段清空，
+    把用户 26 条历史打成 2 条，靠 `user-stats.json.fb8-backup` 才救回来。
+    **验收脚本只允许「按标记精确剔除夹具条目」，不允许整字段置空。**
+    复原基线用的是 `.user-settings.before-acceptance.json`（设置）与 `user-workspaces.json.userstate`（工作区）；
+    设置不要原样回滚 —— `__schemaVersion` 和 `changelog.lastSeenVersion` 是随 3.1.2 正常推进的，
+    回滚会触发重复迁移并再次弹出更新日志。
