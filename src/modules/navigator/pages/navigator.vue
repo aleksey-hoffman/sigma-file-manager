@@ -1755,11 +1755,36 @@ onUnmounted(() => {
   background-color: hsl(var(--background-2) / 60%);
 }
 
-.navigator-page__folder-tree {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
+/* FORK-MODIFICATION: 目录树过长时无法滚动（验收反馈 2026-10-15）。
+ *
+ * 根因是两层叠加，哪一层在起作用取决于打包产物里 display:contents 的实际落点：
+ *   A. 若 .file-tree-view 真的拿到了 .sigma-ui-context-menu-trigger
+ *      （components/ui/context-menu/context-menu-trigger.vue:24-26），
+ *      它就成了 display:contents、不生成主盒，自身声明的
+ *      `overflow-y:auto; height:100%`（file-browser-tree-view.vue:327-331）失效，
+ *      树行变成下面 [data-panel] 的 flex 项 —— 需要 panel 自己是纵向 + 可滚动；
+ *   B. 若那个 class 没落到树 div 上，.file-tree-view 就是 panel 的唯一 flex 子项，
+ *      它自己的 overflow-y:auto 生效 —— panel 只需要别裁掉它。
+ * 静态分析指向 A，实测截图却显示树是竖排（指向 B），两者矛盾且本项目拿不到
+ * webview console 跑不了 getComputedStyle 复核。所以这里让两种情况都成立：
+ * panel 设 column + overflow-y:auto（A 成立），同时不动树自身的滚动声明（B 成立）。
+ *
+ * 规则写在 .navigator-page__tree-and-panes 之下是为了压过上面那条
+ * `[data-panel]` 的 overflow:hidden（0,2,0 → 0,3,0）；写平级会输给它。
+ * 不要改 context-menu-trigger.vue 的 display:contents —— 那会波及文件浏览器、
+ * 空状态等所有 as-child 用法，回归面远大于本问题。
+ */
+.navigator-page__tree-and-panes :deep(.navigator-page__folder-tree-panel) {
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
+
+/* 原 `.navigator-page__folder-tree { width:100%; height:100%; overflow:auto }`
+   已删除：它是传给 <FileBrowserTreeView> 的 class，但该组件模板是双根节点
+   （FileBrowserTreeView.vue 的 <ContextMenu> + <FileBrowserRenameDialog>），
+   Vue 对 fragment 根的属性透传失效，这条规则从未匹配到任何元素。
+   留着它只会让人以为滚动是这么实现的。 */
 
 .navigator-page__panes-section {
   display: flex;

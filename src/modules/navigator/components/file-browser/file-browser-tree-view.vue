@@ -337,6 +337,12 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
   padding: 2px 8px 2px 0;
   cursor: pointer;
   user-select: none;
+  /* FORK-MODIFICATION: 目录树滚动修复（2026-10-15）。
+     .file-tree-view 可能拿到 .sigma-ui-context-menu-trigger 的 display:contents
+     而不生成主盒，此时树行直接成为 navigator.vue 里 [data-panel] 的 flex 项。
+     flex 项默认 flex-shrink:1，容器不够高时行会被压扁而不是溢出滚动，
+     所以这里显式不收缩。普通块级布局下这条无副作用。 */
+  flex-shrink: 0;
 }
 
 .file-tree-row:hover {
