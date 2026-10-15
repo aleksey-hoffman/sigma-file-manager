@@ -182,9 +182,12 @@ defineProps<{
   font-weight: 600;
 }
 
+/* FORK-MODIFICATION: 反馈 5b（2026-10-15）—— 20px → 28px。
+   分组标题与它下面的条目要能一眼看出层级：20px 时条目的图标几乎与标题的
+   收藏星/标签图标左对齐，读起来像平铺；28px 把子项明显推入一级。 */
 .quick-access-panel__section-content {
   padding-bottom: 4px;
-  padding-inline-start: 20px;
+  padding-inline-start: 28px;
 }
 
 .quick-access-panel__section-content[data-state="open"] {

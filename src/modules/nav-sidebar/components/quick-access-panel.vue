@@ -128,13 +128,18 @@ function useSectionOpenState(
   });
 }
 
-const favoritesOpen = useSectionOpenState('favorites', () => favoriteItems.value.length > 0);
+// FORK-MODIFICATION: 反馈 5a（2026-10-15）—— 默认展开「收藏夹」「已标记」，
+// 默认收起「常用」「历史」。
+// 原来四个分组都是「有内容就展开」，面板一打开就被常用 100 条 + 历史 100 条
+// 拉成一长串，真正随手要点的收藏夹/已标记反而挤在折叠线之上。
+// `openStates` 仍只在用户手动切换后才接管，手动折叠的偏好不受这次改动影响。
+const favoritesOpen = useSectionOpenState('favorites', () => true);
 
-const tagsOpen = useSectionOpenState('tagged', () => totalTaggedItemCount.value > 0);
+const tagsOpen = useSectionOpenState('tagged', () => true);
 
-const frequentOpen = useSectionOpenState('frequent', () => frequentItems.value.length > 0);
+const frequentOpen = useSectionOpenState('frequent', () => false);
 
-const historyOpen = useSectionOpenState('history', () => historyItems.value.length > 0);
+const historyOpen = useSectionOpenState('history', () => false);
 
 const sectionOrder = computed(() => {
   return normalizeQuickAccessSectionOrder(userSettingsStore.userSettings.quickAccessSectionOrder);

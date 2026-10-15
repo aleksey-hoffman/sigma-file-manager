@@ -20,7 +20,10 @@
 
   /* Sizes */
   --nav-sidebar-width: 42px;
-  --quick-access-panel-width: 260px;
+  /* FORK-MODIFICATION: 反馈 5c（2026-10-15）—— 260px → 300px。
+     侧栏面板里分组标题与条目内容左右挤在一起，且要留出「常用/历史」默认收起后
+     标题右侧计数与跳转箭头的呼吸位。 */
+  --quick-access-panel-width: 300px;
   --window-toolbar-height: 48px;
   --action-toolbar-height: 42px;
   --workspace-toolbar-height: 48px;
