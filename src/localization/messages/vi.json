@@ -955,7 +955,7 @@
       "delete": "Xóa",
       "openWith": "Mở bằng...",
       "openContainingDirectory": "Open containing directory",
-      "openContainingDirectoryInApp": "Show containing folder in Alpha",
+      "openContainingDirectoryInApp": "Show containing folder in split view",
       "properties": "Thuộc tính",
       "propertiesFailed": "Không thể mở thuộc tính",
       "quickView": "Xem nhanh",

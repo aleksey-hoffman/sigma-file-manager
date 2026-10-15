@@ -985,7 +985,7 @@
       "delete": "Удалить",
       "openWith": "Открыть с помощью...",
       "openContainingDirectory": "Open containing directory",
-      "openContainingDirectoryInApp": "Show containing folder in Alpha",
+      "openContainingDirectoryInApp": "Show containing folder in split view",
       "properties": "Свойства",
       "propertiesFailed": "Не удалось открыть свойства",
       "quickView": "Быстрый просмотр",

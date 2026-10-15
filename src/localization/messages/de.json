@@ -957,7 +957,7 @@
       "delete": "Löschen",
       "openWith": "Öffnen mit...",
       "openContainingDirectory": "Open containing directory",
-      "openContainingDirectoryInApp": "Show containing folder in Alpha",
+      "openContainingDirectoryInApp": "Show containing folder in split view",
       "properties": "Eigenschaften",
       "propertiesFailed": "Eigenschaften konnten nicht geöffnet werden",
       "quickView": "Schnellansicht",
