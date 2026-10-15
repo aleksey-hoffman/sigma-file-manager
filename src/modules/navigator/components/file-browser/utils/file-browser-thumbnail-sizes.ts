@@ -16,10 +16,16 @@ export interface FileBrowserThumbnailMetrics {
   listRowHeight: number;
   /** 带说明行的列表行高（行高 + 14 说明行） */
   listRowHeightWithDescription: number;
+  /** 列表视图中目录 / 非媒体文件（**没有缩略图**）的行高 —— 四档同值，不随档位缩放 */
+  listFileEntryHeight: number;
+  /** 同上，带说明行 */
+  listFileEntryHeightWithDescription: number;
   /** 网格视图媒体/文档卡片高度 */
   gridEntryHeight: number;
   /** 网格视图目录卡片高度 */
   gridDirEntryHeight: number;
+  /** 网格视图非媒体文件（文档/代码/压缩包等）卡片高度 —— 四档同值，不随档位缩放 */
+  gridFileEntryHeight: number;
   /** 网格视图最小列宽（决定列数） */
   gridMinColumnWidth: number;
 }
@@ -42,37 +48,110 @@ export interface FileBrowserThumbnailMetrics {
 export const GRID_MEDIA_ENTRY_HEIGHT_FLOOR = 110;
 export const GRID_DIR_ENTRY_HEIGHT_FLOOR = 52;
 
+// FORK-MODIFICATION: 反馈 2 续（2026-10-15）——**目录卡**也固定高度。
+// 用户原话：「调整缩略图大小时，目录和非媒体文件的网格，高度仍然会增加，
+// 请保持和小的时候高度一致」。
+//
+// 改之前目录卡是 52 / 78 / 104 / 130 四档递增，和媒体卡一样跟着档位长。
+// 但目录卡里没有缩略图 —— 它是一行图标加两行字，字号与内边距在
+// file-browser-grid-card.vue 里是写死的固定值，本来就不随档位变。
+// 让一个内容尺寸不变的盒子随档位长高，长出来的全是空白。
+// 取 52 是「小」档当下的值，也就是用户说的"和小的时候一致"。
+//
+// 与 GRID_FILE_ENTRY_HEIGHT 一样写成常量：用户要的是「不随档位变」，
+// 常量让这件事在代码里自证，将来谁想分档会先看到这里写着不允许。
+export const GRID_DIR_ENTRY_HEIGHT = GRID_DIR_ENTRY_HEIGHT_FLOOR;
+
+// FORK-MODIFICATION: 反馈 2（2026-10-15）——网格视图区分媒体与非媒体文件。
+// 调「缩略图大小」时，**非媒体文件保持高度不变，只改宽度**（宽度由
+// gridMinColumnWidth 决定列数，仍然跟着档位走）。
+//
+// 卡高怎么来的：非媒体卡是 `--icon-full` 形态，卡内两块东西各占一头 ——
+//   预览区（absolute，inset 0，flex-start）：图标 margin 8 + 图标本身
+//   信息层（absolute，bottom 0，padding 8px 10px）：名称行 + 2 + 说明行
+// 两块挨着放，所以下限就是「图标块 + 信息块」，和上面 GRID_MEDIA_ENTRY_HEIGHT_FLOOR
+// 用的是同一个推导法（56 + 54 = 110）。
+//
+// 反馈 2 追加要求后图标从 48px 缩到 24px（与目录卡图标同尺寸）：非媒体卡本来
+// 就没有缩略图，占着 48px 图标只是让固定卡高下不去。图标块随之从 56 降到 32，
+// 下限 110 → 86。
+//
+// 为什么是一个常量而不是四档各填一个数：用户要的就是「不随档位变」。
+// 写成常量是为了让这件事在代码里自证 —— 将来谁想给它分档，
+// 会先看到这里写着不允许，而不是悄悄填四个不同的数字。
+export const GRID_FILE_ENTRY_ICON_PX = 24;
+/** `--icon-full .__icon` 的 margin（上下左右都是 8，但只有上边距参与高度计算） */
+export const GRID_FILE_ENTRY_ICON_MARGIN_PX = 8;
+/**
+ * 底部信息层高度：padding 8 + 名称行 13*1.5 + gap 2 + 说明行 11*1.5 + padding 8。
+ * line-height 1.5 是全局的（src/styles/preflight.css），字号写死在
+ * file-browser-grid-card.vue 的 __name / __meta 上。
+ */
+export const GRID_FILE_ENTRY_INFO_BLOCK_PX = 8 + 13 * 1.5 + 2 + 11 * 1.5 + 8;
+
+export const GRID_FILE_ENTRY_HEIGHT = GRID_FILE_ENTRY_ICON_MARGIN_PX
+  + GRID_FILE_ENTRY_ICON_PX
+  + GRID_FILE_ENTRY_INFO_BLOCK_PX;
+
+// FORK-MODIFICATION: 反馈 4（2026-10-15）——**列表视图**的目录 / 非媒体文件行同样固定高度。
+// 用户原话：「目录和非媒体文件行，在修改缩略图大小时，也不要更改高度，保持默认高度」。
+// 与网格同一件事的第二处：这些行里根本没有缩略图（FileBrowserListEntryThumbnail 对
+// 非图片/视频返回空，行内只剩一个 19px 的文件图标），字号与行内边距也是写死的，
+// 行高跟着档位从 48 长到 96，长出来的全是空白。
+//
+// 取「默认高度」= 64，即 navigator.thumbnailSize 的出厂默认值 medium 那一档
+// （src/stores/storage/user-settings.ts 的 thumbnailSize: 'medium'）。
+// 注意这里与网格取 52（= small 档）**故意不同** —— 网格那次用户说的是
+// 「保持和小的时候高度一致」，这次说的是「保持默认高度」，两句话锚的是不同的档。
+// 一旦改了这个数，file-browser-thumbnail-sizes.test.ts 里有断言把两边钉在一起，
+// 改了一边忘了另一边会立刻红。
+export const LIST_FILE_ENTRY_HEIGHT = 64;
+/** 带说明行：行高 + 14 说明行（14 = 11 字号 * 1.5 行高 + 2 gap） */
+export const LIST_FILE_ENTRY_HEIGHT_WITH_DESCRIPTION = LIST_FILE_ENTRY_HEIGHT + 14;
+
 export const FILE_BROWSER_THUMBNAIL_METRICS: Record<ThumbnailSize, FileBrowserThumbnailMetrics> = {
   small: {
     listThumbnailPx: 32,
     listRowHeight: 48,
     listRowHeightWithDescription: 62,
+    listFileEntryHeight: LIST_FILE_ENTRY_HEIGHT,
+    listFileEntryHeightWithDescription: LIST_FILE_ENTRY_HEIGHT_WITH_DESCRIPTION,
     gridEntryHeight: 120,
-    gridDirEntryHeight: 52,
+    gridDirEntryHeight: GRID_DIR_ENTRY_HEIGHT,
+    gridFileEntryHeight: GRID_FILE_ENTRY_HEIGHT,
     gridMinColumnWidth: 170,
   },
   medium: {
     listThumbnailPx: 48,
     listRowHeight: 64,
     listRowHeightWithDescription: 78,
+    listFileEntryHeight: LIST_FILE_ENTRY_HEIGHT,
+    listFileEntryHeightWithDescription: LIST_FILE_ENTRY_HEIGHT_WITH_DESCRIPTION,
     gridEntryHeight: 180,
-    gridDirEntryHeight: 78,
+    gridDirEntryHeight: GRID_DIR_ENTRY_HEIGHT,
+    gridFileEntryHeight: GRID_FILE_ENTRY_HEIGHT,
     gridMinColumnWidth: 225,
   },
   large: {
     listThumbnailPx: 64,
     listRowHeight: 80,
     listRowHeightWithDescription: 94,
+    listFileEntryHeight: LIST_FILE_ENTRY_HEIGHT,
+    listFileEntryHeightWithDescription: LIST_FILE_ENTRY_HEIGHT_WITH_DESCRIPTION,
     gridEntryHeight: 240,
-    gridDirEntryHeight: 104,
+    gridDirEntryHeight: GRID_DIR_ENTRY_HEIGHT,
+    gridFileEntryHeight: GRID_FILE_ENTRY_HEIGHT,
     gridMinColumnWidth: 300,
   },
   xlarge: {
     listThumbnailPx: 80,
     listRowHeight: 96,
     listRowHeightWithDescription: 110,
+    listFileEntryHeight: LIST_FILE_ENTRY_HEIGHT,
+    listFileEntryHeightWithDescription: LIST_FILE_ENTRY_HEIGHT_WITH_DESCRIPTION,
     gridEntryHeight: 300,
-    gridDirEntryHeight: 130,
+    gridDirEntryHeight: GRID_DIR_ENTRY_HEIGHT,
+    gridFileEntryHeight: GRID_FILE_ENTRY_HEIGHT,
     gridMinColumnWidth: 420,
   },
 };
@@ -97,12 +176,34 @@ export function resolveThumbnailMetrics(size: ThumbnailSize): FileBrowserThumbna
   return THUMBNAIL_METRICS_BY_SIZE[size] as FileBrowserThumbnailMetrics;
 }
 
+/**
+ * 列表行的 CSS 地板：`.file-browser-list-view__entry` 的 `min-height`。
+ *
+ * 必须是**本档里最短的那种行**，不能是任何一个具体类别的行高。踩过的坑：
+ * 直接喂 `LIST_FILE_ENTRY_HEIGHT`（64）时，small 档的媒体行本该是 48，
+ * 却被 min-height 顶回 64 —— 虚拟布局给的 48 只是 `height`，而 `min-height`
+ * 会赢。large / xlarge 看着正常，因为它们的媒体行 height 大于 64，
+ * 地板不生效 —— 也就是说这个 bug 只在「某档的行比地板矮」时显形。
+ *
+ * 取 min(两种行高) 之后地板永远不生效：每一种行的显式 height 都 ≥ 它，
+ * min-height 退化成「布局算出来之前先有个高度」，正是它原本的作用。
+ */
+function resolveListEntryHeightFloorPx(
+  listRowHeight: number,
+  listFileEntryHeight: number,
+): number {
+  return Math.min(listRowHeight, listFileEntryHeight);
+}
+
 export function resolveThumbnailCssVariables(size: ThumbnailSize): Record<string, string> {
   const metrics = resolveThumbnailMetrics(size);
 
   return {
-    '--navigator-list-view-entry-height': `${metrics.listRowHeight}px`,
+    '--navigator-list-view-entry-height': `${
+      resolveListEntryHeightFloorPx(metrics.listRowHeight, metrics.listFileEntryHeight)}px`,
     '--navigator-grid-view-entry-height': `${metrics.gridEntryHeight}px`,
     '--navigator-grid-view-dir-entry-height': `${metrics.gridDirEntryHeight}px`,
+    // FORK-MODIFICATION: 反馈 2（2026-10-15）——非媒体文件卡的固定高度（见 GRID_FILE_ENTRY_HEIGHT）。
+    '--navigator-grid-view-file-entry-height': `${metrics.gridFileEntryHeight}px`,
   };
 }

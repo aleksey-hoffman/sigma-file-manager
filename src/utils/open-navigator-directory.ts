@@ -21,6 +21,16 @@ export interface OpenNavigatorPathOptions {
   resolvePath?: boolean;
 }
 
+/**
+ * FORK-MODIFICATION: 反馈 3（2026-10-15）。
+ * `filterQuery` 是触发动作那个 pane 当前的过滤词 —— 拆出来的右格要靠它
+ * 继续显示同一批搜索结果。调用方（use-file-browser-actions）拿得到，
+ * 这里收下；全局搜索面板通道用不到，可以不传。
+ */
+export interface OpenNavigatorRevealEntryOptions {
+  filterQuery?: string;
+}
+
 function logNavigatorOpenError(error: unknown): void {
   console.error('Failed to open navigator path:', error);
 }
@@ -125,51 +135,90 @@ export function openNavigatorPath(
   });
 }
 
-// FORK-MODIFICATION: 搜索结果「打开所属目录」——把条目的父目录显示在**结果列表旁边**的
-// 导航器 pane 上，并选中该条目；结果列表本身保持打开、内容不变。
+// FORK-MODIFICATION: 搜索结果「打开所属目录」——把条目的父目录显示在**结果列表
+// 所在那一格的反面**：所属目录落在左格，搜索结果留在右格，并选中该条目。
 //
 // 为什么不用 `openNavigatorPath(..., { resolvePath: true })`：那条路径靠
 // `resolvePathLaunchTarget` 判断条目类型，目录会解析成「进入该目录」且 focusPath 为空。
 // 本动作的语义恰恰相反——目录的父目录才是目标，且目录本身要被选中。
 // 所以这里直接构造参数，两种条目类型走同一条逻辑。
 //
-// ── 用户要的是这个布局 ────────────────────────────────────────────────
-//   ┌──────────────────┬──────────────────┐
-//   │  搜索结果列表      │  所属目录导航器    │
-//   │（保持打开、内容不变）│ （选中该条目）      │
-//   └──────────────────┴──────────────────┘
-// 而「先关搜索面板 + 拆分导航器」得到的是
-//   ┌──────────────────┬──────────────────┐
-//   │  导航器原位置      │  导航器所属目录    │
-//   └──────────────────┴──────────────────┘
-//   （搜索面板已关闭）—— 2026-10-15 用户明确指出这是错的。
+// ── 两条搜索通道，目标布局不一样 ────────────────────────────────────────
+//   工具栏过滤（结果列表就是导航器 pane 自己，需要拆栏）：
+//     ┌──────────────┬──────────────┐
+//     │  所属目录      │  搜索结果      │
+//     │（选中该条目）  │（过滤词保留）  │
+//     └──────────────┴──────────────┘
+//   全局搜索面板（结果列表独立在面板里，布局本来就是左右并排）：
+//     ┌──────────────┬──────────────┐
+//     │  搜索结果面板  │  所属目录导航器 │
+//     └──────────────┴──────────────┘
+//   两条通道由 `globalSearchStore.isOpen` 区分。
+//   2026-10-15 反馈 3：工具栏过滤通道原来是「左 = 搜索前的目录、右 = 所属目录」，
+//   与用户要的左右正好反过来；全局搜索面板这一路是上一批反馈 2 定的，方向不动。
 //
-// 关键事实：**用户要的布局已经存在，不需要造。**
-// `navigator.vue` 的 `.navigator-page__panes-container` 是 `display: flex`
-// （未声明 `flex-direction`，即默认 row），全局搜索面板是它的第一个子元素、
-// 导航器 pane 组是第二个，搜索一打开天然就是左右并排。
-// 所以本函数的正确工作是「别破坏它」，而不是新开标签组或新开 pane。
+// 工具栏过滤通道要拿到「右格继续显示搜索结果」，光调 `toggleSplitView` 不够：
+// 新 pane 是全新挂载的 FileBrowser 实例，过滤词在组件本地 ref 里，克隆拿不到。
+// 所以拆分后要把过滤词显式挂到右格那个 tab 上（`pendingFilterQuery`），
+// 由 FileBrowser 挂载时取走。详见 types/workspaces.ts 的字段注释。
 //
-// 两条曾经的错路，别再走：
-//
-// 1. **不要关搜索面板**。调用点原先先 `globalSearchStore.close()`，理由写的是
-//    「否则导航结果被面板挡住」——那是被拆分实现带出来的新问题，不是原有问题。
-//    关掉之后左侧列表整个消失，布局退化成「导航器 + 导航器」。
-//
-// 2. **搜索面板开着时不要拆分**。`navigator.vue` 有一条 watch：搜索打开时若已拆分
-//    就 `toggleSplitView()` 合上（产品上「搜索 + 拆分」互斥）。反过来说，
-//    搜索开着时再拆分，是让左侧搜索面板和右侧两个导航器 pane 挤在一屏里，
-//    用户原位置的上下文也搬到了第二格。此时旁边的导航器 pane 直接复用即可。
-//
-// 什么时候仍然需要拆分：`isSearchResultsView` 有两条通道
-// （`use-file-browser.ts:581`）——全局搜索面板（`externalEntries`）与工具栏目录过滤。
-// 后者没有独立面板，**结果列表就是导航器 pane 自己**，要同时满足「列表不变」和
-// 「显示父目录」只能新开一个 pane。已拆分则复用最右那个（`WORKSPACE_MAX_PANE_COUNT`
-// 是 2，不存在第三个 pane）。
+// 什么时候仍然需要拆分：只有工具栏过滤这一条通道 —— 全局搜索面板不拆，
+// `navigator.vue` 有一条 watch 规定「搜索打开时若已拆分就合上」（产品上二者互斥）。
 //
 // 重复点别的搜索结果时**复用同一个 pane**（`openPathInCurrentTab` 改路径），
 // 而不是每次新建 —— 否则点几次就多几格，面板会被撑爆。
-export function openNavigatorRevealEntry(router: Router, entryPath: string): void {
+
+/**
+ * 把过滤词交给右格那个 tab（反馈 3）。
+ *
+ * 拆分后 tabGroup[0] = 左格（即将导航到所属目录，不该再带过滤词）、
+ * tabGroup[1] = 右格（clone 出来、路径不变，负责继续显示搜索结果）。
+ * 这里必须显式清理左格：`clone` 是深拷贝，上一次 reveal 留在 tabGroup[0]
+ * 上的 `pendingFilterQuery` 会被一起带进左格，那会让「所属目录」也带着过滤词，
+ * 看起来像没跳过去。
+ *
+ * 空过滤词一律写 `undefined` 而不是 `''`：FileBrowser 挂载时按「有值才接管」处理，
+ * `''` 会被当成「用户想要一个空过滤器」而把过滤框打开。
+ */
+function handOverFilterQueryToResultsPane(
+  workspacesStore: ReturnType<typeof useWorkspacesStore>,
+  filterQuery: string | undefined,
+): void {
+  const tabGroup = workspacesStore.currentTabGroup;
+  const [revealPane, resultsPane] = tabGroup ?? [];
+
+  if (revealPane) {
+    revealPane.pendingFilterQuery = undefined;
+  }
+
+  if (resultsPane) {
+    resultsPane.pendingFilterQuery = filterQuery ? filterQuery : undefined;
+  }
+}
+
+/**
+ * 两侧都要列表样式（反馈 3，用户原话「注意都采用列表样式视图」）。
+ * 标记挂在两个 tab 上，由各自的 FileBrowser 解析（见 Tab.pendingForceListLayout 的注释）。
+ *
+ * 两个 tab 都要标：左格是所属目录、右格是搜索结果，两边都是「看列表」的场景。
+ * 只标右格的话，左格会按它自己目录记住的布局渲染，而那多半是网格 ——
+ * 用户看到的仍是「一半网格一半列表」，正是反馈里要避免的形态。
+ */
+function forceListLayoutOnRevealPanes(
+  workspacesStore: ReturnType<typeof useWorkspacesStore>,
+): void {
+  for (const tab of workspacesStore.currentTabGroup ?? []) {
+    if (tab) {
+      tab.pendingForceListLayout = true;
+    }
+  }
+}
+
+export function openNavigatorRevealEntry(
+  router: Router,
+  entryPath: string,
+  options?: OpenNavigatorRevealEntryOptions,
+): void {
   ensureNavigatorRoute(router);
 
   const parentPath = getParentDirectory(entryPath);
@@ -188,7 +237,10 @@ export function openNavigatorRevealEntry(router: Router, entryPath: string): voi
     if (!isResultsPanelDedicated && paneCount === 1) {
       workspacesStore.toggleSplitView();
       // enableSplitView 是 push 一个 tabGroup[0] 的克隆，新 pane 落在最右 = index 1。
-      targetPaneIndex = 1;
+      // 反馈 3：**左格**放所属目录，右格留给搜索结果。
+      targetPaneIndex = 0;
+      handOverFilterQueryToResultsPane(workspacesStore, options?.filterQuery);
+      forceListLayoutOnRevealPanes(workspacesStore);
     }
 
     workspacesStore.setCurrentTabIndex(targetPaneIndex);

@@ -18,7 +18,13 @@ import {
   useFileBrowserVirtualLayout,
 } from '../use-file-browser-virtual-layout';
 import type { ThumbnailSize } from '../../types';
-import { resolveThumbnailMetrics } from '../../utils/file-browser-thumbnail-sizes';
+import {
+  GRID_DIR_ENTRY_HEIGHT,
+  GRID_FILE_ENTRY_HEIGHT,
+  LIST_FILE_ENTRY_HEIGHT,
+  resolveThumbnailCssVariables,
+  resolveThumbnailMetrics,
+} from '../../utils/file-browser-thumbnail-sizes';
 
 function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
   const isDirectory = options.is_dir ?? false;
@@ -41,6 +47,18 @@ function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
   };
 }
 
+/**
+ * 带缩略图的行。判定与渲染侧同源：
+ * file-browser-entry-groups 的 isFileBrowserImageEntry 读的是 ext 列表，
+ * file-browser-list-entry-thumbnail.vue 也用它决定要不要出图。
+ */
+function image(name: string, options: Partial<DirEntry> = {}): DirEntry {
+  return createEntry(name, {
+    ext: 'png',
+    ...options,
+  });
+}
+
 describe('createFileBrowserVirtualRows', () => {
   it('creates fixed list rows with larger rows for descriptions', () => {
     const entries = [
@@ -61,9 +79,11 @@ describe('createFileBrowserVirtualRows', () => {
   });
 
   // FORK-MODIFICATION: 需求 3.6 四档重定 32/48/64/80，行高 = 缩略图 + 16（带说明行 +14）。
+  // 下面这四条量的是**有缩略图的行**（ext: 'png'）—— 只有它们才跟着档位缩放。
+  // 目录 / 非媒体行的行为在下一个 describe 里，那是反馈 4 的要求。
   describe('thumbnailSize', () => {
-    it('medium (default): list rows are 64 / 78', () => {
-      const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
+    it('medium (default): media list rows are 64 / 78', () => {
+      const entries = [image('a'), image('b'), image('c')];
       const rows = createFileBrowserVirtualRows({
         entries,
         layout: 'list',
@@ -74,8 +94,8 @@ describe('createFileBrowserVirtualRows', () => {
       expect(rows.map(row => row.size)).toEqual([64, 78, 64]);
     });
 
-    it('small: list rows shrink to 48 / 62', () => {
-      const entries = [createEntry('a'), createEntry('b')];
+    it('small: media list rows shrink to 48 / 62', () => {
+      const entries = [image('a'), image('b')];
       const rows = createFileBrowserVirtualRows({
         entries,
         layout: 'list',
@@ -86,8 +106,8 @@ describe('createFileBrowserVirtualRows', () => {
       expect(rows.map(row => row.size)).toEqual([48, 62]);
     });
 
-    it('large: list rows grow to 80 / 94', () => {
-      const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
+    it('large: media list rows grow to 80 / 94', () => {
+      const entries = [image('a'), image('b'), image('c')];
       const rows = createFileBrowserVirtualRows({
         entries,
         layout: 'list',
@@ -98,8 +118,8 @@ describe('createFileBrowserVirtualRows', () => {
       expect(rows.map(row => row.size)).toEqual([80, 94, 80]);
     });
 
-    it('xlarge: list rows grow to 96 / 110', () => {
-      const entries = [createEntry('a'), createEntry('b'), createEntry('c')];
+    it('xlarge: media list rows grow to 96 / 110', () => {
+      const entries = [image('a'), image('b'), image('c')];
       const rows = createFileBrowserVirtualRows({
         entries,
         layout: 'list',
@@ -121,11 +141,13 @@ describe('createFileBrowserVirtualRows', () => {
     // 用 3 张图的话四档都只有一行，无论第三参数写什么都全绿，这段断言等于没有保护。
     // 2026-10-15：网格四档整体上移一档后，小档的 170 恰好等于旧 medium 的 170，
     // 所以对小档而言「写死 170」是平凡的 —— 判别力由 large / xlarge 两档承担。
+    // 2026-10-15 反馈 2 续：目录卡高度也固定成 52 了，所以四档的段头/目录行
+    // 都一样，差异只在图片行 —— 这正是用户要的「只有媒体跟着档位变」。
     it.each([
       ['small', 11, [0, 54, 118, 172], [54, 64, 54, 132], 2],
-      ['medium', 8, [0, 54, 144, 198], [54, 90, 54, 192], 2],
-      ['large', 6, [0, 54, 170, 224, 476], [54, 116, 54, 252, 252], 3],
-      ['xlarge', 4, [0, 54, 196, 250, 562], [54, 142, 54, 312, 312], 3],
+      ['medium', 8, [0, 54, 118, 172], [54, 64, 54, 192], 2],
+      ['large', 6, [0, 54, 118, 172, 424], [54, 64, 54, 252, 252], 3],
+      ['xlarge', 4, [0, 54, 118, 172, 484], [54, 64, 54, 312, 312], 3],
     ] as Array<[ThumbnailSize, number, number[], number[], number]>)(
       'grid rows scale with thumbnailSize %s',
       (thumbnailSize, columns, expectedStarts, expectedSizes, expectedGridItemsRows) => {
@@ -158,6 +180,58 @@ describe('createFileBrowserVirtualRows', () => {
         expect(rows.filter(row => row.type === 'grid-items')).toHaveLength(expectedGridItemsRows);
       },
     );
+
+    // FORK-MODIFICATION: 反馈 2（2026-10-15）——网格视图区分媒体与非媒体，
+    // 调缩略图档位时非媒体**只改宽度、高度不变**。
+    //
+    // 为什么这条断言不能省：卡片高度是 CSS 变量定的，而虚拟滚动按
+    // `section.entryHeight` 算 offset 和滚动条总高。两者是**两条独立路径** ——
+    // 只改 CSS 变量会让行高停在 240/300，卡与卡之间裂开缝、滚到底对不齐，
+    // 而这类错位在纯 CSS 断言里完全看不见。反过来只改 JS 也一样坏。
+    // 所以这里必须从「虚拟行」这一侧钉住数值。
+    it('keeps non-media grid rows one height while media rows still scale', () => {
+      const sizes: ThumbnailSize[] = ['small', 'medium', 'large', 'xlarge'];
+      const otherRowSizes: number[] = [];
+      const imageRowSizes: number[] = [];
+      const dirRowSizes: number[] = [];
+
+      for (const thumbnailSize of sizes) {
+        const entries = [
+          createEntry('dir-1', {
+            is_dir: true,
+            is_file: false,
+          }),
+          createEntry('photo-1', { ext: 'jpg' }),
+          createEntry('note-1', { ext: 'txt' }),
+        ];
+        const rows = createFileBrowserVirtualRows({
+          entries,
+          layout: 'grid',
+          viewportWidth: 2000,
+          thumbnailSize,
+        });
+        const itemRows = rows.filter(row => row.type === 'grid-items');
+
+        otherRowSizes.push(itemRows.find(row => row.variant === 'other')?.size ?? -1);
+        imageRowSizes.push(itemRows.find(row => row.variant === 'image')?.size ?? -1);
+        dirRowSizes.push(itemRows.find(row => row.variant === 'dir')?.size ?? -1);
+      }
+
+      // 非媒体：四档同一个行高（GRID_FILE_ENTRY_HEIGHT + gridGap 12）。
+      expect(new Set(otherRowSizes).size).toBe(1);
+      expect(otherRowSizes[0]).toBe(GRID_FILE_ENTRY_HEIGHT + 12);
+
+      // 目录（反馈 2 续）：同样四档同高。目录卡里没有缩略图，
+      // 长出来的那截全是空白 —— 用户实测发现并要求「保持和小的时候一致」。
+      expect(new Set(dirRowSizes).size).toBe(1);
+      expect(dirRowSizes[0]).toBe(GRID_DIR_ENTRY_HEIGHT + 12);
+
+      // 媒体：四档各不相同 —— 否则「非媒体固定高」就变成了「所有卡都固定高」。
+      expect(new Set(imageRowSizes).size).toBe(4);
+      expect(imageRowSizes).toEqual(
+        sizes.map(size => resolveThumbnailMetrics(size).gridEntryHeight + 12),
+      );
+    });
   });
 
   it('creates grid section and item rows from responsive columns', () => {
@@ -210,8 +284,8 @@ describe('createFileBrowserVirtualRows', () => {
       'grid-items',
       'grid-items',
     ]);
-    expect(rows.map(row => row.start)).toEqual([0, 54, 144, 234, 288, 480]);
-    expect(rows.map(row => row.size)).toEqual([54, 90, 90, 54, 192, 192]);
+    expect(rows.map(row => row.start)).toEqual([0, 54, 118, 182, 236, 428]);
+    expect(rows.map(row => row.size)).toEqual([54, 64, 64, 54, 192, 192]);
   });
 });
 
@@ -414,5 +488,82 @@ describe('resolveViewportContentWidth', () => {
 
     expect(viewportWidth.value).toBe(860);
     wrapper.unmount();
+  });
+});
+
+// FORK-MODIFICATION: 反馈 4（2026-10-15）——列表视图的目录 / 非媒体文件行
+// 「在修改缩略图大小时，也不要更改高度，保持默认高度」。
+// 判别力来源：下面用同一批条目跑四档，只要有一档的行高不同断言就红；
+// 若实现退回到「所有行都按 listRowHeight 分档」，四档会变成 48/64/80/96 而全红。
+describe('list rows without a thumbnail', () => {
+  const SIZES: ThumbnailSize[] = ['small', 'medium', 'large', 'xlarge'];
+
+  function listSizes(entries: DirEntry[], size: ThumbnailSize): number[] {
+    return createFileBrowserVirtualRows({
+      entries,
+      layout: 'list',
+      viewportWidth: 500,
+      thumbnailSize: size,
+    }).map(row => row.size);
+  }
+
+  it('keeps directory rows at one height across all four sizes', () => {
+    const entries = [
+      createEntry('folder-a', { is_dir: true }),
+      createEntry('folder-b', { is_dir: true }),
+    ];
+
+    for (const size of SIZES) {
+      expect(listSizes(entries, size), `${size} 的目录行高变了`).toEqual([64, 64]);
+    }
+  });
+
+  it('keeps non-media file rows at one height across all four sizes', () => {
+    const entries = [
+      createEntry('notes.txt', { ext: 'txt' }),
+      createEntry('report.pdf', { ext: 'pdf' }),
+      createEntry('script.ts', { ext: 'ts' }),
+    ];
+
+    for (const size of SIZES) {
+      expect(listSizes(entries, size), `${size} 的非媒体行高变了`).toEqual([64, 64, 64]);
+    }
+  });
+
+  // 非媒体行的高宽比与「小」档不同，所以这条能区分「只是碰巧等于某一档」。
+  // 若有人把常量改成 48，这条红，而上面两条照样绿。
+  it('uses the default-size height, not the small-size height', () => {
+    expect(LIST_FILE_ENTRY_HEIGHT).toBe(64);
+    expect(LIST_FILE_ENTRY_HEIGHT).not.toBe(
+      resolveThumbnailMetrics('small').listRowHeight,
+    );
+  });
+
+  it('still scales media rows so thumbnails are not clipped', () => {
+    const entries = [image('a.png'), image('b.mp4', { ext: 'mp4' })];
+
+    expect(listSizes(entries, 'small')).toEqual([48, 48]);
+    expect(listSizes(entries, 'medium')).toEqual([64, 64]);
+    expect(listSizes(entries, 'large')).toEqual([80, 80]);
+    expect(listSizes(entries, 'xlarge')).toEqual([96, 96]);
+  });
+
+  // CSS 的 min-height 与虚拟行高必须同源且方向正确，否则两种错法都会出现：
+  //   地板取无缩略图行高 → small 档媒体行 height=48 被顶回 64（缩略图档位静默失效）
+  //   地板取媒体行高     → xlarge 档无缩略图行 height=64 被顶回 96（反馈 4 直接回归）
+  it('never lets the row min-height CSS variable floor a row back up', () => {
+    for (const size of SIZES) {
+      const metrics = resolveThumbnailMetrics(size);
+      const floor = Number(
+        resolveThumbnailCssVariables(size)['--navigator-list-view-entry-height'].replace('px', ''),
+      );
+      const rows = listSizes([image('a.png'), createEntry('dir', { is_dir: true })], size);
+
+      expect(floor, `${size} 的 min-height 地板高于该档任何一行`).toBeLessThanOrEqual(
+        Math.min(...rows),
+      );
+      expect(rows).toContain(metrics.listRowHeight);
+      expect(rows).toContain(metrics.listFileEntryHeight);
+    }
   });
 });

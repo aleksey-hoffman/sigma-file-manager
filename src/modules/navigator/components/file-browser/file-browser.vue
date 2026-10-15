@@ -9,6 +9,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { getScrollRestorationKey } from '@/stores/runtime/scroll-restoration';
 import { useFileBrowser } from './composables/use-file-browser';
+import { useForcedListLayout } from './composables/use-forced-list-layout';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 import { provideFileBrowserContext } from './composables/use-file-browser-context';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
@@ -75,9 +76,19 @@ function getScrollStateKey(): string | undefined {
   return props.tab ? getScrollRestorationKey('navigator', props.tab.id, props.paneIndex ?? 0) : undefined;
 }
 
+// FORK-MODIFICATION: 反馈 3（2026-10-15）——「打开所属目录」分栏出来的两格
+// 强制列表样式（用户原话：「注意都采用列表样式视图」）。标记写在 tab 上，
+// 由这里解析，外层 navigator.vue 一行都不用改。
+//
+// 必须声明在 `useFileBrowser` 之前：下面把 `layout` 传成了 `() => effectiveLayout.value`，
+// 放晚了就是在 setup 期间引用还处于 TDZ 的 const。
+const effectiveLayout = computed<'list' | 'grid' | 'tree' | undefined>(() => (
+  props.tab?.pendingForceListLayout ? 'list' : props.layout
+));
+
 const fb = useFileBrowser({
   tab: () => props.tab,
-  layout: () => props.layout,
+  layout: () => effectiveLayout.value,
   externalEntries: props.externalEntries ? () => props.externalEntries! : undefined,
   basePath: props.basePath !== undefined ? () => props.basePath! : undefined,
   onSelectedEntriesChange: entries => emit('update:selectedEntries', entries),
@@ -139,13 +150,22 @@ const { persistForScope } = useNavigatorFolderSettings(
   () => Boolean(props.tab?.type !== 'search' && fb.currentPath.value),
 );
 
+// 解锁时机之一：用户点布局按钮 —— 必须先清标记再写设置，
+// 否则点了网格界面纹丝不动，用户会以为按钮坏了（而设置其实已经写进去了，更难查）。
+// 另一个时机（导航去别的目录）由 composable 内部的 watch 负责。
+const forcedListLayout = useForcedListLayout({
+  getTab: () => props.tab,
+  currentPath: fb.currentPath,
+});
+
 const currentLayout = computed<'list' | 'grid'>(() => (
-  props.layout === 'grid' ? 'grid' : 'list'
+  effectiveLayout.value === 'grid' ? 'grid' : 'list'
 ));
 
 async function setLayout(target: 'list' | 'grid') {
   // 总是 per-folder：让不同选项卡的目录独立记忆各自视图。
   // 如需切回全局一致，可走 navigator-toolbar-actions ⋮ 菜单「设置作用域」Tab。
+  forcedListLayout.release();
   await persistForScope('folder', { layout: target });
 }
 
@@ -292,7 +312,7 @@ defineExpose({
     />
 
     <FileBrowserContent
-      :layout="props.layout"
+      :layout="effectiveLayout"
       :track-relative-time="props.trackRelativeTime"
     />
 

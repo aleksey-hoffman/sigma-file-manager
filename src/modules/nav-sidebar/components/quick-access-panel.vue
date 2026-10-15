@@ -17,7 +17,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
   ArrowRightIcon,
-  FolderIcon,
+  FolderTreeIcon,
   HistoryIcon,
   StarIcon,
   TagIcon,
@@ -341,7 +341,7 @@ function getHistoryEntryProps(item: HistoryItem) {
                 class="quick-access-panel__tag-group quick-access-panel__subgroup"
               >
                 <div class="quick-access-panel__tag-subtitle quick-access-panel__subgroup-subtitle">
-                  <FolderIcon
+                  <FolderTreeIcon
                     :size="12"
                     class="quick-access-panel__category-icon"
                   />
@@ -633,10 +633,16 @@ function getHistoryEntryProps(item: HistoryItem) {
   border-inline-start: 1px solid hsl(var(--foreground) / 12%);
 }
 
-/* FORK-MODIFICATION: 反馈 5（2026-10-15）——收藏分组标题前的文件夹图标。
+/* FORK-MODIFICATION: 反馈 5（2026-10-15）建立、反馈 1（2026-10-15）换形——
+   收藏分组标题前的图标。
    不能复用 __tag-dot：那个类给标记用的是**背景色圆点**，靠 inline
    backgroundColor 上色；分类这里要的是描边图标，得走 color。
-   刻意用主色，和收藏条目自己的灰图标拉开距离。 */
+   刻意用主色，和收藏条目自己的灰图标拉开距离。
+   反馈 1：原来这里画的是 FolderIcon，和「目录条目」的兜底图标
+   （file-browser/utils.ts 的 getDefaultFileIconComponent → isDirectory → FolderIcon）
+   是同一个组件，同一屏里分类与目录长得一模一样。现在换成 FolderTreeIcon，
+   侧边栏收藏区于是有三种可区分的图标：
+     分类 = FolderTreeIcon（层级分组）、目录 = FolderIcon、文件 = 按扩展名的文件图标。 */
 .quick-access-panel__category-icon {
   flex-shrink: 0;
   color: hsl(var(--primary));

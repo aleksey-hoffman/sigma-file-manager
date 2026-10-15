@@ -705,7 +705,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 
 .file-browser-list-view__entry-kind,
 .file-browser-list-view__entry-links,
-.file-browser-list-view__entry-link-status,
+.file-browser-list-view__entry-linkStatus,
 .file-browser-list-view__entry-items,
 .file-browser-list-view__entry-size,
 .file-browser-list-view__entry-modified,
@@ -718,6 +718,21 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* FORK-MODIFICATION: 反馈 4（2026-10-15）——这几列改成垂直居中。
+   根因：`.file-browser-list-view__entry` 是 grid 容器，子项默认被拉伸到整行高度，
+   而这四个类当时只是普通 span（上面那条共享规则只给了颜色/字号/省略号，
+   没有 display:flex），文字就贴在格子的顶部。名称 / 大小 / 标签 / 链接数
+   之所以是居中的，是因为它们各自有 display:flex + align-items:center。
+   日期列内部那个 __date-hover 是 inline-grid 且 primary/absolute 都是
+   place-self:start，但它的盒子高度只有一行文字，所以把外层居中即可。 */
+.file-browser-list-view__entry-kind,
+.file-browser-list-view__entry-items,
+.file-browser-list-view__entry-modified,
+.file-browser-list-view__entry-created {
+  display: flex;
+  align-items: center;
 }
 
 .file-browser-list-view__entry-tags {
@@ -762,7 +777,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 .file-browser-list-view__entry-links,
-.file-browser-list-view__entry-link-status {
+.file-browser-list-view__entry-linkStatus {
   display: flex;
   align-items: center;
 }
@@ -773,7 +788,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 .file-browser-list-view__entry-links .file-browser-list-view__column-value,
-.file-browser-list-view__entry-link-status .file-browser-list-view__column-value {
+.file-browser-list-view__entry-linkStatus .file-browser-list-view__column-value {
   flex: 1;
 }
 
@@ -885,7 +900,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-size,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-modified,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-created,
-.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-link-status,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-linkStatus,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {

@@ -132,6 +132,9 @@ function setupNavigationDataSource(
     componentRef: options.componentRef,
     isDefaultPane: options.isDefaultPane ?? true,
     isActivePane: options.isActivePane,
+    // FORK-MODIFICATION: 反馈 3（2026-10-15）——接管 tab 上的运行期过滤词交接位。
+    // 只有工具栏过滤通道的「打开所属目录」会写它；其余 pane 拿到的都是 undefined。
+    initialFilterQuery: options.tab?.()?.pendingFilterQuery,
   });
 
   const appliedFolderSettings = computed(() => resolveNavigatorFolderSettings(
@@ -460,6 +463,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleEntryMouseUp: selection.handleEntryMouseUp,
     handleDragMouseDown: drag.handleDragMouseDown,
     isDragging: drag.isDragging,
+    // FORK-MODIFICATION: 反馈 3 ——「打开所属目录」要把过滤词交给拆出来的右格。
+    getFilterQuery: () => dataSource.filterQuery.value,
   });
 
   openPropertiesForSelection = (entries) => {

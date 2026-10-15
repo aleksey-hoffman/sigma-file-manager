@@ -37,6 +37,13 @@ export function useFileBrowserActions(options: {
   handleEntryMouseUp: (entry: DirEntry, event: MouseEvent) => void;
   handleDragMouseDown?: (entry: DirEntry, event: MouseEvent) => void;
   isDragging?: Ref<boolean>;
+  /**
+   * FORK-MODIFICATION: 反馈 3（2026-10-15）——当前过滤词。
+   * 「打开所属目录」要把它交接给拆出来的右格 pane，否则右格挂载时是空的，
+   * 用户要的「右边保持搜索结果」就变回「右边是搜索前的目录」。
+   * 用 getter 而不是值：右键菜单弹出到点选之间用户仍可能在过滤框里打字。
+   */
+  getFilterQuery?: () => string;
 }) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
@@ -157,6 +164,8 @@ export function useFileBrowserActions(options: {
     // FORK-MODIFICATION: 这里**不能**关全局搜索面板。搜索面板本身就在布局左侧，
     // 它就是用户要的「保持打开、内容不变」的那一格；关掉之后 `openNavigatorRevealEntry`
     // 填进去的是右侧导航器 pane，左侧列表整格消失，正是 2026-10-15 用户指出的错。
+    // FORK-MODIFICATION（反馈 3）：过滤词一并传下去。全局搜索面板开着时它是空串 ——
+    // 那条通道的结果列表在面板里，导航器 pane 不需要它。
     if (action === 'open-containing-directory-in-app') {
       const entries = options.contextMenu.value.selectedEntries;
       const targetEntry = entries[0];
@@ -165,7 +174,9 @@ export function useFileBrowserActions(options: {
         return;
       }
 
-      openNavigatorRevealEntry(router, targetEntry.path);
+      openNavigatorRevealEntry(router, targetEntry.path, {
+        filterQuery: options.getFilterQuery?.() ?? '',
+      });
 
       return;
     }

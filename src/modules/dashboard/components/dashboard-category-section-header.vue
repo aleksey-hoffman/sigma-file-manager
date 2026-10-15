@@ -9,7 +9,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { FolderIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
+import { FolderTreeIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import type { FavoriteCategory } from '@/types/user-stats';
 
@@ -29,7 +29,11 @@ const { t } = useI18n();
 
 <template>
   <div class="dashboard-category-section-header">
-    <FolderIcon :size="14" />
+    <!-- FORK-MODIFICATION: 反馈 1（2026-10-15）——分类标题原本也是 FolderIcon，
+         与下方目录卡片的兜底图标同一个组件，分类和目录分不出来。
+         换成 FolderTreeIcon 后仪表盘收藏区同样是三种可区分图标：
+         分类 = FolderTreeIcon、目录 = FolderIcon、文件 = 按扩展名的文件图标。 -->
+    <FolderTreeIcon :size="14" />
     <span class="dashboard-category-section-header__name">{{ name }}</span>
     <span class="dashboard-category-section-header__count">{{ count }}</span>
 

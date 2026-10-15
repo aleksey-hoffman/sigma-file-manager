@@ -404,10 +404,15 @@ watch(imagePreviewPlaceholderSrc, () => {
           class="file-browser-grid-card__icon"
         />
       </template>
+      <!-- FORK-MODIFICATION: 反馈 2 追加要求（2026-10-15）——非媒体文件的图标
+           缩到和目录图标同尺寸（都是 24px）。原来这里是 48px，与媒体卡的
+           占位图标一样大；但媒体卡的高度是给缩略图留的（120~300px），
+           非媒体卡没有缩略图，一个 48px 图标配固定卡高只是浪费空间。
+           对齐目录图标后两侧的视觉重量一致，卡高也能再压一档。 -->
       <FileBrowserEntryIcon
         v-else
         :entry="props.entry"
-        :size="48"
+        :size="24"
         class="file-browser-grid-card__icon"
       />
     </div>
@@ -514,9 +519,17 @@ watch(imagePreviewPlaceholderSrc, () => {
 }
 
 .file-browser-grid-card--image,
-.file-browser-grid-card--video,
-.file-browser-grid-card--other {
+.file-browser-grid-card--video {
   height: var(--navigator-grid-view-entry-height);
+}
+
+/* FORK-MODIFICATION: 反馈 2（2026-10-15）——非媒体文件（文档/代码/压缩包等，--other）
+   保持高度不变，调缩略图档位时只改宽度。
+   视频即使暂时没缩略图（--icon-full）也仍然算媒体：它是媒体文件，只是图还没到。
+   高度来源 utils/file-browser-thumbnail-sizes.ts 的 GRID_FILE_ENTRY_HEIGHT，四档同值。 */
+.file-browser-grid-card--other {
+  height: var(--navigator-grid-view-file-entry-height);
+  contain-intrinsic-size: auto var(--navigator-grid-view-file-entry-height);
 }
 
 .file-browser-grid-card__preview {
@@ -607,6 +620,18 @@ watch(imagePreviewPlaceholderSrc, () => {
 .file-browser-grid-card--icon-full .file-browser-grid-card__icon {
   width: 48px;
   height: 48px;
+  margin: 8px;
+}
+
+/* FORK-MODIFICATION: 反馈 2 追加要求（2026-10-15）——非媒体卡的图标盒缩到 24px。
+   这条选择器刻意写成三个类（比上面那条多一个），不要图省事去掉中间那个：
+   两条规则的选择器权重都是 (0,2,0)，只靠书写顺序决胜，以后有人在上面那条
+   附近插一段媒体专用样式，顺序就反过来了，图标会静默变回 48px。
+   图片/视频卡即使没有缩略图也**不**走这条 —— 它们仍然是媒体卡，
+   高度按媒体档走，48px 图标在 120px 起的卡里放得下。 */
+.file-browser-grid-card--other.file-browser-grid-card--icon-full .file-browser-grid-card__icon {
+  width: 24px;
+  height: 24px;
   margin: 8px;
 }
 

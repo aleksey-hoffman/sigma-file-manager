@@ -48,6 +48,12 @@
   --navigator-list-view-entry-height: 42px;
   --navigator-grid-view-dir-entry-height: 52px;
   --navigator-grid-view-entry-height: 120px;
+
+  /* FORK-MODIFICATION: 反馈 2（2026-10-15）——非媒体文件卡的固定高度。
+     四档同值 86px（见 utils/file-browser-thumbnail-sizes.ts 的 GRID_FILE_ENTRY_HEIGHT），
+     注入没发生时这个兜底值恰好就是正确值，所以它不参与「注入是否生效」的判据。
+     要判断网格注入有没有断，看上面 grid-view-entry-height 随不随档位变。 */
+  --navigator-grid-view-file-entry-height: 86px;
   --tab-height: calc(var(--window-toolbar-height) - 16px);
   --control-button-width: 46px;
   --dir-entry-transition: all 0.3s ease-in-out;

@@ -30,9 +30,19 @@ export function useFileBrowserFilter(options: {
   componentRef?: Ref<HTMLElement | null>;
   isDefaultPane?: boolean;
   isActivePane?: () => boolean;
+  /**
+   * FORK-MODIFICATION: 反馈 3（2026-10-15）——挂载时就要有的过滤词。
+   * 「打开所属目录」拆出的右格 pane 就是靠它继续显示同一批搜索结果
+   * （过滤词平时住在组件本地 ref 里，克隆 tab 带不过来）。
+   */
+  initialFilterQuery?: string;
 }) {
-  const filterQuery = ref('');
-  const isFilterOpen = ref(false);
+  // FORK-MODIFICATION: 反馈 3 —— 从交接位起步，而不是空串。
+  // 同时把过滤框打开：否则用户会看到一批被过滤过的结果、却找不到对应的过滤词，
+  // 看起来像是「结果被莫名锁住了」。空串走 falsy 分支，等同于没有交接。
+  const initialFilterQuery = options.initialFilterQuery ?? '';
+  const filterQuery = ref(initialFilterQuery);
+  const isFilterOpen = ref(initialFilterQuery !== '');
   const shouldFocusFilterInput = ref(false);
   const filterDismissalLayerId = ref<string | null>(null);
 
@@ -227,7 +237,11 @@ export function useFileBrowserFilter(options: {
 
   if (options.currentPath) {
     watch(options.currentPath, (newPath, oldPath) => {
-      if (oldPath !== undefined && newPath !== oldPath) {
+      // FORK-MODIFICATION: 反馈 3 —— `'' → 真实路径` 是**挂载后的首次导航**，
+      // 不是用户换了目录。原来这条规则会把它也当成换目录，closeFilter() 顺手
+      // 把 `initialFilterQuery` 刚接管的过滤词清掉，右格于是回到「搜索前的目录」。
+      // 首次导航本来就没什么可清的（那时过滤框是空的），豁免它不改变既有行为。
+      if (oldPath !== undefined && oldPath !== '' && newPath !== oldPath) {
         closeFilter();
       }
     });

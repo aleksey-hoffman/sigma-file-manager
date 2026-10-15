@@ -27,6 +27,10 @@ import {
   type FileBrowserVirtualRow,
 } from '../utils/file-browser-virtual-rows';
 import { resolveThumbnailMetrics } from '../utils/file-browser-thumbnail-sizes';
+import {
+  isFileBrowserImageEntry,
+  isFileBrowserVideoEntry,
+} from '../file-browser-entry-groups';
 import type { ThumbnailSize } from '../types';
 
 export type {
@@ -126,16 +130,33 @@ function escapeCssAttribute(value: string): string {
   return typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(value) : value.replace(/"/g, '\\"');
 }
 
+/**
+ * 列表行高：有缩略图（图片 / 视频）才跟着档位走。
+ *
+ * FORK-MODIFICATION: 反馈 4（2026-10-15）。判据必须与渲染侧一致：
+ * file-browser-list-entry-thumbnail.vue 里 `isMedia` 就是
+ * `isFileBrowserImageEntry || isFileBrowserVideoEntry`，非媒体时那个组件渲染空，
+ * 行里只剩一个 19px 的文件图标。拿别的谓词（比如「不是目录」）当判据，
+ * 会把非媒体文件也当成有缩略图而行高照样长 —— 那正好是用户报的现象。
+ *
+ * 与 CSS 的 `--navigator-list-view-entry-height` 也必须同源：
+ * 那一行是 `min-height`，若它还随档位变，虚拟行给 64 而 min-height 给 96，
+ * 元素会撑到 96 并压到下一个虚拟行槽位上，滚动就会错位。
+ */
 function getEntryDescriptionHeight(
   entry: DirEntry,
   entryDescription?: (entry: DirEntry) => string | undefined,
   thumbnailSize: ThumbnailSize = 'medium',
 ): number {
   const metrics = resolveThumbnailMetrics(thumbnailSize);
+  const hasThumbnail = isFileBrowserImageEntry(entry) || isFileBrowserVideoEntry(entry);
 
-  return entryDescription?.(entry)
+  const rowHeight = hasThumbnail ? metrics.listRowHeight : metrics.listFileEntryHeight;
+  const rowHeightWithDescription = hasThumbnail
     ? metrics.listRowHeightWithDescription
-    : metrics.listRowHeight;
+    : metrics.listFileEntryHeightWithDescription;
+
+  return entryDescription?.(entry) ? rowHeightWithDescription : rowHeight;
 }
 
 export function resolveViewportContentWidth(viewport: HTMLElement): number {
@@ -268,7 +289,11 @@ function createGridRows(
       variant: 'other',
       entries: groupedEntries.others,
       stickyIndex: 13,
-      entryHeight: metrics.gridEntryHeight,
+      // FORK-MODIFICATION: 反馈 2（2026-10-15）——非媒体文件行高改用固定值。
+      // 行高必须跟着卡高走：这一段的卡由 CSS 的 --navigator-grid-view-file-entry-height
+      // 定高，而虚拟滚动按 entryHeight 算 offset/滚动条总高，两者不是同一个数会直接
+      // 错位（卡之间留缝或互相压住，滚到底部对不齐）。
+      entryHeight: metrics.gridFileEntryHeight,
     },
   ];
 
