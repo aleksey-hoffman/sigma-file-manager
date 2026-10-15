@@ -324,9 +324,36 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
 </template>
 
 <style scoped>
+/* FORK-MODIFICATION: 目录树滚动修复（2026-10-15，真机验收定位根因后重写）。
+ *
+ * 根因：`.file-tree-view` 同时挂着全局的 `.sigma-ui-context-menu-trigger`，
+ * 也就是 `<ContextMenuTrigger as-child>` 把 class 合并到了这个 div 上，而那个
+ * class 是 `display: contents`。于是本元素不生成主盒，自己的
+ * `overflow-y: auto` 从声明那天起（04f0abc3）就从未生效 —— 树一直是直接被
+ * 外层裁掉的，从来没有滚动过。
+ *
+ * 为什么修在子元素、而不是给面板加 overflow：
+ * navigator.vue 里 `.navigator-page__folder-tree-panel { overflow-y: auto }`
+ * 压不住。reka-ui 的 `computePanelFlexBoxStyle` 给每个 SplitterPanel 返回
+ * **内联** `{ flexBasis:0; flexGrow:n; flexShrink:1; overflow:'hidden' }`
+ * （node_modules/reka-ui/dist/utils/style.js）。内联样式压过任何 CSS 规则，
+ * 跟特异性、书写顺序都无关，所以那条规则从来没生效过。面板的
+ * `overflow: hidden` 保持原样，让本元素当滚动容器。
+ *
+ * 为什么用 flex:1 + min-height:0 而不是 height:100%：
+ * 面板是 `display:flex; flex-direction:column`，本元素是它唯一的 flex 项。
+ * `flex:1` + `min-height:0` 不依赖百分比高度解析，稳。
+ *
+ * `display: flex` 用的是 scoped 规则，特异性 (0,2,0) 高于全局
+ * `.sigma-ui-context-menu-trigger` 的 (0,1,0)，可以覆盖 display:contents，
+ * 且只作用于本组件，不波及 context-menu-trigger 的其它 as-child 用法。
+ */
 .file-tree-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  height: 100%;
   font-size: 13px;
 }
 
@@ -337,11 +364,7 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
   padding: 2px 8px 2px 0;
   cursor: pointer;
   user-select: none;
-  /* FORK-MODIFICATION: 目录树滚动修复（2026-10-15）。
-     .file-tree-view 可能拿到 .sigma-ui-context-menu-trigger 的 display:contents
-     而不生成主盒，此时树行直接成为 navigator.vue 里 [data-panel] 的 flex 项。
-     flex 项默认 flex-shrink:1，容器不够高时行会被压扁而不是溢出滚动，
-     所以这里显式不收缩。普通块级布局下这条无副作用。 */
+  /* 行不能被压扁，否则容器不够高时是挤扁而不是溢出滚动 */
   flex-shrink: 0;
 }
 

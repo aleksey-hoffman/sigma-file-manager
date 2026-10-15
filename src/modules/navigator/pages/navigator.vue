@@ -1757,27 +1757,24 @@ onUnmounted(() => {
 
 /* FORK-MODIFICATION: 目录树过长时无法滚动（验收反馈 2026-10-15）。
  *
- * 根因是两层叠加，哪一层在起作用取决于打包产物里 display:contents 的实际落点：
- *   A. 若 .file-tree-view 真的拿到了 .sigma-ui-context-menu-trigger
- *      （components/ui/context-menu/context-menu-trigger.vue:24-26），
- *      它就成了 display:contents、不生成主盒，自身声明的
- *      `overflow-y:auto; height:100%`（file-browser-tree-view.vue:327-331）失效，
- *      树行变成下面 [data-panel] 的 flex 项 —— 需要 panel 自己是纵向 + 可滚动；
- *   B. 若那个 class 没落到树 div 上，.file-tree-view 就是 panel 的唯一 flex 子项，
- *      它自己的 overflow-y:auto 生效 —— panel 只需要别裁掉它。
- * 静态分析指向 A，实测截图却显示树是竖排（指向 B），两者矛盾且本项目拿不到
- * webview console 跑不了 getComputedStyle 复核。所以这里让两种情况都成立：
- * panel 设 column + overflow-y:auto（A 成立），同时不动树自身的滚动声明（B 成立）。
+ * 真机验收推翻了这个文件原先的假设，结论记在这里以免再走一遍：
+ * 给面板写 `overflow-y: auto` 是**无效的**。reka-ui 的
+ * `computePanelFlexBoxStyle`（node_modules/reka-ui/dist/utils/style.js）给每个
+ * SplitterPanel 返回内联 `{ flexBasis:0; flexGrow:n; flexShrink:1;
+ * overflow:'hidden' }`，内联样式压过任何 CSS 规则 —— 跟特异性、书写顺序无关。
+ * 上一版注释里「0,3,0 压过 [data-panel] 的 0,2,0」的推理漏掉了内联这一层，
+ * 所以那条规则在打包产物里编译出来了、也确实排最后，却从未生效。
  *
- * 规则写在 .navigator-page__tree-and-panes 之下是为了压过上面那条
- * `[data-panel]` 的 overflow:hidden（0,2,0 → 0,3,0）；写平级会输给它。
- * 不要改 context-menu-trigger.vue 的 display:contents —— 那会波及文件浏览器、
- * 空状态等所有 as-child 用法，回归面远大于本问题。
+ * 现在滚动容器是树自己（见 file-browser-tree-view.vue 的 .file-tree-view）。
+ * 这里只保留 `flex-direction: column` —— 面板内联样式里没有 flex-direction，
+ * 这条仍然有效，且让面板成为纵向 flex 容器，树才能用 flex:1 撑满并自己滚。
+ * 不要在这里再加 overflow：写了也是白写，反而会让人以为滚动靠的是它。
+ * 更不要改 context-menu-trigger.vue 的 display:contents —— 那会波及文件浏览器、
+ * 空状态等所有 as-child 用法，回归面远大于本问题；正确的做法是在树的
+ * scoped 规则里局部覆盖它。
  */
 .navigator-page__tree-and-panes :deep(.navigator-page__folder-tree-panel) {
   flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
 }
 
 /* 原 `.navigator-page__folder-tree { width:100%; height:100%; overflow:auto }`
