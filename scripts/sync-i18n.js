@@ -48,6 +48,21 @@ function removeUnneededKeys(enLocale, otherLocale) {
   return otherLocale;
 }
 
+function formatLocaleJson(localePayload) {
+  return `${JSON.stringify(localePayload, null, 2)}\n`;
+}
+
+function writeLocaleFile(filePath, localePayload) {
+  const nextContent = formatLocaleJson(localePayload);
+  const currentContent = fs.existsSync(filePath)
+    ? fs.readFileSync(filePath, 'utf8')
+    : '';
+
+  if (currentContent !== nextContent) {
+    fs.writeFileSync(filePath, nextContent);
+  }
+}
+
 function syncFiles() {
   const englishPayload = JSON.parse(fs.readFileSync(path.join(localeDirectoryPath, 'en.json'), 'utf8'));
 
@@ -60,7 +75,7 @@ function syncFiles() {
     const localePayload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     addMissingKeys(englishPayload, localePayload);
     removeUnneededKeys(englishPayload, localePayload);
-    fs.writeFileSync(filePath, `${JSON.stringify(localePayload, null, 2)}\n`);
+    writeLocaleFile(filePath, localePayload);
   }
 }
 
