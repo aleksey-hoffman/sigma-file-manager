@@ -1103,7 +1103,9 @@
     },
     "searchOptions": {
       "title": "تلاش کے اختیارات",
-      "matchCount": "{n} نتائج"
+      "matchCount": "{n} نتائج",
+      "results": "نتائج",
+      "options": "اختیارات"
     }
   },
   "openWith": {

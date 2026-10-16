@@ -11,6 +11,7 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { DEFAULT_SCAN_DEPTH } from '@/stores/schemas/user-settings';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   sortFileBrowserEntries,
@@ -55,7 +56,10 @@ export function useFileBrowserEntries(
   // 目录内搜索另开一个数字只会让用户对着两个含义相同的旋钮猜。
   const recursiveSearchRoot = currentPath ?? toRef(() => '');
   const recursiveMaxDepth = toRef(
-    () => Math.max(1, userSettingsStore.userSettings.globalSearch?.scanDepth ?? 7),
+    // FORK-MODIFICATION: 2026-10-16 —— 兜底值由字面量 7 改为 DEFAULT_SCAN_DEPTH。
+    // 之前这里写死 7，用户把默认深度改成 9 之后，只要设置项缺失就会退回 7 层，
+    // 表现为「设置页显示 9、实际只搜 7 层」。
+    () => Math.max(1, userSettingsStore.userSettings.globalSearch?.scanDepth ?? DEFAULT_SCAN_DEPTH),
   );
 
   // FORK-MODIFICATION: 需求反馈 2 —— 与全局搜索共用同一组选项。
@@ -74,6 +78,7 @@ export function useFileBrowserEntries(
     filterQuery,
     maxDepth: recursiveMaxDepth,
     resultLimit: toRef(() => searchOptions.value.resultLimit),
+    typoTolerance: toRef(() => searchOptions.value.typoTolerance),
   });
 
   watch(dirContents, () => {

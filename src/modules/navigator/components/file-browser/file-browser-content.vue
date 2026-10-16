@@ -13,6 +13,7 @@ import {
 import { ScrollBar } from '@/components/ui/scroll-area';
 import FileBrowserListHeader from './file-browser-list-header.vue';
 import FileBrowserContentBody from './file-browser-content-body.vue';
+import FileBrowserSearchOptionsBar from './file-browser-search-options-bar.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { provideFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
@@ -25,10 +26,34 @@ const props = withDefaults(defineProps<{
   // FORK-MODIFICATION: 'tree' added for tree view (issue #499)
   layout?: 'list' | 'grid' | 'tree';
   trackRelativeTime?: boolean;
+  // FORK-MODIFICATION: 2026-10-16 —— 搜索态。搜索中才渲染选项条，
+  // 平时浏览目录时不占那一行高度。
+  isSearching?: boolean;
+  searchIncludeFiles?: boolean;
+  searchIncludeDirectories?: boolean;
+  searchExactMatch?: boolean;
+  searchTypoTolerance?: boolean;
+  searchResultLimit?: number;
+  searchMatchCount?: number;
 }>(), {
   layout: undefined,
   trackRelativeTime: true,
+  isSearching: false,
+  searchIncludeFiles: true,
+  searchIncludeDirectories: true,
+  searchExactMatch: false,
+  searchTypoTolerance: false,
+  searchResultLimit: 50,
+  searchMatchCount: 0,
 });
+
+const emit = defineEmits<{
+  (event: 'update:searchIncludeFiles', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchIncludeDirectories', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchExactMatch', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchTypoTolerance', value: boolean | 'indeterminate'): void;
+  (event: 'update:searchResultLimit', value: string | number | undefined): void;
+}>();
 
 const ctx = useFileBrowserContext();
 const userSettingsStore = useUserSettingsStore();
@@ -77,13 +102,30 @@ function handleViewportScroll(event: Event) {
     }"
     :style="contentStyle"
   >
-
     <div
       v-if="props.layout === 'list'"
       class="file-browser__list-header-shell"
     >
       <FileBrowserListHeader ref="listHeaderRef" />
     </div>
+
+    <!-- FORK-MODIFICATION: 2026-10-16 —— 搜索选项常驻条。
+         放在列表表头**之上**、滚动区**之外**，于是它不随结果列表滚动，
+         改一个勾就能一直看着结果变（这正是把它从弹窗里搬出来的理由）。 -->
+    <FileBrowserSearchOptionsBar
+      v-if="props.isSearching"
+      :include-files="props.searchIncludeFiles"
+      :include-directories="props.searchIncludeDirectories"
+      :exact-match="props.searchExactMatch"
+      :typo-tolerance="props.searchTypoTolerance"
+      :result-limit="props.searchResultLimit"
+      :match-count="props.searchMatchCount"
+      @update:include-files="emit('update:searchIncludeFiles', $event)"
+      @update:include-directories="emit('update:searchIncludeDirectories', $event)"
+      @update:exact-match="emit('update:searchExactMatch', $event)"
+      @update:typo-tolerance="emit('update:searchTypoTolerance', $event)"
+      @update:result-limit="emit('update:searchResultLimit', $event)"
+    />
 
     <ScrollAreaRoot
       type="auto"

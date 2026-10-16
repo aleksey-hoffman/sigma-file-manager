@@ -1103,7 +1103,9 @@
     },
     "searchOptions": {
       "title": "खोज विकल्प",
-      "matchCount": "{n} मेल"
+      "matchCount": "{n} मेल",
+      "results": "परिणाम",
+      "options": "विकल्प"
     }
   },
   "openWith": {

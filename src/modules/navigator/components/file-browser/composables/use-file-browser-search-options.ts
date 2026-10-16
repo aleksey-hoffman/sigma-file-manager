@@ -16,6 +16,7 @@ export interface FileBrowserSearchOptions {
   includeFiles: boolean;
   includeDirectories: boolean;
   exactMatch: boolean;
+  typoTolerance: boolean;
   resultLimit: number;
 }
 
@@ -24,6 +25,7 @@ export function useFileBrowserSearchOptions(): {
   setIncludeFiles: (value: boolean | 'indeterminate') => void;
   setIncludeDirectories: (value: boolean | 'indeterminate') => void;
   setExactMatch: (value: boolean | 'indeterminate') => void;
+  setTypoTolerance: (value: boolean | 'indeterminate') => void;
   setResultLimit: (value: string | number | undefined) => void;
 } {
   const userSettingsStore = useUserSettingsStore();
@@ -35,6 +37,7 @@ export function useFileBrowserSearchOptions(): {
       includeFiles: settings.includeFiles,
       includeDirectories: settings.includeDirectories,
       exactMatch: settings.exactMatch,
+      typoTolerance: settings.typoTolerance,
       // 取值口就夹一次：下游（递归通道的 limit、结果截断）可以直接信任这个数字。
       resultLimit: clampFileBrowserSearchResultLimit(settings.resultLimit),
     };
@@ -61,6 +64,12 @@ export function useFileBrowserSearchOptions(): {
     }
   }
 
+  function setTypoTolerance(value: boolean | 'indeterminate') {
+    if (typeof value === 'boolean') {
+      userSettingsStore.set('globalSearch.typoTolerance', value);
+    }
+  }
+
   function setResultLimit(value: string | number | undefined) {
     userSettingsStore.set('globalSearch.resultLimit', clampFileBrowserSearchResultLimit(value));
   }
@@ -70,6 +79,7 @@ export function useFileBrowserSearchOptions(): {
     setIncludeFiles,
     setIncludeDirectories,
     setExactMatch,
+    setTypoTolerance,
     setResultLimit,
   };
 }

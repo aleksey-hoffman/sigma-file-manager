@@ -646,6 +646,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     setIncludeFiles: fileBrowserSearch.setIncludeFiles,
     setIncludeDirectories: fileBrowserSearch.setIncludeDirectories,
     setExactMatch: fileBrowserSearch.setExactMatch,
+    setTypoTolerance: fileBrowserSearch.setTypoTolerance,
     setResultLimit: fileBrowserSearch.setResultLimit,
 
     selectedEntries: selection.selectedEntries,

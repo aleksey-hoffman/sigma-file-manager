@@ -21,12 +21,6 @@ withDefaults(defineProps<{
   isSplitView?: boolean;
   // FORK-MODIFICATION: 需求反馈 2 —— layout toggle forwarded from file-browser.vue
   currentLayout: 'list' | 'grid';
-  // FORK-MODIFICATION: 需求反馈 2 —— 搜索选项，透传给过滤弹窗里的选项面板。
-  searchIncludeFiles: boolean;
-  searchIncludeDirectories: boolean;
-  searchExactMatch: boolean;
-  searchResultLimit: number;
-  searchMatchCount: number;
 }>(), {
   isSplitView: false,
   currentLayout: 'list',
@@ -48,10 +42,6 @@ const emit = defineEmits<{
   (event: 'createNewDirectory'): void;
   (event: 'createNewFile'): void;
   (event: 'filterInputFocused'): void;
-  (event: 'update:searchIncludeFiles', value: boolean | 'indeterminate'): void;
-  (event: 'update:searchIncludeDirectories', value: boolean | 'indeterminate'): void;
-  (event: 'update:searchExactMatch', value: boolean | 'indeterminate'): void;
-  (event: 'update:searchResultLimit', value: string | number | undefined): void;
   (event: 'toggle-layout'): void;
 }>();
 
@@ -102,17 +92,8 @@ function handleAddressBarNavigate(path: string) {
           :filter-query="filterQuery"
           :is-filter-open="isFilterOpen"
           :focus-input="focusFilterInput"
-          :search-include-files="searchIncludeFiles"
-          :search-include-directories="searchIncludeDirectories"
-          :search-exact-match="searchExactMatch"
-          :search-result-limit="searchResultLimit"
-          :search-match-count="searchMatchCount"
           @update:filter-query="emit('update:filterQuery', $event)"
           @update:is-filter-open="emit('update:isFilterOpen', $event)"
-          @update:search-include-files="emit('update:searchIncludeFiles', $event)"
-          @update:search-include-directories="emit('update:searchIncludeDirectories', $event)"
-          @update:search-exact-match="emit('update:searchExactMatch', $event)"
-          @update:search-result-limit="emit('update:searchResultLimit', $event)"
           @filter-input-focused="emit('filterInputFocused')"
         />
       </div>

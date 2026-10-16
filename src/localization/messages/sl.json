@@ -1103,7 +1103,9 @@
     },
     "searchOptions": {
       "title": "Možnosti iskanja",
-      "matchCount": "{n} zadetkov"
+      "matchCount": "{n} zadetkov",
+      "results": "Zadetki",
+      "options": "Možnosti"
     }
   },
   "openWith": {

@@ -1104,7 +1104,9 @@
     },
     "searchOptions": {
       "title": "Search options",
-      "matchCount": "no matches | 1 match | {n} matches"
+      "matchCount": "no matches | 1 match | {n} matches",
+      "results": "Results",
+      "options": "Options"
     }
   },
   "openWith": {

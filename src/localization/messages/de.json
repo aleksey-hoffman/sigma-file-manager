@@ -1073,7 +1073,9 @@
     },
     "searchOptions": {
       "title": "Suchoptionen",
-      "matchCount": "{n} Treffer"
+      "matchCount": "{n} Treffer",
+      "results": "Ergebnisse",
+      "options": "Optionen"
     }
   },
   "openWith": {

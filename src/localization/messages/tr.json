@@ -1073,7 +1073,9 @@
     },
     "searchOptions": {
       "title": "Arama seçenekleri",
-      "matchCount": "{n} eşleşme"
+      "matchCount": "{n} eşleşme",
+      "results": "Sonuçlar",
+      "options": "Seçenekler"
     }
   },
   "openWith": {

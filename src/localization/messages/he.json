@@ -1103,7 +1103,9 @@
     },
     "searchOptions": {
       "title": "אפשרויות חיפוש",
-      "matchCount": "{n} התאמות"
+      "matchCount": "{n} התאמות",
+      "results": "תוצאות",
+      "options": "אפשרויות"
     }
   },
   "openWith": {

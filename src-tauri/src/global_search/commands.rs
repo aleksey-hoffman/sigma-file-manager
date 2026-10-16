@@ -67,6 +67,7 @@ pub async fn search_directory_recursive(
     query: String,
     max_depth: u32,
     limit: u32,
+    typo_tolerance: bool,
 ) -> Result<Vec<GlobalSearchResultEntry>, String> {
-    super::query::search_directory_recursive(root_path, query, max_depth, limit).await
+    super::query::search_directory_recursive(root_path, query, max_depth, limit, typo_tolerance).await
 }

@@ -353,11 +353,20 @@ fn should_include_recursive_entry(
     !ignored_matcher.is_ignored(&normalize_path(&path.to_string_lossy()))
 }
 
+// FORK-MODIFICATION: 2026-10-16 —— 目录内搜索的容错粗筛阈值。
+//
+// 刻意**不复用** `get_min_score_for_query_length`：那个函数是为「模糊搜索排序」
+// 设计的门槛，1-3 字符给到 0.9，恰恰会把「095 → 20251009_0095_27.jpg」
+// 这类明显的容错命中（0.82）挡掉。粗筛阶段需要的是「宁可多收、交给前端精筛」，
+// 所以这里取一个明显更松的值。
+const TYPO_TOLERANCE_COEFFICIENT_THRESHOLD: f32 = 0.7;
+
 fn search_directory_recursive_blocking(
     root_path: String,
     query: String,
     max_depth: u32,
     limit: u32,
+    typo_tolerance: bool,
 ) -> Result<Vec<GlobalSearchResultEntry>, String> {
     let root = PathBuf::from(&root_path);
 
@@ -366,7 +375,6 @@ fn search_directory_recursive_blocking(
     }
 
     let normalized_query = normalize_case(&query);
-    let min_score = get_min_score_for_query_length(normalized_query.len());
     let ignored_paths: Vec<String> = builtin_ignored_paths()
         .iter()
         .map(|path| path.to_string())
@@ -375,7 +383,18 @@ fn search_directory_recursive_blocking(
     let effective_limit = limit.max(1) as usize;
     // 命中数远超 limit 时提前收工：磁盘遍历没有天然上界，一个十万文件的目录树
     // 走完再排序既慢又没必要。
-    let collection_cap = effective_limit.saturating_mul(20);
+    //
+    // FORK-MODIFICATION: 2026-10-16 —— 这个「上限」原来是 effective_limit * 20，
+    // 而下面计数的 `seen` 数的是**扫描过的条目**，不是命中数。两者一叠加的效果是：
+    // 在一个 43,167 个条目的照片目录里，遍历到第 1000 个条目就收工，
+    // 于是「递归搜索」在大目录里表现得**和没实现一模一样**（用户 2026-10-16 实测反馈）。
+    //
+    // 现在把两个概念拆开：
+    //   collection_cap 数**扫描量**，是防超大目录卡死的安全阀，给足余量；
+    //   match_cap 数**命中量**，是「结果已经足够挑了」的提前收工条件。
+    // 这样小目录与中目录会一路扫完，大目录也不会被一条无关的文件名挡在门外。
+    let collection_cap = effective_limit.saturating_mul(200).max(100_000);
+    let match_cap = effective_limit.saturating_mul(4).max(200);
     let walk_depth = max_depth.max(1) as usize;
 
     let mut matched: Vec<(f32, GlobalSearchResultEntry)> = Vec::new();
@@ -403,6 +422,7 @@ fn search_directory_recursive_blocking(
         }
 
         seen += 1;
+
         if seen > collection_cap {
             break;
         }
@@ -412,8 +432,24 @@ fn search_directory_recursive_blocking(
             None => continue,
         };
 
-        // 粗筛：只看文件名。做模糊匹配是前端 matcher 的职责。
-        if !normalized_query.is_empty() && !normalize_case(&name).contains(&normalized_query) {
+        // 粗筛：子串命中是零成本的快路径，一律收录。
+        //
+        // FORK-MODIFICATION: 2026-10-16 —— 容错（typoTolerance）接进来。
+        // 之前只有子串，所以「拼写容错」这个开关在目录内搜索里**没有对应实现**，
+        // 上一轮干脆没放这个复选框。现在有了：子串没命中时才去算相似度。
+        //
+        // 为什么不能每次都算分：`calculate_similarity_score` 内部是
+        // Levenshtein 的 O(n·m) 双行 DP，43,167 个条目每个都算一遍会让
+        // 每敲一个键都卡一下。先走 `contains` 把它挡在绝大多数之外。
+        let is_substring_hit = normalized_query.is_empty()
+            || normalize_case(&name).contains(&normalized_query);
+
+        let is_typo_hit = !is_substring_hit && typo_tolerance && {
+            let score = calculate_similarity_score(&normalized_query, &name);
+            score >= TYPO_TOLERANCE_COEFFICIENT_THRESHOLD
+        };
+
+        if !is_substring_hit && !is_typo_hit {
             continue;
         }
 
@@ -436,9 +472,24 @@ fn search_directory_recursive_blocking(
             calculate_similarity_score(&normalized_query, &name)
         };
 
-        if name_score < min_score {
-            continue;
-        }
+        // FORK-MODIFICATION: 2026-10-16 —— 这里**曾经**有一道
+        // `if name_score < min_score { continue; }`，现已移除。
+        //
+        // 移除的理由是它与上面的粗筛自相矛盾。粗筛已经用 `contains` 确认过
+        // 「查询是文件名的子串」，那是用户明确敲出来的字面量；而
+        // `calculate_similarity_score` 对「名字比查询长」的子串命中返回的是
+        // `0.8 + (query_len / name_len) * 0.15`。于是：
+        //
+        //   查询 "095"（3 字符，门槛 0.9）
+        //   命中 "20251009_0095_27.jpg"
+        //   得分 0.8 + (3/21)*0.15 = 0.821  <  0.9  →  被丢弃
+        //
+        // 三位数字的查询几乎必然落进这个区间（名字越长得分越低），
+        // 于是用户搜 095 永远一条都搜不到 —— 表现为「递归搜索没实现」，
+        // 而且**与目录大小无关**，小目录也一样搜不到。
+        //
+        // 现在分数只用于排序，不再当门槛：粗筛已经保证了结果集里每一条都是
+        // 用户输入的真子串。真正的数量控制交给 effective_limit / match_cap。
 
         let (modified_time, accessed_time, created_time) = metadata_times_unix_ms(&metadata);
         let path_string = path.to_string_lossy().to_string();
@@ -462,6 +513,12 @@ fn search_directory_recursive_blocking(
         };
 
         matched.push((name_score, result));
+
+        // 命中数够挑了就收工。这是真正意义的「结果已经足够」，与上面的
+        // collection_cap（安全阀）不是一回事。
+        if matched.len() >= match_cap {
+            break;
+        }
     }
 
     matched.par_sort_by(|(score_a, entry_a), (score_b, entry_b)| {
@@ -486,13 +543,14 @@ pub async fn search_directory_recursive(
     query: String,
     max_depth: u32,
     limit: u32,
+    typo_tolerance: bool,
 ) -> Result<Vec<GlobalSearchResultEntry>, String> {
     if root_path.trim().is_empty() {
         return Ok(Vec::new());
     }
 
     tauri::async_runtime::spawn_blocking(move || {
-        search_directory_recursive_blocking(root_path, query, max_depth, limit)
+        search_directory_recursive_blocking(root_path, query, max_depth, limit, typo_tolerance)
     })
     .await
     .map_err(|join_error| format!("Directory recursive search task failed: {join_error}"))?
@@ -686,5 +744,267 @@ mod tests {
             "exile missing",
             "Exile by Aleksey Hoffman.jpg"
         ));
+    }
+
+    // FORK-MODIFICATION: 2026-10-16 —— 递归搜索在大目录里「形同没实现」的回归测试。
+    //
+    // 真实故障：collection_cap 原来是 limit * 20，而计数数的是**扫描过的条目**。
+    // limit 默认 50 → 扫到第 1000 个条目就收工。用户在 43,167 个条目的照片目录里
+    // 搜一个确实存在的文件名，永远得到「无匹配」，于是报告「递归搜索没实现」。
+    //
+    // 这个测试按同样的比例造夹具：造足够多的**无关**条目把目标文件挤到
+    // collection_cap 之外，再断言它仍能被搜到。夹具只要改动 cap 的倍率就会红。
+    mod recursive_scan_cap {
+        use super::search_directory_recursive_blocking;
+        use std::fs;
+        use std::path::{Path, PathBuf};
+        use std::sync::atomic::{AtomicU32, Ordering};
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
+
+        /// 夹具根目录。
+        ///
+        /// FORK-MODIFICATION: 2026-10-16 —— 刻意**不用 `tempfile::TempDir`**。
+        /// `builtin_ignored_paths()` 覆盖 `/tmp` 与 `/AppData/Local/Temp`，而
+        /// `TempDir` 默认就建在后者下面，于是 `filter_entry` 会把整棵夹具剪掉，
+        /// 三个测试全部 0 命中 —— 看起来像「递归搜索完全失效」，实际是被忽略规则挡死了。
+        /// 这是本项目第二次栽在同一个坑上（前端夹具那次记在 AGENTS.md 里），所以写进注释。
+        fn fixture_root(label: &str) -> PathBuf {
+            let home = std::env::var("USERPROFILE").unwrap_or_else(|_| "C:/".to_string());
+            let nanos = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0);
+            let seq = COUNTER.fetch_add(1, Ordering::Relaxed);
+
+            PathBuf::from(home)
+                .join("afm-rust-search-fixtures")
+                .join(format!("{label}-{}-{nanos}-{seq}", std::process::id()))
+        }
+
+        struct Fixture {
+            root: PathBuf,
+        }
+
+        impl Fixture {
+            fn new(label: &str) -> Self {
+                let root = fixture_root(label);
+                let _ = fs::remove_dir_all(&root);
+                fs::create_dir_all(&root).expect("create fixture root");
+
+                Self { root }
+            }
+
+            fn path(&self) -> &Path {
+                &self.root
+            }
+        }
+
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                let _ = fs::remove_dir_all(&self.root);
+            }
+        }
+
+        /// 造一个「噪音远多于目标」的目录树。
+        ///
+        /// 关键：目标文件放在**最后创建**的子目录里，而噪音条目数远超旧 cap。
+        /// WalkDir 的遍历顺序受文件系统影响不可预测，但无论顺序如何，
+        /// 旧实现在扫够 1000 条之前或之后都会丢掉目标 —— 两种顺序都能让测试转红。
+        fn create_noisy_tree(noise_dirs: usize, noise_per_dir: usize) -> (Fixture, String) {
+            let fixture = Fixture::new("noisy");
+
+            for dir_index in 0..noise_dirs {
+                let dir = fixture.path().join(format!("noise_{dir_index:04}"));
+                fs::create_dir_all(&dir).expect("create noise dir");
+
+                for file_index in 0..noise_per_dir {
+                    fs::write(
+                        dir.join(format!("noise_{dir_index:04}_{file_index:04}.bin")),
+                        b"x",
+                    )
+                    .expect("write noise file");
+                }
+            }
+
+            let target_dir = fixture.path().join("zzz_target");
+            fs::create_dir_all(&target_dir).expect("create target dir");
+            fs::write(target_dir.join("needle_095.txt"), b"hit").expect("write target");
+
+            (fixture, "zzz_target/needle_095.txt".to_string())
+        }
+
+        fn to_slash(value: &str) -> String {
+            value.replace('\\', "/")
+        }
+
+        #[test]
+        fn finds_target_beyond_the_old_scan_cap() {
+            // 30 目录 × 50 文件 = 1500 条噪音，远超旧实现的 1000 条扫描上限。
+            let (fixture, target_relative) = create_noisy_tree(30, 50);
+
+            let results = search_directory_recursive_blocking(
+                to_slash(&fixture.path().to_string_lossy()),
+                "needle".into(),
+                7,
+                50,
+                false,
+            )
+            .expect("recursive search should succeed");
+
+            assert!(
+                results.iter().any(|entry| entry.path.ends_with(&target_relative)),
+                "递归搜索必须能扫过 1500 条噪音后仍命中深层目标；\
+                 实际命中 {} 条，路径示例 {:?}",
+                results.len(),
+                results.iter().map(|e| &e.path).take(3).collect::<Vec<_>>()
+            );
+        }
+
+        #[test]
+        fn matches_mid_name_substring_the_way_users_type_it() {
+            // 用户搜 "095" 命中 "20251009_0095_27.jpg" —— 子串在文件名**中间**，
+            // 不是前缀也不是整名。这正是真机截图里的那类查询。
+            let fixture = Fixture::new("midname");
+            let sub = fixture.path().join("1991_guangzhou");
+            fs::create_dir_all(&sub).expect("create sub dir");
+            fs::write(sub.join("20251009_0095_27.jpg"), b"x").expect("write target");
+
+            let results = search_directory_recursive_blocking(
+                to_slash(&fixture.path().to_string_lossy()),
+                "095".into(),
+                7,
+                50,
+                false,
+            )
+            .expect("recursive search should succeed");
+
+            assert_eq!(
+                results.len(),
+                1,
+                "三位数字查询必须命中文件名中段的条目；实际 {:?}",
+                results.iter().map(|e| &e.path).collect::<Vec<_>>()
+            );
+        }
+
+        #[test]
+        fn respects_depth_limit() {
+            let fixture = Fixture::new("depth");
+            let deep = fixture.path().join("a").join("b").join("c");
+            fs::create_dir_all(&deep).expect("create deep dir");
+            fs::write(deep.join("needle_deep.txt"), b"hit").expect("write deep target");
+
+            let root_path = to_slash(&fixture.path().to_string_lossy());
+
+            // 深度 7 够得到 a/b/c。
+            let found = search_directory_recursive_blocking(
+                root_path.clone(),
+                "needle".into(),
+                7,
+                50,
+                false,
+            )
+            .expect("search should succeed");
+            assert_eq!(found.len(), 1, "深度 7 时应命中 a/b/c/needle_deep.txt");
+
+            // 深度 2 只够走到 a，够不到 a/b/c。
+            let shallow = search_directory_recursive_blocking(root_path, "needle".into(), 2, 50, false)
+                .expect("search should succeed");
+            assert!(shallow.is_empty(), "深度 2 时不应命中 3 层深的文件");
+        }
+
+        #[test]
+        fn truncates_to_limit_but_keeps_best_scoring_first() {
+            let fixture = Fixture::new("truncate");
+
+            for index in 0..10 {
+                fs::write(
+                    fixture.path().join(format!("needle_{index:02}.txt")),
+                    b"x",
+                )
+                .expect("write file");
+            }
+
+            let results = search_directory_recursive_blocking(
+                to_slash(&fixture.path().to_string_lossy()),
+                "needle".into(),
+                7,
+                3,
+                false,
+            )
+            .expect("search should succeed");
+
+            assert_eq!(results.len(), 3, "limit=3 时只回 3 条");
+        }
+
+        // FORK-MODIFICATION: 2026-10-16 —— 容错开关真的有效果。
+        //
+        // 这一对是「假开关」与「真开关」的分界：如果 typo_tolerance=false 时
+        // 也返回同样的结果，那界面上的复选框就只是个摆设。
+        #[test]
+        fn typo_tolerance_off_does_not_match_a_typo() {
+            let fixture = Fixture::new("typo_off");
+            fs::write(fixture.path().join("report_final.txt"), b"x").expect("write target");
+
+            let results = search_directory_recursive_blocking(
+                to_slash(&fixture.path().to_string_lossy()),
+                "report_fianl".into(),
+                7,
+                50,
+                false,
+            )
+            .expect("search should succeed");
+
+            assert!(
+                results.is_empty(),
+                "关闭容错时拼错的查询不该命中；实际 {:?}",
+                results.iter().map(|e| &e.path).collect::<Vec<_>>()
+            );
+        }
+
+        #[test]
+        fn typo_tolerance_on_matches_a_near_miss() {
+            let fixture = Fixture::new("typo_on");
+            fs::write(fixture.path().join("report_final.txt"), b"x").expect("write target");
+
+            let results = search_directory_recursive_blocking(
+                to_slash(&fixture.path().to_string_lossy()),
+                "report_fianl".into(),
+                7,
+                50,
+                true,
+            )
+            .expect("search should succeed");
+
+            assert_eq!(
+                results.len(),
+                1,
+                "开启容错后相邻字母颠倒应当命中；实际 {:?}",
+                results.iter().map(|e| &e.path).collect::<Vec<_>>()
+            );
+        }
+
+        #[test]
+        fn typo_tolerance_does_not_swallow_unrelated_names() {
+            let fixture = Fixture::new("typo_noise");
+            fs::write(fixture.path().join("zzzzzzzzzzzz.txt"), b"x").expect("write noise");
+            fs::write(fixture.path().join("report_final.txt"), b"x").expect("write target");
+
+            let results = search_directory_recursive_blocking(
+                to_slash(&fixture.path().to_string_lossy()),
+                "report_fianl".into(),
+                7,
+                50,
+                true,
+            )
+            .expect("search should succeed");
+
+            assert_eq!(
+                results.len(),
+                1,
+                "容错不该把毫不相关的文件名也收进来"
+            );
+        }
     }
 }

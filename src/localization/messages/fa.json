@@ -1069,7 +1069,9 @@
     },
     "searchOptions": {
       "title": "گزینه‌های جستجو",
-      "matchCount": "{n} نتیجه"
+      "matchCount": "{n} نتیجه",
+      "results": "نتایج",
+      "options": "گزینه‌ها"
     }
   },
   "openWith": {

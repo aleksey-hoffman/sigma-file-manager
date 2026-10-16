@@ -41,6 +41,7 @@ import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   buildAllowedUserSettingsStorageKeys,
   DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS,
+  DEFAULT_SCAN_DEPTH,
   migrateUserSettingsStorage,
   USER_SETTINGS_SCHEMA_VERSION_KEY,
   USER_SETTINGS_SCHEMA_VERSION,
@@ -174,7 +175,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       increaseFileViewGaps: false,
     },
     globalSearch: {
-      scanDepth: 7,
+      // FORK-MODIFICATION: 2026-10-16 —— 由 7 改为 9。值来自 schemas 层，
+      // 与迁移步骤共用同一个常量，避免「默认值改了、迁移还认旧值」这种半改状态。
+      scanDepth: DEFAULT_SCAN_DEPTH,
       autoScanPeriodMinutes: 60,
       autoReindexWhenIdle: true,
       ignoredPaths: [...DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS],

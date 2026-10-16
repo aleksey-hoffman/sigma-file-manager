@@ -1103,7 +1103,9 @@
     },
     "searchOptions": {
       "title": "Որոնման տարբերակներ",
-      "matchCount": "{n} համընկերություններ"
+      "matchCount": "{n} համընկերություններ",
+      "results": "արդյունքներ",
+      "options": "տարբերակներ"
     }
   },
   "openWith": {

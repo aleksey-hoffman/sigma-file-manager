@@ -1103,7 +1103,9 @@
     },
     "searchOptions": {
       "title": "Параметры поиска",
-      "matchCount": "{n} совпадений"
+      "matchCount": "{n} совпадений",
+      "results": "Результаты",
+      "options": "Параметры"
     }
   },
   "openWith": {

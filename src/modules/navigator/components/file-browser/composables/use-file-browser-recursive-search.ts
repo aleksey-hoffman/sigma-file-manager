@@ -79,6 +79,9 @@ export function useFileBrowserRecursiveSearch(options: {
   maxDepth: Ref<number>;
   // FORK-MODIFICATION: 需求反馈 2 —— 结果条数上限，来自 globalSearch.resultLimit。
   resultLimit?: Ref<number>;
+  // FORK-MODIFICATION: 2026-10-16 —— 容错开关。传下去让 Rust 粗筛在子串没命中时
+  // 也算一次相似度，否则「拼写容错」在目录内搜索里会是个点了没反应的假开关。
+  typoTolerance?: Ref<boolean>;
 }) {
   // 递归命中项。与当前目录的条目并存在同一个列表里，所以对外仍叫 entries。
   const recursiveMatches = shallowRef<DirEntry[]>([]);
@@ -116,6 +119,7 @@ export function useFileBrowserRecursiveSearch(options: {
         query,
         maxDepth: options.maxDepth.value,
         limit,
+        typoTolerance: options.typoTolerance?.value ?? false,
       });
 
       if (sequence !== requestSequence) {

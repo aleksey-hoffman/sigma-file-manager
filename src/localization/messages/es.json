@@ -1073,7 +1073,9 @@
     },
     "searchOptions": {
       "title": "Opciones de búsqueda",
-      "matchCount": "{n} coincidencias"
+      "matchCount": "{n} coincidencias",
+      "results": "Resultados",
+      "options": "Opciones"
     }
   },
   "openWith": {

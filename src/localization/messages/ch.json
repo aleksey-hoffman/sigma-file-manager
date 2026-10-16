@@ -1073,7 +1073,9 @@
     },
     "searchOptions": {
       "title": "搜索选项",
-      "matchCount": "无匹配 | 匹配 1 项 | 匹配 {n} 项"
+      "matchCount": "无匹配 | 匹配 1 项 | 匹配 {n} 项",
+      "results": "结果",
+      "options": "选项"
     }
   },
   "openWith": {

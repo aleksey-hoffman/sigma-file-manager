@@ -1365,6 +1365,79 @@ onUnmounted(() => {
                 class="navigator-page__panes-section"
               >
                 <div class="navigator-page__panes-container">
+                  <!-- FORK-MODIFICATION: 2026-10-16 —— 目录格在前、搜索面板在后。
+                       此前 GlobalSearchView 排在 ResizablePanelGroup 之前，于是
+                       「打开全局搜索」把搜索界面顶到左边、目录被挤到右边。
+
+                       用户要的是反过来：**左侧保持目录视图，右侧切到搜索界面**。
+                       这样眼睛不用来回横跨屏幕去对照「搜到的」和「在哪搜的」，
+                       也和「打开所属目录」那套左目录/右结果的布局一致。
+                       单格模式（下面第二处）没有左右之分，保持原样。 -->
+                  <ResizablePanelGroup
+                    direction="horizontal"
+                    class="navigator-page__panes"
+                  >
+                    <template v-if="workspacesStore.currentTabGroup && isSplitView">
+                      <template
+                        v-for="(tab, index) in workspacesStore.currentTabGroup"
+                        :key="tab.id"
+                      >
+                        <ResizablePanel
+                          :default-size="50"
+                          :min-size="15"
+                          @mousedown="handlePaneFocus(tab.id)"
+                        >
+                          <FileBrowser
+                            :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
+                            :tab="tab"
+                            :pane-index="index"
+                            :layout="getLayoutForPath(tab.path)"
+                            :track-relative-time="trackNavigatorRelativeTime"
+                            :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
+                            :is-split-view="true"
+                            class="navigator-page__pane"
+                            @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                            @update:current-dir-entry="handleCurrentDirChange"
+                          />
+                        </ResizablePanel>
+                        <ResizableHandle
+                          v-if="index === 0"
+                          with-handle
+                        />
+                      </template>
+                    </template>
+                    <template v-else-if="workspacesStore.currentTabGroup">
+                      <ResizablePanel :default-size="100">
+                        <FileBrowser
+                          :key="workspacesStore.currentTabGroup[0].id"
+                          :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
+                          :tab="workspacesStore.currentTabGroup[0]"
+                          :pane-index="0"
+                          :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
+                          :track-relative-time="trackNavigatorRelativeTime"
+                          :is-active-pane="true"
+                          class="navigator-page__pane"
+                          @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
+                          @update:current-dir-entry="handleCurrentDirChange"
+                        />
+                      </ResizablePanel>
+                    </template>
+                    <ResizablePanel
+                      v-else
+                      :default-size="100"
+                    >
+                      <FileBrowser
+                        ref="singlePaneRef"
+                        :layout="getLayoutForPath(currentActivePath)"
+                        :track-relative-time="trackNavigatorRelativeTime"
+                        :is-active-pane="true"
+                        class="navigator-page__pane"
+                        @update:selected-entries="(entries) => handleSelectionChange(entries)"
+                        @update:current-dir-entry="handleCurrentDirChange"
+                      />
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+
                   <GlobalSearchView
                     ref="globalSearchViewRef"
                     v-show="globalSearchStore.isOpen"
@@ -1373,71 +1446,7 @@ onUnmounted(() => {
                     @open-entry="handleGlobalSearchOpenEntry"
                     @update:selected-entries="handleSearchSelectionChange"
                   />
-                  <ResizablePanelGroup
-                    direction="horizontal"
-                    class="navigator-page__panes"
-                  >
-                <template v-if="workspacesStore.currentTabGroup && isSplitView">
-                  <template
-                    v-for="(tab, index) in workspacesStore.currentTabGroup"
-                    :key="tab.id"
-                  >
-                    <ResizablePanel
-                      :default-size="50"
-                      :min-size="15"
-                      @mousedown="handlePaneFocus(tab.id)"
-                    >
-                      <FileBrowser
-                        :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
-                        :tab="tab"
-                        :pane-index="index"
-                        :layout="getLayoutForPath(tab.path)"
-                        :track-relative-time="trackNavigatorRelativeTime"
-                        :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
-                        :is-split-view="true"
-                        class="navigator-page__pane"
-                        @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
-                        @update:current-dir-entry="handleCurrentDirChange"
-                      />
-                    </ResizablePanel>
-                    <ResizableHandle
-                      v-if="index === 0"
-                      with-handle
-                    />
-                  </template>
-                </template>
-                <template v-else-if="workspacesStore.currentTabGroup">
-                  <ResizablePanel :default-size="100">
-                    <FileBrowser
-                      :key="workspacesStore.currentTabGroup[0].id"
-                      :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
-                      :tab="workspacesStore.currentTabGroup[0]"
-                      :pane-index="0"
-                      :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
-                      :track-relative-time="trackNavigatorRelativeTime"
-                      :is-active-pane="true"
-                      class="navigator-page__pane"
-                      @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
-                      @update:current-dir-entry="handleCurrentDirChange"
-                    />
-                  </ResizablePanel>
-                </template>
-                <ResizablePanel
-                  v-else
-                  :default-size="100"
-                >
-                  <FileBrowser
-                    ref="singlePaneRef"
-                    :layout="getLayoutForPath(currentActivePath)"
-                    :track-relative-time="trackNavigatorRelativeTime"
-                    :is-active-pane="true"
-                    class="navigator-page__pane"
-                    @update:selected-entries="(entries) => handleSelectionChange(entries)"
-                    @update:current-dir-entry="handleCurrentDirChange"
-                  />
-                </ResizablePanel>
-              </ResizablePanelGroup>
-              </div>
+                </div>
               </ResizablePanel>
             </ResizablePanelGroup>
             <ClipboardToolbar

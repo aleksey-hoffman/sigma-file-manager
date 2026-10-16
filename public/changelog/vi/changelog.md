@@ -1,5 +1,36 @@
 # Nhật ký thay đổi
 
+## [3.1.3-beta.1] - October 2026
+
+**Summary:** Directory search had two defects that made recursion look unimplemented; both are fixed. Search options now sit where you can watch results change, and split view keeps directories on the left.
+
+### Directory search: recursion genuinely was not working
+
+The most important fix here, caused by two independent problems stacked on top of each other:
+
+- **The traversal cap counted the wrong thing.** The recursive walk had a "stop once we have seen enough" limit, but it counted **entries scanned**, not entries matched, and the limit was 20× the result limit (50 × 20 = 1000 by default). In a photo directory with 43,167 entries the walk therefore stopped at entry 1000 — indistinguishable from "current layer only". It now stops on match count, with the scan-volume safety valve widened separately.
+- **Short queries were discarded by the score threshold.** After a filename substring matched, a score gate still applied, and three-character queries demanded 0.9: searching `095` against `20251009_0095_27.jpg` scores only 0.82, so it was **thrown away on the spot**. This was independent of directory size — small directories failed the same way. The score now only ranks results; it no longer gates them.
+
+The previous release note claiming "directory search is now recursive" was therefore not true at the time.
+
+### Search options moved above the results
+
+Show files / show directories / exact match / typo tolerance / result limit used to live in a button plus popover inside the filter box — but the point of adjusting options is to **watch the results change**, and hiding them behind a popover means opening and closing a floating layer on every adjustment. They are now permanently visible above the search results, so ticking one box updates the list below in view.
+
+**Typo tolerance now actually does something** rather than being decoration: the recursive scan also computes a similarity score when the substring misses. With it off, a misspelled query still finds nothing; with it on, it matches — both directions are covered by tests.
+
+### Split view after search: directories on the left, search on the right
+
+Opening global search previously pushed the search UI to the left and shoved directories to the right. It is now the other way round: **the left pane keeps the directory view and the right pane switches to search**, matching the "open containing directory" layout.
+
+### Default search depth 7 → 9 levels
+
+Existing installations are migrated to 9 as well — changing only the default has no effect on people who already have 7 written in their local settings. A depth you set yourself is never overwritten.
+
+### Also
+
+- **Right-click "Add to favorites" now asks for a category**: pick an existing one or create one on the spot.
+
 ## [3.0.1] - October 2026
 
 **Summary:** Fixes a data-loss bug in batch rename, found while testing 3.0.0.

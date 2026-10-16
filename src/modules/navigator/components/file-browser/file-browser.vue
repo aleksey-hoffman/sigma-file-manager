@@ -225,10 +225,13 @@ const favoriteCategoryEntryNames = computed(() => {
   return favoriteCategoryEntries.value.map(entry => entry.name);
 });
 
-// FORK-MODIFICATION: 需求反馈 2 —— 搜索选项面板上的「命中 N 项」。
-// 非搜索态传 -1 让面板把这一行藏掉：空过滤框下面写「0 项」会被读成「搜了没结果」。
+// FORK-MODIFICATION: 需求反馈 2 —— 搜索选项条（常驻在结果上方）。
+// 只有真的在过滤时才渲染：平时浏览目录不占那一行高度，而一个常驻在空列表上方的
+// 控件会被读成「这个区域一直是这样的」。
+const isSearching = computed(() => !!fb.filterQuery.value.trim());
+
 const searchMatchCount = computed(() => {
-  return fb.filterQuery.value.trim() ? fb.entries.value.length : -1;
+  return isSearching.value ? fb.entries.value.length : 0;
 });
 
 provideFileBrowserContext({
@@ -340,11 +343,6 @@ defineExpose({
       :is-loading="fb.isLoading.value || fb.isRefreshing.value"
       :is-split-view="props.isSplitView"
       :current-layout="currentLayout"
-      :search-include-files="fb.searchOptions.value.includeFiles"
-      :search-include-directories="fb.searchOptions.value.includeDirectories"
-      :search-exact-match="fb.searchOptions.value.exactMatch"
-      :search-result-limit="fb.searchOptions.value.resultLimit"
-      :search-match-count="searchMatchCount"
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"
@@ -357,10 +355,6 @@ defineExpose({
       @create-new-directory="fb.openNewItemDialog('directory')"
       @create-new-file="fb.openNewItemDialog('file')"
       @filter-input-focused="fb.clearFilterInputFocusRequest"
-      @update:search-include-files="fb.setIncludeFiles"
-      @update:search-include-directories="fb.setIncludeDirectories"
-      @update:search-exact-match="fb.setExactMatch"
-      @update:search-result-limit="fb.setResultLimit"
       @toggle-layout="setLayout(currentLayout === 'grid' ? 'list' : 'grid')"
     />
     <AddressBarEditorDialog
@@ -375,6 +369,18 @@ defineExpose({
     <FileBrowserContent
       :layout="effectiveLayout"
       :track-relative-time="props.trackRelativeTime"
+      :is-searching="isSearching"
+      :search-include-files="fb.searchOptions.value.includeFiles"
+      :search-include-directories="fb.searchOptions.value.includeDirectories"
+      :search-exact-match="fb.searchOptions.value.exactMatch"
+      :search-typo-tolerance="fb.searchOptions.value.typoTolerance"
+      :search-result-limit="fb.searchOptions.value.resultLimit"
+      :search-match-count="searchMatchCount"
+      @update:search-include-files="fb.setIncludeFiles"
+      @update:search-include-directories="fb.setIncludeDirectories"
+      @update:search-exact-match="fb.setExactMatch"
+      @update:search-typo-tolerance="fb.setTypoTolerance"
+      @update:search-result-limit="fb.setResultLimit"
     />
 
     <FileBrowserStatusBar

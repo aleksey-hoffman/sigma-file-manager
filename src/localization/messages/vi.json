@@ -1073,7 +1073,9 @@
     },
     "searchOptions": {
       "title": "Tùy chọn tìm kiếm",
-      "matchCount": "{n} kết quả khớp"
+      "matchCount": "{n} kết quả khớp",
+      "results": "Kết quả",
+      "options": "Tùy chọn"
     }
   },
   "openWith": {

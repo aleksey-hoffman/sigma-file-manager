@@ -4,6 +4,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import {
+  DEFAULT_SCAN_DEPTH,
   USER_SETTINGS_SCHEMA_VERSION,
   USER_SETTINGS_SCHEMA_VERSION_KEY,
   migrateUserSettingsStorage,
@@ -31,6 +32,55 @@ function createStorageAdapter(initialEntries: Record<string, unknown>): StorageA
 }
 
 describe('migrateUserSettingsStorage', () => {
+  // FORK-MODIFICATION: 2026-10-16 —— 搜索深度默认 7 → 9 的迁移。
+  //
+  // 这一组守的是「只改默认值对已装机用户无效」这个坑：user-settings.json 里
+  // 已经有 scanDepth = 7，不递进 schema 版本就永远走不到这一步。
+  it('raises the scan depth from the legacy default of 7 to 9', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 31,
+      'globalSearch.scanDepth': 7,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('globalSearch.scanDepth')).toBe(DEFAULT_SCAN_DEPTH);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+  });
+
+  it('sets the scan depth when the field is missing entirely', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 31,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('globalSearch.scanDepth')).toBe(DEFAULT_SCAN_DEPTH);
+  });
+
+  it('leaves a scan depth the user chose themselves alone', async () => {
+    // 用户主动调到 12 之后升级版本，不该被这一步按回 9。
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 31,
+      'globalSearch.scanDepth': 12,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('globalSearch.scanDepth')).toBe(12);
+  });
+
+  it('does not touch the scan depth when the schema is already current', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: USER_SETTINGS_SCHEMA_VERSION,
+      'globalSearch.scanDepth': 7,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('globalSearch.scanDepth')).toBe(7);
+  });
+
   it('defaults relative dates to enabled for older settings files', async () => {
     const storage = createStorageAdapter({
       [USER_SETTINGS_SCHEMA_VERSION_KEY]: 7,
