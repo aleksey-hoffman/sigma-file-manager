@@ -1,12 +1,12 @@
 [package]
 name = "alpha-file-manager"
 description = "Alpha File Manager"
-version = "3.1.3"
+version = "3.2.1-beta"
 license = "GPL-3.0-or-later"
 authors = ["Aleksey Hoffman"]
 repository = "https://github.com/aleksey-hoffman/sigma-file-manager"
 edition = "2021"
-rust-version = "1.88.0"
+rust-version = "1.90.0"
 
 [workspace]
 members = [".", "default-file-manager-common", "default-file-manager-launcher"]
@@ -78,9 +78,14 @@ dunce = "1"
 arboard = "3.6.1"
 # MCP 服务端 SDK。
 #
-# 版本必须精确锁定（`=`）：`rust-version` 与本 crate 同为 1.88，零余量 ——
-# SDK 抬 MSRV 会直接把本项目挡在门外，而 Cargo 只会给一个含糊的编译错误。
-# 升级前先跑一遍 `cargo +1.88.0 check`，并同步更新 docs/handoff 里的 MSRV 结论。
+# 版本必须精确锁定（`=`）：SDK 抬 MSRV 会直接把本项目挡在门外，而 Cargo 只会给
+# 一个含糊的编译错误。2026-10-17 全依赖图扫描确认 rmcp 3.5.1 声明 MSRV 1.88，
+# 低于本 crate 的 1.90，不再是「零余量」，但升级前仍需重跑扫描。
+# 扫描脚本：`.superpowers/sdd/msrv-scan.cjs`（先 cargo metadata 输出到文件再喂给它；
+# 别用 PowerShell 管道，Get-Content -Raw 会塞 BOM 导致 JSON.parse 失败）。
+#
+# 本 crate 的 rust-version 已从 1.88.0 改成 1.90.0：依赖图里 tauri 2.12 全系列
+# 声明 MSRV 1.90、gtk/glib 0.22 声明 1.92，1.88 早已不可用，旧声明只是把失败推迟。
 rmcp = { version = "=3.5.1", default-features = false, features = [
     "macros",
     "server",

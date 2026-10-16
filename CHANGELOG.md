@@ -1,5 +1,47 @@
 # Changelog
 
+## [3.2.1-beta] - October 2026
+
+**Summary:** Alpha File Manager can now be driven by AI assistants. Turn on the built-in MCP server in Settings → Experimental, pick a permission level, and assistants such as Claude Code or Minimax Code can read your drives, browse folders, and search files through a standard interface. This beta ships six read-only tools; nothing can be moved, renamed, or deleted.
+
+### Connecting an AI assistant
+
+The server listens on this computer only (127.0.0.1), on a port picked automatically when it starts. Settings → Experimental → MCP server shows the exact address and a ready-to-paste configuration snippet for each assistant, so there is nothing to type by hand.
+
+Three safeguards are on by default and are not optional:
+
+- **Bound to localhost.** Other devices on your network cannot reach it, even if they know the address.
+- **A random access key.** A fresh four-part key is generated the first time you turn the server on. Requests without it are turned away.
+- **Web requests from unknown sites are refused.** Only addresses served from this computer are accepted.
+
+### Permission levels
+
+Four levels, switchable at any time — a change takes effect on the very next tool call, without reconnecting:
+
+| Level | What an assistant can do |
+| --- | --- |
+| Off (default) | Nothing. The server does not start at all. |
+| Read-only | The six tools listed below. |
+| Writable | Reserved for a later release. |
+| Ask every time | Each call raises a confirmation in the app before it runs. |
+
+### The six tools
+
+- **List drives** — every drive on this computer, with names and free space.
+- **List removable devices** — USB drives and network shares that can be connected or disconnected.
+- **List a folder** — the contents of any folder you name. Large folders are cut off and say so.
+- **Search files** — by name, across the indexed drive or inside one folder, with the same options as the search box in the app.
+- **Folder size** — how much space a folder and its subfolders use, with the slowest case capped at two minutes.
+- **Favorites** — the categories and paths you have starred in the app.
+
+### Recording what was asked
+
+Every call is written to a plain-text log next to the app's settings, including which tool, when, and whether it was allowed or turned down. Open it with any text editor if you want to review what an assistant has been doing.
+
+### This is a beta
+
+Only read operations are available. Anything that could change or remove your files is deliberately absent. The permission model and the configuration panel may still change before the final release, and the interface text may not be final in every language yet.
+
 ## [3.1.3] - October 2026
 
 **Summary:** Directory search had two defects that made recursion look unimplemented; both are fixed. Search options now sit where you can watch results change, split view keeps directories on the left, and default search depth moves to 9 levels.

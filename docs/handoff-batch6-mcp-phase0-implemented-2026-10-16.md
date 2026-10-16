@@ -13,6 +13,7 @@
 MCP **接上了**：官方 MCP Inspector 通过 Streamable HTTP 真实连上 `http://127.0.0.1:55100/mcp`，
 `tools/list` 返回 6 个只读工具，`tools/call` 真实返回了本机 5 个盘符与目录内容。
 **唯一未达成**的是交接文档要求的「Claude Desktop 也连一次」—— 本机没有安装 Claude Desktop。
+（2026-10-16 更新：该缺口已由 **Minimax Code 的真机端到端连接**部分补足 —— 真实对话中调用工具并拿到本机真实盘符数据。用户 2026-10-17 决定不再补装第二个客户端，记为已知缺口。）
 
 ---
 
@@ -92,7 +93,7 @@ pub(crate) fn search_directory_recursive_blocking(root_path: String, query: Stri
 | # | 待证伪 | 结果 |
 |---|---|---|
 | 1 | `rmcp` 与 `axum 0.8` 共存 | ✅ 通过。`rmcp` 自带测试就是用 `axum 0.8` 的 `Router::nest_service("/mcp", service)` 接线，本项目照抄 |
-| 2 | MSRV 1.88 够用 | ✅ 编过（本机 1.90）。**但未用 1.88 实际编译**，见 §7 待办 |
+| 2 | MSRV 1.88 够用 | ✅ **已用全依赖图扫描证实**（792 个包）：本批新增的 9 个 MCP 依赖无一超过 1.88，`rmcp 3.5.1` 声明 1.88。**但未用 1.88 实际编译**（本机无 1.88 工具链），且 `rust-version` 已于 2026-10-17 订正为 1.90.0，见 §6 |
 | 3 | 127.0.0.1 + token + Origin 能被真实客户端连上 | ✅ Inspector 连上；Origin/Host 校验实测 403 |
 | 4 | 一个真实 `tools/call` 走通既有 command | ✅ `list_directory` / `get_drives` 均返回真实数据 |
 
@@ -204,28 +205,35 @@ schema、不跑迁移的前提下独立读出。存进用户设置就得同时�
 
 ## 6. 未完成 / 未验证（重要）
 
+> **2026-10-16 晚更新**：3.2.1-beta 打包版已完成真机验收，下表中「打包产物真机验收」
+> 与「`search_files` 真机路径」两项**已关闭**，详见 `docs/acceptance-mcp-3.2.1-beta.md`
+> 顶部的实测记录。
+
 | 项 | 状态 |
 |---|---|
-| **Claude Desktop 真实连接** | ❌ **本机未安装**（无 exe、无注册表卸载项，只有 `%APPDATA%\Claude\` 的残留配置目录）。交接文档要求两个客户端各连一次，Inspector 已达成，**Claude Desktop 这一半没做，也不能假装做过** |
-| MSRV 1.88 实际编译 | ❌ 只在本机 1.90 编过。「零余量」是**未验证的风险**，不是已验证的事实 |
-| `tauri build` 打包产物真机验收 | ❌ 未做。本批的验证全部在 `cargo run --example mcp-spike`（同一个 `mcp` 模块）上完成。**应用内接线**（`setup_handler` → `bootstrap` → `set_mode`）的界面表现尚未在真机上看过 |
-| `search_files` 工具 | ⚠️ spike 里没有 AppHandle，会明确返回「正在启动」的报错。**真机路径未验证** |
+| **Claude Desktop 真实连接** | ❌ **本机未安装**（无 exe、无注册表卸载项，只有 `%APPDATA%\Claude\` 的残留配置目录；`claude` CLI 也不在 PATH）。交接文档要求两个客户端各连一次 —— **2026-10-16 已用 Minimax Code 达成真机端到端**（真实对话里调用工具并拿到本机真实盘符数据），Inspector 达成协议层验证。**用户决定记为已知缺口，不再补装第二个客户端**：协议层三家一致，服务端无客户端分支代码，这个缺口的实际风险低于安装第三方软件的代价 |
+| MSRV 实际编译 | ⚠️ **已用全依赖图扫描替代**：792 个包中本批新增的 9 个 MCP 依赖**无一超过 1.88**，`rmcp 3.5.1` 声明 1.88。但本机只有 1.85/1.90/stable，**没有 1.88 工具链，仍未实编**。同时发现 `rust-version = "1.88.0"` 这个声明**在 MCP 之前就已经不准**（tauri 2.12 要 1.90、gtk/glib 0.22 要 1.92），已于 2026-10-17 改成 `1.90.0` |
+| `tauri build` 打包产物真机验收 | ✅ **已做**（2026-10-16）。18.25 MiB 安装包，`Alpha File Manager_3.2.1-beta_x64-setup.exe`。设置页分区、状态栏徽标、已连接客户端计数、审计列表、6 个工具全部在打包版上验通 |
+| `search_files` 工具 | ✅ **真机路径已验证**：全局索引、目录内递归、拼写容错、精确匹配四种模式均返回真实数据；`result_limit` 精确生效 |
 | 写工具（Phase 2） | 未做，范围外 |
 | `open_in_alpha` / `get_current_location` / `get_selection`（第三档） | 未做，范围外 |
 
 ### 需要人来做的一步
 
-装好 Claude Desktop 后，把设置页「复制配置片段」的内容粘进
+若日后要补 Claude Desktop：把设置页「复制配置片段」的内容粘进
 `%APPDATA%\Claude\claude_desktop_config.json` 的 `mcpServers`，**完整退出重启**（关窗口不算）。
 
 ---
 
 ## 7. 待办
 
-- [ ] 装 Claude Desktop，补上交接文档要求的第二个客户端连接
-- [ ] `tauri build` 打包，在**打包版**上验收：设置页分区、状态栏徽标、切档启停、`search_files`
-- [ ] `cargo +1.88.0 check` 确认 MSRV 真能编（需要装 1.88 工具链）
-- [ ] CI 加一条 MSRV 检查
+- [x] `tauri build` 打包，在**打包版**上验收 —— 2026-10-16 完成
+- [x] `search_files` 真机路径验证 —— 2026-10-16 完成
+- [x] 全依赖图 MSRV 扫描，关闭 rmcp 抬高 MSRV 的疑虑 —— 2026-10-16 完成
+- [x] 订正 `rust-version` 声明为 1.90.0 —— 2026-10-17 完成
+- [ ] ~~装 Claude Desktop 补第二个客户端~~ —— **用户 2026-10-17 决定记为已知缺口，不补**
+- [ ] `cargo +1.90.0 check` 配 CI 一条 MSRV 检查（需先装对应工具链）
+- [ ] 固定端口（55100）：解决「重启后端口漂移导致旧配置失效」，见 `docs/mcp-client-auto-discovery-answer.md`
 - [ ] Phase 1 剩余打磨：`catch_unwind` + 超时上限（handoff §6.4），目前只有 `dir_size` 的 120s 超时
 - [ ] Phase 2 写工具（本批之后重新评估）
 - [ ] 登记但不做：重复文件检测、Windows ODR 注册
