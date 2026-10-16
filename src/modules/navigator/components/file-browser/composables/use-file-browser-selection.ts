@@ -79,6 +79,7 @@ export function useFileBrowserSelection(
   } = useCopyMoveWithConflicts();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
+  const focusedEntry = ref<DirEntry | null>(null);
 
   const contextMenu = ref({
     targetEntry: null as DirEntry | null,
@@ -161,6 +162,7 @@ export function useFileBrowserSelection(
   function clearSelection() {
     selectedEntries.value = [];
     lastSelectedEntry.value = null;
+    focusedEntry.value = null;
     onSelect([]);
     blurFocusedDirEntry();
   }
@@ -181,6 +183,12 @@ export function useFileBrowserSelection(
     }
 
     selectedEntries.value = applyRangeSelection(selectedEntries.value, rangeEntries, additive);
+
+    if (lastSelectedEntry.value == null) {
+      lastSelectedEntry.value = fromEntry;
+    }
+
+    focusedEntry.value = toEntry;
     onSelect(selectedEntries.value);
   }
 
@@ -188,6 +196,7 @@ export function useFileBrowserSelection(
     if (!isEntrySelected(entry)) {
       selectedEntries.value = [...selectedEntries.value, entry];
       lastSelectedEntry.value = entry;
+      focusedEntry.value = entry;
       onSelect(selectedEntries.value);
     }
   }
@@ -204,12 +213,17 @@ export function useFileBrowserSelection(
       lastSelectedEntry.value = lastEntry;
     }
 
+    if (focusedEntry.value?.path === entry.path) {
+      focusedEntry.value = lastSelectedEntry.value;
+    }
+
     onSelect(selectedEntries.value);
   }
 
   function replaceSelection(entry: DirEntry) {
     selectedEntries.value = [entry];
     lastSelectedEntry.value = entry;
+    focusedEntry.value = entry;
     onSelect(selectedEntries.value);
   }
 
@@ -219,6 +233,7 @@ export function useFileBrowserSelection(
       ? selectedEntries.value[selectedEntries.value.length - 1]
       : null;
     lastSelectedEntry.value = lastEntry;
+    focusedEntry.value = lastEntry;
     onSelect(selectedEntries.value);
 
     if (entries.length === 0) {
@@ -280,9 +295,12 @@ export function useFileBrowserSelection(
       return;
     }
 
-    if (selectedEntries.value.length !== 1 || !isEntrySelected(entry)) {
-      replaceSelection(entry);
+    if (isEntrySelected(entry)) {
+      focusedEntry.value = entry;
+      return;
     }
+
+    replaceSelection(entry);
   }
 
   function handleEntryContextMenu(entry: DirEntry) {
@@ -1034,6 +1052,7 @@ export function useFileBrowserSelection(
       ? selectedEntries.value[selectedEntries.value.length - 1]
       : null;
     lastSelectedEntry.value = lastEntry;
+    focusedEntry.value = lastEntry;
     onSelect(selectedEntries.value);
   }
 
@@ -1120,6 +1139,7 @@ export function useFileBrowserSelection(
   return {
     selectedEntries,
     lastSelectedEntry,
+    focusedEntry,
     mouseDownState,
     contextMenu,
     renameState,
@@ -1137,6 +1157,7 @@ export function useFileBrowserSelection(
     performSelectionAction,
     resetMouseState,
     selectAll,
+    selectRange,
     selectEntryByPath,
     removeFromSelection,
     copyItems,

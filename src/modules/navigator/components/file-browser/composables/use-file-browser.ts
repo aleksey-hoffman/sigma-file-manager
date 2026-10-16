@@ -446,8 +446,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const keyboardNav = useFileBrowserKeyboardNavigation({
     entries: visualEntries,
     selectedEntries: selection.selectedEntries,
+    lastSelectedEntry: selection.lastSelectedEntry,
+    focusedEntry: selection.focusedEntry,
     layout: options.layout,
     selectEntryByPath: selection.selectEntryByPath,
+    selectRange: selection.selectRange,
     scrollToPath: virtualLayout.scrollToPath,
     getEntryElement: virtualLayout.getEntryElement,
     getGridNavigationEntry: virtualLayout.getGridNavigationEntry,

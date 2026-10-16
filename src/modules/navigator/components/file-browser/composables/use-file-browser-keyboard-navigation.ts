@@ -12,8 +12,11 @@ const OVERLAP_TOLERANCE_PX = 2;
 export function useFileBrowserKeyboardNavigation(options: {
   entries: Ref<DirEntry[]>;
   selectedEntries: Ref<DirEntry[]>;
+  lastSelectedEntry: Ref<DirEntry | null>;
+  focusedEntry: Ref<DirEntry | null>;
   layout: () => 'list' | 'grid' | undefined;
   selectEntryByPath: (path: string) => boolean;
+  selectRange: (fromEntry: DirEntry, toEntry: DirEntry, additive?: boolean) => void;
   scrollToPath?: (path: string, align?: ScrollLogicalPosition) => Promise<boolean>;
   getEntryElement?: (path: string) => HTMLElement | null;
   getGridNavigationEntry?: (path: string, direction: 'up' | 'down') => DirEntry | null;
@@ -43,7 +46,15 @@ export function useFileBrowserKeyboardNavigation(options: {
     return container.querySelector<HTMLElement>(`[data-entry-path="${CSS.escape(path)}"]`);
   }
 
-  function getLastSelectedEntry(): DirEntry | null {
+  function getFocusedEntry(): DirEntry | null {
+    if (options.focusedEntry.value) {
+      return options.focusedEntry.value;
+    }
+
+    if (options.lastSelectedEntry.value) {
+      return options.lastSelectedEntry.value;
+    }
+
     const selected = options.selectedEntries.value;
     return selected.length > 0 ? selected[selected.length - 1] : null;
   }
@@ -56,8 +67,17 @@ export function useFileBrowserKeyboardNavigation(options: {
     return getFileBrowserVisualEntryOrder(options.entries.value, options.layout());
   }
 
-  async function selectAndFocusEntry(entry: DirEntry) {
-    options.selectEntryByPath(entry.path);
+  async function applyNavigationTarget(entry: DirEntry, extendSelection: boolean) {
+    if (extendSelection) {
+      const anchor = options.lastSelectedEntry.value
+        ?? options.focusedEntry.value
+        ?? entry;
+      options.selectRange(anchor, entry);
+    }
+    else {
+      options.selectEntryByPath(entry.path);
+    }
+
     await options.scrollToPath?.(entry.path);
     await nextTick();
 
@@ -68,19 +88,19 @@ export function useFileBrowserKeyboardNavigation(options: {
     }
   }
 
-  function navigateFlat(direction: 'previous' | 'next') {
+  function navigateFlat(direction: 'previous' | 'next', extendSelection: boolean) {
     const entries = getNavigationEntries();
 
     if (entries.length === 0) return;
 
-    const lastSelected = getLastSelectedEntry();
+    const focusedEntry = getFocusedEntry();
     let targetIndex: number;
 
-    if (!lastSelected) {
+    if (!focusedEntry) {
       targetIndex = direction === 'next' ? 0 : entries.length - 1;
     }
     else {
-      const currentIndex = entries.findIndex(entry => entry.path === lastSelected.path);
+      const currentIndex = entries.findIndex(entry => entry.path === focusedEntry.path);
 
       if (currentIndex === -1) {
         targetIndex = direction === 'next' ? 0 : entries.length - 1;
@@ -92,31 +112,32 @@ export function useFileBrowserKeyboardNavigation(options: {
 
     if (targetIndex < 0 || targetIndex >= entries.length) return;
 
-    selectAndFocusEntry(entries[targetIndex]);
+    applyNavigationTarget(entries[targetIndex], extendSelection);
   }
 
-  function navigateGridVertical(direction: 'up' | 'down') {
+  function navigateGridVertical(direction: 'up' | 'down', extendSelection: boolean) {
     const navigationEntries = getNavigationEntries();
 
     if (navigationEntries.length === 0) return;
 
-    const lastSelected = getLastSelectedEntry();
+    const focusedEntry = getFocusedEntry();
 
-    if (!lastSelected) {
-      selectAndFocusEntry(
+    if (!focusedEntry) {
+      applyNavigationTarget(
         direction === 'down' ? navigationEntries[0] : navigationEntries[navigationEntries.length - 1],
+        extendSelection,
       );
       return;
     }
 
-    const virtualTargetEntry = options.getGridNavigationEntry?.(lastSelected.path, direction);
+    const virtualTargetEntry = options.getGridNavigationEntry?.(focusedEntry.path, direction);
 
     if (virtualTargetEntry) {
-      selectAndFocusEntry(virtualTargetEntry);
+      applyNavigationTarget(virtualTargetEntry, extendSelection);
       return;
     }
 
-    const currentElement = getEntryElement(lastSelected.path);
+    const currentElement = getEntryElement(focusedEntry.path);
 
     if (!currentElement) return;
 
@@ -179,38 +200,38 @@ export function useFileBrowserKeyboardNavigation(options: {
     }
 
     if (bestEntry) {
-      selectAndFocusEntry(bestEntry);
+      applyNavigationTarget(bestEntry, extendSelection);
     }
   }
 
-  function navigateUp() {
+  function navigateUp(extendSelection = false) {
     const layout = options.layout();
 
     if (layout === 'grid') {
-      navigateGridVertical('up');
+      navigateGridVertical('up', extendSelection);
     }
     else {
-      navigateFlat('previous');
+      navigateFlat('previous', extendSelection);
     }
   }
 
-  function navigateDown() {
+  function navigateDown(extendSelection = false) {
     const layout = options.layout();
 
     if (layout === 'grid') {
-      navigateGridVertical('down');
+      navigateGridVertical('down', extendSelection);
     }
     else {
-      navigateFlat('next');
+      navigateFlat('next', extendSelection);
     }
   }
 
-  function navigateLeft() {
-    navigateFlat('previous');
+  function navigateLeft(extendSelection = false) {
+    navigateFlat('previous', extendSelection);
   }
 
-  function navigateRight() {
-    navigateFlat('next');
+  function navigateRight(extendSelection = false) {
+    navigateFlat('next', extendSelection);
   }
 
   function openSelected() {

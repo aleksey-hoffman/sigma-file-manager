@@ -79,10 +79,10 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   requestFocusEntryAfterRefresh?: (parentDirectoryPath: string, entryPath: string) => void;
   startRename?: (entry: DirEntry) => void;
   selectFirstEntry?: () => Promise<void>;
-  navigateUp?: () => void;
-  navigateDown?: () => void;
-  navigateLeft?: () => void;
-  navigateRight?: () => void;
+  navigateUp?: (extendSelection?: boolean) => void;
+  navigateDown?: (extendSelection?: boolean) => void;
+  navigateLeft?: (extendSelection?: boolean) => void;
+  navigateRight?: (extendSelection?: boolean) => void;
   openSelected?: () => void;
   goBack?: () => void | Promise<void>;
   goForward?: () => void | Promise<void>;
@@ -974,6 +974,7 @@ async function handleDuplicateCurrentTabShortcut() {
     case 'clone-path':
       await workspacesStore.openNewTabGroup(target.path);
       return;
+
     default: {
       const exhaustiveCheck: never = target;
       return exhaustiveCheck;
@@ -1056,6 +1057,12 @@ function hasBlockingRekaDismissableLayersForNavigatorShortcuts(): boolean {
   return false;
 }
 
+function isExtendSelectionShortcutEvent(
+  event?: KeyboardEvent | MouseEvent,
+): boolean {
+  return event instanceof KeyboardEvent && event.shiftKey;
+}
+
 function callActivePaneMethod(method: keyof Pick<
   FileBrowserInstance,
   'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight' | 'openSelected' | 'goBack' | 'goForward' | 'navigateToParent' | 'openCopiedPath'
@@ -1068,6 +1075,24 @@ function callActivePaneMethod(method: keyof Pick<
 
   if (pane?.[method]) {
     pane[method]!();
+    return true;
+  }
+
+  return false;
+}
+
+function callActivePaneNavigate(
+  method: 'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight',
+  event?: KeyboardEvent | MouseEvent,
+): boolean {
+  if (hasBlockingDismissalLayersForNavigatorShortcuts()) return false;
+
+  if (hasBlockingRekaDismissableLayersForNavigatorShortcuts()) return false;
+
+  const pane = getActivePaneRef();
+
+  if (pane?.[method]) {
+    pane[method]!(isExtendSelectionShortcutEvent(event));
     return true;
   }
 
@@ -1138,10 +1163,10 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('switchToPreviousTab', handleSwitchToPreviousTabShortcut);
   shortcutsStore.registerHandler('openTerminal', handleOpenTerminalShortcut);
   shortcutsStore.registerHandler('openTerminalAdmin', handleOpenTerminalAdminShortcut);
-  shortcutsStore.registerHandler('navigateUp', () => callActivePaneMethod('navigateUp'));
-  shortcutsStore.registerHandler('navigateDown', () => callActivePaneMethod('navigateDown'));
-  shortcutsStore.registerHandler('navigateLeft', () => callActivePaneMethod('navigateLeft'));
-  shortcutsStore.registerHandler('navigateRight', () => callActivePaneMethod('navigateRight'));
+  shortcutsStore.registerHandler('navigateUp', event => callActivePaneNavigate('navigateUp', event));
+  shortcutsStore.registerHandler('navigateDown', event => callActivePaneNavigate('navigateDown', event));
+  shortcutsStore.registerHandler('navigateLeft', event => callActivePaneNavigate('navigateLeft', event));
+  shortcutsStore.registerHandler('navigateRight', event => callActivePaneNavigate('navigateRight', event));
   shortcutsStore.registerHandler('openSelected', () => callActivePaneMethod('openSelected'), { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('navigateHistoryBack', handleNavigateHistoryBackShortcut);
   shortcutsStore.registerHandler('navigateHistoryForward', handleNavigateHistoryForwardShortcut);
