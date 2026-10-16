@@ -260,6 +260,9 @@ any ancestor in one click.
 
 Tracks upstream issue [#499](https://github.com/aleksey-hoffman/sigma-file-manager/issues/499).
 
+Architecture, file map and persistence details:
+[`docs/FORK-NOTES.md`](./docs/FORK-NOTES.md).
+
 ---
 
 ## ⚡ Focus Sync — file dialogs that follow you
