@@ -40,6 +40,7 @@ jobs:
     name: Build and sign Windows setup
     if: github.repository == 'aleksey-hoffman/sigma-file-manager'
     runs-on: windows-latest
+    timeout-minutes: 360
     env:
       RUSTC_WRAPPER: sccache
       SCCACHE_GHA_ENABLED: "true"
@@ -145,6 +146,7 @@ jobs:
           artifact-configuration-slug: ${{ github.event.inputs.artifact_configuration_slug }}
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 20700
           output-artifact-directory: ${{ github.workspace }}/signed
 
       - name: Show SignPath request

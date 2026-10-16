@@ -105,6 +105,11 @@ jobs:
               --notes-file "$release_notes_file" \
               "${flags[@]}"
           else
+            is_draft="$(gh release view "$TAG" --json isDraft --jq '.isDraft')"
+            if [[ "$is_draft" != "true" ]]; then
+              echo "Release $TAG is already published; leaving its notes untouched."
+              exit 0
+            fi
             existing_notes_file="$(mktemp)"
             cleaned_notes_file="$(mktemp)"
             updated_notes_file="$(mktemp)"
@@ -244,8 +249,19 @@ jobs:
             esac
 
             cp "$bundle" "$staged_asset"
-            gh release upload "$TAG" "$staged_asset" --clobber
+            # Windows installers are uploaded only after SignPath signing (sign-windows job).
+            if [[ "$PLATFORM" != "windows" ]]; then
+              gh release upload "$TAG" "$staged_asset" --clobber
+            fi
           done
+
+      - name: Upload unsigned Windows installer artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-setup
+          path: staged/Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-setup.exe
+          if-no-files-found: error
 
       - name: Upload Linux binary
         if: matrix.platform == 'linux'
@@ -291,3 +307,93 @@ jobs:
             exit 1
           fi
           gh release upload "$TAG" "$flatpak_bundle" --clobber
+
+  sign-windows:
+    name: Sign Windows installer (SignPath)
+    needs: [prepare, build]
+    if: github.repository == 'aleksey-hoffman/sigma-file-manager'
+    runs-on: windows-latest
+    timeout-minutes: 360
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Require SignPath secrets
+        shell: pwsh
+        env:
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          SIGNPATH_ORGANIZATION_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+        run: |
+          if (-not $env:SIGNPATH_API_TOKEN) { throw "Missing repository secret SIGNPATH_API_TOKEN." }
+          if (-not $env:SIGNPATH_ORGANIZATION_ID) { throw "Missing repository secret SIGNPATH_ORGANIZATION_ID." }
+
+      - name: Resolve unsigned installer artifact id
+        id: artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          artifact_id="$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?name=unsigned-windows-setup" \
+            --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          if [[ -z "$artifact_id" ]]; then
+            echo "::error::Artifact 'unsigned-windows-setup' not found in run $RUN_ID"
+            exit 1
+          fi
+          echo "id=$artifact_id" >> "$GITHUB_OUTPUT"
+
+      - name: Submit SignPath signing request
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: sigma-file-manager
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: windows-signed-setup
+          github-artifact-id: ${{ steps.artifact.outputs.id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 20700
+          output-artifact-directory: ${{ github.workspace }}/signed
+
+      - name: Show SignPath request
+        shell: bash
+        env:
+          SIGNING_REQUEST_URL: ${{ steps.signpath.outputs.signing-request-web-url }}
+        run: echo "SignPath request URL - $SIGNING_REQUEST_URL"
+
+      - name: Verify signed installer
+        id: verify
+        shell: pwsh
+        env:
+          INSTALLER: Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-setup.exe
+        run: |
+          $signedDir = Join-Path $env:GITHUB_WORKSPACE "signed"
+          $signedPath = Join-Path $signedDir $env:INSTALLER
+          if (-not (Test-Path $signedPath)) {
+            $candidates = @(Get-ChildItem $signedDir -Recurse -Filter "*.exe")
+            if ($candidates.Count -ne 1) {
+              Get-ChildItem $signedDir -Recurse | Format-Table FullName, Length
+              throw "Expected exactly one signed installer, found $($candidates.Count)."
+            }
+            Copy-Item $candidates[0].FullName $signedPath -Force
+          }
+
+          $signature = Get-AuthenticodeSignature -FilePath $signedPath
+          Write-Host "Signer: $($signature.SignerCertificate.Subject)"
+          Write-Host "Status: $($signature.Status)"
+          Write-Host "StatusMessage: $($signature.StatusMessage)"
+          if (-not $signature.SignerCertificate -or $signature.Status -ne 'Valid') {
+            throw "Installer is not validly Authenticode-signed. Status=$($signature.Status)"
+          }
+          "path=signed/$env:INSTALLER" >> $env:GITHUB_OUTPUT
+
+      - name: Upload signed installer to GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          SIGNED_PATH: ${{ steps.verify.outputs.path }}
+        run: gh release upload "$TAG" "$SIGNED_PATH" --clobber
