@@ -140,7 +140,7 @@ pub async fn global_search_query(
     .map_err(|join_error| format!("Global search query task failed: {join_error}"))?
 }
 
-fn global_search_query_blocking(
+pub(super) fn global_search_query_blocking(
     base_dir: PathBuf,
     query: String,
     options: GlobalSearchQueryOptions,
@@ -361,7 +361,7 @@ fn should_include_recursive_entry(
 // 所以这里取一个明显更松的值。
 const TYPO_TOLERANCE_COEFFICIENT_THRESHOLD: f32 = 0.7;
 
-fn search_directory_recursive_blocking(
+pub(super) fn search_directory_recursive_blocking(
     root_path: String,
     query: String,
     max_depth: u32,

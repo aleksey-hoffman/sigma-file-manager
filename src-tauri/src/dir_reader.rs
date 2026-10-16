@@ -21,6 +21,35 @@ pub use types::{
 
 pub use commands::*;
 
+// ---------------------------------------------------------------------------
+// 阻塞内核的对外入口
+//
+// `commands.rs` 里的异步 command 一律走 `tauri::async_runtime::spawn_blocking`。
+// MCP 模块不能走这条路径：Tauri 的 `async_runtime` 全局静态带默认类型参数
+// `Wry`（`static RUNTIME: OnceLock<GlobalRuntime<Wry>>`），只要有一处调用被链进来，
+// `<Wry as Runtime>` 就会被单态化，把 tao 整条窗口链（CreateWindowExW / SendInput /
+// TaskDialogIndirect …）拖进 `cargo test --lib` 的测试二进制。而测试二进制没有
+// application manifest 声明 comctl32 v6，`TaskDialogIndirect` 解析不到，
+// 进程在加载阶段就以 `STATUS_ENTRYPOINT_NOT_FOUND` (0xC0000139) 崩掉 ——
+// 一个测试都跑不了，且报错与本模块毫无关系，极难定位。
+//
+// 所以下面这两个入口让调用方自己选执行器：MCP 用自己的 tokio 运行时跑，
+// 人类操作那条路完全不动。
+// ---------------------------------------------------------------------------
+
+/// 列目录的阻塞内核。调用方负责放进合适的阻塞线程池。
+pub(crate) fn read_dir_blocking(
+    path: String,
+    options: Option<read::ReadDirOptions>,
+) -> Result<DirContents, String> {
+    read::read_dir(path, options)
+}
+
+/// 枚举系统盘符的阻塞内核。
+pub(crate) fn get_system_drives_blocking() -> Result<Vec<DriveInfo>, String> {
+    drives::get_system_drives()
+}
+
 #[cfg(all(test, windows))]
 mod tests {
     use super::drives_platform::{create_windows_wsl_drive_info, decode_windows_command_output};

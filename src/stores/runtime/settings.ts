@@ -222,6 +222,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: ExtensionsListSection },
       { default: DefaultFileManagerSection },
       { default: ThumbnailCacheSection },
+      { default: McpServerSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/date-time.vue'),
@@ -256,6 +257,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/extensions/extensions-list.vue'),
       import('@/modules/settings/ui/categories/experimental/default-file-manager.vue'),
       import('@/modules/settings/ui/categories/storage/thumbnail-cache.vue'),
+      import('@/modules/settings/ui/categories/experimental/mcp-server.vue'),
     ]);
 
     allSections.value = [
@@ -493,6 +495,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.thumbnailCache',
         component: markRaw(ThumbnailCacheSection),
         category: 'storage',
+      },
+      {
+        key: 'mcpServer',
+        titleKey: 'settings.experimental.mcp.title',
+        tags: 'settingsTags.experimental',
+        component: markRaw(McpServerSection),
+        category: 'experimental',
       },
     ];
 

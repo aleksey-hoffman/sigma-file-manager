@@ -21,6 +21,9 @@ mod image_thumbnails;
 mod input_simulation;
 mod lan_share;
 mod link_operations;
+// `pub` 是为了让 `examples/mcp-spike.rs` 能起同一个模块 —— Phase 0 的 spike
+// 与应用内跑的是同一份端点代码，不是另写一份。
+pub mod mcp;
 mod open_with;
 mod process_runner;
 mod startup_storage_bootstrap;
@@ -436,6 +439,12 @@ pub fn run() {
             batch_rename::batch_rename_execute,
             batch_rename::batch_rename_history,
             batch_rename::batch_rename_undo,
+            mcp::commands::mcp_get_status,
+            mcp::commands::mcp_set_mode,
+            mcp::commands::mcp_get_client_config,
+            mcp::commands::mcp_rotate_token,
+            mcp::commands::mcp_sync_favorites,
+            mcp::commands::mcp_get_audit_log,
         ])
         .setup(setup_handler)
         .on_window_event(|window, event| {
@@ -502,6 +511,15 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
             .inner()
             .clone(),
     );
+
+    // MCP：注入审计目录与索引目录，并按上次保存的档位决定要不要监听端口。
+    // 档位为「关闭」时 bootstrap 直接返回，不占用任何端口。
+    {
+        let handle = app.handle().clone();
+        tauri::async_runtime::spawn(async move {
+            mcp::commands::bootstrap(handle).await;
+        });
+    }
 
     let raw_args: Vec<String> = std::env::args().collect();
 

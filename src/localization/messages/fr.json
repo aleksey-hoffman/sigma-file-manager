@@ -501,6 +501,42 @@
         "title": "Définir Alpha File Manager comme gestionnaire de fichiers par défaut",
         "description": "Cette option modifie le registre système et peut avoir des effets secondaires inattendus sur votre appareil. Continuez à vos propres risques.",
         "unavailableInMicrosoftStore": "Indisponible dans la version Microsoft Store"
+      },
+      "mcp": {
+        "title": "MCP server (for AI agents)",
+        "description": "Let AI clients such as Claude or Cursor call this app's read-only capabilities over MCP. Off by default — when off, no port is opened at all.",
+        "modes": {
+          "off": "Off",
+          "readOnly": "Read-only",
+          "writable": "Writable",
+          "askEachTime": "Ask each time"
+        },
+        "modeDescriptions": {
+          "off": "The server does not start and no port is opened. Nothing on this machine can reach it.",
+          "readOnly": "Exposes directory listing, drives, mountable devices, the indexed global search, directory size and favourites. Entirely read-only — no file is ever modified.",
+          "writable": "Adds write operations on top of read-only. Deletion still goes to the recycle bin, never a hard delete.",
+          "askEachTime": "Same as writable, but every write operation needs individual confirmation."
+        },
+        "running": "Running · port {port}",
+        "stopped": "Not running",
+        "endpoint": "Endpoint",
+        "clients": "Connected clients",
+        "copyConfig": "Copy config snippet",
+        "copied": "Copied",
+        "copyFailed": "Copy failed — please copy the snippet manually",
+        "rotateToken": "Regenerate token",
+        "tokenRotated": "New token generated. Previous configs stop working immediately.",
+        "token": "Token",
+        "tokenHint": "Any process on this machine can reach 127.0.0.1. The token is the only barrier — do not share it.",
+        "auditTitle": "Recent calls",
+        "outcomes": {
+          "allowed": "allowed",
+          "denied": "denied",
+          "error": "error"
+        },
+        "clientsConnected": "{count} agent(s) connected",
+        "indicatorTooltip": "An AI client is using this app's capabilities",
+        "notRunning": "MCP server is not running"
       }
     },
     "storage": {

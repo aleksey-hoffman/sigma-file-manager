@@ -76,6 +76,17 @@ globset = "0.4.18"
 encoding_rs = "0.8"
 dunce = "1"
 arboard = "3.6.1"
+# MCP 服务端 SDK。
+#
+# 版本必须精确锁定（`=`）：`rust-version` 与本 crate 同为 1.88，零余量 ——
+# SDK 抬 MSRV 会直接把本项目挡在门外，而 Cargo 只会给一个含糊的编译错误。
+# 升级前先跑一遍 `cargo +1.88.0 check`，并同步更新 docs/handoff 里的 MSRV 结论。
+rmcp = { version = "=3.5.1", default-features = false, features = [
+    "macros",
+    "server",
+    "transport-streamable-http-server",
+] }
+uuid = { version = "1", features = ["v4"] }
 
 # TODO: Remove this patch once drag-rs ships a fix for network-path outbound drag on Windows.
 # Upstream: https://github.com/crabnebula-dev/drag-rs/issues/72

@@ -4,7 +4,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
+import {
+  computed, ref, watch, nextTick, onMounted, onBeforeUnmount,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   EyeIcon,
@@ -12,6 +14,7 @@ import {
   XIcon,
   MenuIcon,
   EllipsisVerticalIcon,
+  BotIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -39,8 +42,12 @@ import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.v
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { formatBytes } from './utils';
 import type { LinkCreationKind } from '@/utils/link-operations';
+import { useMcpStore } from '@/stores/runtime/mcp';
 
 const MAX_VISIBLE_ITEMS = 100;
+
+/** MCP 状态轮询间隔。开着才轮询 —— 关着的时候没有任何理由产生请求。 */
+const MCP_POLL_INTERVAL_MS = 5000;
 
 const props = withDefaults(defineProps<{
   dirContents: DirContents | null;
@@ -66,6 +73,51 @@ const { t } = useI18n();
 const ctx = useFileBrowserContext();
 
 const dirSizesStore = useDirSizesStore();
+const mcpStore = useMcpStore();
+
+/**
+ * 只在 MCP 真的开着时显示「N 个 agent 已连接」。
+ *
+ * 刻意不显示 0：常驻一个「0 个 agent」的徽标等于噪音，
+ * 而「开着但一个都没连」是正常状态，不该被当成异常。
+ */
+const showMcpIndicator = computed(() => mcpStore.isEnabled && mcpStore.status.activeClients > 0);
+
+let mcpPollTimer: ReturnType<typeof setInterval> | null = null;
+
+function stopMcpPolling() {
+  if (mcpPollTimer !== null) {
+    clearInterval(mcpPollTimer);
+    mcpPollTimer = null;
+  }
+}
+
+function startMcpPolling() {
+  stopMcpPolling();
+  mcpPollTimer = setInterval(() => {
+    void mcpStore.refresh();
+  }, MCP_POLL_INTERVAL_MS);
+}
+
+onMounted(async () => {
+  await mcpStore.refresh();
+
+  if (mcpStore.isEnabled) {
+    startMcpPolling();
+  }
+});
+
+// 服务可能被用户在设置里关掉：轮询要跟着停，否则关掉之后还在发请求。
+watch(() => mcpStore.isEnabled, (enabled) => {
+  if (enabled) {
+    startMcpPolling();
+  }
+  else {
+    stopMcpPolling();
+  }
+});
+
+onBeforeUnmount(stopMcpPolling);
 
 const showItemsPopoverOpen = ref(false);
 const itemsFilterQuery = ref('');
@@ -487,6 +539,18 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
           {{ t('fileBrowser.itemsTotal', { count: totalCount }) }}
         </span>
       </template>
+
+      <Tooltip v-if="showMcpIndicator">
+        <TooltipTrigger as-child>
+          <span class="file-browser-status-bar__mcp-indicator">
+            <BotIcon :size="12" />
+            {{ t('settings.experimental.mcp.clientsConnected', { count: mcpStore.status.activeClients }) }}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('settings.experimental.mcp.indicatorTooltip') }}
+        </TooltipContent>
+      </Tooltip>
     </div>
   </div>
 </template>
@@ -548,6 +612,18 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.file-browser-status-bar__mcp-indicator {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.12);
 }
 
 .file-browser-status-bar__selected-count {

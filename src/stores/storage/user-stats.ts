@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { defineStore } from 'pinia';
+import { useMcpStore } from '@/stores/runtime/mcp';
 import { invoke } from '@tauri-apps/api/core';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { ref, computed } from 'vue';
@@ -188,6 +189,19 @@ export const useUserStatsStore = defineStore('userStats', () => {
         await userStatsStorage.value.set('frequentItems', userStats.value.frequentItems);
         await userStatsStorage.value.save();
       }
+
+      // FORK-MODIFICATION: MCP —— 把收藏分类推给 Rust 侧的 MCP 工具。
+      // 收藏文件的位置用户可以自定义，Rust 自己拼路径会读错文件，所以由前端给。
+      // 同步失败只记 warn：MCP 是可选功能，不能让它把收藏保存带崩。
+      await useMcpStore().syncFavorites(
+        userStats.value.favoriteCategories.map(category => ({
+          id: category.id,
+          name: category.name,
+          items: userStats.value.favorites
+            .filter(item => item.categoryId === category.id)
+            .map(item => item.path),
+        })),
+      );
     }
     catch (error) {
       console.error('Failed to save user stats:', error);
