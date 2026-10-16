@@ -23,6 +23,9 @@ Everything below is ours. Nothing in this section exists upstream.
 
 | | Feature | Since |
 |---|---|---|
+| 🔎 | **Directory search genuinely recurses** — the walk stops on *matches*, not on entries scanned | **3.1.3** |
+| 🎚️ | **Search options sit above the results**, with typo tolerance that actually does something | **3.1.3** |
+| 🏷️ | **Favourites ask for a category** on add — pick an existing one or create one | **3.1.3** |
 | 🗂️ | **Folder tree sidebar** — persistent, tracks the active pane | 2.2.x |
 | ⚡ | **Focus Sync** — every file dialog follows the folder you're browsing | 2.2.x |
 | 🧱 | **Directory & non-media rows keep a fixed height** as thumbnail size changes | **3.1.2** |
@@ -36,6 +39,71 @@ Everything below is ours. Nothing in this section exists upstream.
 | ✅ | **Box selection on by default** | 3.0.2 |
 | 🧠 | **Batch-rename data-loss fix** — no more silent overwrites | 3.0.1 |
 | 📦 | One-step installer, in-place upgrade, complete uninstall | 3.0.0 |
+
+---
+
+## 🆕 What's new in 3.1.3
+
+**3.1.3 is a search release: directory search now actually recurses, its options
+move somewhere you can watch them, and the split view puts directories back on
+the left.**
+
+### 🔎 Directory search: recursion genuinely works now
+
+The headline fix, and it took **two independent defects** stacked on top of each
+other — fixing only one would still leave most directories unable to reach deep
+files.
+
+- **The traversal cap counted the wrong thing.** The recursive walk had a "stop
+  once we have seen enough" limit, but it counted **entries scanned**, not entries
+  matched, and the limit was 20× the result limit (50 × 20 = 1000 by default). In a
+  photo directory with 43,167 entries the walk stopped at entry 1000 —
+  indistinguishable from "current layer only". It now stops on **match count**,
+  with the scan-volume safety valve widened separately so the two no longer
+  constrain each other.
+- **Short queries were discarded by the score threshold.** After a filename
+  substring matched, a score gate still applied — and three-character queries
+  demanded 0.9. Searching `095` against `20251009_0095_27.jpg` scores 0.82, so it
+  was **thrown away on the spot**. This was independent of directory size: small
+  directories failed the same way. The score now only **ranks** results; it no
+  longer gates them.
+
+> The 3.1.2 note claiming *"Search inside a folder now recurses"* was **not true
+> at the time**. If you hit "searching the current directory can't find files in
+> subfolders", this release is the fix for exactly that.
+
+### 🎚️ Search options moved above the results
+
+Show files / show directories / exact match / typo tolerance / result limit used
+to live in a button plus popover inside the filter box — but the point of
+adjusting options is to **watch the results change**. They are now permanently
+visible above the results, and not rendered at all when you are not searching.
+
+**Typo tolerance now actually does something** rather than being decoration: the
+recursive scan also computes a similarity score when the substring misses. With it
+off a misspelled query still finds nothing; with it on, it matches — both
+directions are covered by tests. Directory search and global search now **share
+one set of options**.
+
+### ↔️ Split view after search: directories on the left
+
+Opening global search used to push the search UI left and squeeze directories to
+the right. It is the other way round now — **the left pane keeps the directory
+view, the right pane switches to search**, matching the *open containing
+directory* layout.
+
+### 🔭 Default search depth 7 → 9 levels
+
+Existing installations are migrated too — changing only the default has no effect
+on people who already have 7 written in their local settings. **A depth you set
+yourself is never overwritten.**
+
+### 🏷️ Right-click "Add to favorites" asks for a category
+
+Pick an existing category or create one on the spot. **There is no text field** —
+just a choice. A new name that collides with an existing category lands in
+*Uncategorized* instead of interrupting the operation, and entries that are already
+favorited are skipped rather than asked again.
 
 ---
 
@@ -95,6 +163,9 @@ left, the search results on the right**, and the results list is preserved.
   correct and the data was simply gone.
 - **The home button opens This PC** instead of your user folder.
 - **Search inside a folder now recurses** into subfolders.
+  ⚠️ *This claim did not hold in 3.1.2 — the walk stopped after scanning 1,000
+  entries, and short queries were dropped by a score threshold. Both are fixed
+  properly in [3.1.3](#-whats-new-in-313).*
 - **Box selection follows the grid column width** at every thumbnail size.
 - The settings **external-links menu is branded**, and the dead *Discussions* entry
   is gone.
@@ -161,8 +232,8 @@ added list thumbnails. This release is the polish pass on top of those.
   leftover helper process can no longer hold a file open and abort the install.
 
 > **Version lineage:** 2.2.x → **3.0.0** rebrand → 3.0.1 rename data-loss fix →
-> 3.0.2 list thumbnails → 3.1.0 navigation & thumbnail sizes → **3.1.2** this
-> release.
+> 3.0.2 list thumbnails → 3.1.0 navigation & thumbnail sizes → 3.1.2 layout
+> polish → **3.1.3** this release.
 
 ---
 

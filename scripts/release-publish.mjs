@@ -96,6 +96,22 @@ function parseArgs(argv) {
 
 function bumpVersion(version, kind) {
   if (kind === 'none') return version;
+
+  // 预发布形态（3.1.3-beta.2）转正式版：patch 的语义就是「去掉预发布后缀」，
+  // 得到 3.1.3。这不是本脚本臆造的规则 —— 预发布号本身就声明了它的正式版目标。
+  //
+  // 为什么必须显式支持：3.1.3 经历了 beta.1 / beta.2 两轮才转正式版，
+  // 仓库版本号停在 3.1.3-beta.2，直接跑 prepare 会在下面的 X.Y.Z 校验处 fail。
+  const prerelease = /^(\d+)\.(\d+)\.(\d+)-/.exec(version);
+  if (prerelease) {
+    if (kind === 'patch') {
+      const [, maj, min, pat] = prerelease;
+      return `${maj}.${min}.${pat}`;
+    }
+    fail(`版本号 ${version} 是预发布形态，--bump ${kind} 无法推断目标版本。\n`
+      + '  预发布转正式版请用 --bump patch（3.1.3-beta.2 -> 3.1.3）。');
+  }
+
   const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
   if (!match) {
     fail(`版本号 ${version} 不是 X.Y.Z 形态，无法自动递增`);
@@ -236,8 +252,16 @@ function prepare(flags) {
 
   const manifest = readJson(manifestPath);
 
-  // 版本号变了才归档旧版本，避免同版本重打包时把历史搅乱。
-  if (oldVersion !== newVersion && manifest.version === oldVersion) {
+  // 归档「站点上当前挂着的那一版」，而不是「仓库里的上一版」。
+  //
+  // 原来写的是 `oldVersion !== newVersion && manifest.version === oldVersion`，
+  // 隐含假设是站点永远停在仓库的上一版。3.1.3 这一轮就不满足：仓库停在
+  // 3.1.3-beta.2（beta 从未发布），站点停在 3.1.2，两者对不上，
+  // 结果 3.1.2 永远不会进 history[]，站点版本历史会凭空少一版。
+  //
+  // 正确的问题是「站点上挂着的那一版，在这次发版之后是否要被顶掉」，
+  // 而不是「仓库版本号有没有变」。
+  if (manifest.version && manifest.version !== newVersion) {
     const previousUrl = manifest.platforms?.[PLATFORM_KEY]?.url;
     manifest.history ??= [];
     manifest.history.unshift({
@@ -248,7 +272,7 @@ function prepare(flags) {
       sha256: manifest.sha256 ?? null,
     });
     manifest.history = manifest.history.slice(0, MAX_HISTORY_ENTRIES);
-    console.log(`[release] 旧版本 ${oldVersion} 已归档进 history[]`);
+    console.log(`[release] 站点上的旧版本 ${manifest.version} 已归档进 history[]`);
   }
 
   manifest.version = newVersion;

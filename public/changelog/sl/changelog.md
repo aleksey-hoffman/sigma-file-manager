@@ -1,6 +1,6 @@
 # Dnevnik sprememb
 
-## [3.1.3-beta.1] - October 2026
+## [3.1.3] - October 2026
 
 **Summary:** Directory search had two defects that made recursion look unimplemented; both are fixed. Search options now sit where you can watch results change, and split view keeps directories on the left.
 
@@ -18,6 +18,8 @@ The previous release note claiming "directory search is now recursive" was there
 Show files / show directories / exact match / typo tolerance / result limit used to live in a button plus popover inside the filter box — but the point of adjusting options is to **watch the results change**, and hiding them behind a popover means opening and closing a floating layer on every adjustment. They are now permanently visible above the search results, so ticking one box updates the list below in view.
 
 **Typo tolerance now actually does something** rather than being decoration: the recursive scan also computes a similarity score when the substring misses. With it off, a misspelled query still finds nothing; with it on, it matches — both directions are covered by tests.
+
+Directory search and global search now **use the same set of options**, instead of each behaving its own way.
 
 ### Split view after search: directories on the left, search on the right
 
