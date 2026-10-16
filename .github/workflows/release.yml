@@ -390,10 +390,18 @@ jobs:
           }
           "path=signed/$env:INSTALLER" >> $env:GITHUB_OUTPUT
 
+      - name: Upload signed installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-windows-setup
+          path: ${{ steps.verify.outputs.path }}
+          if-no-files-found: error
+
       - name: Upload signed installer to GitHub release
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.prepare.outputs.tag }}
           SIGNED_PATH: ${{ steps.verify.outputs.path }}
+          GH_REPO: ${{ github.repository }}
         run: gh release upload "$TAG" "$SIGNED_PATH" --clobber
