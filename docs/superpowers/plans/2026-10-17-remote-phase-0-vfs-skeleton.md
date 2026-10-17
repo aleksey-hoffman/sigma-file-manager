@@ -64,7 +64,11 @@
    // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
    ```
 
-6. **不改动受保护常量**：mDNS 服务名、legacy 数据目录名、Tauri `identifier`。本阶段不碰它们。
+6. **新增的 `.ts` 必须零违规**：`npx eslint src` 必须精确回到 **179**。新文件里最容易违的是
+   `@stylistic/object-property-newline`（对象属性各自一行）。对**全新文件**可以用
+   `npx eslint <file> --fix`；但必须再跑一次全量对照才算数（基线里本来就有的违规也会被 `--fix` 一起改掉）。
+
+7. **不改动受保护常量**：mDNS 服务名、legacy 数据目录名、Tauri `identifier`。本阶段不碰它们。
 
 ---
 
@@ -714,7 +718,8 @@ export function isRemoteConnectionRootPath(path: string): boolean;
   预期：`Failed to resolve import "@/utils/remote-paths"`。
 
 - [ ] **Step 4.3** 实现 `src/utils/remote-paths.ts`，逻辑与 Rust 版逐条对应。
-  注意本仓库 ESLint 风格：4 空格缩进、单引号、尾逗号、分号、箭头函数。
+  注意本仓库 ESLint 风格：**2 空格缩进**、单引号、尾逗号、分号、箭头函数，
+  且对象属性各自一行。
   `buildRemotePath` 里连接 id 的校验用 `/[\/\\]/` 同时挡正反斜杠
   （虽然 Rust 侧只挡 `/`，前端多挡一层不改变合法输入的判定）。
 
@@ -913,7 +918,7 @@ export function getNavigableParentPath(path: string, platform: string | null): s
   $ErrorActionPreference = 'Continue'
   npx vitest run
   ```
-  预期 **188 文件 / 1475 用例**（186 + Task 4 的 remote-paths + Task 5/6 是扩已有文件，不新增文件）。
+  预期 **187 文件 / 1477 用例**（186 + Task 4 新增的 `remote-paths.test.ts`；Task 5/6 是扩已有文件，不新增文件）。
   抓 `Test Files` / `Tests` 两行读数。
 
 - [ ] **Step 7.3** 类型与 lint：
