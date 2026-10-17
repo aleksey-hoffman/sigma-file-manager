@@ -1173,10 +1173,17 @@ async function open(modeToOpen: AddressBarEditorMode): Promise<void> {
     await refreshSuggestions(query.value, 'preserve');
   });
 
-  await moveAddressBarInputCaretToEndAfterPaint();
+  await selectAddressBarInputTextAfterPaint();
 }
 
-async function moveAddressBarInputCaretToEndAfterPaint(): Promise<void> {
+/**
+ * 打开时整条全选，而不是把光标丢在末尾。
+ *
+ * 用户从地址栏进来的目的大多是要粘一条新路径覆盖掉；光标在末尾时粘贴会追加，
+ * 得到一个「原路径 + 新路径」的拼接结果，正是最让人困惑的那种失败。
+ * 想在原路径后面续写，按一下 End 就行 —— 这也是资源管理器的行为。
+ */
+async function selectAddressBarInputTextAfterPaint(): Promise<void> {
   await nextTick();
   requestAnimationFrame(() => {
     const inputElement = getAddressBarInputElement();
@@ -1185,8 +1192,8 @@ async function moveAddressBarInputCaretToEndAfterPaint(): Promise<void> {
       return;
     }
 
-    const length = inputElement.value.length;
-    inputElement.setSelectionRange(length, length);
+    inputElement.focus();
+    inputElement.select();
   });
 }
 

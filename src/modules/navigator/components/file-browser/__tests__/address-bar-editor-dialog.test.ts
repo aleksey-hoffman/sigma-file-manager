@@ -357,6 +357,20 @@ describe('address bar editor dialog', () => {
     wrapper.unmount();
   });
 
+  it('selects the whole current path when the editor opens', async () => {
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'path');
+    await waitForAnimationFrame();
+
+    const input = wrapper.get('input').element as HTMLInputElement;
+
+    expect(input.value).toBe('C:/Folder/');
+    // 全选而不是把光标丢在末尾：用户粘新地址时会整条替换掉。
+    expect(input.selectionStart).toBe(0);
+    expect(input.selectionEnd).toBe(input.value.length);
+    wrapper.unmount();
+  });
+
   it('marks the final child so the tree guide can close with a corner', async () => {
     const wrapper = mountAddressBarEditor();
     await openEditor(wrapper, 'path');

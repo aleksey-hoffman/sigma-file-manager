@@ -6,6 +6,8 @@
 
 ### What changed
 
+**The current path is selected when you open the address bar.** Click the address bar, or the edit button beside it, and the whole path is highlighted and ready — paste a new one and it replaces what was there. Previously the caret sat at the end, so pasting appended to the old path and produced a mashed-together string. Press End if you would rather extend the existing path, exactly as in Explorer.
+
 **Typing a path and pressing Enter now goes to that path.** Previously a pasted path was only understood as a folder if it ended with a slash. Paste `D:\photos\2026` without the trailing slash and you got a single search result back instead of the folder. A bare word such as `photos` is still treated as a search term, so name-based lookup keeps working.
 
 **Enter no longer depends on the list catching up.** Right after you paste, the suggestion list needs a moment to refresh. Pressing Enter during that window used to do nothing at all. It now acts on what is in the input box, immediately.
