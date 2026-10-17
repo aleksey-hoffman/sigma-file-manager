@@ -15,6 +15,7 @@ import {
   ensureAddressBarDirectoryQuery,
   getAddressBarRevealTarget,
   resolveAddressBarSuggestions,
+  resolveAddressBarTypedTarget,
 } from '../address-bar-editor-utils';
 
 function entry(path: string, options?: {
@@ -570,5 +571,54 @@ describe('address bar editor utils', () => {
     });
 
     expect(state.kind).toBe('search');
+  });
+
+  it('resolves a typed directory path into a navigate target', async () => {
+    const target = await resolveAddressBarTypedTarget(
+      'F:/soft/00selfmade/filemanager/sigma-file-manager/src/',
+      {
+        readDir: vi.fn(),
+        getDirEntry: vi.fn().mockResolvedValue(
+          entry('F:/soft/00selfmade/filemanager/sigma-file-manager/src'),
+        ),
+      },
+    );
+
+    expect(target).toEqual({
+      kind: 'directory',
+      path: 'F:/soft/00selfmade/filemanager/sigma-file-manager/src',
+    });
+  });
+
+  it('resolves a typed file path into an open target', async () => {
+    const target = await resolveAddressBarTypedTarget(
+      'F:/soft/00selfmade/filemanager/sigma-file-manager/readme.md',
+      {
+        readDir: vi.fn(),
+        getDirEntry: vi.fn().mockResolvedValue(
+          entry('F:/soft/00selfmade/filemanager/sigma-file-manager/readme.md', {
+            isFile: true,
+            name: 'readme.md',
+          }),
+        ),
+      },
+    );
+
+    expect(target).toEqual({
+      kind: 'file',
+      path: 'F:/soft/00selfmade/filemanager/sigma-file-manager/readme.md',
+    });
+  });
+
+  it('reports no target for an empty or unresolvable query', async () => {
+    await expect(resolveAddressBarTypedTarget('', {
+      readDir: vi.fn(),
+      getDirEntry: vi.fn(),
+    })).resolves.toEqual({ kind: 'none' });
+
+    await expect(resolveAddressBarTypedTarget('F:/nowhere', {
+      readDir: vi.fn(),
+      getDirEntry: vi.fn().mockRejectedValue(new Error('missing')),
+    })).resolves.toEqual({ kind: 'none' });
   });
 });

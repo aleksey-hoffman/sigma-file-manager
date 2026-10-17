@@ -68,6 +68,7 @@ import {
   getAddressBarRevealTarget,
   isAddressBarDirectoryShortcutCandidate,
   resolveAddressBarSuggestions,
+  resolveAddressBarTypedTarget,
   type AddressBarEditorMode,
   type AddressBarSuggestion,
   type AddressBarSuggestionGroup,
@@ -147,6 +148,9 @@ const isOpen = ref(false);
 const mode = ref<AddressBarEditorMode>('path');
 const query = ref('');
 const selectedIndex = ref(-1);
+// 用户有没有主动用方向键移动过选中项。为 false 时回车以输入框文字为准，
+// 为 true 时回车以选中项为准 —— 否则「打开列表后按 ↓ 选文件再回车」会被输入框内容劫持。
+const userMovedSelection = ref(false);
 const suggestionState = shallowRef<AddressBarSuggestionState>({
   kind: 'empty',
   groups: [],
@@ -704,6 +708,7 @@ watch(query, (value) => {
   }
 
   selectedIndex.value = -1;
+  userMovedSelection.value = false;
   debouncedRefreshSuggestions(value);
 });
 
@@ -801,6 +806,7 @@ function getActiveEntry(): DirEntry | null {
 
 function moveSelection(offset: number): void {
   const rowTotal = flatNavigableRowCount.value;
+  userMovedSelection.value = true;
 
   if (rowTotal === 0) {
     selectedIndex.value = -1;
@@ -841,6 +847,7 @@ function selectCollapsibleGroupHeader(group: RenderedSuggestionGroup): void {
     return;
   }
 
+  userMovedSelection.value = true;
   selectedIndex.value = group.headerIndex;
   scrollSelectedIntoView();
 }
@@ -903,6 +910,31 @@ async function openEntry(entry: DirEntry): Promise<void> {
   }
 
   emit('openFile', entry.path);
+}
+
+async function handleEnter(): Promise<void> {
+  // 只有处在「文件系统路径」语境时才去解析输入框文字。entry 模式是按名字找条目，
+  // 拿 'down' 这种词去当路径解析既没有意义，又是一次白跑的 IO。
+  if (!userMovedSelection.value && allowAddressBarFilesystemNavigationShortcuts.value) {
+    const typedTarget = await resolveAddressBarTypedTarget(query.value, {
+      readDir,
+      getDirEntry,
+    });
+
+    if (typedTarget.kind === 'directory') {
+      isOpen.value = false;
+      emit('openDirectory', typedTarget.path);
+      return;
+    }
+
+    if (typedTarget.kind === 'file') {
+      isOpen.value = false;
+      emit('openFile', typedTarget.path);
+      return;
+    }
+  }
+
+  await openActiveEntry();
 }
 
 async function openActiveEntry(): Promise<void> {
@@ -1063,7 +1095,7 @@ async function handleInputKeydown(event: KeyboardEvent): Promise<void> {
       return;
     }
 
-    await openActiveEntry();
+    await handleEnter();
     return;
   }
 

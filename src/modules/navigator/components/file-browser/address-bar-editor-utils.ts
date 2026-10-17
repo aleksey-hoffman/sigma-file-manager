@@ -569,3 +569,42 @@ async function resolveSearchSuggestions(
     directoryPath: null,
   };
 }
+
+export type AddressBarTypedTarget =
+  | { kind: 'directory'; path: string }
+  | { kind: 'file'; path: string }
+  | { kind: 'none' };
+
+/**
+ * 把输入框里的文字直接解析成一个可执行目标。
+ *
+ * 回车不能只依赖「列表选中项」：粘贴之后选中项要等防抖 + 两次异步 IO 才恢复，
+ * 那一小段窗口里按回车会静默什么都不做（用户截图 2 的另一半原因）；
+ * 更糟的是若此时 suggestionState 还是上一次的陈旧结果，回车会跳到上一个目录。
+ * 这个函数不碰选中项、不读 suggestionState，只看文字，因此不受时序影响。
+ */
+export async function resolveAddressBarTypedTarget(
+  rawQuery: string,
+  lookup: AddressBarSuggestionLookup,
+): Promise<AddressBarTypedTarget> {
+  const trimmed = canonicalizePath(normalizePath(rawQuery).trim());
+
+  if (!trimmed || trimmed.endsWith(':')) {
+    return { kind: 'none' };
+  }
+
+  try {
+    const dirEntry = await lookup.getDirEntry(trimmed);
+
+    if (!dirEntry) {
+      return { kind: 'none' };
+    }
+
+    return dirEntry.is_dir
+      ? { kind: 'directory', path: dirEntry.path }
+      : { kind: 'file', path: dirEntry.path };
+  }
+  catch {
+    return { kind: 'none' };
+  }
+}
