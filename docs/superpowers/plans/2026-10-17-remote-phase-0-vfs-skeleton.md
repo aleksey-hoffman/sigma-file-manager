@@ -293,10 +293,10 @@ pub fn is_remote_connection_root_path(path: &str) -> bool;
   ```cmd
   call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && cargo test --lib remote::path
   ```
-  预期 8 passed。
+  预期 9 passed。
 
-- [ ] **Step 1.6** 跑**全量** `cargo test --lib`，确认 386 + 8 = 394 passed。
-  若总数不是 394，说明有别的测试受影响 —— 停下来查，不要继续。
+- [ ] **Step 1.6** 跑**全量** `cargo test --lib`，确认 386 + 9 = 395 passed。
+  若总数不是 395，说明有别的测试受影响 —— 停下来查，不要继续。
 
 - [ ] **Step 1.7** 提交：
   ```
@@ -453,7 +453,7 @@ impl std::error::Error for RemoteError;
   （这是刻意的：`as_str()` 让前端不必反序列化就能拿到分类字符串，阶段 1 的文案映射直接用它。）
 
 - [ ] **Step 2.4** 跑 `cargo test --lib remote::error`，预期 5 passed。
-- [ ] **Step 2.5** 跑全量 `cargo test --lib`，预期 399 passed。
+- [ ] **Step 2.5** 跑全量 `cargo test --lib`，预期 400 passed。
 - [ ] **Step 2.6** 提交：
   ```
   feat(remote): 阶段 0 Task 2 —— RemoteError 七分类与序列化契约
@@ -642,7 +642,7 @@ MSRV 远低于本项目的 1.90、且是 dyn 兼容 trait 的社区标准写法�
 - [ ] **Step 3.5** 跑 `cargo test --lib remote::provider`，确认失败（类型缺失）。
 - [ ] **Step 3.6** 实现 `provider.rs`（`RemoteEntry` + trait + `#[async_trait]`）。
 - [ ] **Step 3.7** 跑 `cargo test --lib remote::provider`，预期 5 passed。
-- [ ] **Step 3.8** 跑全量 `cargo test --lib`，预期 404 passed。
+- [ ] **Step 3.8** 跑全量 `cargo test --lib`，预期 405 passed。
   **这是本阶段最关键的一次全量跑** —— 如果测试二进制在这一步以
   `STATUS_ENTRYPOINT_NOT_FOUND` (0xC0000139) 崩掉，说明 `remote` 模块把 tao 拖进来了。
   真发生了，按 `dumpbin /IMPORTS` 与基线二进制逐项 diff 的方法定位（AGENTS.md 里有完整流程）。
@@ -905,7 +905,7 @@ export function getNavigableParentPath(path: string, platform: string | null): s
   ```cmd
   call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && cargo test --lib
   ```
-  预期 **404 passed**（386 基线 + Task 1 的 8 + Task 2 的 5 + Task 3 的 5）。
+  预期 **405 passed**（386 基线 + Task 1 的 9 + Task 2 的 5 + Task 3 的 5）。
   数字对不上就停下查，不要合并。
 
 - [ ] **Step 7.2** 前端全量：

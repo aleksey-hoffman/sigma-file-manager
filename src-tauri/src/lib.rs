@@ -26,6 +26,7 @@ mod link_operations;
 pub mod mcp;
 mod open_with;
 mod process_runner;
+pub mod remote;
 mod startup_storage_bootstrap;
 mod system_clipboard;
 mod system_icons;
