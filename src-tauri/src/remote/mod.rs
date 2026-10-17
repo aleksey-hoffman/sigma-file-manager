@@ -17,8 +17,10 @@
 // 那正是这条红线的正中间。command 在阶段 1 才接入。
 // ---------------------------------------------------------------------------
 
+mod error;
 mod path;
 
+pub use error::{RemoteError, RemoteErrorKind};
 pub use path::{
     build_remote_connection_path, build_remote_path, get_remote_parent_path,
     is_remote_connection_root_path, is_remote_path, parse_remote_path, RemotePath, REMOTE_SCHEME,
