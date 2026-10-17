@@ -438,6 +438,11 @@ function github(flags) {
   const hash = sha256File(asset);
   const size = fs.statSync(asset).size;
 
+  // 带 -beta / -rc 之类后缀的版本，在 GitHub 上必须标成预发布。
+  // 不标的话它会作为「Latest release」出现在所有人的下载入口，
+  // 而点进去的人拿到的是测试版 —— 正式版反而被压在下面。
+  const isPre = /^\d+\.\d+\.\d+-/.test(version);
+
   const notesPath = flags['notes-file']
     ? path.resolve(repoRoot, String(flags['notes-file']))
     : path.join(SITE_DIR, `_release-notes-v${version}.md`);
@@ -452,17 +457,16 @@ function github(flags) {
     console.log(`[release] GitHub 上没有 ${tag}，创建 release`);
     const args = ['release', 'create', tag, `"${asset}"`, '--repo', GH_REPO, '--title', `Alpha File Manager ${tag}`];
     if (fs.existsSync(notesPath)) args.push('--notes-file', `"${notesPath}"`);
+    if (isPre) args.push('--prerelease');
     run('gh', args);
   }
   else {
     console.log(`[release] 替换 ${tag} 的 release 资产`);
     run('gh', ghArgs);
-    if (fs.existsSync(notesPath)) {
-      run('gh', ['release', 'edit', tag, '--repo', GH_REPO, '--notes-file', `"${notesPath}"`]);
-    }
-    else {
-      console.warn(`[release] 未找到 ${notesPath}，跳过说明正文更新（可能留下旧的大小/哈希）`);
-    }
+    const editArgs = ['release', 'edit', tag, '--repo', GH_REPO];
+    if (fs.existsSync(notesPath)) editArgs.push('--notes-file', `"${notesPath}"`);
+    if (isPre) editArgs.push('--prerelease=true', '--latest=false');
+    run('gh', editArgs);
   }
 
   console.log(`[release] 已处理 https://github.com/${GH_REPO}/releases/tag/${tag}`);
