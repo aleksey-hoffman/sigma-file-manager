@@ -16,10 +16,10 @@
 }
 
 .animate-dashboard-content {
-  opacity: 0;
+  animation-fill-mode: both;
   animation-name: animate-dashboard-content;
   animation-timing-function: ease-out;
-  animation-fill-mode: both;
+  opacity: 0;
 }
 
 @keyframes animate-dashboard-content {

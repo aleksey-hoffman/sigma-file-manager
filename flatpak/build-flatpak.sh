@@ -10,7 +10,8 @@ repo_directory="$flatpak_directory/.repo"
 output_directory="$flatpak_directory/output"
 manifest_path="$flatpak_directory/com.sigma-file-manager.app.yml"
 app_id="com.sigmafilemanager.app"
-runtime_ref="org.gnome.Platform/x86_64/48"
+runtime_version="51"
+runtime_ref="org.gnome.Platform/x86_64/${runtime_version}"
 
 version="$(node -p "require('$root_directory/package.json').version")"
 bundle_path="$output_directory/Sigma-File-Manager-${version}-linux.flatpak"
@@ -62,9 +63,17 @@ ensure_flatpak_runtime() {
   fi
 
   flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y --noninteractive --user flathub org.gnome.Platform//48 org.gnome.Sdk//48
+  flatpak install -y --noninteractive --user flathub "org.gnome.Platform//${runtime_version}" "org.gnome.Sdk//${runtime_version}"
 }
 
+ensure_shared_modules() {
+  if [ -f "$flatpak_directory/shared-modules/libayatana-appindicator/libayatana-appindicator-gtk3.json" ]; then
+    return
+  fi
+  git -C "$root_directory" submodule update --init flatpak/shared-modules
+}
+
+ensure_shared_modules
 deb_package="$(ensure_deb_package)"
 mkdir -p "$deb_input_directory" "$output_directory"
 cp "$deb_package" "$deb_input_directory/sigma-file-manager.deb"

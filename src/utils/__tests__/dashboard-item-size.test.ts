@@ -23,12 +23,21 @@ describe('formatDashboardFileSize', () => {
 
 describe('formatDashboardDirectorySize', () => {
   it('formats a completed directory size', () => {
-    expect(formatDashboardDirectorySize({ status: 'Complete', size: 1048576 })).toBe('1.0 MB');
+    expect(formatDashboardDirectorySize({
+      status: 'Complete',
+      size: 1048576,
+    })).toBe('1.0 MB');
   });
 
   it('uses a dash while a directory size is still unknown', () => {
     expect(formatDashboardDirectorySize(undefined)).toBe(UNKNOWN_DASHBOARD_ITEM_SIZE);
-    expect(formatDashboardDirectorySize({ status: 'Loading', size: 0 })).toBe(UNKNOWN_DASHBOARD_ITEM_SIZE);
-    expect(formatDashboardDirectorySize({ status: 'Error', size: 0 })).toBe(UNKNOWN_DASHBOARD_ITEM_SIZE);
+    expect(formatDashboardDirectorySize({
+      status: 'Loading',
+      size: 0,
+    })).toBe(UNKNOWN_DASHBOARD_ITEM_SIZE);
+    expect(formatDashboardDirectorySize({
+      status: 'Error',
+      size: 0,
+    })).toBe(UNKNOWN_DASHBOARD_ITEM_SIZE);
   });
 });

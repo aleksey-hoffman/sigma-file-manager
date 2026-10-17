@@ -4,7 +4,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import {
+  computed, nextTick, onBeforeUnmount, ref, watch,
+} from 'vue';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { FileIcon, ImageIcon, SearchIcon, XIcon } from '@lucide/vue';

@@ -1,6 +1,6 @@
 id: com.sigmafilemanager.app
 runtime: org.gnome.Platform
-runtime-version: '48'
+runtime-version: '51'
 sdk: org.gnome.Sdk
 command: sigma-file-manager
 appstream-compose: false
@@ -22,6 +22,10 @@ finish-args:
   - --filesystem=xdg-config/autostart:create
 
 modules:
+  # Tauri's tray icon (libappindicator-sys) dlopens libayatana-appindicator3 at startup,
+  # which the GNOME runtime doesn't ship.
+  - shared-modules/libayatana-appindicator/libayatana-appindicator-gtk3.json
+
   - name: sigma-file-manager
     buildsystem: simple
     sources:

@@ -31,7 +31,10 @@ describe('sortTaggedItems', () => {
       createItem('/docs/alpha', 3),
       createItem('/other/beta', 2),
     ];
-    const getName = (item: TaggedItem) => item.path.split('/').at(-1) ?? item.path;
+
+    function getName(item: TaggedItem) {
+      return item.path.split('/').at(-1) ?? item.path;
+    }
 
     expect(sortTaggedItems(items, 'name', getName).map(getName)).toEqual([
       'alpha',
