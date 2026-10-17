@@ -315,7 +315,10 @@ describe('clipboard store', () => {
   });
 
   it('saves a replacement clipboard image after a pending save finishes', async () => {
-    const firstSave = createDeferred<{ path: string; sizeBytes: number }>();
+    const firstSave = createDeferred<{
+      path: string;
+      sizeBytes: number;
+    }>();
     let saveCount = 0;
     invokeMock.mockImplementation(async (commandName: string) => {
       if (commandName === 'save_system_clipboard_image_to_temp') {

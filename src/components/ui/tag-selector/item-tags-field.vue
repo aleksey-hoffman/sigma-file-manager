@@ -26,6 +26,7 @@ const props = withDefaults(defineProps<{
   align?: PopoverContentProps['align'];
   side?: PopoverContentProps['side'];
 }>(), {
+  tagSummary: undefined,
   allowCreate: true,
   fullWidth: true,
   align: 'end',
@@ -33,7 +34,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  open: [];
+  'open': [];
   'open-change': [open: boolean];
   'toggle-tag': [tagId: string];
   'create-tag': [name: string];
@@ -100,6 +101,7 @@ watch(() => props.isSelectorMounted, (mounted) => {
 
   if (mounted) {
     showEditor.value = true;
+
     if (prefersReducedMotion()) {
       isExpanded.value = true;
       return;
@@ -165,11 +167,11 @@ onUnmounted(() => {
       :title="resolvedTagSummary"
       @click="emit('open')"
     >
-        <TagIcon class="tag-selector__trigger-icon-plus" />
-        <TagOverflowList
-          v-if="overflowTags.length > 0"
-          :tags="overflowTags"
-        />
+      <TagIcon class="tag-selector__trigger-icon-plus" />
+      <TagOverflowList
+        v-if="overflowTags.length > 0"
+        :tags="overflowTags"
+      />
     </button>
   </div>
 </template>

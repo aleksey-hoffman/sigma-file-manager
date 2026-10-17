@@ -100,9 +100,12 @@ export function getVirtualLocationActionContext(
   };
 }
 
-export type DuplicateCurrentTabShortcutTarget =
-  | { kind: 'open-selection' }
-  | { kind: 'clone-path'; path: string };
+export type DuplicateCurrentTabShortcutTarget
+  = | { kind: 'open-selection' }
+    | {
+      kind: 'clone-path';
+      path: string;
+    };
 
 export function resolveDuplicateCurrentTabShortcutTarget(
   currentDirectoryPath: string | null | undefined,
@@ -116,5 +119,8 @@ export function resolveDuplicateCurrentTabShortcutTarget(
     return null;
   }
 
-  return { kind: 'clone-path', path: currentDirectoryPath };
+  return {
+    kind: 'clone-path',
+    path: currentDirectoryPath,
+  };
 }

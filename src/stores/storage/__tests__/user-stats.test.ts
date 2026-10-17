@@ -284,8 +284,14 @@ describe('user stats tagged item removal', () => {
       path: item.path,
       tagIds: item.tagIds,
     }))).toEqual([
-      { path: '/both', tagIds: ['tag-personal'] },
-      { path: '/personal-1', tagIds: ['tag-personal'] },
+      {
+        path: '/both',
+        tagIds: ['tag-personal'],
+      },
+      {
+        path: '/personal-1',
+        tagIds: ['tag-personal'],
+      },
     ]);
     expect(lazyStoreSetMock).toHaveBeenCalledWith('taggedItems', store.taggedItems);
   });

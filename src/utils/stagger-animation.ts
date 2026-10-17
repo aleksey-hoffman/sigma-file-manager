@@ -58,7 +58,10 @@ export const DASHBOARD_CARD_ENTRANCE: StaggerAnimationOptions = {
 
 export function getDashboardContentEntranceBinding(): {
   class: string;
-  style: { animationDelay: string; animationDuration: string };
+  style: {
+    animationDelay: string;
+    animationDuration: string;
+  };
 } {
   return {
     class: DASHBOARD_CONTENT_ENTRANCE_CLASS,

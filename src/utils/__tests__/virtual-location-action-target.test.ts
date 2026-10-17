@@ -163,21 +163,30 @@ describe('virtual-location-action-target', () => {
       expect(resolveDuplicateCurrentTabShortcutTarget(
         'C:/Users',
         getVirtualLocationActionContext([], 'C:/Users'),
-      )).toEqual({ kind: 'clone-path', path: 'C:/Users' });
+      )).toEqual({
+        kind: 'clone-path',
+        path: 'C:/Users',
+      });
     });
 
     it('clones the locations virtual path when nothing is selected', () => {
       expect(resolveDuplicateCurrentTabShortcutTarget(
         LOCATIONS_VIRTUAL_PATH,
         getVirtualLocationActionContext([], LOCATIONS_VIRTUAL_PATH),
-      )).toEqual({ kind: 'clone-path', path: LOCATIONS_VIRTUAL_PATH });
+      )).toEqual({
+        kind: 'clone-path',
+        path: LOCATIONS_VIRTUAL_PATH,
+      });
     });
 
     it('clones the wsl host virtual path when nothing is selected', () => {
       expect(resolveDuplicateCurrentTabShortcutTarget(
         WSL_HOST_VIRTUAL_PATH,
         getVirtualLocationActionContext([], WSL_HOST_VIRTUAL_PATH),
-      )).toEqual({ kind: 'clone-path', path: WSL_HOST_VIRTUAL_PATH });
+      )).toEqual({
+        kind: 'clone-path',
+        path: WSL_HOST_VIRTUAL_PATH,
+      });
     });
 
     it('opens the selected location when browsing virtual locations', () => {

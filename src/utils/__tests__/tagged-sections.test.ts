@@ -43,8 +43,14 @@ describe('getTaggedSections', () => {
       tagId: section.tag.id,
       paths: section.items.map(item => item.path),
     }))).toEqual([
-      { tagId: 'work', paths: ['/work-1', '/work-2'] },
-      { tagId: 'personal', paths: ['/personal-1', '/work-2'] },
+      {
+        tagId: 'work',
+        paths: ['/work-1', '/work-2'],
+      },
+      {
+        tagId: 'personal',
+        paths: ['/personal-1', '/work-2'],
+      },
     ]);
   });
 
@@ -68,8 +74,14 @@ describe('getTaggedSections', () => {
       tagId: section.tag.id,
       count: section.items.length,
     }))).toEqual([
-      { tagId: 'work', count: 1 },
-      { tagId: 'archive', count: 0 },
+      {
+        tagId: 'work',
+        count: 1,
+      },
+      {
+        tagId: 'archive',
+        count: 0,
+      },
     ]);
   });
 });
@@ -100,9 +112,18 @@ describe('getDashboardTagSections', () => {
       tagId: section.tag.id,
       count: section.items.length,
     }))).toEqual([
-      { tagId: 'work', count: 1 },
-      { tagId: 'archive', count: 0 },
-      { tagId: ORPHANED_TAG_ID, count: 1 },
+      {
+        tagId: 'work',
+        count: 1,
+      },
+      {
+        tagId: 'archive',
+        count: 0,
+      },
+      {
+        tagId: ORPHANED_TAG_ID,
+        count: 1,
+      },
     ]);
   });
 });
