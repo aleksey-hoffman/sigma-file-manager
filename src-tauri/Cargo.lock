@@ -54,6 +54,7 @@ name = "alpha-file-manager"
 version = "3.2.4"
 dependencies = [
  "arboard",
+ "async-trait",
  "axum",
  "axum-server",
  "base64 0.22.1",

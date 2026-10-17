@@ -18,10 +18,15 @@
 // ---------------------------------------------------------------------------
 
 mod error;
+mod fake;
 mod path;
+mod provider;
 
 pub use error::{RemoteError, RemoteErrorKind};
+pub use fake::FakeRemoteProvider;
 pub use path::{
     build_remote_connection_path, build_remote_path, get_remote_parent_path,
-    is_remote_connection_root_path, is_remote_path, parse_remote_path, RemotePath, REMOTE_SCHEME,
+    is_remote_connection_root_path, is_remote_path, normalize_remote_path, parse_remote_path,
+    RemotePath, REMOTE_SCHEME,
 };
+pub use provider::{RemoteEntry, RemoteProvider};

@@ -51,6 +51,20 @@ fn normalize_remote_segments(remote_path: &str) -> Option<Vec<&str>> {
     Some(segments)
 }
 
+/// 规范化一个**远端**路径（不含连接 id）：折叠连续斜杠、剥离尾斜杠，
+/// 根目录固定为 `"/"`。任一段是 `.` / `..` 则返回 `None`。
+///
+/// 阶段 2/5 的 FTP、SFTP 库交回来的路径要过这里才能和前端对齐。
+pub fn normalize_remote_path(remote_path: &str) -> Option<String> {
+    let segments = normalize_remote_segments(remote_path)?;
+
+    if segments.is_empty() {
+        return Some("/".to_string());
+    }
+
+    Some(format!("/{}", segments.join("/")))
+}
+
 /// 是否落在 `sfm://remote` 前缀下。
 ///
 /// 注意：这**不**保证路径合法 —— `sfm://remote/c/../x` 前缀成立，
@@ -74,12 +88,7 @@ pub fn parse_remote_path(path: &str) -> Option<RemotePath> {
         return None;
     }
 
-    let segments = normalize_remote_segments(tail)?;
-    let remote_path = if segments.is_empty() {
-        "/".to_string()
-    } else {
-        format!("/{}", segments.join("/"))
-    };
+    let remote_path = normalize_remote_path(tail)?;
 
     Some(RemotePath {
         connection_id: connection_id.to_string(),
@@ -100,7 +109,10 @@ pub fn build_remote_path(connection_id: &str, remote_path: &str) -> Option<Strin
         return Some(format!("{REMOTE_SCHEME}/{connection_id}"));
     }
 
-    Some(format!("{REMOTE_SCHEME}/{connection_id}/{}", segments.join("/")))
+    Some(format!(
+        "{REMOTE_SCHEME}/{connection_id}/{}",
+        segments.join("/")
+    ))
 }
 
 /// `sfm://remote/<连接id>`。连接 id 非法时返回 `None`。
@@ -257,6 +269,18 @@ mod tests {
         );
         assert_eq!(get_remote_parent_path("sfm://remote"), None);
         assert_eq!(get_remote_parent_path("C:/Users"), None);
+    }
+
+    #[test]
+    fn normalizes_remote_paths_without_a_connection_id() {
+        assert_eq!(normalize_remote_path(""), Some("/".to_string()));
+        assert_eq!(normalize_remote_path("/"), Some("/".to_string()));
+        assert_eq!(normalize_remote_path("pub"), Some("/pub".to_string()));
+        assert_eq!(normalize_remote_path("/pub/docs/"), Some("/pub/docs".to_string()));
+        assert_eq!(normalize_remote_path("pub//docs"), Some("/pub/docs".to_string()));
+        assert_eq!(normalize_remote_path("/中文目录/"), Some("/中文目录".to_string()));
+        assert_eq!(normalize_remote_path("/pub/../etc"), None);
+        assert_eq!(normalize_remote_path("./x"), None);
     }
 
     #[test]

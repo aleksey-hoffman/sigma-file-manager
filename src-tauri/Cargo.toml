@@ -67,6 +67,9 @@ axum = { version = "0.8", features = ["multipart"] }
 mime_guess = "2"
 mdns-sd = { version = "0.20", features = ["async"] }
 tokio-util = { version = "0.7", features = ["io"] }
+# 远程 provider trait 的异步方法包装。MIT OR Apache-2.0，MSRV 远低于本项目的 1.90。
+# 选它而不是原生 AFIT：阶段 1 的连接注册表要存 Box<dyn RemoteProvider>，AFIT 不是 dyn 兼容的。
+async-trait = "0.1"
 urlencoding = "2"
 local-ip-address = "0.6"
 rcgen = "0.14"
