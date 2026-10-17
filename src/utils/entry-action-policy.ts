@@ -6,8 +6,9 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
 import { isVirtualDirectoryPath } from '@/utils/virtual-path-constants';
+import { isRemotePath } from '@/utils/remote-paths';
 
-export type EntryActionPolicy = 'virtual-location' | 'system-mount-root' | 'normal';
+export type EntryActionPolicy = 'virtual-location' | 'remote' | 'system-mount-root' | 'normal';
 
 const VIRTUAL_LOCATION_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'rename',
@@ -34,7 +35,40 @@ const SYSTEM_MOUNT_ROOT_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'delete-permanently',
 ]);
 
+/**
+ * 远程空间在阶段 0 的门禁：**只放行导航类动作**。
+ *
+ * 阶段 0 还没有传输与远程写操作，放行它们会让用户点到没接线的按钮。
+ * 阶段 3（新建目录 / 重命名 / 删除）与阶段 7（跨边界拖拽 / 复制粘贴）
+ * 会**逐条从这里移出去** —— 每移一条，同步更新
+ * `entry-action-policy.test.ts` 里那条「阶段 0 只放行导航」的断言。
+ */
+const REMOTE_PHASE0_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
+  'rename',
+  'batch-rename',
+  'copy',
+  'cut',
+  'link',
+  'paste',
+  'delete',
+  'delete-permanently',
+  'open-with',
+  'properties',
+  'quick-view',
+  'print',
+  'share',
+]);
+
 export function getEntryActionPolicy(path: string, platform: string | null): EntryActionPolicy {
+  // `remote` 必须排在最前。当前 `sfm://remote/...` 既不匹配 `isVirtualDirectoryPath`
+  // 也不匹配 `isProtectedSystemPath`，会一路落到 `normal` —— 那个策略对
+  // delete / rename / copy **全部放行**，正是最不能落到的地方。
+  // 后续阶段 1 把 `sfm://remote` 接进 `isVirtualDirectoryPath` 之后，
+  // 这个顺序也不会打架。
+  if (isRemotePath(path)) {
+    return 'remote';
+  }
+
   if (isVirtualDirectoryPath(path)) {
     return 'virtual-location';
   }
@@ -66,6 +100,10 @@ export function isActionBlockedByEntryPolicy(
     const policy = getEntryActionPolicy(entry.path, platform);
 
     if (policy === 'virtual-location' && VIRTUAL_LOCATION_BLOCKED_ACTIONS.has(action)) {
+      return true;
+    }
+
+    if (policy === 'remote' && REMOTE_PHASE0_BLOCKED_ACTIONS.has(action)) {
       return true;
     }
 

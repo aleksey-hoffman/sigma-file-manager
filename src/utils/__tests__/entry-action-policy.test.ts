@@ -73,4 +73,37 @@ describe('entry-action-policy', () => {
       })).toBe(true);
     });
   });
+
+  describe('remote policy', () => {
+    it('classifies remote paths as remote, not as virtual or mount root', () => {
+      expect(getEntryActionPolicy('sfm://remote/conn-a', 'windows')).toBe('remote');
+      expect(getEntryActionPolicy('sfm://remote/conn-a/pub', 'windows')).toBe('remote');
+      expect(getEntryActionPolicy('sfm://remote', 'windows')).toBe('remote');
+    });
+
+    it('blocks every non-navigation action on remote paths in phase 0', () => {
+      const entries = [createEntry('sfm://remote/conn-a/pub')];
+
+      expect(isActionBlockedByEntryPolicy('delete', entries, 'windows')).toBe(true);
+      expect(isActionBlockedByEntryPolicy('rename', entries, 'windows')).toBe(true);
+      expect(isActionBlockedByEntryPolicy('copy', entries, 'windows')).toBe(true);
+      expect(isActionBlockedByEntryPolicy('paste', entries, 'windows')).toBe(true);
+      expect(isActionBlockedByEntryPolicy('properties', entries, 'windows')).toBe(true);
+      // 导航类必须放行，否则远程路径根本点不进去
+      expect(isActionBlockedByEntryPolicy('open-in-new-tab', entries, 'windows')).toBe(false);
+      expect(isActionBlockedByEntryPolicy('toggle-favorite', entries, 'windows')).toBe(false);
+    });
+
+    it('takes the strictest policy when a selection mixes remote and normal entries', () => {
+      const mixed = [createEntry('C:/Users'), createEntry('sfm://remote/conn-a/pub')];
+
+      expect(isActionBlockedByEntryPolicy('delete', mixed, 'windows')).toBe(true);
+      expect(isActionBlockedByEntryPolicy('copy', mixed, 'windows')).toBe(true);
+    });
+
+    it('leaves local paths on the normal policy', () => {
+      expect(getEntryActionPolicy('C:/Users', 'windows')).toBe('normal');
+      expect(isActionBlockedByEntryPolicy('copy', [createEntry('C:/Users')], 'windows')).toBe(false);
+    });
+  });
 });
