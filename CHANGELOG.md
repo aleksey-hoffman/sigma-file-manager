@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.2.4-beta] - October 2026
+
+**Summary:** When the window is too narrow, the toolbar folds its buttons into a "..." menu. The thumbnail size control was missing from that menu, so on a narrow window there was no way to reach it at all. It is there now.
+
+### What changed
+
+On a narrow window the toolbar buttons collapse into a single "..." menu holding back, forward, up, locations, refresh, the list/grid toggle, and the two create commands. The thumbnail size control had only ever been added to the wide-screen row of icons, so once the window narrowed below 600px it disappeared entirely — there was no second copy to find.
+
+The same control is now in both places, in the same order: on the wide toolbar it sits right after the list/grid button, and in the "..." menu it sits right after the matching list/grid item. Both open the same dialog.
+
+### This is a beta
+
+Everything else in this build is unchanged from 3.2.3-beta, including the split-view swap button and the address bar work.
+
 ## [3.2.3-beta] - October 2026
 
 **Summary:** In split view, a new button beside the search box swaps the two panes' folders. Useful after you have dragged both panes to the right place and want the left one back on the left.

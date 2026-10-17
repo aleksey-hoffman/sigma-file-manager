@@ -223,12 +223,7 @@ function openThumbnailSizeDialog() {
         {{ t('settings.general.fileView.thumbnailSizeTitle') }}
       </TooltipContent>
     </Tooltip>
-    <FileBrowserThumbnailSizeDialog
-      v-model:open="isThumbnailSizeDialogOpen"
-      v-model:model-value="thumbnailSize"
-    />
   </div>
-
   <div class="file-browser-toolbar-nav-buttons file-browser-toolbar-nav-buttons--collapsed">
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
@@ -298,6 +293,15 @@ function openThumbnailSizeDialog() {
           />
           {{ isGridLayout ? t('list') : t('grid') }}
         </DropdownMenuItem>
+        <!-- FORK-MODIFICATION: 缩略图大小此前只挂在宽屏那排图标上，
+             窄屏折叠进「⋯」后就找不到了。位置对齐宽屏的顺序：紧跟在视图切换之后。 -->
+        <DropdownMenuItem
+          data-test="thumbnail-size-menu-item"
+          @click="openThumbnailSizeDialog"
+        >
+          <ImageIcon :size="14" />
+          {{ t('settings.general.fileView.thumbnailSizeTitle') }}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           class="file-browser-toolbar-nav-buttons__menu-item-with-shortcut"
@@ -322,6 +326,14 @@ function openThumbnailSizeDialog() {
       </DropdownMenuContent>
     </DropdownMenu>
   </div>
+
+  <!-- FORK-MODIFICATION: 弹窗挂在两个容器**之外**。
+       窄屏时上面那个 --expanded div 是 display:none，弹窗在里面虽然
+       （reka 会 teleport 到 body）多半还能显示，但那是运气不是设计。 -->
+  <FileBrowserThumbnailSizeDialog
+    v-model:open="isThumbnailSizeDialogOpen"
+    v-model:model-value="thumbnailSize"
+  />
 </template>
 
 <style scoped>

@@ -157,3 +157,57 @@ describe('file-browser-toolbar-nav-buttons · home button goes to locations', ()
     expect(wrapper.emitted('goHome')).toHaveLength(1);
   });
 });
+
+// FORK-MODIFICATION 2026-10-17：缩略图大小按钮此前只加在宽屏那排图标上，
+// 窄屏折叠进「⋯」菜单后就找不到了。这个 describe 锁住两态都有入口。
+describe('file-browser-toolbar-nav-buttons · thumbnail size parity', () => {
+  it('keeps the thumbnail size button on the expanded toolbar', () => {
+    const wrapper = mountNavButtons();
+    expect(wrapper.find('[data-test="thumbnail-size-button"]').exists()).toBe(true);
+  });
+
+  it('also exposes thumbnail size inside the collapsed ⋮ dropdown', async () => {
+    const wrapper = mountNavButtons({ currentLayout: 'list' });
+
+    await wrapper.findAll('button')
+      .find(b => b.attributes('title') === 'settingsCategories.navigation')
+      ?.trigger('click');
+
+    expect(wrapper.find('[data-test="thumbnail-size-menu-item"]').exists()).toBe(true);
+  });
+
+  it('opens the same dialog from the expanded button', async () => {
+    const wrapper = mountNavButtons();
+    const dialog = wrapper.findComponent({ name: 'FileBrowserThumbnailSizeDialog' });
+
+    expect(dialog.props('open')).toBe(false);
+    await wrapper.find('[data-test="thumbnail-size-button"]').trigger('click');
+    expect(dialog.props('open')).toBe(true);
+  });
+
+  it('opens the same dialog from the collapsed menu item', async () => {
+    const wrapper = mountNavButtons({ currentLayout: 'list' });
+    const dialog = wrapper.findComponent({ name: 'FileBrowserThumbnailSizeDialog' });
+
+    expect(dialog.props('open')).toBe(false);
+
+    await wrapper.findAll('button')
+      .find(b => b.attributes('title') === 'settingsCategories.navigation')
+      ?.trigger('click');
+    await wrapper.find('[data-test="thumbnail-size-menu-item"]').trigger('click');
+
+    expect(dialog.props('open')).toBe(true);
+  });
+
+  it('mounts the dialog outside the display:none expanded container', () => {
+    const wrapper = mountNavButtons();
+    const dialog = wrapper.findComponent({ name: 'FileBrowserThumbnailSizeDialog' });
+
+    expect(dialog.exists()).toBe(true);
+    // 窄屏时 --expanded 那个 div 是 display:none，弹窗挂在它里面虽然
+    // （reka 会 teleport 到 body）多半还能显示，但那是运气不是设计。
+    // 明确要求它挂在两个容器之外。
+    const expandedContainer = wrapper.find('.file-browser-toolbar-nav-buttons--expanded');
+    expect(expandedContainer.element.contains(dialog.element)).toBe(false);
+  });
+});
