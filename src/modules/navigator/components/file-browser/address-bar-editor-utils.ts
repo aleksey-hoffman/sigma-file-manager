@@ -191,7 +191,9 @@ export function createTargetDirectorySuggestionGroup(directoryPath: string): Add
 
 /** 子目录在前、文件在后，各自按名称排序 —— 弹窗靠树形导线分层，顺序必须稳定。 */
 export function orderDirectoryEntriesForSuggestionList(entries: DirEntry[]): DirEntry[] {
-  const byName = (left: DirEntry, right: DirEntry) => left.name.localeCompare(right.name);
+  function byName(left: DirEntry, right: DirEntry): number {
+    return left.name.localeCompare(right.name);
+  }
 
   return [
     ...entries.filter(entryItem => entryItem.is_dir).sort(byName),
@@ -620,10 +622,22 @@ async function resolveSearchSuggestions(
   };
 }
 
-export type AddressBarTypedTarget =
-  | { kind: 'directory'; path: string }
-  | { kind: 'file'; path: string }
-  | { kind: 'none' };
+export interface AddressBarTypedDirectoryTarget {
+  kind: 'directory';
+  path: string;
+}
+
+export interface AddressBarTypedFileTarget {
+  kind: 'file';
+  path: string;
+}
+
+export interface AddressBarTypedNoneTarget {
+  kind: 'none';
+}
+
+export type AddressBarTypedTarget
+  = AddressBarTypedDirectoryTarget | AddressBarTypedFileTarget | AddressBarTypedNoneTarget;
 
 /**
  * 把输入框里的文字直接解析成一个可执行目标。
@@ -651,8 +665,14 @@ export async function resolveAddressBarTypedTarget(
     }
 
     return dirEntry.is_dir
-      ? { kind: 'directory', path: dirEntry.path }
-      : { kind: 'file', path: dirEntry.path };
+      ? {
+          kind: 'directory',
+          path: dirEntry.path,
+        }
+      : {
+          kind: 'file',
+          path: dirEntry.path,
+        };
   }
   catch {
     return { kind: 'none' };

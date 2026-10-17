@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.2.2-beta] - October 2026
+
+**Summary:** The address bar in the file browser now behaves the way Windows Explorer does. Click it and it turns into an edit box with the current path already selected; paste a path and press Enter to go there. The list underneath now shows the target directory itself as the first, pre-selected row, with its subfolders and files indented beneath it under a tree guide.
+
+### What changed
+
+**Typing a path and pressing Enter now goes to that path.** Previously a pasted path was only understood as a folder if it ended with a slash. Paste `D:\photos\2026` without the trailing slash and you got a single search result back instead of the folder. A bare word such as `photos` is still treated as a search term, so name-based lookup keeps working.
+
+**Enter no longer depends on the list catching up.** Right after you paste, the suggestion list needs a moment to refresh. Pressing Enter during that window used to do nothing at all. It now acts on what is in the input box, immediately.
+
+**Arrow keys and Enter still work the same.** If you arrow down to a particular file and press Enter, that file is what opens — the typed path does not override your choice.
+
+### The suggestion list
+
+The list now reads as a small tree. The first row is the directory you are pointing at; it is flush left, shown in a heavier weight, and selected when the list opens, so pressing Enter goes straight into it. Subfolders and files sit one indent in, level with each other, connected by a vertical line with a short dash into each icon and closed off at the last row. Subfolders are listed before files, each sorted by name.
+
+### This is a beta
+
+This release is a test build. The address bar itself is still shown as a breadcrumb trail with the suggestion list opening as a dialog; moving it to sit directly under the address bar, like Explorer, is planned and not in this build.
+
 ## [3.2.1-beta] - October 2026
 
 **Summary:** Alpha File Manager can now be driven by AI assistants. Turn on the built-in MCP server in Settings → Experimental, pick a permission level, and assistants such as Claude Code or Minimax Code can read your drives, browse folders, and search files through a standard interface. This beta ships six read-only tools; nothing can be moved, renamed, or deleted.

@@ -631,10 +631,16 @@ describe('address bar editor utils', () => {
 
   it('puts the target directory first, then subdirectories, then files', async () => {
     const readDir = vi.fn().mockResolvedValue(dirContents('F:/target', [
-      entry('F:/target/zeta.txt', { isFile: true, name: 'zeta.txt' }),
+      entry('F:/target/zeta.txt', {
+        isFile: true,
+        name: 'zeta.txt',
+      }),
       entry('F:/target/beta'),
       entry('F:/target/alpha'),
-      entry('F:/target/beta.txt', { isFile: true, name: 'beta.txt' }),
+      entry('F:/target/beta.txt', {
+        isFile: true,
+        name: 'beta.txt',
+      }),
     ]));
 
     const state = await resolveAddressBarSuggestions({
@@ -680,10 +686,16 @@ describe('address bar editor utils', () => {
 
   it('orders subdirectories before files and sorts each bucket by name', () => {
     const ordered = orderDirectoryEntriesForSuggestionList([
-      entry('F:/target/b.txt', { isFile: true, name: 'b.txt' }),
+      entry('F:/target/b.txt', {
+        isFile: true,
+        name: 'b.txt',
+      }),
       entry('F:/target/z'),
       entry('F:/target/a'),
-      entry('F:/target/a.txt', { isFile: true, name: 'a.txt' }),
+      entry('F:/target/a.txt', {
+        isFile: true,
+        name: 'a.txt',
+      }),
     ]);
 
     expect(ordered.map(item => item.name)).toEqual(['a', 'z', 'a.txt', 'b.txt']);
