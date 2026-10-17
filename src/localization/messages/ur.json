@@ -1168,7 +1168,8 @@
       "matchCount": "{n} نتائج",
       "results": "نتائج",
       "options": "اختیارات"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "پروگرامز لوڈ ہو رہے ہیں…",

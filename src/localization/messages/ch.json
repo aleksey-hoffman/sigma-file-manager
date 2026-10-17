@@ -1138,7 +1138,8 @@
       "matchCount": "无匹配 | 匹配 1 项 | 匹配 {n} 项",
       "results": "结果",
       "options": "选项"
-    }
+    },
+    "swapPanes": "左右互换"
   },
   "openWith": {
     "loadingPrograms": "正在加载程序...",

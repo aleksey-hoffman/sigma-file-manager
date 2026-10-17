@@ -29,6 +29,7 @@ import {
   resolveDefaultDirectoryPath,
 } from '@/utils/resolve-default-directory';
 import uniqueId from '@/utils/unique-id';
+import { swapTabGroupPaths } from '@/modules/navigator/utils/swap-split-pane-paths';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
 import type { ComputedRef } from 'vue';
@@ -739,6 +740,24 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     return tabGroup.length > 1;
   }
 
+  /**
+   * FORK-MODIFICATION: 交换分屏两格显示的路径。
+   *
+   * 只改 tab.path 就够了：`useFileBrowserLifecycle` 盯着 `{ id, path }`，
+   * 路径一变各面板自己会 readDir；而 workspaces 上的 deep watch 会把改动落盘。
+   * 刻意**不**调 loadCurrentTabGroup() —— 那会把整组标签页重开一遍，
+   * 而这里要的只是「换个目录」。
+   *
+   * 也刻意不写 currentTabPathNavigationRequest：互换不是一次用户导航，
+   * 不该被塞进后退历史里（按「后退」时不该莫名冒出一次换向）。
+   *
+   * 真正的交换逻辑在 utils/swap-split-pane-paths.ts（纯函数，可单测），
+   * 这里只负责取当前标签组并把结果返回给调用方。
+   */
+  function swapSplitPanePaths(): boolean {
+    return swapTabGroupPaths(currentTabGroup.value);
+  }
+
   function toggleSplitView() {
     if (!currentWorkspace.value) {
       return;
@@ -1013,6 +1032,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     setCurrentTabIndex,
     setTabs,
     toggleSplitView,
+    swapSplitPanePaths,
     setTabFilterQuery,
     setPendingLaunchReveal,
     clearPendingLaunchReveal,

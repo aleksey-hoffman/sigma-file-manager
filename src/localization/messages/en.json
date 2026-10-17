@@ -1169,7 +1169,8 @@
       "matchCount": "no matches | 1 match | {n} matches",
       "results": "Results",
       "options": "Options"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Loading programs...",

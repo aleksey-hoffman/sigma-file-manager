@@ -1138,7 +1138,8 @@
       "matchCount": "{n} kết quả khớp",
       "results": "Kết quả",
       "options": "Tùy chọn"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Đang tải chương trình...",

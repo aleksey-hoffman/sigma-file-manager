@@ -1168,7 +1168,8 @@
       "matchCount": "{n} zadetkov",
       "results": "Zadetki",
       "options": "Možnosti"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Nalagam programe...",

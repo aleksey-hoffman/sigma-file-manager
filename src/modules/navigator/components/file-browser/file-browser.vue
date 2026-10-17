@@ -63,6 +63,7 @@ const emit = defineEmits<{
   'update:selectedEntries': [entries: DirEntry[]];
   'update:currentDirEntry': [entry: DirEntry | null];
   'openEntry': [entry: DirEntry];
+  'swapPanes': [];
 }>();
 
 const fileBrowserRef = ref<HTMLElement | null>(null);
@@ -356,6 +357,7 @@ defineExpose({
       @create-new-file="fb.openNewItemDialog('file')"
       @filter-input-focused="fb.clearFilterInputFocusRequest"
       @toggle-layout="setLayout(currentLayout === 'grid' ? 'list' : 'grid')"
+      @swap-panes="emit('swapPanes')"
     />
     <AddressBarEditorDialog
       ref="addressBarEditorRef"

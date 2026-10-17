@@ -1138,7 +1138,8 @@
       "matchCount": "{n} corrispondenze",
       "results": "Risultati",
       "options": "Opzioni"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Caricamento programmi...",

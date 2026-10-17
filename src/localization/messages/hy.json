@@ -1168,7 +1168,8 @@
       "matchCount": "{n} համընկերություններ",
       "results": "արդյունքներ",
       "options": "տարբերակներ"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Ծրագրերը բեռնվում են...",

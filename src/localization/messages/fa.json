@@ -1134,7 +1134,8 @@
       "matchCount": "{n} نتیجه",
       "results": "نتایج",
       "options": "گزینه‌ها"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "در حال بارگذاری برنامه‌ها...",

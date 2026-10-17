@@ -1168,7 +1168,8 @@
       "matchCount": "{n} התאמות",
       "results": "תוצאות",
       "options": "אפשרויות"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "טוען תוכניות...",

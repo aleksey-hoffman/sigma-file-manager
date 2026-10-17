@@ -8,6 +8,7 @@ import FileBrowserToolbarAddressBar from './file-browser-toolbar-address-bar.vue
 import FileBrowserToolbarNavButtons from './file-browser-toolbar-nav-buttons.vue';
 import FileBrowserToolbarCreateButton from './file-browser-toolbar-create-button.vue';
 import FileBrowserToolbarFilter from './file-browser-toolbar-filter.vue';
+import FileBrowserToolbarSwapPanesButton from './file-browser-toolbar-swap-panes-button.vue';
 
 withDefaults(defineProps<{
   pathInput: string;
@@ -43,6 +44,7 @@ const emit = defineEmits<{
   (event: 'createNewFile'): void;
   (event: 'filterInputFocused'): void;
   (event: 'toggle-layout'): void;
+  (event: 'swap-panes'): void;
 }>();
 
 function handleAddressBarNavigate(path: string) {
@@ -95,6 +97,12 @@ function handleAddressBarNavigate(path: string) {
           @update:filter-query="emit('update:filterQuery', $event)"
           @update:is-filter-open="emit('update:isFilterOpen', $event)"
           @filter-input-focused="emit('filterInputFocused')"
+        />
+        <!-- FORK-MODIFICATION: 分屏时把左右两格的路径对调。只在分屏下出现，
+             单格时没有「另一格」可换，摆出来只是个永远无效的按钮。 -->
+        <FileBrowserToolbarSwapPanesButton
+          v-if="isSplitView"
+          @swap-panes="emit('swap-panes')"
         />
       </div>
     </div>

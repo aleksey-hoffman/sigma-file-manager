@@ -1138,7 +1138,8 @@
       "matchCount": "{n} eşleşme",
       "results": "Sonuçlar",
       "options": "Seçenekler"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Programlar yükleniyor...",

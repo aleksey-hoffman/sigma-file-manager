@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.2.3-beta] - October 2026
+
+**Summary:** In split view, a new button beside the search box swaps the two panes' folders. Useful after you have dragged both panes to the right place and want the left one back on the left.
+
+### Swapping the panes
+
+With two panes open, a swap button appears to the right of the search box in each pane's toolbar. Click it and the panes trade places: whatever the left one was showing, the right one shows now, and vice versa. Each pane keeps its own window size and its own place in the tab order — only the folder changes.
+
+The button is not there when there is a single pane, because there would be nothing to swap.
+
+### If the two panes already show the same folder
+
+Nothing happens, and that is deliberate. Swapping two identical folders is a no-op, and making the panes flicker through a change you cannot see is worse than doing nothing.
+
+### This is a beta
+
+Everything else in this build is unchanged from 3.2.2-beta, including the address bar work: pasting a path and pressing Enter goes there, and the current path is selected when you open the address bar.
+
 ## [3.2.2-beta] - October 2026
 
 **Summary:** The address bar in the file browser now behaves the way Windows Explorer does. Click it and it turns into an edit box with the current path already selected; paste a path and press Enter to go there. The list underneath now shows the target directory itself as the first, pre-selected row, with its subfolders and files indented beneath it under a tree guide.

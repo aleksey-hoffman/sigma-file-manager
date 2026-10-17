@@ -1138,7 +1138,8 @@
       "matchCount": "{n} 件の一致",
       "results": "結果",
       "options": "オプション"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "プログラムを読み込み中...",

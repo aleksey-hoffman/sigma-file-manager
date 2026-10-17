@@ -1168,7 +1168,8 @@
       "matchCount": "{n} совпадений",
       "results": "Результаты",
       "options": "Параметры"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "Загрузка программ...",

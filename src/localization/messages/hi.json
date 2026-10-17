@@ -1168,7 +1168,8 @@
       "matchCount": "{n} मेल",
       "results": "परिणाम",
       "options": "विकल्प"
-    }
+    },
+    "swapPanes": "Swap panes"
   },
   "openWith": {
     "loadingPrograms": "प्रोग्राम लोड हो रहे हैं...",
