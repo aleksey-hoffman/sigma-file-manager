@@ -273,6 +273,24 @@ describe('virtual-locations', () => {
       expect(getNavigableParentPath('//server/share', 'windows')).toBe('//server');
       expect(getNavigableParentPath('//server/share/docs', 'windows')).toBe('//server/share');
     });
+
+    it('walks up the remote path family', () => {
+      // 改动前：sfm://remote 的父级是本地 getParentPath 算出来的 'sfm:/'，
+      // 含 .. 的路径会原样带出 'sfm://remote/conn-a/pub/..' —— 两条都是垃圾路径。
+      // 简单嵌套路径改动前碰巧是对的（字符串切分刚好切对），所以下面两条才是判别点。
+      expect(getNavigableParentPath('sfm://remote/conn-a/pub/docs', 'windows')).toBe('sfm://remote/conn-a/pub');
+      expect(getNavigableParentPath('sfm://remote/conn-a/pub', 'windows')).toBe('sfm://remote/conn-a');
+      expect(getNavigableParentPath('sfm://remote/conn-a', 'windows')).toBe('sfm://remote');
+      expect(getNavigableParentPath('sfm://remote', 'windows')).toBeNull();
+    });
+
+    it('refuses to navigate up from an invalid remote path', () => {
+      // `..` 段让 parseRemotePath 返回 null。刻意返回 null 而不是放行到本地解析：
+      // canonicalizePath 会把 sfm://remote/... 拆成盘符路径，那是在编造一个
+      // 用户从没去过的目录。宁可「无处可上」，阶段 1 的 command 会给出显式错误。
+      expect(getNavigableParentPath('sfm://remote/conn-a/pub/../etc', 'windows')).toBeNull();
+      expect(getNavigableParentPath('sfm://remote/conn-a/pub/./etc', 'windows')).toBeNull();
+    });
   });
 
   describe('shouldPrependLocationsCrumb', () => {

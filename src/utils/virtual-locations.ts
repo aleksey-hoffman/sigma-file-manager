@@ -13,6 +13,7 @@ import normalizePath, {
   isWslPath,
 } from '@/utils/normalize-path';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
+import { getRemoteParentPath, isRemotePath } from '@/utils/remote-paths';
 import {
   isUnderUnixSystemMount,
   isWindowsLocationsScopePath,
@@ -249,6 +250,15 @@ export function getNavigableParentPath(path: string, platform: string | null): s
 
   if (isWslHostVirtualPath(normalizedPath)) {
     return LOCATIONS_VIRTUAL_PATH;
+  }
+
+  // 远程分支必须排在 `canonicalizePath` 之前。canonicalizePath 会把尾斜杠剥掉、
+  // 后续 getParentPath 只按字符串切分，于是 `sfm://remote` 的父级会变成 `sfm:/`，
+  // 含 `..` 的路径会原样带出 `..` —— 两个都是用户从没去过的垃圾路径。
+  if (isRemotePath(normalizedPath)) {
+    // 非法远程路径（含 `.` / `..` 段）在这里返回 null，即「无处可上」。
+    // 刻意不放行到本地解析：那等于凭空编造一个目录。阶段 1 的 command 会给出显式错误。
+    return getRemoteParentPath(normalizedPath);
   }
 
   const canonicalPath = canonicalizePath(normalizedPath);
