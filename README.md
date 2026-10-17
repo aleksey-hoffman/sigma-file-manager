@@ -23,6 +23,8 @@ Everything below is ours. Nothing in this section exists upstream.
 
 | | Feature | Since |
 |---|---|---|
+| 🤖 | **Built-in MCP server** — let an AI assistant read drives, folders, and search results over a standard interface | **3.2.1-beta** |
+| ⚡ | **One-click setup for six assistants** — Codex, Cursor, Claude Code, Claude Desktop, OpenClaw, Minimax Code | **3.2.1-beta** |
 | 🔎 | **Directory search genuinely recurses** — the walk stops on *matches*, not on entries scanned | **3.1.3** |
 | 🎚️ | **Search options sit above the results**, with typo tolerance that actually does something | **3.1.3** |
 | 🏷️ | **Favourites ask for a category** on add — pick an existing one or create one | **3.1.3** |
@@ -39,6 +41,83 @@ Everything below is ours. Nothing in this section exists upstream.
 | ✅ | **Box selection on by default** | 3.0.2 |
 | 🧠 | **Batch-rename data-loss fix** — no more silent overwrites | 3.0.1 |
 | 📦 | One-step installer, in-place upgrade, complete uninstall | 3.0.0 |
+
+---
+
+## 🆕 What's new in 3.2.1-beta
+
+**3.2.1-beta is the AI release: the file manager ships an MCP server, so an
+assistant can read your drives over a standard interface instead of being handed
+screenshots and guessing.**
+
+### 🤖 An assistant can now ask your file manager
+
+[Model Context Protocol](https://modelcontextprotocol.io) is the interface Claude,
+Codex, Cursor and a growing list of other assistants already speak. Switch the
+server on in Settings → Experimental and they can list your drives, browse a
+folder, search by filename, work out how much space a directory takes, and read
+your favourites — through the file manager that already knows about shortcuts,
+virtual folders and network shares.
+
+**Six tools, all of them read-only.** Nothing can be moved, renamed, copied or
+deleted, and the write operations are not switched off by default — they are not
+implemented.
+
+| Tool | The question it answers |
+| --- | --- |
+| `list_directory` | What is in this folder? |
+| `get_drives` | Which drives does this computer have, and how much room is left? |
+| `get_mountable_devices` | Which USB drives and shares can be connected? |
+| `search_files` | Where is the file called…? |
+| `get_directory_size` | How much space does this folder take, subfolders included? |
+| `get_favorites` | What has this person starred? |
+
+### 🔒 Three safeguards, none of them optional
+
+- **Localhost only.** The server binds to 127.0.0.1 and nowhere else. Another
+  device on your network cannot reach it even if it learns the address.
+- **A random access key,** generated the first time you switch the server on.
+  Requests without it are refused.
+- **Requests from unknown sites are refused.** Only pages served from this
+  computer are accepted.
+
+Four permission levels, and whichever one you pick is **re-checked on every
+single call** — turning it down takes effect on the very next request, with
+nothing to reconnect.
+
+### ⚡ One click per assistant
+
+Hand-copying a JSON snippet into someone else's config file is where this usually
+goes wrong: a missing comma and the assistant reports "no servers configured",
+with nothing pointing at the actual mistake. Settings → Experimental → MCP server
+now lists the assistants it can find on this computer, names **which file each
+one reads**, and writes the entry for you. The same screen takes it back out
+again.
+
+Because this is *your* configuration file, the writing obeys three rules:
+
+- **It only ever merges.** The file is parsed, exactly one entry is added or
+  removed, and it is written back — the rest of the file, including the comments
+  in Codex's `config.toml`, is left exactly as it was.
+- **It refuses to write if it cannot read the file.** A config that fails to parse
+  is reported and left alone, rather than replaced with something that looks right
+  and is not.
+- **It backs the file up first,** as `<that file>.alpha-mcp.bak`, every time.
+
+An entry does not take effect until the assistant restarts, so the panel keeps a
+notice on screen naming the file that changed and the backup that was taken.
+
+### 📜 Everything is written down
+
+Every call is logged next to your settings — which tool, when, and whether it was
+allowed or turned down. Plain text; open it in any editor if you want to review
+what an assistant has been asking for.
+
+### 🧪 This is a beta
+
+Only read operations are available, on purpose. The permission model and the
+configuration panel may still change before the final release, and the interface
+text may not be finished in every language yet.
 
 ---
 

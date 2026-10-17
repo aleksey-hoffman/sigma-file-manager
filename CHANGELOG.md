@@ -38,6 +38,29 @@ Four levels, switchable at any time — a change takes effect on the very next t
 
 Every call is written to a plain-text log next to the app's settings, including which tool, when, and whether it was allowed or turned down. Open it with any text editor if you want to review what an assistant has been doing.
 
+### One click per assistant
+
+Hand-copying a JSON snippet into someone else's config file is where this usually
+goes wrong — a missing comma and the assistant simply reports "no servers
+configured". Settings → Experimental → MCP server now lists the assistants it can
+find on this computer — Codex, Cursor, Claude Code, Claude Desktop, OpenClaw,
+Minimax Code — names **which file each one reads**, and writes the entry for you.
+The same screen removes it again, so undoing it does not mean hunting for the line
+you added.
+
+Three rules the writing obeys, because this is your configuration file:
+
+- **It only ever merges.** The file is parsed, exactly one entry is added or
+  removed, and it is written back. Anything else in the file — including the
+  comments in Codex's `config.toml` — is left as it was.
+- **It refuses to write if it cannot read the file.** A config that fails to parse
+  is left untouched and reported, rather than replaced with something that looks
+  right and is not.
+- **It backs the file up first,** as `<that file>.alpha-mcp.bak`, every time.
+
+An entry does not take effect until the assistant restarts, so the panel keeps a
+notice on screen naming the file that changed and the backup that was taken.
+
 ### This is a beta
 
 Only read operations are available. Anything that could change or remove your files is deliberately absent. The permission model and the configuration panel may still change before the final release, and the interface text may not be final in every language yet.
