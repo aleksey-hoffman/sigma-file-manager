@@ -918,7 +918,9 @@ export function getNavigableParentPath(path: string, platform: string | null): s
   $ErrorActionPreference = 'Continue'
   npx vitest run
   ```
-  预期 **187 文件 / 1477 用例**（186 + Task 4 新增的 `remote-paths.test.ts`；Task 5/6 是扩已有文件，不新增文件）。
+  预期 **187 文件 / 1483 用例**（186 + Task 4 新增的 `remote-paths.test.ts` 12 条；
+  Task 5 往 `entry-action-policy.test.ts` 加 4 条、Task 6 往 `virtual-locations.test.ts`
+  加 2 条，都是扩已有文件、不新增文件）。
   抓 `Test Files` / `Tests` 两行读数。
 
 - [ ] **Step 7.3** 类型与 lint：
@@ -946,6 +948,47 @@ export function getNavigableParentPath(path: string, platform: string | null): s
   ```
   docs(plan): 阶段 0 门禁实测结果
   ```
+
+---
+
+## 实际结果（2026-10-17）
+
+全部 7 个 Task 已执行完成。下面是**实测数字**，不是计划里的预期值。
+
+| 门禁 | 基线 | 实测 | 结果 |
+|---|---|---|---|
+| `cargo test --lib` | 386 | **409** | 通过（path 10 + error 6 + provider 7） |
+| `npx vitest run` | 186 文件 / 1465 | **187 文件 / 1483** | 通过（+1 文件 +18 用例） |
+| `npx vue-tsc --build` | 0 error | **0 error** | 通过 |
+| `npx eslint src` | 179 errors | **179 errors** | 通过（精确回到基线） |
+| `node scripts/verify-changelog.mjs` | 退出码 0 | **退出码 0** | 通过 |
+
+### 计划里预测错了的地方
+
+1. **测试数量算错三次**：Task 1 实写 9 条而非 8，Task 2 实写 6 条而非 5，
+   Task 3 实写 7 条而非 5。已在执行当场更正计划里的预期数。
+2. **漏了 Task 3 的「先红」步骤**：实现与测试一起写的。补措施是做了阳性对照 ——
+   临时让 `FakeRemoteProvider` 跳过规范化，两条断言立刻转红，确认有判别力后才恢复。
+3. **缩进写错了**：计划里写的 4 空格缩进是笔误，本仓库用 2 空格。已改。
+4. **Task 6 的阳性对照写错了**：本来想写「不让远程路径掉进本地解析」，
+   但它在改动前就是绿的 —— 简单嵌套路径下本地字符串切分碰巧切对了，
+   只有根路径和含 `..` 两处会坏。已删掉那条测试，不留一条假装在证明什么的测试。
+5. **测试写法偏强**：计划里写的是「写失败测试 → 跑确认失败」，
+   实际做过的两位代号都已被测试抓到真 bug（`rsplit_once` 父级算成空串、
+   远程路径父级给出垃圾路径），或被阳性对照确认有判别力。
+
+### 实施期间被测试抓到的真问题
+
+1. **`get_remote_parent_path` 用 `split_once` 在首个斜杠处切**，`/pub/docs` 的父级
+   算成空串，直接退回连接根。已改 `rsplit_once`。前端 `getRemoteParentPath` 同源同错，一并改掉。
+2. **`getNavigableParentPath` 对远程路径给出两个垃圾路径**：`sfm://remote` 的父级是
+   `sfm:/`，含 `..` 的路径会原样带出 `..`。已加远程分支。
+
+### 阶段 0 刻意没做的事（复核一遍，确认都不是遗漏）
+
+不注册 Tauri command、不把 `sfm://remote` 加进 `isVirtualDirectoryPath()`、
+不改 `is-protected-system-path.ts`、不改 `resolveDirectoryContents` / `resolveDirEntry`、
+不打包、不真机验收。理由见下节。
 
 ---
 
