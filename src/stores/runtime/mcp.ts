@@ -28,6 +28,43 @@ export interface McpAuditEntry {
   detail?: string | null;
 }
 
+/**
+ * 支持一键部署的客户端标识。与 Rust 侧 `McpClientKind::id()` 一一对应。
+ * 显示名走 i18n，不要在这里硬编码 —— 同一个 id 在 17 个语言包里都有名字。
+ */
+export type McpClientId
+  = | 'codex'
+    | 'cursor'
+    | 'claudeCode'
+    | 'claudeDesktop'
+    | 'openclaw'
+    | 'minimaxCode';
+
+export const MCP_CLIENT_IDS: McpClientId[] = [
+  'codex',
+  'cursor',
+  'claudeCode',
+  'claudeDesktop',
+  'openclaw',
+  'minimaxCode',
+];
+
+export interface McpClientState {
+  id: McpClientId;
+  /** 这台机器上装没装（判据是配置目录或配置文件存在，不是找 exe）。 */
+  detected: boolean;
+  /** 配置里是不是已经有我们的条目。 */
+  installed: boolean;
+  configPath: string;
+}
+
+export interface McpDeployOutcome {
+  configPath: string;
+  backupPath?: string;
+  /** 内容是否真的变了。重复点同一个按钮会是 false。 */
+  changed: boolean;
+}
+
 export const useMcpStore = defineStore('mcp', () => {
   const status = ref<McpStatus>({
     running: false,
@@ -40,9 +77,12 @@ export const useMcpStore = defineStore('mcp', () => {
   });
 
   const auditLog = ref<McpAuditEntry[]>([]);
+  const clients = ref<McpClientState[]>([]);
   const isLoading = ref(false);
   const isApplying = ref(false);
   const errorMessage = ref<string | null>(null);
+  /** 正在写配置的客户端 id。用来只让被点的那颗按钮转圈。 */
+  const deployingClient = ref<McpClientId | null>(null);
 
   const agentMode = computed<McpAgentMode>(() => {
     const mode = status.value.mode;
@@ -144,19 +184,81 @@ export const useMcpStore = defineStore('mcp', () => {
     }
   }
 
+  /**
+   * 读各客户端的部署现状。
+   *
+   * 读失败不清空列表：把「探测不到」显示成「没装任何客户端」是误导 ——
+   * 前者是我们自己的问题，后者是用户的问题。
+   */
+  async function refreshClients() {
+    try {
+      clients.value = await invoke<McpClientState[]>('mcp_list_clients');
+    }
+    catch (error) {
+      errorMessage.value = String(error);
+    }
+  }
+
+  /**
+   * 把本服务写进某个客户端的配置。
+   *
+   * 写的是**别的软件的配置文件**，所以返回值里带 `backupPath` 与 `configPath`，
+   * 由界面原样告诉用户改了哪个文件 —— 用户需要知道我们碰了他的东西。
+   */
+  async function installClient(client: McpClientId): Promise<McpDeployOutcome | null> {
+    deployingClient.value = client;
+
+    try {
+      const outcome = await invoke<McpDeployOutcome>('mcp_install_client', { client });
+      await refreshClients();
+      return outcome;
+    }
+    catch (error) {
+      errorMessage.value = String(error);
+      await refreshClients();
+      return null;
+    }
+    finally {
+      deployingClient.value = null;
+    }
+  }
+
+  async function uninstallClient(client: McpClientId): Promise<McpDeployOutcome | null> {
+    deployingClient.value = client;
+
+    try {
+      const outcome = await invoke<McpDeployOutcome>('mcp_uninstall_client', { client });
+      await refreshClients();
+      return outcome;
+    }
+    catch (error) {
+      errorMessage.value = String(error);
+      await refreshClients();
+      return null;
+    }
+    finally {
+      deployingClient.value = null;
+    }
+  }
+
   return {
     status,
     auditLog,
+    clients,
     isLoading,
     isApplying,
     errorMessage,
+    deployingClient,
     agentMode,
     isEnabled,
     refresh,
     refreshAuditLog,
+    refreshClients,
     setAgentMode,
     rotateToken,
     fetchClientConfig,
     syncFavorites,
+    installClient,
+    uninstallClient,
   };
 });

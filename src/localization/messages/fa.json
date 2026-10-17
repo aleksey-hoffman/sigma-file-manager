@@ -532,7 +532,33 @@
         },
         "clientsConnected": "{count} agent(s) connected",
         "indicatorTooltip": "An AI client is using this app's capabilities",
-        "notRunning": "MCP server is not running"
+        "notRunning": "MCP server is not running",
+        "deployTitle": "One-click deploy to AI clients",
+        "deployHint": "One-click deploy writes this server straight into the client’s own config file without touching any other entry, and backs the original up as .alpha-mcp.bak beforehand. The change only takes effect after you quit that client completely and start it again.",
+        "deployAction": "One-click deploy",
+        "deployInstalled": "Deployed",
+        "deployNotYet": "Not deployed",
+        "deployNotDetected": "Client not found",
+        "deployDoneShort": "Configured",
+        "deployRemove": "Remove",
+        "deployLoading": "Scanning this machine for clients…",
+        "deployFailed": "Deployment failed — see the error below",
+        "deployAlreadyCurrent": "The config was already up to date, so nothing was changed.",
+        "deployDone": "Deployed to {client}. Config file: {path}. The original file was backed up as {backup}. Please quit {client} completely and start it again.",
+        "deployRemoved": "Removed this server from {client}’s config.",
+        "deployClients": {
+          "codex": "Codex",
+          "cursor": "Cursor",
+          "claudeCode": "Claude Code",
+          "claudeDesktop": "Claude Desktop",
+          "openclaw": "OpenClaw",
+          "minimaxCode": "Minimax Code"
+        },
+        "recheck": "Re-check",
+        "restartTitle": "{client} must be fully quit and restarted",
+        "restartBody": "The config file is written, but MCP clients only read it at startup — they never reload it while running. Quit {client} from its tray icon (closing the window is not enough), reopen it, then come back here and press Re-check.",
+        "restartBackup": "The original file was backed up to {backup}. To undo, rename the backup back.",
+        "restartDismiss": "Got it"
       }
     },
     "storage": {

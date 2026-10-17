@@ -445,6 +445,9 @@ pub fn run() {
             mcp::commands::mcp_rotate_token,
             mcp::commands::mcp_sync_favorites,
             mcp::commands::mcp_get_audit_log,
+            mcp::commands::mcp_list_clients,
+            mcp::commands::mcp_install_client,
+            mcp::commands::mcp_uninstall_client,
         ])
         .setup(setup_handler)
         .on_window_event(|window, event| {

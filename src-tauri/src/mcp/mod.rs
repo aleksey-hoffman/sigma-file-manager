@@ -32,6 +32,7 @@
 
 pub mod audit;
 pub mod auth;
+pub mod clients;
 pub mod commands;
 pub mod permission;
 pub mod server;

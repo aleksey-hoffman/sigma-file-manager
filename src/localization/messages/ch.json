@@ -536,7 +536,33 @@
         },
         "clientsConnected": "{count} 个 agent 已连接",
         "indicatorTooltip": "AI 客户端正在访问本应用的能力",
-        "notRunning": "MCP 服务未运行"
+        "notRunning": "MCP 服务未运行",
+        "deployTitle": "一键部署到 AI 客户端",
+        "deployHint": "点「一键部署」会直接把本服务写进该客户端的配置文件，不改动其它条目；写入前会自动备份成 .alpha-mcp.bak。写完请完整退出并重启该客户端才会生效。",
+        "deployAction": "一键部署",
+        "deployInstalled": "已部署",
+        "deployNotYet": "未部署",
+        "deployNotDetected": "未检测到该客户端",
+        "deployDoneShort": "已配置",
+        "deployRemove": "移除",
+        "deployLoading": "正在探测本机客户端…",
+        "deployFailed": "部署失败，请查看下方错误提示",
+        "deployAlreadyCurrent": "配置本来就是最新的，什么都没改。",
+        "deployDone": "已部署到 {client}。配置文件：{path}。原文件已备份为 {backup}。请完整退出并重启该客户端。",
+        "deployRemoved": "已从 {client} 的配置中移除本服务。",
+        "deployClients": {
+          "codex": "Codex",
+          "cursor": "Cursor",
+          "claudeCode": "Claude Code",
+          "claudeDesktop": "Claude Desktop",
+          "openclaw": "OpenClaw",
+          "minimaxCode": "Minimax Code"
+        },
+        "recheck": "重新检测",
+        "restartTitle": "{client} 需要完整退出并重启",
+        "restartBody": "配置文件已经写好，但 MCP 客户端只在启动时读取配置，运行时不会自动刷新。请在 {client} 的托盘图标上右键退出（关窗口不算），再重新打开，然后回到这里点「重新检测」确认。",
+        "restartBackup": "原文件已备份为 {backup}，想撤销就把备份改回原名。",
+        "restartDismiss": "知道了"
       }
     },
     "storage": {
