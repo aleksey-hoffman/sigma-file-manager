@@ -1,58 +1,38 @@
 # Changelog
 
-## [3.2.4-beta] - October 2026
+## [3.2.4] - October 2026
 
-**Summary:** When the window is too narrow, the toolbar folds its buttons into a "..." menu. The thumbnail size control was missing from that menu, so on a narrow window there was no way to reach it at all. It is there now.
+**Summary:** The first stable build of the 3.2 line. The address bar behaves the way Windows Explorer does, split view can swap its two panes, and the thumbnail size control survives a narrow window. This replaces 3.2.1-beta, which was the last published test build.
 
-### What changed
+### The address bar now works the way you expect
 
-On a narrow window the toolbar buttons collapse into a single "..." menu holding back, forward, up, locations, refresh, the list/grid toggle, and the two create commands. The thumbnail size control had only ever been added to the wide-screen row of icons, so once the window narrowed below 600px it disappeared entirely — there was no second copy to find.
+Click the address bar and it turns into an edit box with the current path already selected — paste a new path and press Enter to go there. Previously the caret sat at the end, so pasting appended to the old path and produced a mashed-together string. Press End if you would rather extend the existing path, exactly as in Explorer.
 
-The same control is now in both places, in the same order: on the wide toolbar it sits right after the list/grid button, and in the "..." menu it sits right after the matching list/grid item. Both open the same dialog.
+Three defects are fixed together, and any one of them on its own is enough to make pasting a path unreliable:
 
-### This is a beta
+- **A path was only treated as a folder if it ended with a slash.** Paste `D:\photos\2026` without the trailing slash and you got a single search result back instead of the folder. A bare word such as `photos` is still treated as a search term, so name-based lookup keeps working.
+- **Enter no longer depends on the list catching up.** Right after you paste, the suggestion list needs a moment to refresh; pressing Enter during that window used to do nothing at all. It now acts on what is in the input box, immediately.
+- **Arrow keys still win.** If you arrow down to a particular file and press Enter, that file is what opens — the typed path does not override your choice.
 
-Everything else in this build is unchanged from 3.2.3-beta, including the split-view swap button and the address bar work.
+### The suggestion list reads as a small tree
 
-## [3.2.3-beta] - October 2026
+The first row is the directory you are pointing at: flush left, in a heavier weight, and selected when the list opens, so pressing Enter goes straight into it. Subfolders and files sit one indent in, level with each other, connected by a vertical line with a short dash into each icon and closed off at the last row. Subfolders are listed before files, each sorted by name.
 
-**Summary:** In split view, a new button beside the search box swaps the two panes' folders. Useful after you have dragged both panes to the right place and want the left one back on the left.
+### Swap the two panes in split view
 
-### Swapping the panes
+With two panes open, a swap button appears to the right of the search box in each pane's toolbar. Click it and the panes trade folders: whatever the left one was showing, the right one shows now, and vice versa. Each pane keeps its own width and its own place in the tab order — only the folder changes. The button is not there with a single pane, because there would be nothing to swap.
 
-With two panes open, a swap button appears to the right of the search box in each pane's toolbar. Click it and the panes trade places: whatever the left one was showing, the right one shows now, and vice versa. Each pane keeps its own window size and its own place in the tab order — only the folder changes.
+If both panes already show the same folder, nothing happens, and that is deliberate: swapping two identical folders is a no-op, and making the panes flicker through a change you cannot see is worse than doing nothing.
 
-The button is not there when there is a single pane, because there would be nothing to swap.
+### The thumbnail size control survives a narrow window
 
-### If the two panes already show the same folder
+On a narrow window the toolbar buttons collapse into a single "..." menu holding back, forward, up, locations, refresh, the list/grid toggle and the two create commands. The thumbnail size control had only ever been added to the wide-screen row of icons, so once the window narrowed below 600px there was no way to reach it at all — not hidden, simply absent.
 
-Nothing happens, and that is deliberate. Swapping two identical folders is a no-op, and making the panes flicker through a change you cannot see is worse than doing nothing.
+It is now in both places, in the same order: after the list/grid button on the wide toolbar, and after the matching list/grid item in the "..." menu. Both open the same dialog.
 
-### This is a beta
+### What this release is
 
-Everything else in this build is unchanged from 3.2.2-beta, including the address bar work: pasting a path and pressing Enter goes there, and the current path is selected when you open the address bar.
-
-## [3.2.2-beta] - October 2026
-
-**Summary:** The address bar in the file browser now behaves the way Windows Explorer does. Click it and it turns into an edit box with the current path already selected; paste a path and press Enter to go there. The list underneath now shows the target directory itself as the first, pre-selected row, with its subfolders and files indented beneath it under a tree guide.
-
-### What changed
-
-**The current path is selected when you open the address bar.** Click the address bar, or the edit button beside it, and the whole path is highlighted and ready — paste a new one and it replaces what was there. Previously the caret sat at the end, so pasting appended to the old path and produced a mashed-together string. Press End if you would rather extend the existing path, exactly as in Explorer.
-
-**Typing a path and pressing Enter now goes to that path.** Previously a pasted path was only understood as a folder if it ended with a slash. Paste `D:\photos\2026` without the trailing slash and you got a single search result back instead of the folder. A bare word such as `photos` is still treated as a search term, so name-based lookup keeps working.
-
-**Enter no longer depends on the list catching up.** Right after you paste, the suggestion list needs a moment to refresh. Pressing Enter during that window used to do nothing at all. It now acts on what is in the input box, immediately.
-
-**Arrow keys and Enter still work the same.** If you arrow down to a particular file and press Enter, that file is what opens — the typed path does not override your choice.
-
-### The suggestion list
-
-The list now reads as a small tree. The first row is the directory you are pointing at; it is flush left, shown in a heavier weight, and selected when the list opens, so pressing Enter goes straight into it. Subfolders and files sit one indent in, level with each other, connected by a vertical line with a short dash into each icon and closed off at the last row. Subfolders are listed before files, each sorted by name.
-
-### This is a beta
-
-This release is a test build. The address bar itself is still shown as a breadcrumb trail with the suggestion list opening as a dialog; moving it to sit directly under the address bar, like Explorer, is planned and not in this build.
+3.2.4 is the first stable build of the 3.2 line. The MCP server introduced in 3.2.1-beta comes along unchanged, still read-only. Nothing in this release can move, rename or delete your files.
 
 ## [3.2.1-beta] - October 2026
 

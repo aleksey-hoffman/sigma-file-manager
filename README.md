@@ -23,6 +23,9 @@ Everything below is ours. Nothing in this section exists upstream.
 
 | | Feature | Since |
 |---|---|---|
+| ⌨️ | **The address bar behaves like Explorer's** — select-all on open, paste a path and press Enter to go there | **3.2.4** |
+| ↔️ | **Swap the two split-view panes** — one button beside the search box | **3.2.4** |
+| 📐 | **Thumbnail size in the narrow-window menu** — it used to disappear below 600px | **3.2.4** |
 | 🤖 | **Built-in MCP server** — let an AI assistant read drives, folders, and search results over a standard interface | **3.2.1-beta** |
 | ⚡ | **One-click setup for six assistants** — Codex, Cursor, Claude Code, Claude Desktop, OpenClaw, Minimax Code | **3.2.1-beta** |
 | 🔎 | **Directory search genuinely recurses** — the walk stops on *matches*, not on entries scanned | **3.1.3** |
@@ -41,6 +44,62 @@ Everything below is ours. Nothing in this section exists upstream.
 | ✅ | **Box selection on by default** | 3.0.2 |
 | 🧠 | **Batch-rename data-loss fix** — no more silent overwrites | 3.0.1 |
 | 📦 | One-step installer, in-place upgrade, complete uninstall | 3.0.0 |
+
+---
+
+## 🆕 What's new in 3.2.4
+
+**3.2.4 is the first stable build of the 3.2 line.** The address bar behaves the
+way Windows Explorer's does, split view can swap its two panes, and the thumbnail
+size control is still there when the window gets narrow. It replaces 3.2.1-beta,
+which was the last test build.
+
+### ⌨️ The address bar behaves like Explorer's
+
+Click it and it turns into an edit box with the current path **already
+selected** — paste a new path and press Enter to go there. Previously the caret
+sat at the end, so pasting appended to the old path and produced a mashed-together
+string; press End if you would rather extend the existing path, exactly as in
+Explorer.
+
+Three defects went out together, and any one of them alone was enough to make
+pasting a path unreliable:
+
+- **A path was only read as a folder if it ended with a slash.** `D:\photos\2026`
+  without the trailing slash came back as a single search result instead of the
+  folder. A bare word such as `photos` is still treated as a search term, so
+  name-based lookup is unchanged.
+- **Enter no longer waits for the list.** The suggestion list needs a moment to
+  refresh right after you paste, and pressing Enter during that window used to do
+  nothing at all. It now acts on what is in the input box, immediately.
+- **Arrow keys still win.** Arrow down to a file, press Enter, and that file is
+  what opens — the typed path does not override your choice.
+
+### 🌲 The suggestion list reads as a small tree
+
+The first row is the directory you are pointing at — flush left, in a heavier
+weight, and selected when the list opens, so pressing Enter goes straight into
+it. Subfolders and files sit one indent in, level with each other, connected by a
+vertical line with a short dash into each icon and closed off at the last row.
+Subfolders come before files, each sorted by name.
+
+### ↔️ Swap the two panes in split view
+
+With two panes open, a swap button sits to the right of the search box in each
+pane's toolbar. Click it and the panes trade folders — **only the folder
+changes**; each pane keeps its own width and its own place in the tab order. If
+both panes already show the same folder, nothing happens, and that is deliberate.
+
+### 📐 Thumbnail size survives a narrow window
+
+Below 600px the toolbar folds into a single "..." menu. The thumbnail size
+control had only ever been added to the wide row of icons, so once the window
+narrowed there was no way to reach it at all — not hidden, simply absent. It is
+now in the "..." menu too, right after the matching list/grid item, and both
+open the same dialog.
+
+> **Still read-only.** The MCP server from 3.2.1-beta comes along unchanged —
+> nothing in this release can move, rename or delete your files.
 
 ---
 
