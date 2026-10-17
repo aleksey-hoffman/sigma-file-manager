@@ -20,7 +20,8 @@ import {
 
 export type AddressBarEditorMode = 'path' | 'entry';
 
-export type AddressBarSuggestionSource = 'directory' | 'recent' | 'tagged' | 'exact' | 'userDirectory' | 'systemDrive';
+export type AddressBarSuggestionSource
+  = 'directory' | 'recent' | 'tagged' | 'exact' | 'userDirectory' | 'systemDrive' | 'target';
 
 export interface AddressBarSuggestion {
   id: string;
@@ -32,6 +33,11 @@ export interface AddressBarSuggestion {
   source: AddressBarSuggestionSource;
   entry: DirEntry;
   tag?: ItemTag;
+  /**
+   * 树形缩进层级：0 = 目标目录（树的根，顶格），1 = 它的子目录与文件（齐平一格）。
+   * 子目录与文件同层，区分靠图标与颜色，不靠多缩一格。
+   */
+  depth: number;
   historyOpenedAt?: number;
 }
 
@@ -123,6 +129,7 @@ export function createAddressBarSuggestion(
   entry: DirEntry,
   source: AddressBarSuggestionSource,
   tag?: ItemTag,
+  depth = 0,
 ): AddressBarSuggestion {
   return {
     id: tag ? `${source}:${tag.id}:${entry.path}` : `${source}:${entry.path}`,
@@ -134,6 +141,7 @@ export function createAddressBarSuggestion(
     source,
     entry,
     tag,
+    depth,
   };
 }
 
@@ -147,8 +155,48 @@ export function createDirectorySuggestionGroup(
     id: source === 'exact' ? 'exact' : `directory:${label}`,
     label,
     collapsible,
-    items: entries.map(entry => createAddressBarSuggestion(entry, source)),
+    items: entries.map(entry => createAddressBarSuggestion(
+      entry,
+      source,
+      undefined,
+      // 精确命中只有一项，是整个列表的主角，不缩进。
+      // 目录 / 搜索结果里，子目录与文件齐平缩进一格。
+      source === 'exact' ? 0 : 1,
+    )),
   };
+}
+
+/**
+ * 「目标目录」自己独占第一行，是整棵树的根。
+ *
+ * 早先 `kind === 'directory'` 时 exactEntry 已经被算好了，但模板只渲染 groups，
+ * 这行数据从来没显示过 —— 用户看不到自己正指向哪个目录，也无法「回车进入它」。
+ * label 留空，模板据此不渲染分组标题，省掉 17 个语言包的文案。
+ */
+export function createTargetDirectorySuggestionGroup(directoryPath: string): AddressBarSuggestionGroup {
+  return {
+    id: 'targetDirectory',
+    label: '',
+    collapsible: false,
+    items: [
+      createAddressBarSuggestion(
+        createAddressBarFallbackEntry(directoryPath, false),
+        'target',
+        undefined,
+        0,
+      ),
+    ],
+  };
+}
+
+/** 子目录在前、文件在后，各自按名称排序 —— 弹窗靠树形导线分层，顺序必须稳定。 */
+export function orderDirectoryEntriesForSuggestionList(entries: DirEntry[]): DirEntry[] {
+  const byName = (left: DirEntry, right: DirEntry) => left.name.localeCompare(right.name);
+
+  return [
+    ...entries.filter(entryItem => entryItem.is_dir).sort(byName),
+    ...entries.filter(entryItem => !entryItem.is_dir).sort(byName),
+  ];
 }
 
 export function createUserDirectoriesSuggestionGroup(
@@ -423,11 +471,13 @@ async function resolveAddressBarDirectoryListingOrExactOrSearch(
 ): Promise<AddressBarSuggestionState> {
   try {
     const directoryContents = await options.lookup.readDir(pathForReadDir);
+
     return {
       kind: 'directory',
       groups: [
+        createTargetDirectorySuggestionGroup(directoryContents.path),
         createDirectorySuggestionGroup(
-          directoryContents.entries,
+          orderDirectoryEntriesForSuggestionList(directoryContents.entries),
           options.directoryGroupLabel,
           'directory',
         ),

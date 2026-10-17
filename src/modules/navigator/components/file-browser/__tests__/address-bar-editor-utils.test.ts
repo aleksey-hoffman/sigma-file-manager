@@ -11,9 +11,11 @@ import {
   createRecentSuggestionGroup,
   createTaggedSuggestionGroups,
   createSystemDrivesSuggestionGroup,
+  createTargetDirectorySuggestionGroup,
   createUserDirectoriesSuggestionGroup,
   ensureAddressBarDirectoryQuery,
   getAddressBarRevealTarget,
+  orderDirectoryEntriesForSuggestionList,
   resolveAddressBarSuggestions,
   resolveAddressBarTypedTarget,
 } from '../address-bar-editor-utils';
@@ -131,7 +133,8 @@ describe('address bar editor utils', () => {
 
     expect(state.kind).toBe('directory');
     expect(readDir).toHaveBeenCalledWith('C:/');
-    expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/Windows']);
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/']);
+    expect(state.groups[1].items.map(item => item.path)).toEqual(['C:/Windows']);
   });
 
   it('lists a WSL UNC directory when the path has no trailing separator', async () => {
@@ -165,6 +168,9 @@ describe('address bar editor utils', () => {
     expect(state.kind).toBe('directory');
     expect(readDir).toHaveBeenCalledWith('//wsl.localhost/Ubuntu-24.04/');
     expect(state.groups[0].items.map(item => item.path)).toEqual([
+      '//wsl.localhost/Ubuntu-24.04',
+    ]);
+    expect(state.groups[1].items.map(item => item.path)).toEqual([
       '//wsl.localhost/Ubuntu-24.04/home',
     ]);
   });
@@ -221,7 +227,8 @@ describe('address bar editor utils', () => {
     });
 
     expect(state.kind).toBe('directory');
-    expect(state.groups[0].items.map(item => item.path)).toEqual([
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['/workspace']);
+    expect(state.groups[1].items.map(item => item.path)).toEqual([
       '/workspace/src',
       '/workspace/readme.md',
     ]);
@@ -620,5 +627,65 @@ describe('address bar editor utils', () => {
       readDir: vi.fn(),
       getDirEntry: vi.fn().mockRejectedValue(new Error('missing')),
     })).resolves.toEqual({ kind: 'none' });
+  });
+
+  it('puts the target directory first, then subdirectories, then files', async () => {
+    const readDir = vi.fn().mockResolvedValue(dirContents('F:/target', [
+      entry('F:/target/zeta.txt', { isFile: true, name: 'zeta.txt' }),
+      entry('F:/target/beta'),
+      entry('F:/target/alpha'),
+      entry('F:/target/beta.txt', { isFile: true, name: 'beta.txt' }),
+    ]));
+
+    const state = await resolveAddressBarSuggestions({
+      query: 'F:/target/',
+      mode: 'path',
+      currentPath: 'C:/Folder',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(state.groups[0].id).toBe('targetDirectory');
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['F:/target']);
+    expect(state.groups[0].items[0].depth).toBe(0);
+
+    expect(state.groups[1].items.map(item => item.path)).toEqual([
+      'F:/target/alpha',
+      'F:/target/beta',
+      'F:/target/beta.txt',
+      'F:/target/zeta.txt',
+    ]);
+    // 子目录与文件齐平缩进一格，靠图标而不是缩进区分两者。
+    expect(state.groups[1].items.map(item => item.depth)).toEqual([1, 1, 1, 1]);
+  });
+
+  it('builds a target group that holds exactly the directory itself', () => {
+    const group = createTargetDirectorySuggestionGroup('F:/target');
+
+    expect(group.id).toBe('targetDirectory');
+    expect(group.label).toBe('');
+    expect(group.collapsible).toBe(false);
+    expect(group.items).toHaveLength(1);
+    expect(group.items[0].path).toBe('F:/target');
+    expect(group.items[0].isDirectory).toBe(true);
+  });
+
+  it('orders subdirectories before files and sorts each bucket by name', () => {
+    const ordered = orderDirectoryEntriesForSuggestionList([
+      entry('F:/target/b.txt', { isFile: true, name: 'b.txt' }),
+      entry('F:/target/z'),
+      entry('F:/target/a'),
+      entry('F:/target/a.txt', { isFile: true, name: 'a.txt' }),
+    ]);
+
+    expect(ordered.map(item => item.name)).toEqual(['a', 'z', 'a.txt', 'b.txt']);
   });
 });

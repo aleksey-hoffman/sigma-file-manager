@@ -14,6 +14,10 @@ defineProps<{
   showsPathBesideName: boolean;
   suggestion: AddressBarSuggestion;
   recentEntryRemoveLabel?: string;
+  /** 树形缩进层级：0 = 目标目录（顶格），1 = 子目录与文件（齐平一格）。 */
+  depth?: number;
+  /** 本分组最后一行 —— 树形导线的最后一条要画成「└」而不是「├」。 */
+  isLastChild?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -40,6 +44,7 @@ function handleRemoveRecentClick(event: MouseEvent) {
       'address-bar-editor-suggestion-row--dir': suggestion.entry.is_dir,
       'address-bar-editor-suggestion-row--file': suggestion.entry.is_file,
       'address-bar-editor-suggestion-row--hidden': suggestion.entry.is_hidden,
+      'address-bar-editor-suggestion-row--target': suggestion.source === 'target',
       'address-bar-editor-suggestion-row--recent-removable':
         recentEntryRemoveLabel && suggestion.historyOpenedAt != null,
     }"
@@ -56,7 +61,16 @@ function handleRemoveRecentClick(event: MouseEvent) {
       @mousedown.prevent
       @click="emit('activate')"
     >
-      <div class="address-bar-editor-suggestion-row__name">
+      <div
+        class="address-bar-editor-suggestion-row__name"
+        :style="{ paddingInlineStart: `${(depth ?? 0) * 16}px` }"
+      >
+        <span
+          v-if="depth"
+          class="address-bar-editor-suggestion-row__guide"
+          :class="{ 'address-bar-editor-suggestion-row__guide--last': isLastChild }"
+          aria-hidden="true"
+        />
         <FileBrowserEntryIcon
           :entry="suggestion.entry"
           :size="18"
@@ -226,6 +240,46 @@ function handleRemoveRecentClick(event: MouseEvent) {
 
 .address-bar-editor-suggestion-row--recent-removable {
   padding-inline-end: calc(var(--address-bar-editor-row-px) + 26px);
+}
+
+/* 树形导线：一根贯穿整行的竖线 + 一条伸向图标的短横线。
+   整个列表共用同一条竖线，因此读起来是一棵以「目标目录」为根的树。 */
+.address-bar-editor-suggestion-row__guide {
+  position: relative;
+  display: block;
+  width: 12px;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.address-bar-editor-suggestion-row__guide::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 5px;
+  width: 1px;
+  background-color: hsl(var(--border));
+  content: '';
+}
+
+.address-bar-editor-suggestion-row__guide::after {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 5px;
+  width: 7px;
+  height: 1px;
+  background-color: hsl(var(--border));
+  content: '';
+}
+
+/* 本分组最后一行：竖线只画上半段，与短横线接成「└」，收住这棵树。 */
+.address-bar-editor-suggestion-row__guide--last::before {
+  bottom: 50%;
+}
+
+/* 目标目录是树根：顶格、加粗一点，与下面缩进一层的子项一眼分开。 */
+.address-bar-editor-suggestion-row--target .address-bar-editor-suggestion-row__name-text {
+  font-weight: 500;
 }
 
 .address-bar-editor-suggestion-row__remove-recent {

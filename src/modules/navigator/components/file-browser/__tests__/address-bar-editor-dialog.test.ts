@@ -180,6 +180,11 @@ const SuggestionRowStub = defineComponent({
       required: true,
     },
     selected: Boolean,
+    depth: {
+      type: Number,
+      default: 0,
+    },
+    isLastChild: Boolean,
     suggestion: {
       type: Object as PropType<AddressBarSuggestion>,
       required: true,
@@ -191,6 +196,8 @@ const SuggestionRowStub = defineComponent({
       'class': 'address-bar-editor-suggestion-row',
       'data-address-bar-editor-index': props.itemIndex,
       'data-selected': props.selected ? 'true' : undefined,
+      'data-depth': String(props.depth),
+      'data-last-child': props.isLastChild ? 'true' : undefined,
     }, props.suggestion.name);
   },
 });
@@ -327,6 +334,37 @@ describe('address bar editor dialog', () => {
     expect(document.activeElement).toBe(input.element);
     expect((input.element as HTMLInputElement).value).toBe(queryBefore);
     expect(wrapper.get('[data-selected]').attributes('data-address-bar-editor-index')).toBe(selectedIndexBefore);
+    wrapper.unmount();
+  });
+
+  it('lists the target directory first, selected and flush left, with children indented one level', async () => {
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'path');
+
+    const rows = wrapper.findAll('.address-bar-editor-suggestion-row');
+
+    expect(rows.length).toBe(2);
+
+    // 第 0 行是目标目录：顶格，且默认选中，回车即进入它。
+    expect(rows[0].text()).toBe('Folder');
+    expect(rows[0].attributes('data-depth')).toBe('0');
+    expect(rows[0].attributes('data-selected')).toBe('true');
+
+    // 第 1 行是它的内容：齐平缩进一格。
+    expect(rows[1].text()).toBe('child.txt');
+    expect(rows[1].attributes('data-depth')).toBe('1');
+    expect(rows[1].attributes('data-selected')).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it('marks the final child so the tree guide can close with a corner', async () => {
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'path');
+
+    const rows = wrapper.findAll('.address-bar-editor-suggestion-row');
+
+    expect(rows[0].attributes('data-last-child')).toBeUndefined();
+    expect(rows[1].attributes('data-last-child')).toBe('true');
     wrapper.unmount();
   });
 });

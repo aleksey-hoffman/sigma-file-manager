@@ -115,6 +115,8 @@ type AddressBarEditorVirtualRow
     navigationIndex: number;
     groupId: string;
     suggestion: AddressBarSuggestion;
+    /** 该分组里是不是最后一行 —— 树形导线的最后一条要画成「└」收尾。 */
+    isLastChild: boolean;
   };
 
 const RECENT_ENTRY_LIMIT = 10;
@@ -297,7 +299,7 @@ const suggestionVirtualRows = computed<AddressBarEditorVirtualRow[]>(() => {
         group,
       });
     }
-    else if (group.items.length > 0) {
+    else if (group.items.length > 0 && group.label) {
       rows.push({
         type: 'group-heading',
         key: `group-heading:${group.id}`,
@@ -314,6 +316,9 @@ const suggestionVirtualRows = computed<AddressBarEditorVirtualRow[]>(() => {
         navigationIndex: group.firstItemIndex + itemOffset,
         groupId: group.id,
         suggestion,
+        // 只对缩进一层的行有意义：目标目录是树根，不收尾任何分支。
+        // 它虽然是所在分组的唯一项，但导线根本不画（depth 0），不该标成收尾。
+        isLastChild: suggestion.depth > 0 && itemOffset === group.items.length - 1,
       });
     }
   }
@@ -1308,6 +1313,8 @@ defineExpose({
                 :style="{ height: `${virtualRow.size}px` }"
                 :suggestion="virtualRow.item.suggestion"
                 :item-index="virtualRow.item.navigationIndex"
+                :depth="virtualRow.item.suggestion.depth"
+                :is-last-child="virtualRow.item.isLastChild"
                 :shows-path-beside-name="showsPathBesideSuggestionName"
                 :selected="virtualRow.item.navigationIndex === selectedIndex"
                 :recent-entry-remove-label="virtualRow.item.groupId === 'recent' ? t('settings.addressBar.removeRecentEntry') : undefined"
