@@ -287,7 +287,7 @@ jobs:
         run: |
           sudo apt-get install -y flatpak flatpak-builder
           flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak install -y --noninteractive --user flathub org.gnome.Platform//48 org.gnome.Sdk//48
+          flatpak install -y --noninteractive --user flathub org.gnome.Platform//51 org.gnome.Sdk//51
 
       - name: Build Flatpak bundle
         if: matrix.platform == 'linux'

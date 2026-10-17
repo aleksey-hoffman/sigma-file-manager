@@ -33,3 +33,4 @@ flatpak/.deb-input/
 flatpak/.build/
 flatpak/.repo/
 flatpak/output/
+.flatpak-builder/
