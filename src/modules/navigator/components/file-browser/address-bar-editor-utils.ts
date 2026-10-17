@@ -361,6 +361,35 @@ function getImplicitAddressBarAbsoluteDirectoryBrowsePath(normalizedQuery: strin
   return trim.endsWith('/') ? trim : `${trim}/`;
 }
 
+/**
+ * 无结尾斜杠的绝对路径同样按「浏览这个目录」处理。
+ *
+ * 早先这条规则只覆盖了 UNC 路径，导致粘贴 `F:/a/b/nsis` 被当成搜索词：
+ * 先列父目录再按 `nsis` 过滤，弹窗里只剩一条叫 nsis 的结果（用户截图 2）。
+ * 这里把同一条规则补到所有「看起来像路径」的输入上。
+ *
+ * 裸词（如 `nsis`）不含斜杠也不带盘符，交给 addressBarTrimmedQueryLooksLikeFilesystemPath 挡掉，
+ * 保持「按名字搜」的既有行为不变。
+ */
+function resolveAddressBarUnseparatedDirectoryBrowsePath(normalizedQuery: string): string | null {
+  const trimmed = canonicalizePath(normalizedQuery);
+
+  if (!trimmed || trimmed.endsWith('/')) {
+    return null;
+  }
+
+  // 裸盘符（`C:`）不是目录路径，交给既有分支处理。
+  if (trimmed.endsWith(':')) {
+    return null;
+  }
+
+  if (!addressBarTrimmedQueryLooksLikeFilesystemPath(trimmed)) {
+    return null;
+  }
+
+  return trimmed;
+}
+
 function addressBarQueryMeansBrowseInsideDirectory(normalizedTrimmedQuery: string): boolean {
   return normalizedTrimmedQuery.endsWith('/');
 }
@@ -414,6 +443,11 @@ async function resolveAddressBarDirectoryListingOrExactOrSearch(
         ? `${exactPath}/`
         : exactPath;
       const exactEntry = await options.lookup.getDirEntry(exactPath);
+
+      if (!exactEntry) {
+        return resolveSearchSuggestions(options, fallbackNormalizedQuery);
+      }
+
       return {
         kind: 'exact',
         groups: [createDirectorySuggestionGroup([exactEntry], options.exactGroupLabel, 'exact')],
@@ -451,7 +485,8 @@ export async function resolveAddressBarSuggestions(
     );
   }
 
-  const implicitBrowsePath = getImplicitAddressBarAbsoluteDirectoryBrowsePath(normalizedQuery);
+  const implicitBrowsePath = getImplicitAddressBarAbsoluteDirectoryBrowsePath(normalizedQuery)
+    ?? resolveAddressBarUnseparatedDirectoryBrowsePath(normalizedQuery);
 
   if (implicitBrowsePath !== null) {
     return resolveAddressBarDirectoryListingOrExactOrSearch(

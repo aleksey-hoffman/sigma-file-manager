@@ -299,7 +299,8 @@ describe('address bar editor utils', () => {
 
     expect(state.kind).toBe('search');
     expect(readDir).toHaveBeenCalledWith('/workspace');
-    expect(getDirEntry).not.toHaveBeenCalled();
+    // 无结尾斜杠的绝对路径现在会先被当作目录探测一次，探测落空才回落搜索。
+    expect(getDirEntry).toHaveBeenCalledWith('/workspace/readme.md');
     expect(state.groups[0].items.map(item => item.path)).toEqual(['/workspace/readme.md']);
     expect(state.groups[0].items[0].isFile).toBe(true);
   });
@@ -497,5 +498,77 @@ describe('address bar editor utils', () => {
       parentPath: '/workspace/src',
       entryPath: '/workspace/src/file.txt',
     });
+  });
+
+  it('browses a typed absolute directory path without a trailing separator', async () => {
+    const readDir = vi.fn(async (pathArg: string) => {
+      if (pathArg === 'F:/soft/00selfmade/filemanager/sigma-file-manager') {
+        return dirContents('F:/soft/00selfmade/filemanager/sigma-file-manager', [
+          entry('F:/soft/00selfmade/filemanager/sigma-file-manager/src'),
+        ]);
+      }
+
+      throw new Error('unexpected readDir path');
+    });
+
+    const state = await resolveAddressBarSuggestions({
+      query: 'F:/soft/00selfmade/filemanager/sigma-file-manager',
+      mode: 'path',
+      currentPath: 'C:/Folder',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(state.kind).toBe('directory');
+    expect(readDir).toHaveBeenCalledWith('F:/soft/00selfmade/filemanager/sigma-file-manager');
+    expect(state.directoryPath).toBe('F:/soft/00selfmade/filemanager/sigma-file-manager');
+  });
+
+  it('keeps a bare name as a search term rather than a directory path', async () => {
+    const state = await resolveAddressBarSuggestions({
+      query: 'nsis',
+      mode: 'path',
+      currentPath: 'C:/Folder',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir: vi.fn().mockRejectedValue(new Error('missing')),
+        getDirEntry: vi.fn().mockRejectedValue(new Error('missing')),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(state.kind).toBe('search');
+  });
+
+  it('survives a lookup that resolves to undefined instead of throwing', async () => {
+    const state = await resolveAddressBarSuggestions({
+      query: '/workspace/gone',
+      mode: 'path',
+      currentPath: '/workspace',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir: vi.fn().mockRejectedValue(new Error('missing')),
+        getDirEntry: vi.fn().mockResolvedValue(undefined),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(state.kind).toBe('search');
   });
 });
