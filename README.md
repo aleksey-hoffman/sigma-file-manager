@@ -45,6 +45,27 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 - **Localization:** The app has translations for all most used languages. 
 - And more. Extensions provide additional features like video downloading (1000+ sites supported, including YouTube, Twitch, etc.), media converter, image size optimizer, etc.
 
+## Code signing policy
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+          <a href="https://signpath.org" target="_blank">
+            <img width="64px" align="center" src="https://signpath.org/assets/favicon-50x50.png">
+          </a>
+      </td>
+      <td>
+        <b>Free code signing on Windows provided by <a href="https://signpath.io" target="_blank">SignPath.io</a>, certificate by <a href="https://signpath.org" target="_blank">SignPath Foundation</a></b>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+- Committers and reviewers: [Aleksey Hoffman](https://github.com/aleksey-hoffman)
+- Approvers: [Aleksey Hoffman](https://github.com/aleksey-hoffman)
+- Privacy policy: [PRIVACY_POLICY.md](./PRIVACY_POLICY.md). This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
 ## Sponsors
 
 <table>
