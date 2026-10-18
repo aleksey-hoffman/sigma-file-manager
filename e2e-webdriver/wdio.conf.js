@@ -12,6 +12,9 @@ const tauriBinaryName = process.platform === 'win32' ? 'sigma-file-manager.exe' 
 const applicationPath = path.join(repoRoot, 'src-tauri', 'target', 'debug', tauriBinaryName);
 const tauriDriverName = process.platform === 'win32' ? 'tauri-driver.exe' : 'tauri-driver';
 const tauriDriverPath = path.join(os.homedir(), '.cargo', 'bin', tauriDriverName);
+const failureArtifactsDirectory = path.resolve(
+  process.env.SFM_E2E_ARTIFACTS_DIR || path.join(__dirname, 'artifacts'),
+);
 
 let tauriDriverProcess;
 let exitCleanly = false;
@@ -92,10 +95,34 @@ export const config = {
     });
   },
 
+  afterTest: async (test, _context, { passed }) => {
+    if (passed) {
+      return;
+    }
+    await saveFailureArtifacts(test);
+  },
+
   afterSession: () => {
     closeTauriDriver();
   },
 };
+
+async function saveFailureArtifacts(test) {
+  const baseName = `${test.parent} ${test.title}`
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 120);
+
+  try {
+    fs.mkdirSync(failureArtifactsDirectory, { recursive: true });
+    await browser.saveScreenshot(path.join(failureArtifactsDirectory, `${baseName}.png`));
+    const pageSource = await browser.getPageSource();
+    fs.writeFileSync(path.join(failureArtifactsDirectory, `${baseName}.html`), pageSource);
+  }
+  catch (artifactError) {
+    console.error('Failed to save e2e failure artifacts:', artifactError);
+  }
+}
 
 function closeTauriDriver() {
   exitCleanly = true;
