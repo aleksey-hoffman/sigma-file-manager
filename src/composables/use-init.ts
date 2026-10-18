@@ -32,6 +32,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
+import { isIsolatedDataDir } from '@/utils/app-dirs';
 import {
   prelaunchConfiguredAuxiliaryWindows,
   setupAuxiliaryWindowLifecycle,
@@ -405,7 +406,15 @@ export function useInit() {
 
     runInBackgroundWithTrace(
       'background:applyLaunchAtStartupPreference',
-      () => applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup),
+      async () => {
+        // Isolated e2e runs start with default settings; syncing them would
+        // change the user's real OS autostart entry.
+        if (await isIsolatedDataDir()) {
+          return;
+        }
+
+        await applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup);
+      },
       'Failed to apply launch at startup preference:',
     );
     runInBackgroundWithTrace(

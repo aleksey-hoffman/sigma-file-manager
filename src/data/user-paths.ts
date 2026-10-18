@@ -3,11 +3,6 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
-  appCacheDir,
-  appConfigDir,
-  appDataDir,
-  appLocalDataDir,
-  appLogDir,
   audioDir,
   cacheDir,
   configDir,
@@ -26,6 +21,13 @@ import {
   templateDir,
   videoDir,
 } from '@tauri-apps/api/path';
+import {
+  appCacheDir,
+  appConfigDir,
+  appDataDir,
+  appLocalDataDir,
+  appLogDir,
+} from '@/utils/app-dirs';
 
 export interface UserPaths {
   appCacheDir: string;

@@ -11,7 +11,6 @@ use tantivy::collector::TopDocs;
 use tantivy::query::{AllQuery, BooleanQuery, FuzzyTermQuery, Occur, Query, TermQuery};
 use tantivy::schema::{IndexRecordOption, Value};
 use tantivy::Term;
-use tauri::Manager;
 
 use super::ignore::{builtin_ignored_paths, get_drive_root, normalize_case, IgnoredPathMatcher};
 use super::index::{index_dir, open_or_create_index};
@@ -127,10 +126,8 @@ pub async fn global_search_query(
     query: String,
     options: GlobalSearchQueryOptions,
 ) -> Result<Vec<GlobalSearchResultEntry>, String> {
-    let base_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|error: tauri::Error| error.to_string())?;
+    let base_dir =
+        crate::app_dirs::app_data_dir(&app).map_err(|error: tauri::Error| error.to_string())?;
 
     tauri::async_runtime::spawn_blocking(move || {
         global_search_query_blocking(base_dir, query, options)

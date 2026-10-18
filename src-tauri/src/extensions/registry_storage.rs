@@ -7,15 +7,12 @@ use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
-use tauri::Manager;
 
 use super::paths::{canonicalize_path, canonicalize_path_for_creation};
 use crate::user_storage_files_config::user_storage_files_config;
 
 fn get_extensions_storage_file_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
-    let app_data_dir = app_handle
-        .path()
-        .app_data_dir()
+    let app_data_dir = crate::app_dirs::app_data_dir(app_handle)
         .map_err(|error| format!("Failed to get app data dir: {}", error))?;
     let app_user_data_dir = app_data_dir.join(&user_storage_files_config().user_data_dir_name);
 

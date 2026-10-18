@@ -7,7 +7,6 @@ use std::fs::Metadata;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use tantivy::{doc, Index, IndexReader, IndexWriter, Term};
-use tauri::Manager;
 use walkdir::WalkDir;
 
 use super::ignore::{builtin_ignored_paths, normalize_case, IgnoredPathMatcher};
@@ -139,10 +138,8 @@ fn apply_committed_index_status(
 }
 
 pub fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, String> {
-    let base_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|error: tauri::Error| error.to_string())?;
+    let base_dir =
+        crate::app_dirs::app_data_dir(&app).map_err(|error: tauri::Error| error.to_string())?;
 
     cleanup_orphan_index_dirs(&base_dir);
 
@@ -376,10 +373,8 @@ pub async fn global_search_start_scan(
         state.cancel_flag.store(false, Ordering::SeqCst);
     }
 
-    let base_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|error: tauri::Error| error.to_string())?;
+    let base_dir =
+        crate::app_dirs::app_data_dir(&app).map_err(|error: tauri::Error| error.to_string())?;
     let index_path = index_dir(&base_dir);
     let staging_path = staging_index_dir(&base_dir);
 
@@ -671,10 +666,8 @@ pub async fn global_search_index_paths(
         }
     }
 
-    let base_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|error: tauri::Error| error.to_string())?;
+    let base_dir =
+        crate::app_dirs::app_data_dir(&app).map_err(|error: tauri::Error| error.to_string())?;
 
     tauri::async_runtime::spawn_blocking(move || {
         global_search_index_paths_blocking(base_dir, settings)
