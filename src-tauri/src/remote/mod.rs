@@ -21,12 +21,14 @@ mod commands;
 mod connection;
 mod connection_test;
 mod credentials;
+mod dir_adapter;
 mod error;
 mod fake;
 mod known_hosts;
 mod path;
 mod provider;
 mod registry;
+mod sftp_provider;
 mod transport;
 
 pub use connection::{
@@ -44,6 +46,7 @@ pub use credentials::{
     delete_credential, load_credential, save_credential, credentials_path_in,
     REMOTE_CREDENTIALS_FILE,
 };
+pub use dir_adapter::{extension_of, to_dir_contents, to_dir_entry};
 pub use error::{RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
 pub use known_hosts::{
@@ -59,6 +62,10 @@ pub use provider::{RemoteEntry, RemoteProvider};
 pub use registry::{
     connections_path_in, find_connection, load_connections, resolve_connection, ConnectionsFile,
     ResolvedConnection, REMOTE_CONNECTIONS_FILE,
+};
+pub use sftp_provider::{
+    is_hidden_remote_name, map_sftp_error, map_sftp_status, sftp_seconds_to_unix_millis,
+    SftpRemoteProvider, SFTP_OPERATION_TIMEOUT,
 };
 pub use transport::{
     build_http_connect_request, is_http_connect_success, map_socks5_reply_to_kind, ProxyConfig,

@@ -112,6 +112,12 @@ uuid = { version = "1", features = ["v4"] }
 # 未开 `rsa`：现代 OpenSSH 主机密钥走 ed25519 / ecdsa。若真机 kex 协商失败
 # （表现为「连上了但换密钥失败」），再开这个 feature 并用 NAS 实测。
 russh = { version = "0.63", default-features = false, features = ["ring"] }
+# 阶段 2 的 SFTP provider。**它的 dev-dependency 写的是 `russh = "0.63.2"`**，
+# 所以上一行的 0.63 锁是硬约束，不是「暂时这样」——
+# 升到 0.64 会让依赖树里同时存在两个 russh，`SftpSession::new` 要的字节流
+# 对不上我们自己实现的 `Handler`，报出来是一串没有线索的类型不匹配。
+# russh-sftp 只依赖 tokio 一族，本仓早已有，无需新增。
+russh-sftp = "3.0.1"
 
 # FTP / FTPS 的 TLS 升级。给「测试连接」把 `TransportStream` 包成 TLS 用。
 # 必须用 ring 而不是默认的 aws-lc-rs：后者在 Windows 上要 cmake/nasm，

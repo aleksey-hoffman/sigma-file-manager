@@ -31,10 +31,17 @@ use std::path::PathBuf;
 use serde::Deserialize;
 use tauri::Manager;
 
+use crate::dir_reader::{DirContents, DirEntry};
+
 use super::connection::RemoteProtocol;
 use super::connection_test::{self, ConnectionTestReport, ProbeTarget};
 use super::credentials;
-use super::error::RemoteError;
+use super::dir_adapter;
+use super::error::{RemoteError, RemoteErrorKind};
+use super::known_hosts::{self, KnownHostEntry};
+use super::path::parse_remote_path;
+use super::registry;
+use super::sftp_provider::SftpRemoteProvider;
 use super::transport::ProxyConfig;
 
 /// 凭据存档与 `mcp-access.json` 同级，都在 app-data 目录根，不在 `user-data/` 下。
@@ -42,6 +49,19 @@ fn app_data_dir(app: &tauri::AppHandle) -> Result<PathBuf, RemoteError> {
     app.path().app_data_dir().map_err(|error| {
         RemoteError::unknown(format!("解析应用数据目录失败: {error}"))
     })
+}
+
+/// `user-data/` 目录。与前端 `setCustomPaths()` 的算法一致：
+/// `appDataDir + userStorageFiles.userDataDirName`。
+///
+/// **两处必须同源。** 前端 store 与 Rust 的 `registry.rs` 读的是同一个文件，
+/// 路径算错的表现是「Rust 说没有这条连接」，而界面上明明有。
+fn user_data_dir(app: &tauri::AppHandle) -> Result<PathBuf, RemoteError> {
+    let app_data_dir = app_data_dir(app)?;
+
+    Ok(app_data_dir.join(
+        &crate::user_storage_files_config::user_storage_files_config().user_data_dir_name,
+    ))
 }
 
 /// 加密并保存一个凭据。`key` 由前端给，通常就等于连接 id。
@@ -140,6 +160,151 @@ pub async fn remote_test_connection(
     connection_test::probe(&target).await
 }
 
+/// 把 `sfm://remote/<id>/<path>` 拆成 `(连接 id, 规范化远端路径)`。
+///
+/// **command 的入参校验在这里，不在 provider 里。** 前端可能传来任何东西
+/// （地址栏是用户手输的），而 provider 拿到的必须是已经过路径族规范化的值。
+fn split_remote_path(path: &str) -> Result<(String, String), RemoteError> {
+    parse_remote_path(path)
+        .map(|parsed| (parsed.connection_id, parsed.remote_path))
+        .ok_or_else(|| RemoteError::protocol(format!("不是一条合法的远程路径：{path}")))
+}
+
+/// 解析连接：读连接表 + DPAPI 解密。**这是阻塞的部分**（文件 I/O + DPAPI），
+/// 所以必须走 `spawn_blocking`；网络部分则直接在 Tauri 的异步运行时上 await，
+/// 两段混在同一个 `spawn_blocking` 里会造出一个嵌套运行时。
+async fn resolve_connection_blocking(
+    user_data_dir: PathBuf,
+    app_data_dir: PathBuf,
+    connection_id: String,
+) -> Result<registry::ResolvedConnection, RemoteError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        registry::resolve_connection(&user_data_dir, &app_data_dir, &connection_id)
+    })
+    .await
+    .map_err(|join_error| {
+        RemoteError::unknown(format!("解析远程连接的后台任务失败: {join_error}"))
+    })?
+}
+
+/// 列出远端目录。前端只传 `path` —— 连接配置与密码由 Rust 自己解析
+/// （2026-10-18 拍板的方案 C），明文密码一次都不跨 IPC。
+#[tauri::command]
+pub async fn remote_read_dir(app: tauri::AppHandle, path: String) -> Result<DirContents, RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let entries = SftpRemoteProvider::new(&user_data_dir, &app_data_dir)
+        .list(&resolved, &remote_path)
+        .await?;
+
+    // 回显**规范化之后**的路径：用户手输 `pub//docs` 之后，
+    // 地址栏要显示它实际去到的地方。
+    let canonical =
+        crate::remote::path::build_remote_path(&connection_id, &remote_path).unwrap_or(path);
+
+    dir_adapter::to_dir_contents(canonical, entries)
+}
+
+/// 取单个远端条目的元数据。取不到时**返回 `null`**，与本地
+/// `get_dir_entry_with_timeout` 在 `resolveDirEntry` 里的既有语义一致。
+#[tauri::command]
+pub async fn remote_stat_dir_entry(
+    app: tauri::AppHandle,
+    path: String,
+) -> Result<Option<DirEntry>, RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id).await?;
+
+    match SftpRemoteProvider::new(&user_data_dir, &app_data_dir)
+        .stat(&resolved, &remote_path)
+        .await
+    {
+        Ok(entry) => Ok(Some(dir_adapter::to_dir_entry(&entry))),
+        // 「取不到就给 null」是既有契约：地址栏的自动补全靠它判断路径是否存在。
+        // 把错误抛出去会让每一次补全失败都变成一次未捕获异常。
+        Err(error) if error.kind == RemoteErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
+/// 列出已信任的 SSH 主机。设置页的「查看 / 删除」用它。
+#[tauri::command]
+pub async fn remote_list_known_hosts(app: tauri::AppHandle) -> Result<Vec<KnownHostEntry>, RemoteError> {
+    let app_data_dir = app_data_dir(&app)?;
+
+    tauri::async_runtime::spawn_blocking(move || known_hosts::load(&app_data_dir))
+        .await
+        .map_err(|join_error| {
+            RemoteError::unknown(format!("读取已信任主机列表的后台任务失败: {join_error}"))
+        })?
+}
+
+/// 用户核对完指纹、点了「信任」之后调用。
+///
+/// **指纹由后端从第一次连接的观测里拿不到，所以这里必须由前端把指纹原样带回来。**
+/// 后端只负责按 `(host, port)` 覆盖写入。
+#[tauri::command]
+pub async fn remote_trust_host(
+    app: tauri::AppHandle,
+    host: String,
+    port: u16,
+    fingerprint: String,
+    key_type: String,
+) -> Result<(), RemoteError> {
+    if host.trim().is_empty() {
+        return Err(RemoteError::protocol("不能信任一个没有地址的主机"));
+    }
+
+    if !fingerprint.starts_with("SHA256:") {
+        // 只接受 SHA-256 形式：`ssh-keygen -lf` 给的就是这个，
+        // 用户拿它去对照才有意义。放过别的形状等于让用户核对一个对不上的串。
+        return Err(RemoteError::protocol(
+            "主机指纹格式不对，应当形如 SHA256:…（可由 ssh-keygen -lf 得到）",
+        ));
+    }
+
+    let app_data_dir = app_data_dir(&app)?;
+    let entry = KnownHostEntry {
+        host,
+        port,
+        fingerprint,
+        key_type,
+        added_at: 0,
+    };
+
+    tauri::async_runtime::spawn_blocking(move || known_hosts::trust(&app_data_dir, entry))
+        .await
+        .map_err(|join_error| {
+            RemoteError::unknown(format!("写入已信任主机列表的后台任务失败: {join_error}"))
+        })?
+}
+
+/// 忘记一台主机。密钥变了之后用户必须先走到这一步才能重新信任。
+#[tauri::command]
+pub async fn remote_forget_host(
+    app: tauri::AppHandle,
+    host: String,
+    port: u16,
+) -> Result<bool, RemoteError> {
+    let app_data_dir = app_data_dir(&app)?;
+
+    tauri::async_runtime::spawn_blocking(move || known_hosts::forget(&app_data_dir, &host, port))
+        .await
+        .map_err(|join_error| {
+            RemoteError::unknown(format!("删除已信任主机记录的后台任务失败: {join_error}"))
+        })?
+}
+
 #[cfg(test)]
 mod tests {
     /// 阶段 1 的远程 command。**改这个数组必须同步改 `lib.rs` 的
@@ -150,6 +315,11 @@ mod tests {
         "remote_load_credential",
         "remote_delete_credential",
         "remote_test_connection",
+        "remote_read_dir",
+        "remote_stat_dir_entry",
+        "remote_list_known_hosts",
+        "remote_trust_host",
+        "remote_forget_host",
     ];
 
     /// 抽出 `lib.rs` 里 `generate_handler![ ... ]` 的那一段。

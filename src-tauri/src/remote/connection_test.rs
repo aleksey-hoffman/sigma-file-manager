@@ -335,7 +335,7 @@ impl russh::client::Handler for ProbeHandler {
 /// "invalid SSH version string"），于是「把 SFTP 指到 FTP 端口」永远落进
 /// `Unreachable`，界面让用户去检查地址与代理 —— 而那个端口明明有人在应答。
 /// 文案是 russh 的实现细节，变体才是契约。
-fn classify_ssh_handshake_error(error: russh::Error) -> RemoteError {
+pub(crate) fn classify_ssh_handshake_error(error: russh::Error) -> RemoteError {
     match error {
         // 版本协商失败 = 对端第一句不是 SSH 标识串。
         russh::Error::Version => RemoteError::protocol(format!(
@@ -351,7 +351,7 @@ fn classify_ssh_handshake_error(error: russh::Error) -> RemoteError {
 
 /// 预读阶段对「这个端口上跑的是什么」的判断。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum SshBanner {
+pub(crate) enum SshBanner {
     /// 数据还不够，再读。
     Pending,
     /// 对端报出了 SSH 标识串。
@@ -361,7 +361,7 @@ enum SshBanner {
 }
 
 /// 预读之后要不要继续握手。
-enum BannerCheck {
+pub(crate) enum BannerCheck {
     /// 是 SSH 服务（或对端还没开口），继续交给 russh。
     Continue(ReplayStream<TransportStream>),
     /// 对端有回应，但一直没报出 SSH 标识串。
@@ -406,7 +406,7 @@ fn classify_ssh_banner(bytes: &[u8]) -> SshBanner {
 ///
 /// 刻意做成泛型而不是绑死 `TransportStream`：这样回放逻辑可以脱离 socket
 /// 直接用 `Cursor` 验证 —— 一个「连不上就跳过」的测试等于没有测试。
-struct ReplayStream<R> {
+pub(crate) struct ReplayStream<R> {
     prefix: std::io::Cursor<Vec<u8>>,
     inner: R,
 }
@@ -484,7 +484,7 @@ where
 ///
 /// 所以这里**先读一眼**：读到的东西会由 `ReplayStream` 原样喂回去，
 /// 对真正的 SSH 服务完全透明；只有「对方说了话且不是 SSH 标识串」才提前下结论。
-async fn read_ssh_banner(
+pub(crate) async fn read_ssh_banner(
     mut stream: TransportStream,
 ) -> Result<BannerCheck, RemoteError> {
     let mut buf: Vec<u8> = Vec::new();
@@ -609,7 +609,7 @@ async fn probe_sftp(
 // FTP / FTPS
 // ---------------------------------------------------------------------------
 
-async fn ftp_login<S>(
+pub(crate) async fn ftp_login<S>(
     mut stream: S,
     target: &ProbeTarget,
 ) -> Result<ConnectionTestReport, RemoteError>
@@ -688,7 +688,7 @@ where
     )
 }
 
-async fn read_reply<S: AsyncRead + Unpin>(
+pub(crate) async fn read_reply<S: AsyncRead + Unpin>(
     stream: &mut S,
     buffer: &mut Vec<u8>,
 ) -> Result<(), RemoteError> {
@@ -713,7 +713,7 @@ async fn read_reply<S: AsyncRead + Unpin>(
     }
 }
 
-async fn send_command<S: AsyncWrite + Unpin>(
+pub(crate) async fn send_command<S: AsyncWrite + Unpin>(
     stream: &mut S,
     line: &str,
 ) -> Result<(), RemoteError> {
@@ -731,7 +731,7 @@ async fn send_command<S: AsyncWrite + Unpin>(
         .map_err(|error| RemoteError::disconnected(format!("发送命令失败：{error}")))
 }
 
-fn decode(bytes: &[u8]) -> String {
+pub(crate) fn decode(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).trim().to_string()
 }
 
@@ -743,7 +743,7 @@ fn decode(bytes: &[u8]) -> String {
 ///
 /// 用 `TransportStream` 而不是 `tokio::net::TcpStream` 是刻意的：前者能穿过
 /// SOCKS5 / HTTP CONNECT 代理，后者不能。协议层不该知道走的哪条路。
-async fn upgrade_tls<S>(
+pub(crate) async fn upgrade_tls<S>(
     stream: S,
     host: &str,
 ) -> Result<tokio_rustls::client::TlsStream<S>, RemoteError>
@@ -767,7 +767,7 @@ where
 
 /// 测试期间放行一切证书。**只在「测试连接」里用**，见模块顶部。
 #[derive(Debug)]
-struct AcceptAnyCertificate;
+pub(crate) struct AcceptAnyCertificate;
 
 impl rustls::client::danger::ServerCertVerifier for AcceptAnyCertificate {
     fn verify_server_cert(
