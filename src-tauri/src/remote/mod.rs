@@ -17,12 +17,16 @@
 // 那正是这条红线的正中间。command 在阶段 1 才接入。
 // ---------------------------------------------------------------------------
 
+mod connection;
 mod error;
 mod fake;
 mod path;
 mod provider;
 mod transport;
 
+pub use connection::{
+    connection_error_hint, validate_proxy, NewRemoteConnection, RemoteConnection, RemoteProtocol,
+};
 pub use error::{RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
 pub use path::{

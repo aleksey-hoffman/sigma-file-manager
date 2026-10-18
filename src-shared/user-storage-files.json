@@ -4,7 +4,8 @@
     "userSettings": "user-settings.json",
     "workspaces": "user-workspaces.json",
     "userStats": "user-stats.json",
-    "extensions": "user-extensions.json"
+    "extensions": "user-extensions.json",
+    "remoteConnections": "user-remote-connections.json"
   },
   "legacyFileNames": {
     "workspaces": "workspaces.json",

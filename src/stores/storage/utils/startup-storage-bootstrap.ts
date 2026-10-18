@@ -19,6 +19,7 @@ export interface StartupStorageBootstrap {
   workspaces: StartupStorageFileBootstrap;
   userStats: StartupStorageFileBootstrap;
   extensions: StartupStorageFileBootstrap;
+  remoteConnections: StartupStorageFileBootstrap;
 }
 
 export type StartupStorageFileName = keyof StartupStorageBootstrap;

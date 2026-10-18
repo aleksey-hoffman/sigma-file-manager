@@ -62,6 +62,8 @@ export interface CustomPaths {
   appUserDataStatsPath: string;
   appUserDataExtensionsName: string;
   appUserDataExtensionsPath: string;
+  appUserDataRemoteConnectionsName: string;
+  appUserDataRemoteConnectionsPath: string;
   appStorageCustomBackgroundsPath: string;
   appUserDataSourceBackgroundsPath: string;
 }

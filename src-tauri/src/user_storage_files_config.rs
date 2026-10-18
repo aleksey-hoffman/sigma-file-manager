@@ -20,6 +20,9 @@ pub struct StorageFileNames {
     pub workspaces: String,
     pub user_stats: String,
     pub extensions: String,
+    /// 远程连接配置。**只存不含密码的连接元数据** ——
+    /// 密码经 DPAPI 加密后存在 `remote-credentials.json`，两条链刻意不混。
+    pub remote_connections: String,
 }
 
 #[derive(Debug, Deserialize)]
