@@ -51,7 +51,7 @@ fn write_access_in(app_data_dir: &Path, access: &McpAccess) -> Result<(), String
 
     // Windows 上 token 是明文落盘的。只让当前用户能读 ——
     // 否则同机的其他账号直接复制文件就拿到了 MCP 的钥匙。
-    restrict_to_current_user(&path);
+    restrict_to_current_user(&path, "MCP credential");
     Ok(())
 }
 
@@ -98,23 +98,22 @@ pub fn save_mode_in(app_data_dir: &Path, mode: AgentMode) -> Result<(), String> 
 /// token 在磁盘上是明文。只让当前用户能读 ——
 /// 否则同机的其他账号复制文件就拿到了 MCP 的钥匙。
 ///
-/// Windows 没有 `Permissions::from_mode`（那是 Unix 的 API），
-/// 只能走 `icacls` 收 DACL。失败只记警告：收紧权限是加固，
-/// 不该因为它把整个 MCP 启动挡掉。
+/// `label` 只出现在日志里，用来区分是哪一类凭据文件。
+/// 凭据文件不止这一处：远程空间也有一份 DPAPI 存档，见 `remote/credentials.rs`。
 #[cfg(unix)]
-fn restrict_to_current_user(path: &Path) {
+pub(crate) fn restrict_to_current_user(path: &Path, label: &str) {
     use std::os::unix::fs::PermissionsExt;
 
     if let Err(error) = fs::set_permissions(path, fs::Permissions::from_mode(0o600)) {
-        log::warn!("Failed to restrict MCP credential file permissions: {error}");
+        log::warn!("Failed to restrict {label} file permissions: {error}");
     }
 }
 
 #[cfg(windows)]
-fn restrict_to_current_user(path: &Path) {
+pub(crate) fn restrict_to_current_user(path: &Path, label: &str) {
     let user = std::env::var("USERNAME").unwrap_or_default();
     if user.is_empty() {
-        log::warn!("Skipped restricting MCP credential file permissions: USERNAME unavailable");
+        log::warn!("Skipped restricting {label} file permissions: USERNAME unavailable");
         return;
     }
 
@@ -129,8 +128,8 @@ fn restrict_to_current_user(path: &Path) {
 
     match status {
         Ok(status) if status.success() => {}
-        Ok(status) => log::warn!("icacls returned {status} for MCP credential file"),
-        Err(error) => log::warn!("Failed to run icacls for MCP credential file: {error}"),
+        Ok(status) => log::warn!("icacls returned {status} for {label} file"),
+        Err(error) => log::warn!("Failed to run icacls for {label} file: {error}"),
     }
 }
 

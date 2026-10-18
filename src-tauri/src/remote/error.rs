@@ -27,7 +27,11 @@ pub enum RemoteErrorKind {
     Encoding,
     /// 连接已建立但中途断开。
     Disconnected,
-    /// 兜底。**只在确实归不进上面七类时用**，不是「懒得分类」。
+    /// 本平台不具备该能力。阶段 1 的凭据加密是 Windows DPAPI，
+    /// macOS / Linux 上没有等价物 —— 归到 `Unknown` 就退化成规格 §6.3 明令禁止的「笼统错误」，
+    /// 用户会以为是服务器的问题。
+    Unsupported,
+    /// 兜底。**只在确实归不进上面几类时用**，不是「懒得分类」。
     Unknown,
 }
 
@@ -42,6 +46,7 @@ impl RemoteErrorKind {
             Self::Protocol => "protocol",
             Self::Encoding => "encoding",
             Self::Disconnected => "disconnected",
+            Self::Unsupported => "unsupported",
             Self::Unknown => "unknown",
         }
     }
@@ -94,6 +99,10 @@ impl RemoteError {
         Self::new(RemoteErrorKind::Disconnected, message)
     }
 
+    pub fn unsupported(message: impl Into<String>) -> Self {
+        Self::new(RemoteErrorKind::Unsupported, message)
+    }
+
     pub fn unknown(message: impl Into<String>) -> Self {
         Self::new(RemoteErrorKind::Unknown, message)
     }
@@ -128,6 +137,7 @@ mod tests {
             RemoteErrorKind::Protocol,
             RemoteErrorKind::Encoding,
             RemoteErrorKind::Disconnected,
+            RemoteErrorKind::Unsupported,
             RemoteErrorKind::Unknown,
         ];
         let expected = [
@@ -138,6 +148,7 @@ mod tests {
             "protocol",
             "encoding",
             "disconnected",
+            "unsupported",
             "unknown",
         ];
 
@@ -167,6 +178,10 @@ mod tests {
         assert_eq!(
             RemoteError::disconnected("m").kind,
             RemoteErrorKind::Disconnected
+        );
+        assert_eq!(
+            RemoteError::unsupported("m").kind,
+            RemoteErrorKind::Unsupported
         );
         assert_eq!(RemoteError::unknown("m").kind, RemoteErrorKind::Unknown);
         assert_eq!(

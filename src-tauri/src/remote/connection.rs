@@ -183,6 +183,7 @@ pub fn connection_error_hint(error: &RemoteError) -> &'static str {
         RemoteErrorKind::Protocol => "config",
         RemoteErrorKind::Encoding => "encoding",
         RemoteErrorKind::Disconnected => "disconnected",
+        RemoteErrorKind::Unsupported => "unsupported",
         RemoteErrorKind::Unknown => "unknown",
     }
 }
@@ -353,5 +354,32 @@ mod tests {
             connection_error_hint(&RemoteError::auth("x")),
             "auth"
         );
+        assert_eq!(
+            connection_error_hint(&RemoteError::unsupported("x")),
+            "unsupported",
+            "平台不支持要单独成类，不能混进 unknown"
+        );
+    }
+
+    /// 穷尽性：新增一个 `RemoteErrorKind` 时忘了给前端映射，
+    /// 编译器会在这里报错，而不是让前端在运行时显示成「未知错误」。
+    #[test]
+    fn every_error_kind_has_a_hint() {
+        let kinds = [
+            RemoteErrorKind::Auth,
+            RemoteErrorKind::Unreachable,
+            RemoteErrorKind::Permission,
+            RemoteErrorKind::NotFound,
+            RemoteErrorKind::Protocol,
+            RemoteErrorKind::Encoding,
+            RemoteErrorKind::Disconnected,
+            RemoteErrorKind::Unsupported,
+            RemoteErrorKind::Unknown,
+        ];
+
+        for kind in kinds {
+            let hint = connection_error_hint(&RemoteError::new(kind, "x"));
+            assert!(!hint.is_empty(), "{kind:?} 必须有前端文案类别");
+        }
     }
 }

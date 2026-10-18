@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------
 
 mod connection;
+mod credentials;
 mod error;
 mod fake;
 mod path;
@@ -26,6 +27,10 @@ mod transport;
 
 pub use connection::{
     connection_error_hint, validate_proxy, NewRemoteConnection, RemoteConnection, RemoteProtocol,
+};
+pub use credentials::{
+    delete_credential, load_credential, save_credential, credentials_path_in,
+    REMOTE_CREDENTIALS_FILE,
 };
 pub use error::{RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
