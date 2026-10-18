@@ -28,10 +28,14 @@
 
 use std::path::PathBuf;
 
+use serde::Deserialize;
 use tauri::Manager;
 
+use super::connection::RemoteProtocol;
+use super::connection_test::{self, ConnectionTestReport, ProbeTarget};
 use super::credentials;
 use super::error::RemoteError;
+use super::transport::ProxyConfig;
 
 /// 凭据存档与 `mcp-access.json` 同级，都在 app-data 目录根，不在 `user-data/` 下。
 fn app_data_dir(app: &tauri::AppHandle) -> Result<PathBuf, RemoteError> {
@@ -89,6 +93,53 @@ pub async fn remote_delete_credential(
     .map_err(|join_error| RemoteError::unknown(format!("删除远程凭据的后台任务失败: {join_error}")))?
 }
 
+/// 「测试连接」的请求体。
+///
+/// **刻意用扁平结构而不是 `RemoteConnection`**：测试的是**表单里还没保存的东西**，
+/// 既有连接可能没有 `id`、可能连本地目录都还没填。复用保存模型会逼调用方
+/// 先造一条假连接出来。
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteTestConnectionRequest {
+    pub protocol: RemoteProtocol,
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    /// `null` / 缺省 = 这次不打算提交凭据（编辑既有连接且密码框留空）。
+    #[serde(default)]
+    pub password: Option<String>,
+    /// `null` / 缺省 = 直连。**不给 `ProxyConfig` 实现 `Default`**：
+    /// 「默认代理」等于「默认直连」是个容易被误当成「按全局设置」的语义，
+    /// 这里宁可让调用方显式写 `null`。
+    #[serde(default)]
+    pub proxy: Option<ProxyConfig>,
+}
+
+/// 真去连一次，把结论报回来。
+///
+/// **这是一个纯读操作**：它不写凭据、不写连接表、不改任何盘上的东西。
+/// 密码由调用方准备好传进来（前端在「密码框留空但这条连接存过密码」时，
+/// 会先用 `remote_load_credential` 把它取出来）。所以这里也**不能**去动
+/// DPAPI 存档 —— 测试一次不该改变下次测试的输入。
+///
+/// 只有入参非法才返回 `Err`；「连不上」「密码错」都是 `Ok` 里带结论，
+/// 理由见 `connection_test` 模块顶部。
+#[tauri::command]
+pub async fn remote_test_connection(
+    request: RemoteTestConnectionRequest,
+) -> Result<ConnectionTestReport, RemoteError> {
+    let target = ProbeTarget {
+        protocol: request.protocol,
+        host: request.host,
+        port: request.port,
+        username: request.username,
+        password: request.password,
+        proxy: request.proxy.unwrap_or(ProxyConfig::Direct),
+    };
+
+    connection_test::probe(&target).await
+}
+
 #[cfg(test)]
 mod tests {
     /// 阶段 1 的远程 command。**改这个数组必须同步改 `lib.rs` 的
@@ -98,6 +149,7 @@ mod tests {
         "remote_save_credential",
         "remote_load_credential",
         "remote_delete_credential",
+        "remote_test_connection",
     ];
 
     /// 抽出 `lib.rs` 里 `generate_handler![ ... ]` 的那一段。

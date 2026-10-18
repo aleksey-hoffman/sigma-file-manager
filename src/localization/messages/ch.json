@@ -592,7 +592,8 @@
         "delete": "删除",
         "save": "保存",
         "cancel": "取消",
-        "browse": "浏览…"
+        "browse": "浏览…",
+        "test": "测试连接"
       },
       "field": {
         "name": "名称",
@@ -641,6 +642,25 @@
       },
       "localPath": {
         "hint": "可选。填写后，打开该连接会自动显示左右双屏：左侧是本地目录，右侧是远端目录。"
+      },
+      "test": {
+        "testing": "测试中…",
+        "outcome": {
+          "verified": "连接成功，服务器接受了当前设置。",
+          "auth_rejected": "连上了，但服务器拒绝了该用户名或密码。",
+          "missing_credential": "连上了，但没有提交密码，认证结果未经验证。",
+          "wrong_protocol": "对端有回应，但它不是所选协议的服务。",
+          "unreachable": "无法连接到服务器，请检查地址、端口与代理设置。",
+          "protocol_error": "连上了，但交互没有按预期完成。"
+        },
+        "passwordNotChecked": "本次未提交密码，因此不能据此确认密码正确。",
+        "tlsNotVerified": "TLS 证书未经验证。"
+      },
+      "nav": {
+        "openSettings": "远程连接设置",
+        "connect": "连接",
+        "empty": "还没有配置任何远程连接。",
+        "split": "双屏"
       }
     }
   },

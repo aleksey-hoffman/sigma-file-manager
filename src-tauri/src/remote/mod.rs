@@ -19,6 +19,7 @@
 
 mod commands;
 mod connection;
+mod connection_test;
 mod credentials;
 mod error;
 mod fake;
@@ -34,6 +35,9 @@ pub use connection::{
 // 具名再导出只搬函数本身，于是 `remote::__cmd__remote_save_credential` 找不到，
 // 编译报 E0433。`dir_reader` 同样用的是 glob。
 pub use commands::*;
+pub use connection_test::{
+    is_ssh_identifier, parse_ftp_reply_code, ConnectionTestReport, ProbeOutcome, ProbeTarget,
+};
 pub use credentials::{
     delete_credential, load_credential, save_credential, credentials_path_in,
     REMOTE_CREDENTIALS_FILE,

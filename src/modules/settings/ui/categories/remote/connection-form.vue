@@ -17,7 +17,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import { getRemoteProtocolDefaultPort } from '@/types/remote';
 import normalizePath from '@/utils/normalize-path';
-import type { RemoteConnection, RemoteConnectionForm, RemoteProtocol, RemoteProxyConfig } from '@/types/remote';
+import type {
+  RemoteConnection, RemoteConnectionForm, RemoteConnectionTestReport, RemoteProtocol, RemoteProxyConfig,
+} from '@/types/remote';
 
 type Props = {
   /** 传 `null` 表示新建。 */
@@ -134,16 +136,19 @@ async function handleBrowseLocalPath() {
 /** store 抛出的就是校验码，直接映射成文案，不去解析 message。 */
 const errorCode = ref<string | null>(null);
 
-function onProxyKindChange(value: unknown) {
-  const next = String(value ?? '') as RemoteProxyConfig['kind'];
+/**
+ * 「测试连接」的结果。
+ *
+ * 两个字段都要留着：
+ * - `report.outcome` 决定配色与结论措辞；
+ * - `report.passwordChecked === false` 必须显示出来，否则「通过」会被读成
+ *   「密码没问题」，而免密 / 匿名连接同样会通过。
+ */
+const probeReport = ref<RemoteConnectionTestReport | null>(null);
+const isProbing = ref(false);
 
-  if (!PROXY_KINDS.includes(next)) return;
-
-  proxyKind.value = next;
-}
-
-async function handleSubmit() {
-  const form: RemoteConnectionForm = {
+function buildForm(): RemoteConnectionForm {
+  return {
     id: props.connection?.id,
     name: name.value,
     protocol: protocol.value,
@@ -156,6 +161,41 @@ async function handleSubmit() {
     password: password.value,
     clearPassword: clearPassword.value,
   };
+}
+
+/**
+ * 真去连一次。
+ *
+ * **不写任何盘上的状态** —— 所以「测完了不保存」不会留下痕迹，
+ * 也不会因为没保存就把存的密码搞坏。
+ */
+async function handleTestConnection() {
+  isProbing.value = true;
+  probeReport.value = null;
+  errorCode.value = null;
+
+  try {
+    probeReport.value = await store.testConnection(buildForm());
+  }
+  catch (error) {
+    // 入参非法才会走到这里（空主机、端口 0），store 抛的是校验码。
+    errorCode.value = error instanceof Error ? error.message : 'unknown';
+  }
+  finally {
+    isProbing.value = false;
+  }
+}
+
+function onProxyKindChange(value: unknown) {
+  const next = String(value ?? '') as RemoteProxyConfig['kind'];
+
+  if (!PROXY_KINDS.includes(next)) return;
+
+  proxyKind.value = next;
+}
+
+async function handleSubmit() {
+  const form = buildForm();
 
   errorCode.value = null;
 
@@ -385,6 +425,15 @@ function onProtocolChange(value: unknown) {
 
     <div class="remote-connection-form__actions">
       <Button
+        type="button"
+        variant="outline"
+        data-test="test-connection"
+        :disabled="isProbing"
+        @click="handleTestConnection"
+      >
+        {{ isProbing ? t('settings.remote.test.testing') : t('settings.remote.action.test') }}
+      </Button>
+      <Button
         type="submit"
         data-test="submit"
       >
@@ -399,6 +448,35 @@ function onProtocolChange(value: unknown) {
         {{ t('settings.remote.action.cancel') }}
       </Button>
     </div>
+
+    <!-- 结果区放在按钮**下方**：按钮先出现，用户点完往下看结论，
+         不用在按钮和结论之间来回找视线。 -->
+    <p
+      v-if="probeReport"
+      class="remote-connection-form__probe"
+      :class="`remote-connection-form__probe--${probeReport.outcome}`"
+      data-test="test-result"
+      :data-outcome="probeReport.outcome"
+    >
+      <span class="remote-connection-form__probe-message">
+        {{ t(`settings.remote.test.outcome.${probeReport.outcome}`) }}
+      </span>
+      <!-- 没核验密码就不能让「通过」裸奔。 -->
+      <span
+        v-if="probeReport.outcome === 'verified' && !probeReport.passwordChecked"
+        class="remote-connection-form__probe-note"
+        data-test="test-note-password"
+      >
+        {{ t('settings.remote.test.passwordNotChecked') }}
+      </span>
+      <span
+        v-if="probeReport.tlsVerified === false && probeReport.outcome === 'verified'
+          && probeReport.message"
+        class="remote-connection-form__probe-note"
+      >
+        {{ t('settings.remote.test.tlsNotVerified') }}
+      </span>
+    </p>
   </form>
 </template>
 
@@ -413,6 +491,32 @@ function onProtocolChange(value: unknown) {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+/*
+  测试结论的配色：只有「通过」是绿的，其余一律中性偏警示。
+  刻意不给「认证被拒」单独的红 —— 那不是程序故障，是用户要改密码，
+  用报错色会让人以为应用出了问题。
+*/
+.remote-connection-form__probe {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+}
+
+.remote-connection-form__probe--verified {
+  border-color: hsl(var(--foreground) / 25%);
+}
+
+.remote-connection-form__probe-note {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8rem;
 }
 
 .remote-connection-form__row--inline {

@@ -621,7 +621,8 @@
         "delete": "Delete",
         "save": "Save",
         "cancel": "Cancel",
-        "browse": "Browse…"
+        "browse": "Browse…",
+        "test": "Test connection"
       },
       "field": {
         "name": "Name",
@@ -670,6 +671,25 @@
       },
       "localPath": {
         "hint": "Optional. When set, opening this connection shows a split view: local folder on the left, remote folder on the right."
+      },
+      "test": {
+        "testing": "Testing…",
+        "outcome": {
+          "verified": "Connected. The server accepted these settings.",
+          "auth_rejected": "Connected, but the server rejected the username or password.",
+          "missing_credential": "Connected, but no password was supplied, so authentication was not verified.",
+          "wrong_protocol": "Something answered, but it is not the selected protocol.",
+          "unreachable": "Could not reach the server. Check the address, port and proxy.",
+          "protocol_error": "Connected, but the exchange did not complete as expected."
+        },
+        "passwordNotChecked": "No password was submitted, so this does not confirm that it is correct.",
+        "tlsNotVerified": "The TLS certificate was not verified."
+      },
+      "nav": {
+        "openSettings": "Remote settings",
+        "connect": "Connect",
+        "empty": "No connections yet.",
+        "split": "Split"
       }
     }
   },

@@ -493,6 +493,35 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
+  /**
+   * 开一组标签页：第一格给 `paths[0]`，其余作为**同组内的分屏**并排。
+   *
+   * 为什么不用 `openNewTabGroup` 连开两次：那个函数每次开的是**独立的一组**，
+   * 结果是并排的两个标签组（上下叠），不是左右双栏。本项目的分屏表示是
+   * 「一组标签页多于一个」，见 `adjustSplitViewPanes`。
+   *
+   * **顺序即左右**：调用方给的顺序原样保留，远程连接的判定
+   * （`resolveRemoteOpenPanes`）返回的是 `[本地, 远端]`，反了就颠倒了。
+   */
+  async function openNewTabGroupWithPaths(paths: string[]) {
+    const usable = paths.filter(path => typeof path === 'string' && path.trim().length > 0);
+
+    if (usable.length === 0) {
+      return;
+    }
+
+    const tabs: Tab[] = [];
+
+    for (const path of usable) {
+      tabs.push(await createNewTab(path));
+    }
+
+    const tabGroup: TabGroup = tabs;
+    addTabGroup(tabGroup);
+    adjustSplitViewPanes(tabGroup);
+    openTabGroup(tabGroup);
+  }
+
   async function openPathInCurrentTab(path: string) {
     if (!currentTab.value || !currentTabGroup.value) {
       await openNewTabGroup(path);
@@ -1015,6 +1044,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     init,
     addNewTabGroup,
     openNewTabGroup,
+    openNewTabGroupWithPaths,
     openPathInCurrentTab,
     consumeCurrentTabPathNavigationRequest,
     restoreLastClosedTabGroup,

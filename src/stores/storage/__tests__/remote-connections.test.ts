@@ -437,4 +437,128 @@ describe('remote connections storage', () => {
       'b.example.com',
     ]);
   });
+
+  // -------------------------------------------------------------------------
+  // 测试连接
+  //
+  // 这里真正要钉住的是**密码从哪来**：密码框空串的语义是「不碰已存的密码」，
+  // 所以编辑既有连接时必须把存过的那条取出来送过去，否则测的其实是「空密码」，
+  // 而空密码的结论和「没存过」长得一样 —— 用户看不出自己测错了东西。
+  // -------------------------------------------------------------------------
+
+  describe('testConnection', () => {
+    it('表单里有密码就直接送那个密码，不去读存档', async () => {
+      invokeMock.mockImplementation(async (command: string) => {
+        if (command === 'remote_test_connection') {
+          return {
+            outcome: 'verified',
+            passwordChecked: true,
+            tlsVerified: false,
+            message: 'ok',
+          };
+        }
+
+        return undefined;
+      });
+      const store = useRemoteConnectionsStore();
+
+      await store.testConnection(form({ password: 'typed-in' }));
+
+      expect(invokeMock).not.toHaveBeenCalledWith('remote_load_credential', expect.anything());
+      const call = invokeMock.mock.calls.find(entry => entry[0] === 'remote_test_connection');
+      expect(call?.[1]).toMatchObject({
+        request: expect.objectContaining({ password: 'typed-in' }),
+      });
+    });
+
+    it('编辑既有连接且密码框留空时，取出存过的密码去测', async () => {
+      invokeMock.mockImplementation(async (command: string) => {
+        if (command === 'remote_load_credential') {
+          return 'stored-secret';
+        }
+
+        if (command === 'remote_test_connection') {
+          return {
+            outcome: 'verified',
+            passwordChecked: true,
+            tlsVerified: false,
+            message: 'ok',
+          };
+        }
+
+        return undefined;
+      });
+      const store = useRemoteConnectionsStore();
+
+      await store.testConnection(form({
+        id: 'c1',
+        password: '',
+      }));
+
+      expect(invokeMock).toHaveBeenCalledWith('remote_load_credential', { key: 'c1' });
+      const call = invokeMock.mock.calls.find(entry => entry[0] === 'remote_test_connection');
+      expect(call?.[1]).toMatchObject({
+        request: expect.objectContaining({ password: 'stored-secret' }),
+      });
+    });
+
+    it('没存过密码时送 undefined，而不是空串', async () => {
+      // 空串会让后端把一个空口令真的发出去，结论会被误读成「服务器认了空密码」。
+      invokeMock.mockImplementation(async (command: string) => {
+        if (command === 'remote_load_credential') {
+          return null;
+        }
+
+        if (command === 'remote_test_connection') {
+          return {
+            outcome: 'missing_credential',
+            passwordChecked: false,
+            tlsVerified: false,
+            message: 'no password',
+          };
+        }
+
+        return undefined;
+      });
+      const store = useRemoteConnectionsStore();
+
+      const report = await store.testConnection(form({
+        id: 'c1',
+        password: '',
+      }));
+
+      const call = invokeMock.mock.calls.find(entry => entry[0] === 'remote_test_connection');
+      expect(call?.[1]).toMatchObject({
+        request: expect.objectContaining({ password: undefined }),
+      });
+      expect(report.passwordChecked).toBe(false);
+    });
+
+    it('测试不写任何盘上的状态', async () => {
+      // 纯读操作：测一次不能顺手改掉下次测试的输入。
+      invokeMock.mockImplementation(async (command: string) => {
+        if (command === 'remote_test_connection') {
+          return {
+            outcome: 'verified',
+            passwordChecked: true,
+            tlsVerified: false,
+            message: 'ok',
+          };
+        }
+
+        return undefined;
+      });
+      const store = useRemoteConnectionsStore();
+
+      await store.testConnection(form({
+        id: 'c1',
+        password: 'x',
+      }));
+
+      expect(invokeMock).not.toHaveBeenCalledWith('remote_save_credential', expect.anything());
+      expect(invokeMock).not.toHaveBeenCalledWith('remote_delete_credential', expect.anything());
+      expect(lazyStoreSaveMock).not.toHaveBeenCalled();
+      expect(storageContents.has('connections')).toBe(false);
+    });
+  });
 });

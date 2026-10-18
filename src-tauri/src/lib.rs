@@ -298,6 +298,7 @@ pub fn run() {
             remote::remote_save_credential,
             remote::remote_load_credential,
             remote::remote_delete_credential,
+            remote::remote_test_connection,
             default_file_manager::default_file_manager_available,
             default_file_manager::is_default_file_manager,
             default_file_manager::set_default_file_manager,

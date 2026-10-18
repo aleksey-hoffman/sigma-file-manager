@@ -18,6 +18,7 @@ import { ref } from 'vue';
 import type {
   RemoteConnection,
   RemoteConnectionForm,
+  RemoteConnectionTestReport,
   RemoteProxyConfig,
 } from '@/types/remote';
 import { createRemoteConnectionId } from '@/types/remote';
@@ -297,6 +298,53 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
     return proxy;
   }
 
+  /**
+   * 拿一条已保存连接的密码，供「测试连接」用。
+   *
+   * **只在内存里过一趟，不写回任何地方。** 测试连接是个纯读操作：
+   * 测一次不该改变下次测试的输入，也不该动 DPAPI 存档。
+   *
+   * 返回 `null` 表示「没存过」—— 调用方据此把 `password` 传成
+   * `undefined`（= 不打算提交凭据），而不是传空串。
+   */
+  async function loadCredentialForTest(key: string | undefined): Promise<string | null> {
+    if (!key) {
+      return null;
+    }
+
+    return invoke<string | null>('remote_load_credential', { key });
+  }
+
+  /**
+   * 真去连一次，把结论报回来。**不写任何盘上的状态。**
+   *
+   * `password` 传 `undefined` 表示「这次不提交凭据」，与空串是两件事：
+   * 匿名 FTP 会回 `verified` + `passwordChecked: false`，
+   * 传空串则会让后端把空口令真的发出去。
+   */
+  async function testConnection(
+    form: RemoteConnectionForm,
+  ): Promise<RemoteConnectionTestReport> {
+    let password = form.password.length > 0 ? form.password : undefined;
+
+    if (password === undefined && form.id) {
+      // 编辑既有连接且密码框留空：空串的语义是「不碰已存的密码」，
+      // 所以要把存过的那条取出来用，否则测的其实是「空密码」。
+      password = (await loadCredentialForTest(form.id)) ?? undefined;
+    }
+
+    return invoke<RemoteConnectionTestReport>('remote_test_connection', {
+      request: {
+        protocol: form.protocol,
+        host: form.host.trim(),
+        port: form.port,
+        username: form.username,
+        password,
+        proxy: form.proxy,
+      },
+    });
+  }
+
   return {
     storage,
     connections,
@@ -309,5 +357,7 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
     saveConnection,
     deleteConnection,
     saveProxySecret,
+    loadCredentialForTest,
+    testConnection,
   };
 });

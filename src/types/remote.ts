@@ -126,6 +126,55 @@ export function getRemoteProtocolDefaultPort(protocol: RemoteProtocol): number {
 }
 
 /**
+ * 「测试连接」的结论。与后端 `ProbeOutcome` 逐条镜像。
+ *
+ * **前端只能按这个分支渲染，绝不去解析 `message`。**
+ * `message` 是给用户看的一句话，会随版本改措辞；拿它做判断等于把文案当协议。
+ */
+export type RemoteProbeOutcome
+  /** 协议握手与凭据都过了。 */
+  = | 'verified'
+  /** 连上了、协议也对，但服务器拒了这组凭据 —— 去改密码。 */
+    | 'auth_rejected'
+  /** 服务器要凭据，但这次没提供。匿名 FTP 不算。 */
+    | 'missing_credential'
+  /** 连上了，但这不是该协议的服务。 */
+    | 'wrong_protocol'
+  /** DNS 失败、连接被拒、超时、代理失败。 */
+    | 'unreachable'
+  /** 认得协议，但后续交互出不来预期结果。 */
+    | 'protocol_error';
+
+/** 一次测试的结果。与后端 `ConnectionTestReport` 逐条镜像（camelCase）。 */
+export interface RemoteConnectionTestReport {
+  outcome: RemoteProbeOutcome;
+  /** 服务端自报身份：SFTP 是主机公钥，FTP 是 220 那行。 */
+  serverIdentity?: string;
+  /**
+   * 本次**是否真的提交并核验了密码**。
+   *
+   * 少了它，「通过」会被读成「密码没问题」—— 而免密/匿名连接同样会通过。
+   */
+  passwordChecked: boolean;
+  /** TLS 证书**没有**校验，恒为 `false`。别当成已校验。 */
+  tlsVerified: boolean;
+  /** 给用户看的一句话。不要拿它做逻辑判断。 */
+  message: string;
+}
+
+/** 测试请求。与后端 `RemoteTestConnectionRequest` 镜像。 */
+export interface RemoteTestConnectionRequest {
+  protocol: RemoteProtocol;
+  host: string;
+  port: number;
+  username: string;
+  /** `undefined` = 这次不打算提交凭据，不是「空密码」。 */
+  password?: string;
+  /** 缺省即直连。 */
+  proxy?: RemoteProxyConfig;
+}
+
+/**
  * 生成一个新的连接 id / 凭据键。
  *
  * **凭据键就等于连接 id** —— 一条连接一份凭据，不另起一套编号。

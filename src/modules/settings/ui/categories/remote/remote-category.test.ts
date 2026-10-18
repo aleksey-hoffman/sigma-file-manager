@@ -283,6 +283,82 @@ describe('远程设置分类', () => {
     });
   });
 
+  it('表单里有「测试连接」按钮', async () => {
+    const wrapper = mountedCategory();
+    await flushPromises();
+
+    await wrapper.find('[data-test="add"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="test-connection"]').exists()).toBe(true);
+  });
+
+  it('测试连接把结论按 outcome 渲染，不去解析 message', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_startup_storage_bootstrap') {
+        return {};
+      }
+
+      if (command === 'remote_test_connection') {
+        return {
+          outcome: 'auth_rejected',
+          // message 是给用户看的、会改措辞。断言它能通过 = 断言界面在解析文案。
+          message: 'AUTH_REJECTED_MESSAGE_MARKER',
+          passwordChecked: true,
+          tlsVerified: false,
+        };
+      }
+
+      return undefined;
+    });
+
+    const wrapper = mountedCategory();
+    await flushPromises();
+    await wrapper.find('[data-test="add"]').trigger('click');
+    await flushPromises();
+
+    await wrapper.find('[data-test="test-connection"]').trigger('click');
+    await flushPromises();
+
+    const result = wrapper.find('[data-test="test-result"]');
+    expect(result.exists()).toBe(true);
+    expect(result.attributes('data-outcome')).toBe('auth_rejected');
+    expect(result.text()).toContain('settings.remote.test.outcome.auth_rejected');
+    expect(result.text()).not.toContain('AUTH_REJECTED_MESSAGE_MARKER');
+  });
+
+  it('通过了但没核验密码时，必须额外提示', async () => {
+    // 匿名 FTP / 免密 SFTP 同样会回 verified。少了这条提示，
+    // 「连接成功」就会被读成「密码没问题」。
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_startup_storage_bootstrap') {
+        return {};
+      }
+
+      if (command === 'remote_test_connection') {
+        return {
+          outcome: 'verified',
+          message: 'ok',
+          passwordChecked: false,
+          tlsVerified: false,
+        };
+      }
+
+      return undefined;
+    });
+
+    const wrapper = mountedCategory();
+    await flushPromises();
+    await wrapper.find('[data-test="add"]').trigger('click');
+    await flushPromises();
+
+    await wrapper.find('[data-test="test-connection"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="test-result"]').attributes('data-outcome')).toBe('verified');
+    expect(wrapper.find('[data-test="test-note-password"]').exists()).toBe(true);
+  });
+
   it('组件与 store 共用同一份连接状态，不是各存一份', async () => {
     const wrapper = mountedCategory();
     await flushPromises();

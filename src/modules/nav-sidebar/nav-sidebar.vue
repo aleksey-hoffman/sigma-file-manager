@@ -6,7 +6,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, provide, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { BlocksIcon, HardDriveIcon, NetworkIcon, UsbIcon } from '@lucide/vue';
+import {
+  BlocksIcon, CloudIcon, HardDriveIcon, NetworkIcon, UsbIcon,
+} from '@lucide/vue';
 import { useAppStore } from '@/stores/runtime/app';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import {
@@ -14,6 +16,7 @@ import {
   useShortcutsStore,
 } from '@/stores/runtime/shortcuts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { openNavigatorPath, openNavigatorPathInNewTab } from '@/utils/open-navigator-directory';
 import { getDriveShortLabel as getDriveShortLabelFromMountPoint } from '@/utils/drive-short-label';
 import { useDrives } from '@/modules/home/composables';
@@ -29,6 +32,10 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from '@/components/dir-entry-interactive';
 import { formatKeybindingKeys } from '@/modules/extensions/api';
 import QuickAccessPanel from './components/quick-access-panel.vue';
+import RemoteNavPanel from './components/remote-nav-panel.vue';
+import { resolveRemoteOpenPanes } from '@/modules/remote/utils/remote-panes';
+import { buildRemoteConnectionPath } from '@/utils/remote-paths';
+import type { RemoteConnection } from '@/types/remote';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { useTextDirection } from '@/composables/use-text-direction';
 
@@ -37,6 +44,7 @@ const appStore = useAppStore();
 const extensionsStore = useExtensionsStore();
 const shortcutsStore = useShortcutsStore();
 const userSettingsStore = useUserSettingsStore();
+const workspacesStore = useWorkspacesStore();
 const { drives } = useDrives();
 const { inlineEndSide } = useTextDirection();
 
@@ -135,6 +143,45 @@ function getDriveIcon(drive: {
 function getDriveShortLabel(drive: { mount_point: string }): string {
   return getDriveShortLabelFromMountPoint(drive.mount_point);
 }
+
+// ---------------------------------------------------------------------------
+// 远程（2026-10-18）
+//
+// 面板是 hover 驱动的，开合状态自己管 —— 跟上面「仪表盘」那块同一个模式，
+// 用 Tooltip 的受控 `:open` 而不是让它自己判断，鼠标从按钮移到面板上时
+// 才不会闪一下。
+// ---------------------------------------------------------------------------
+
+const remotePanelOpen = ref(false);
+
+function handleRemotePanelOpenChange(value: boolean) {
+  remotePanelOpen.value = value;
+}
+
+function openRemoteSettings() {
+  remotePanelOpen.value = false;
+  void router.push({ name: 'settings' });
+}
+
+/**
+ * 连一个远程：开一组标签页，左本地右远端。
+ *
+ * 摆几格完全交给 `resolveRemoteOpenPanes` 判定（连接有本地目录 → 两格，
+ * 否则一格）。**不在这里自己 if 一次**：判定逻辑在别处、也已被测过，
+ * 这里再抄一遍就是两份真相。
+ */
+async function openRemoteConnection(connection: RemoteConnection) {
+  remotePanelOpen.value = false;
+
+  const remotePath = buildRemoteConnectionPath(connection.id);
+
+  if (!remotePath) {
+    return;
+  }
+
+  const panes = resolveRemoteOpenPanes(remotePath, [connection]);
+  await workspacesStore.openNewTabGroupWithPaths(panes.map(pane => pane.path));
+}
 </script>
 
 <template>
@@ -229,6 +276,36 @@ function getDriveShortLabel(drive: { mount_point: string }): string {
           </TooltipContent>
         </Tooltip>
       </template>
+
+      <Tooltip
+        :open="remotePanelOpen"
+        @update:open="handleRemotePanelOpenChange"
+      >
+        <TooltipTrigger as-child>
+          <Button
+            class="nav-sidebar-item"
+            size="icon"
+            data-test="remote-nav-button"
+          >
+            <CloudIcon
+              :size="18"
+              class="nav-sidebar-item-icon"
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent
+          :side="inlineEndSide"
+          align="start"
+          :side-offset="12"
+          :collision-padding="6"
+          class="nav-sidebar__remote-tooltip"
+        >
+          <RemoteNavPanel
+            @open-settings="openRemoteSettings"
+            @open="openRemoteConnection"
+          />
+        </TooltipContent>
+      </Tooltip>
 
       <Tooltip
         v-for="registration in sortedExtensionPages"
@@ -495,6 +572,13 @@ function getDriveShortLabel(drive: { mount_point: string }): string {
    原 `.nav-sidebar__quick-access-title` 已无对应元素，一并删除。 */
 
 .nav-sidebar-drive-tooltip {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* 远程面板与盘符面板一样，去掉气泡自身的内边距与边框，由面板自己排版。 */
+.sigma-ui-tooltip-content.nav-sidebar__remote-tooltip {
   padding: 0;
   border: none;
   background: transparent;
