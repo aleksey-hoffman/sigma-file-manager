@@ -7,7 +7,6 @@ use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::Manager;
 use winreg::{
     enums::{
         HKEY_CURRENT_USER, REG_BINARY, REG_DWORD, REG_DWORD_BIG_ENDIAN, REG_EXPAND_SZ,
@@ -38,9 +37,7 @@ fn snapshot_file_path() -> Result<PathBuf, String> {
 }
 
 fn legacy_snapshot_file_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
-    app_handle
-        .path()
-        .app_data_dir()
+    crate::app_dirs::app_data_dir(app_handle)
         .map(|app_data_dir| app_data_dir.join(LEGACY_SNAPSHOT_FILE_NAME))
         .map_err(|error| format!("Failed to resolve app data directory: {error}"))
 }

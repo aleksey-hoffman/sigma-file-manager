@@ -149,10 +149,9 @@ describe('Extension main flow', () => {
   before(async () => {
     await openInstalledExtensionsTab();
 
-    if ((await getExtensionState()).isInstalled) {
-      await callExtensionsStore('uninstallExtension', EXTENSION_ID);
-      await waitForExtensionState({ isInstalled: false, isLoaded: false }, 'Leftover test extension was not removed');
-    }
+    // Each run starts from an empty isolated data folder (see wdio.conf.js),
+    // so nothing can be left over from an earlier run.
+    assert.equal((await getExtensionState()).isInstalled, false, 'Expected a fresh profile without the test extension');
   });
 
   it('installs a local extension from a folder and activates it', async () => {

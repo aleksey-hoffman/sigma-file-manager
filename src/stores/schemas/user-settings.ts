@@ -8,7 +8,7 @@ import type { CustomBackgroundMediaItem, HomeBannerPosition } from '@/types/user
 import { collectNestedRecordPaths, isRecord, migrateStorageSchema } from './schema-utils';
 import { backgroundMedia, DEFAULT_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import { invoke } from '@tauri-apps/api/core';
-import { appDataDir } from '@tauri-apps/api/path';
+import { appDataDir } from '@/utils/app-dirs';
 import {
   homeBannerStorageKeys,
   legacyBackgroundStorageKeys,

@@ -16,7 +16,6 @@ use image::codecs::png::{CompressionType, FilterType as PngFilterType, PngEncode
 use image::{imageops::FilterType, ImageDecoder, ImageReader, Limits};
 use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
-use tauri::Manager;
 
 const IMAGE_THUMBNAIL_CACHE_DIR: &str = "image-thumbnails";
 const THUMBNAIL_MAX_DIMENSION: u32 = 384;
@@ -121,9 +120,7 @@ fn video_thumbnail_cache_path(
 }
 
 fn thumbnail_cache_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    Ok(app
-        .path()
-        .app_data_dir()
+    Ok(crate::app_dirs::app_data_dir(app)
         .map_err(|error| format!("Failed to resolve app data directory: {error}"))?
         .join(IMAGE_THUMBNAIL_CACHE_DIR))
 }

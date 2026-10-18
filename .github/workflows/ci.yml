@@ -147,16 +147,6 @@ jobs:
         timeout-minutes: 15
         run: npm run test:e2e:webdriver:skip-build
 
-      - name: Collect app logs
-        if: failure()
-        shell: pwsh
-        run: |
-          $logsDirectory = Join-Path $env:LOCALAPPDATA 'com.sigma-file-manager.app\logs'
-          New-Item -ItemType Directory -Force -Path $env:SFM_E2E_ARTIFACTS_DIR | Out-Null
-          if (Test-Path $logsDirectory) {
-            Copy-Item -Recurse -Force $logsDirectory (Join-Path $env:SFM_E2E_ARTIFACTS_DIR 'app-logs')
-          }
-
       - name: Upload e2e artifacts
         if: failure()
         uses: actions/upload-artifact@v4

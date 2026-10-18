@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+mod app_dirs;
 mod app_updater;
 mod archive;
 mod background_sources;
@@ -217,51 +218,63 @@ fn get_launch_context() -> LaunchContext {
     }
 }
 
+fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String) {
+    #[cfg(windows)]
+    {
+        let filter_result = filter_shell_namespace_args(argv);
+        delegate_shell_namespace_paths(&filter_result.delegated_paths);
+        let has_filesystem_paths = filter_result.filtered_args.len() > 1;
+        let should_focus = has_filesystem_paths
+            || filter_result.had_absorbed_paths
+            || !filter_result.had_delegated_paths();
+
+        if should_focus {
+            system_tray::focus_main_window(app);
+        }
+
+        if has_filesystem_paths {
+            let had_delegated_shell_paths = filter_result.had_delegated_paths();
+            let launch_context = build_launch_context(
+                filter_result.filtered_args,
+                Some(cwd),
+                filter_result.had_absorbed_paths,
+                had_delegated_shell_paths,
+            );
+            let _ = app.emit("app-launch-args", launch_context);
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        system_tray::focus_main_window(app);
+        let launch_context = build_launch_context(argv, Some(cwd), false, false);
+        let _ = app.emit("app-launch-args", launch_context);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            #[cfg(windows)]
-            {
-                let filter_result = filter_shell_namespace_args(argv);
-                delegate_shell_namespace_paths(&filter_result.delegated_paths);
-                let has_filesystem_paths = filter_result.filtered_args.len() > 1;
-                let should_focus = has_filesystem_paths
-                    || filter_result.had_absorbed_paths
-                    || !filter_result.had_delegated_paths();
+    app_dirs::prepare_isolated_environment();
 
-                if should_focus {
-                    system_tray::focus_main_window(app);
-                }
+    let mut window_state_plugin = tauri_plugin_window_state::Builder::default()
+        .with_state_flags(main_window_state::state_flags())
+        .with_denylist(&["quick-view"])
+        .skip_initial_state("main");
+    if let Some(window_state_file) = app_dirs::window_state_file_override() {
+        window_state_plugin = window_state_plugin.with_filename(window_state_file);
+    }
 
-                if has_filesystem_paths {
-                    let had_delegated_shell_paths = filter_result.had_delegated_paths();
-                    let launch_context = build_launch_context(
-                        filter_result.filtered_args,
-                        Some(cwd),
-                        filter_result.had_absorbed_paths,
-                        had_delegated_shell_paths,
-                    );
-                    let _ = app.emit("app-launch-args", launch_context);
-                }
-            }
+    let mut builder = tauri::Builder::default()
+        .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default());
+    // An isolated e2e instance must not hand its launch over to (or focus) an
+    // installed SFM that is already running with the real data.
+    if !app_dirs::is_isolated() {
+        builder = builder.plugin(tauri_plugin_single_instance::init(handle_second_instance));
+    }
 
-            #[cfg(not(windows))]
-            {
-                system_tray::focus_main_window(app);
-                let launch_context = build_launch_context(argv, Some(cwd), false, false);
-                let _ = app.emit("app-launch-args", launch_context);
-            }
-        }))
+    builder
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(
-            tauri_plugin_window_state::Builder::default()
-                .with_state_flags(main_window_state::state_flags())
-                .with_denylist(&["quick-view"])
-                .skip_initial_state("main")
-                .build(),
-        )
+        .plugin(window_state_plugin.build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
@@ -275,6 +288,7 @@ pub fn run() {
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
+            app_dirs::get_app_dirs,
             configure_webview_hide_pdf_more_settings,
             get_launch_context,
             startup_storage_bootstrap::get_startup_storage_bootstrap,
@@ -440,17 +454,29 @@ pub fn run() {
 
 fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
-        app.handle().plugin(
-            tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
-                .build(),
-        )?;
+        let mut log_plugin = tauri_plugin_log::Builder::default().level(log::LevelFilter::Info);
+        if let Some(log_dir) = app_dirs::log_dir_override() {
+            log_plugin = log_plugin.targets([
+                tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
+                tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Folder {
+                    path: log_dir,
+                    file_name: None,
+                }),
+            ]);
+        }
+        app.handle().plugin(log_plugin.build())?;
     }
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
+    // The migration can rewrite the user's real default-file-manager registry
+    // integration, which lives outside the app folders, so isolated e2e runs skip it.
     #[cfg(windows)]
-    if let Err(error) = default_file_manager::migrate_legacy_default_file_manager(app.handle()) {
+    if app_dirs::is_isolated() {
+        log::info!("Isolated e2e data folder in use; skipping default file manager migration");
+    } else if let Err(error) =
+        default_file_manager::migrate_legacy_default_file_manager(app.handle())
+    {
         eprintln!("Failed to migrate legacy default file manager integration: {error}");
     }
     startup_storage_bootstrap::start_preload(

@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { appDataDir, appConfigDir, appLogDir } from '@tauri-apps/api/path';
+import { appDataDir, appConfigDir, appLogDir } from '@/utils/app-dirs';
 import {
   FolderIcon,
   ExternalLinkIcon,
