@@ -32,6 +32,7 @@ export const config = {
       },
     },
   ],
+  logLevel: 'warn',
   reporters: ['spec'],
   framework: 'mocha',
   mochaOpts: {
@@ -102,13 +103,20 @@ export const config = {
     await saveFailureArtifacts(test);
   },
 
+  afterHook: async (test, _context, { passed }) => {
+    if (passed !== false) {
+      return;
+    }
+    await saveFailureArtifacts(test);
+  },
+
   afterSession: () => {
     closeTauriDriver();
   },
 };
 
 async function saveFailureArtifacts(test) {
-  const baseName = `${test.parent} ${test.title}`
+  const baseName = `${test.parent ?? ''} ${test.title ?? 'hook'}`
     .replace(/[^a-z0-9]+/gi, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 120);
