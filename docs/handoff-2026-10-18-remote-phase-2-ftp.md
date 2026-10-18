@@ -22,7 +22,7 @@
 
 ---
 
-## 1. 这一轮的两个 commit
+## 1. 这一轮的 commit
 
 | commit | 内容 |
 |---|---|
@@ -30,6 +30,8 @@
 | `6f2290a5` | 4.4 FTP provider：`ftp_parsing.rs`（纯解析）+ `ftp_provider.rs`（协议）+ command 层按协议分流 |
 | `db0d2b45` | 补一处测试覆盖缺口（`226` 校验）+ 本文件 |
 | `f81e1156` | FTPS 显式 / 隐式 + 证书固定 |
+| `dc61c843` | FTPS **端到端测试**（假服务端 + rcgen 自签证书）+ 修 `CryptoProvider` panic（第 5.8 节） |
+| `51e7c3d3` | `AUTH TLS` 被拒的判据从 `kind` 收紧到 `message` |
 
 ---
 
@@ -174,15 +176,72 @@ FTPS 里还留着同一个 —— 而这两个 bug 用户会分别遇到，且�
 补 `PROT` 时要做的是「先 `PBSZ 0` 再 `PROT P`，失败就**明确报错**」，
 绝不静默降级。
 
-### 5.7 FTPS 一次都没连过真服务器
+### 5.7 端到端测试已补（`dc61c843`）—— 本节此前写的「没有」已作废
 
-`PinnedCertificate` 的 4 条测试直接调 `verify_server_cert` 验固定判定 ——
-起真 TLS 服务器要生成证书、要握手，测到的会是 rustls 而不是我们。
-但**整个 FTPS 流程（`AUTH TLS` → 升级 → 重登 → `MLSD`）没有端到端测试**，
-也没有真机验证。它在真机上第一次跑就是在用户手上。
+**这一节原来写着「整个 FTPS 流程没有端到端测试，若要补需要能签自签证书的夹具
++ 会说 `AUTH TLS` 的假服务端，是独立的一块工作」。已经补完了。**
 
-若要补端到端测试，需要一个能签发自签证书的测试夹具（`rcgen` 之类）
-加一个会说 `AUTH TLS` 的假 FTPS 服务端 —— 那是独立的一块工作。
+首轮注入验证 6 条里**只有 2 条转红**，另外 3 条全绿、1 条编译不过。
+真因是同一个：`connect_pinned` 与 `open` 从来没有被端到端跑过 ——
+所有测试都在测它们的纯逻辑零件（`certificate_rejection`、`verify_server_cert`、
+`mode_of`、端口默认值），而下面三条一条都碰不到：
+
+- `AUTH TLS` 拿不到 `234` 时到底报不报错；
+- 升级之后**有没有重新 `USER`/`PASS`**（真机症状：登录成功但列目录全 530）；
+- 握手失败有没有被翻译成「这张证书还没被信任过」，而不是笼统的握手失败。
+
+补的东西（`ftps_provider.rs` 的 `mod tests`）：
+
+- **假 FTPS 服务端**：rcgen 签自签证书（`rcgen` 早就是 `[dependencies]`，
+  `lan_share/tls.rs` 在用，**不需要**也不该在 `[dev-dependencies]` 重复声明）；
+  显式模式在 `AUTH TLS` 之后把**同一条 socket** 升级成 TLS；
+  `require_relogin` 模拟 RFC 4217 §4.2（升级后不重登就回 `530`）。
+- **四条端到端用例**：显式升级并重登 / 隐式全程在 TLS 层 /
+  服务器拒 `AUTH TLS` 时错误要指名 `AUTH` 本身 / 未信任的证书以 `HostKeyUnknown`
+  到达用户面前。
+
+同步修了一个**真缺陷**（本轮唯一的生产代码改动）：见 5.8。
+
+### 5.8 ⚠️ 真缺陷：`rustls::ClientConfig::builder()` 在本仓库会 panic
+
+`Cargo.lock` 里 rustls **同时**依赖 `aws-lc-rs` 与 `ring`，而 rustls 的
+`from_crate_features()` 三个分支全是互斥条件
+（`all(feature = "ring", not(feature = "aws_lc_rs"))` 这种）——
+两个 feature 都在时它返回 `None`，`builder()` 随即 `expect` 失败。
+
+而全项目唯一的 `install_default()` 在 `lan_share/tls.rs` 的一个**运行时**函数里。
+也就是说：**只要用户没用过 LAN 分享，FTPS 这条路会直接崩**（panic，不是报错）。
+`connection_test::upgrade_tls`（用户点「测试连接」按钮走的正是它）同样中招。
+
+两处都补了显式安装：
+
+- `ftps_provider::connect_pinned`
+- `connection_test::upgrade_tls`
+
+**这条不是读代码读出来的，是端到端测试第一次真握手时立刻 panic 暴露出来的。**
+而它能暴露，靠的是夹具**刻意不兜底** —— 见 5.9。
+
+### 5.9 ⚠️ 夹具不要替生产代码兜底（判别力的来源）
+
+`stub_certificate()` 用的是 `ServerConfig::builder_with_provider(...)`，
+**不是** `builder()`，也**不**调 `install_default()`。
+
+夹具一旦装了进程级 provider，客户端的 `ClientConfig::builder()` 就会顺手捡到它，
+于是「生产代码自己装 provider」这件事根本不必成立，测试照样全绿 ——
+本轮真的先这么写了一版，四条端到端测试立刻变成永远绿。
+`no-crypto-provider` 那条注入正是用来钉这一点的（它转红）。
+
+**推广**：凡是要让「某段代码自己保证 X」的测试有判别力，
+夹具就**不能**顺手把 X 兜掉。兜掉之后测试仍然绿，但绿得没有意义。
+
+### 5.10 ⚠️ 隐式 FTPS **有**欢迎语
+
+「隐式 = 没有 220」是个很容易被记住、又很容易被用错的说法。准确的说法是：
+**明文阶段**没有 `220`（连上第一件事就是握手），但 **TLS 层里面仍然有 `220`** ——
+RFC 4217 §4.2 规定握手之后的会话与普通 FTP 相同，而 FTP 会话以 `220` 开始。
+
+两种模式都要 `read_greeting()`。按「隐式没有欢迎语」跳过它，客户端就会对着一条
+永远不来的 `220` 一直等到超时。文件顶部的模块注释与 `mode_of` 处都已写清。
 
 ---
 
@@ -208,7 +267,7 @@ FTPS 里还留着同一个 —— 而这两个 bug 用户会分别遇到，且�
 
 | 项 | 结果 |
 |---|---|
-| `cargo test --lib` | **596 通过 / 0 失败**（基线 495 + 101） |
+| `cargo test --lib` | **600 通过 / 0 失败**（基线 495 + 105） |
 | 测试二进制加载 | 正常 —— `cargo test --lib` 红线未踩（`remote/` 下无任何 `tauri::` 路径） |
 | `npx vitest run` | 195 文件 / 1619 用例 |
 | `npx vue-tsc --build` | 0 error |
@@ -224,11 +283,32 @@ FTPS 里还留着同一个 —— 而这两个 bug 用户会分别遇到，且�
 | `inject-hostkey.cjs` | 信任流纯函数 5 条 |
 | `inject-trusted-hosts.cjs` | 设置页分区 5 条 |
 | `inject-ftp.cjs` | FTP 解析 5 条 + provider 5 条（跨两个文件） |
-| `inject-ftps.cjs` | FTPS 6 条：kind 三元键、`AUTH TLS` 失败、退明文、升级后重登、握手错误翻译、`AcceptAnyCertificate` 混入 |
+| `inject-ftps.cjs` | FTPS **7 条**（全部转红）：kind 三元键 ×2、`AUTH TLS` 失败、升级后重登、握手错误翻译、`AcceptAnyCertificate` 混入、`CryptoProvider` 缺失 |
+| `run-inject-ftps.cmd` | 驱动上面 7 条：`inject → 跑测试 → restore`。**测试过滤器必须覆盖每一个被注入的文件** |
 
 ⚠️ **还原会整体覆盖目标文件，所以只在代码已提交之后跑。**
-本轮被它冲掉过两次：一次是尚未提交的测试与一行守卫，症状是
-「刚写好的断言莫名其妙不存在了」。
+本轮被它冲掉过三次。
+
+⚠️ **「已提交」这个前提不够** —— 还原用的是**快照**，而快照可能过期：
+本轮的实际经过是「提交 → snapshot → 跑一轮 → 改测试 → 再跑」，
+第二轮的 restore 就把中间那次改动吃了，症状同样是「刚写好的断言莫名不存在」。
+现在 `inject-ftps.cjs restore` 会先比对快照与 `git show HEAD:<file>`，
+不等就**拒绝还原并报错**，把一次静默的数据丢失换成一句明确的「请重新 snapshot」。
+
+⚠️ **注入验证跑的测试过滤器必须覆盖被注入代码所在的模块。**
+本轮把过滤器从全量 lib 缩到 `remote::ftps_provider`（14 条），
+`forget-any-kind` 注入的是 `known_hosts.rs`，它的测试不在这个过滤器里 ——
+于是它报「全绿」，而实际是**根本没跑到**。换成 `remote::`（214 条）立刻转红。
+与「门禁基线必须用同一条命令量」是同一条纪律的两面。
+
+⚠️ **判据不能只看 `kind`。** 「`AUTH TLS` 被拒」（`Protocol`）与
+「后面握手失败」（也是 `Protocol`）**同类**，只断言 `kind` 的那条断言等于没有，
+`ignore-auth-tls-failure` 因此一直是绿的。收紧到 `message` 之后才转红。
+
+⚠️ **`AcceptAnyCertificate` 那条注入的锚点选错过。** 第一版改的是 trait 方法签名，
+结果 `PinnedCertificate` 直接不再实现 `ServerCertVerifier`，整个 lib test 编译不过 ——
+**编译失败不算「测试转红」**，它只能证明「改了会坏」，证明不了「测试对这个改动敏感」。
+锚点应该落在判定分支上，且注入后必须仍能编译。
 
 ⚠️ **`node -e` 绝不用于写仓库里的文件。** 本轮用它改一个测试文件，
 PowerShell 先解析了参数，**文件内容被写成了字面量 `utf8`**（340 行变 1 行）。
@@ -238,8 +318,12 @@ PowerShell 先解析了参数，**文件内容被写成了字面量 `utf8`**（3
 
 ## 9. 未结事项
 
-- **真机验收**（第 6 节）—— 本轮一条都没做。
-- **FTPS 没有端到端测试**（第 5.7 节），也没有真机验证。
+- **真机验收**（第 6 节）—— 本轮一条都没做，`tauri build` 是本轮最后启动的。
+- **FTPS 仍然没有真机验证**：NAS `192.168.1.9` 上没有 FTPS 服务
+  （443/139/445 可用但都不是 FTPS），所以成功路径要么另找服务器、要么用本地夹具。
+  本轮能验到的只有「未信任的证书被正确拒绝 + 弹窗出现」这一半。
+  代码侧的端到端测试**不能替代**真机：它验的是我们与假服务器，
+  验不出真服务器对 `AUTH TLS` 的具体措辞差异。
 - **FTPS 数据通道未加密**（第 5.6 节）—— 需要补 `PBSZ 0` + `PROT P`。
 - **规格 §3.6 需要修订**（第 2 节）—— 三处自相矛盾，其中第 2.2 扩大了支持面。
 - 会话注册表 / 连接池（规格 §3.4）：当前每次列目录重新建连。
