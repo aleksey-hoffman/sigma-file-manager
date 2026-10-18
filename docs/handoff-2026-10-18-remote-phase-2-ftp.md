@@ -7,8 +7,8 @@
 > 上游快照：`handoff-2026-10-18-remote-phase-2-progress.md`（它写于 FTP 之前，
 > 其中「状态」一节已过时，本文件取代它）
 
-**状态：SFTP 与 FTP（明文）都能真实列目录了；主机公钥信任流闭环；
-FTPS 明确不接（理由与所需前置见第 5 节）。真机验收尚未进行。**
+**状态：SFTP、FTP 明文、FTPS（显式 / 隐式，带证书固定）都能真实列目录了；
+主机公钥信任流闭环。真机验收尚未进行 —— 代码侧全绿，但界面结论一条都没立过。**
 
 ---
 
@@ -28,6 +28,8 @@ FTPS 明确不接（理由与所需前置见第 5 节）。真机验收尚未进
 |---|---|
 | `fd35b2d8` | 4.5 前端信任流：`hostKeyPrompt` / `HostKeyTrustDialog` / 设置页「已信任主机」分区 |
 | `6f2290a5` | 4.4 FTP provider：`ftp_parsing.rs`（纯解析）+ `ftp_provider.rs`（协议）+ command 层按协议分流 |
+| `db0d2b45` | 补一处测试覆盖缺口（`226` 校验）+ 本文件 |
+| `f81e1156` | FTPS 显式 / 隐式 + 证书固定 |
 
 ---
 
@@ -108,27 +110,79 @@ SOCKS5 的 `BIND` 是 `CMD=0x02`，语义为「让代理在**代理侧**开监�
 
 ---
 
-## 5. FTPS：明确不接，以及要接需要什么
+## 5. FTPS：已接上证书固定（commit `f81e1156`）
 
-`list_with_protocol` / `stat_with_protocol` 对 `ftps_explicit` / `ftps_implicit`
-返回一条**说清原因的** `Unsupported`，而不是路由到 `AcceptAnyCertificate`。
+`ftps_explicit` / `ftps_implicit` **不再是「暂不支持」**，固定的是**叶证书 DER 的
+SHA-256**，走与 SSH known_hosts 同构的那条链。
 
-**这是本轮的立场，也是建议保留的立场**：`AcceptAnyCertificate` 无条件放行证书，
-用它「接上 FTPS 然后宣称支持」等于交付一个静默的中间人窗口 ——
-比「暂时不支持」坏得多。`connection_test.rs` 顶部的告警注释也写着同一句话。
+### 5.1 键从 `(host, port)` 扩到 `(host, port, kind)`
 
-要真正接上 FTPS，需要的是**第二条信任链**，不是一段 TLS 代码：
+一台主机可以同时跑 SSH 与 FTPS，而「信任了一把 SSH 公钥」**不构成**对一张
+X.509 证书的任何信任，反过来也一样。键里少一位，中间人只要拿到另一种信任
+就能一路畅通 —— 而这恰恰是两条链各自的立身之本。
 
-| 前置 | 说明 | 规模 |
+**迁移用 `#[serde(default)]`，刻意不升 `known_hosts.json` 的版本号。**
+升版本会让所有老用户的信任记录直接变成「版本不认识」而必须重新信任，
+那是一次纯粹由「加一个可选字段」造成的返工。缺 `kind` 的老记录一律读作
+`ssh` —— 阶段 2 写出的每条记录都只可能是 SSH 公钥，这个默认值是**正确**的，
+不是猜测。有测试专门钉这一条（`a_record_without_a_kind_field_is_read_as_ssh`）。
+
+### 5.2 协议层没有复制
+
+控制通道整个复用 `ftp_provider::FtpControl` 与 `list_via_control`，
+FTPS 只在外面套一层 TLS。复制一份的后果是：明文 FTP 修好了一个 bug，
+FTPS 里还留着同一个 —— 而这两个 bug 用户会分别遇到，且只有一半被测到。
+
+`with_listing` 那个 `parse` 闭包参数也在这一步删掉了：解析已经收敛在
+`list_via_control` 一处，多一个决策点就多一次「两边行为可以不一样」的机会。
+
+### 5.3 显式 FTPS 的两个必需动作
+
+1. **`AUTH TLS` 拿不到 `234` 就明确报错**，不退回明文 ——
+   退回明文等于「用户以为连的是 FTPS，实际后面全程裸奔」。
+2. **升级之后必须重新 `USER`/`PASS`**（RFC 4217 §4.2）。服务器把 TLS 握手
+   当作新会话的开始；不重登的话后面每条命令都得到 530，
+   而用户看到的只是一句笼统的 530，没有任何东西指向真正的原因。
+
+### 5.4 指纹形态按 kind 分开
+
+| kind | 形态 | 用户拿它核对什么 |
 |---|---|---|
-| `known_hosts` 加 `kind` 字段 | 现有键是 `(host, port)`，同一台主机的 SSH 公钥与 X.509 指纹会撞。需 `(host, port, kind)` 三元键 + 老文件迁移（无 `kind` 视作 `ssh`） | 中 |
-| 证书指纹计算与描述 | SHA-256 over DER，`keyType` 填 `X509`，让既有的 `host_key_unknown` / `host_key_changed` 与信任弹窗**原样复用** | 小 |
-| rustls `ServerCertVerifier` | 照 `HostKeyHandler` 的形状写一个 `PinnedCertificate`，走 `known_hosts::decide`；**拒绝时回 `Error`，再用观测槽翻译**（与 SFTP 同一套机制） | 中 |
-| 显式 FTPS 的 `AUTH TLS` | 登录后升级 TLS，**再重新登录**（服务器会重置会话）。顺序错就是「登录成功了但读目录全 530」 | 中 |
-| 隐式 FTPS | 连上就是 TLS，没有 220 欢迎语。`read_greeting` 的形状要分叉 | 小 |
+| `ssh` | `SHA256:` + Base64 | `ssh-keygen -lf` |
+| `x509` | `SHA256:` + 冒号十六进制 | `openssl x509 -fingerprint -sha256 -noout` |
 
-做完这些还要重跑一遍注入验证：`Ok(false)` 之后的错误翻译、
-`AUTH TLS` 后必须重新 `USER` —— 这两条正是当年 SSH 侧踩过的坑。
+用同一条规则去卡其中一种，用户就会拿着管理员给的串比对失败 ——
+而一个**永远对不上**的指纹比不给指纹更糟：它会让用户养成
+「看到指纹就点信任」的习惯，这正是我们想消灭的行为。
+信任弹窗里的核对提示也按 `kind` 分开（`hint` vs `hintX509`）。
+
+### 5.5 握手失败后必须先看观测槽
+
+与 `sftp_provider::host_key_rejection` 完全同构。反过来的话，
+「这张证书还没被信任过」会被报成「TLS 握手失败」，用户去查网络，
+而网络是好的。`certificate_rejection` 与 `host_key_rejection` **同名同形状** ——
+不一致的话同一个弹窗组件会收到两种措辞，用户会以为有两个不同的错误类型。
+
+### 5.6 ⚠️ 已知边界：数据通道没有加密
+
+**不发** RFC 2228 的 `PBSZ` / `PROT P`，即采用服务器默认值 ——
+对显式 FTPS，主流服务器的默认是**明文数据通道**。
+也就是说控制通道受证书固定保护，而文件内容的传输不额外加密。
+
+这是取舍不是疏漏：发 `PROT P` 的前提是服务器支持，
+而「服务器不支持时怎么办」的另一个答案是静默退回明文。
+补 `PROT` 时要做的是「先 `PBSZ 0` 再 `PROT P`，失败就**明确报错**」，
+绝不静默降级。
+
+### 5.7 FTPS 一次都没连过真服务器
+
+`PinnedCertificate` 的 4 条测试直接调 `verify_server_cert` 验固定判定 ——
+起真 TLS 服务器要生成证书、要握手，测到的会是 rustls 而不是我们。
+但**整个 FTPS 流程（`AUTH TLS` → 升级 → 重登 → `MLSD`）没有端到端测试**，
+也没有真机验证。它在真机上第一次跑就是在用户手上。
+
+若要补端到端测试，需要一个能签发自签证书的测试夹具（`rcgen` 之类）
+加一个会说 `AUTH TLS` 的假 FTPS 服务端 —— 那是独立的一块工作。
 
 ---
 
@@ -154,12 +208,12 @@ SOCKS5 的 `BIND` 是 `CMD=0x02`，语义为「让代理在**代理侧**开监�
 
 | 项 | 结果 |
 |---|---|
-| `cargo test --lib` | **577 通过 / 0 失败**（基线 495 + 82） |
+| `cargo test --lib` | **596 通过 / 0 失败**（基线 495 + 101） |
 | 测试二进制加载 | 正常 —— `cargo test --lib` 红线未踩（`remote/` 下无任何 `tauri::` 路径） |
-| `npx vitest run` | 195 文件 / 1613 用例 |
+| `npx vitest run` | 195 文件 / 1619 用例 |
 | `npx vue-tsc --build` | 0 error |
 | `npx eslint src` | **179**（= 基线） |
-| `verify-changelog.mjs` / `verify-remote-i18n.cjs` | 退出码 0 |
+| `verify-changelog.mjs` / `verify-remote-i18n.cjs` | 退出码 0（68 键 × 17 包） |
 
 ---
 
@@ -169,17 +223,25 @@ SOCKS5 的 `BIND` 是 `CMD=0x02`，语义为「让代理在**代理侧**开监�
 |---|---|
 | `inject-hostkey.cjs` | 信任流纯函数 5 条 |
 | `inject-trusted-hosts.cjs` | 设置页分区 5 条 |
-| `inject-ftp.cjs` | FTP 解析 5 条 + provider 5 条（跨两个文件，含 restore） |
+| `inject-ftp.cjs` | FTP 解析 5 条 + provider 5 条（跨两个文件） |
+| `inject-ftps.cjs` | FTPS 6 条：kind 三元键、`AUTH TLS` 失败、退明文、升级后重登、握手错误翻译、`AcceptAnyCertificate` 混入 |
 
 ⚠️ **还原会整体覆盖目标文件，所以只在代码已提交之后跑。**
-本轮就被它冲掉过一次尚未提交的测试与一行守卫，症状是「刚写好的断言莫名其妙不存在了」。
+本轮被它冲掉过两次：一次是尚未提交的测试与一行守卫，症状是
+「刚写好的断言莫名其妙不存在了」。
+
+⚠️ **`node -e` 绝不用于写仓库里的文件。** 本轮用它改一个测试文件，
+PowerShell 先解析了参数，**文件内容被写成了字面量 `utf8`**（340 行变 1 行）。
+从 `git checkout --` 恢复后改用编辑工具才没事。以后一律用 write 工具落盘。
 
 ---
 
 ## 9. 未结事项
 
 - **真机验收**（第 6 节）—— 本轮一条都没做。
-- FTPS（第二节表格）—— 建议**单独排期**，不要顺手接。
+- **FTPS 没有端到端测试**（第 5.7 节），也没有真机验证。
+- **FTPS 数据通道未加密**（第 5.6 节）—— 需要补 `PBSZ 0` + `PROT P`。
+- **规格 §3.6 需要修订**（第 2 节）—— 三处自相矛盾，其中第 2.2 扩大了支持面。
 - 会话注册表 / 连接池（规格 §3.4）：当前每次列目录重新建连。
 - 远程写操作（新建目录 / 重命名 / 删除）：规格阶段 3。
 - 传输、跨边界拖拽：规格阶段 6 / 7。
