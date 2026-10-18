@@ -121,6 +121,25 @@ cmd.exe 按 ANSI 读 `.cmd`，UTF-8 中文注释会变成一串「不是内部�
 而 BIND 恰恰是 FTP 被动模式最需要测的一环。所以 `transport.rs` 里的假 SOCKS5 服务端是自己写的
 （仅测试代码，文件头有说明）。**这条是刻意偏离规格 §3.7 的决定，不是遗漏。**
 
+### 5.1 `russh` 0.63 的三个陷阱（阶段 2 用 `russh-sftp` 时同样适用）
+
+全部从 `~/.cargo/registry/src/.../russh-0.63.3/src/` 逐字核对，并已实测坐实：
+
+| 事实 | 出处 | 后果 |
+|---|---|---|
+| 客户端侧 `read_ssh_id()` 走 `read_ssh_id_inner(**true**)`，允许最多 **20 行** RFC 4253 §4.2 前导行；只有先撞满上限才吐 `Error::Version` | `ssh_read.rs:143`、`ssh_read.rs:10-11`、`ssh_read.rs:199-205` | 真实 FTP 服务发的那一行 `220 …` 被当预导行丢掉，russh 就静静等着 —— **直到 15 秒超时**。曾据此把「SFTP 指到 FTP 端口」误判成 `unreachable` |
+| `Error::Version` 的文案是 `"invalid SSH version string"`；`Kex` 是 `"Key exchange failed"` —— Display 里**没有** `identification`、`handshake` 这些词 | `lib_inner.rs:106-112` | `error.to_string().contains("kex"\|"identification"\|"handshake")` 这种写法恒为 false，是**死代码**。要按 `russh::Error` 变体匹配 |
+| `mod ssh_read;` 在 `lib_inner.rs` 里是**私有**的，`SshRead` 不导出 | `lib_inner.rs:33` | 没法「用 russh 自己的结构体预读再交回给它」，回放只能自己写（`connection_test.rs` 的 `ReplayStream`） |
+
+`connection_test.rs` 现在的做法：**先自己读一眼**（5 秒上限；字节上限与前导行上限都**对齐 russh 的
+`SSH_ID_MAX_LINE_LEN=255` / `SSH_ID_MAX_PRE_BANNER_LINES=20`**），读到的字节由 `ReplayStream` 原样喂回
+russh，对真实 SSH 服务完全透明。实测：修前 15.07s 报 `unreachable`，修后 5.08s 报 `wrong_protocol`。
+**阶段 2 若要自己判协议，务必复用 `classify_ssh_banner`，不要重写一遍。**
+
+另注：`connect_stream` 是**先写客户端标识串、再读服务端标识串**。所以「预读」发生在发标识串之前，
+对「等服务端先开口」的服务（HTTP 之类）会读不到东西 —— 这正是 `read_ssh_banner` 把「一个字节都没收到」
+原样放行给 russh 的原因，不要改成「读不到就判协议不符」。
+
 ---
 
 ## 6. 已核实的仓库现状（不要重新调查）
@@ -169,6 +188,17 @@ cmd.exe 按 ANSI 读 `.cmd`，UTF-8 中文注释会变成一串「不是内部�
 - 提交信息文件用 write 工具写到 `.superpowers/sdd/commit-msg.txt`，再 `git commit -F`（该目录 git-ignored）
 - ESLint：2 空格缩进；**对象属性各自一行**（`@stylistic/object-property-newline`）
 - 验收夹具**不要放 `%TEMP%`**（`global_search/ignore.rs` 的 `builtin_ignored_paths()` 含 `/AppData/Local/Temp`）
+- **PowerShell 里不要把辅助函数命名为 `CP`** —— 它是内置别名 `Copy-Item`，调用会变成复制文件
+- **导轨按钮的无障碍 Name 全是空串，且运行时顺序 ≠ DOM 顺序**：远程按钮在代码里位于
+  pages 循环与 extension 循环之间（`nav-sidebar.vue:280-308`），真机 hover 实测它却排在**最后**
+  （6 个按钮里的第 6 个）。**按序号 hover 会 hover 到「拓展功能」**。正确做法：逐个 hover，
+  按面板内容认人
+- **开关型元素先读状态再决定要不要点**：`TogglePattern.Toggle()` 之前读 `ToggleState`，
+  盲点会得到与本意相反的测量结果
+- **被测控件可能整块不渲染**：连接表单的「删除已保存的密码」勾选框是 `v-if="hasSavedPassword"`，
+  没有存档密码的连接根本看不到它 —— 在那种连接上量 clearPassword 等于什么都没量。
+  需要这种连接时，用 `.superpowers/sdd/fixture-remote.cjs` 的 `snapshot` / `add` / `add-proto` /
+  `restore` 四条显式子命令夹具，收尾校验两份 JSON 的 sha256 与快照一致
 
 ---
 
