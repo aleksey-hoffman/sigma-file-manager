@@ -26,6 +26,7 @@ mod error;
 mod fake;
 mod ftp_parsing;
 mod ftp_provider;
+mod ftps_provider;
 mod known_hosts;
 mod path;
 mod provider;
@@ -59,9 +60,10 @@ pub use ftp_provider::{
     map_ftp_reply_code, parse_listing, pasv_host_to_use, FtpRemoteProvider,
     FTP_OPERATION_TIMEOUT,
 };
+pub use ftps_provider::{FtpsMode, FtpsRemoteProvider, PinnedCertificate, FTPS_OPERATION_TIMEOUT};
 pub use known_hosts::{
     decide as decide_host_key, forget as forget_host_key, describe_server_key, load as load_known_hosts,
-    trust as trust_host_key, HostKeyDecision, KnownHostEntry, REMOTE_KNOWN_HOSTS_FILE,
+    trust as trust_host_key, HostKeyDecision, KnownHostEntry, TrustKind, REMOTE_KNOWN_HOSTS_FILE,
 };
 pub use path::{
     build_remote_connection_path, build_remote_path, get_remote_parent_path,

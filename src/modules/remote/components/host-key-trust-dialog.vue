@@ -47,6 +47,18 @@ const descriptionKey = computed(() => {
     : 'dialogs.remoteHostKeyUnknown.description';
 });
 
+/**
+ * 「你自己怎么核对」这句话按信任类型分开。
+ *
+ * 让用户拿一张证书的指纹去跑 `ssh-keygen -lf` 只会得到一句「不是公钥」，
+ * 而用户看到那句话会以为**自己的证书有问题** —— 实际上他只是用错了工具。
+ */
+const hintKey = computed(() => {
+  return props.prompt?.kind === 'x509'
+    ? 'dialogs.remoteHostKeyCommon.hintX509'
+    : 'dialogs.remoteHostKeyCommon.hint';
+});
+
 function onConfirm() {
   emit('confirm');
 }
@@ -89,8 +101,13 @@ function onCancel() {
             </code>
           </template>
 
+          <!--
+            核对方式按信任类型分开说。
+            让用户拿一个证书指纹去跑 `ssh-keygen -lf` 只会得到一句「不是公钥」，
+            而用户会以为自己的证书有问题。
+          -->
           <span class="remote-host-key-dialog__hint">
-            {{ t('dialogs.remoteHostKeyCommon.hint') }}
+            {{ t(hintKey) }}
           </span>
         </DialogDescription>
       </DialogHeader>

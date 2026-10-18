@@ -39,7 +39,8 @@ use super::credentials;
 use super::dir_adapter;
 use super::error::{RemoteError, RemoteErrorKind};
 use super::ftp_provider::FtpRemoteProvider;
-use super::known_hosts::{self, KnownHostEntry};
+use super::ftps_provider::FtpsRemoteProvider;
+use super::known_hosts::{self, KnownHostEntry, TrustKind};
 use super::path::parse_remote_path;
 use super::provider::RemoteEntry;
 use super::registry::{self, ResolvedConnection};
@@ -189,19 +190,12 @@ async fn resolve_connection_blocking(
     })?
 }
 
-/// FTPS 暂不支持时给用户的说明。
-///
-/// **这句话的措辞是有意的。** 用「忽略证书」的方式让它跑起来、再宣称支持，
-/// 等于把一个静默的中间人窗口交给用户 —— 那比「暂时不支持」坏得多。
-const FTPS_PENDING_MESSAGE: &str =
-    "FTPS 还没有接上证书固定，因此暂不支持。在它真正可用之前，我们不会用「忽略证书」的方式让你以为连接是安全的。";
-
 /// 按协议挑 provider。
 ///
-/// FTPS 显式 / 隐式**故意不落在这里**：它们需要证书固定，而证书固定需要一条
-/// 与 SSH known_hosts 同构、但键不同的信任链（按证书指纹而非主机公钥）。
-/// 在那条链做好之前，把 `ftps_*` 路由到 `AcceptAnyCertificate` 等于开一个
-/// 静默的中间人窗口 —— 那比「暂时不支持」坏得多。
+/// FTPS 走 `ftps_provider::PinnedCertificate`：只有证书指纹与已信任记录**一致**
+/// 时才放行，首次见到会让握手失败并带上指纹等用户确认。
+/// **不是** `connection_test.rs` 的 `AcceptAnyCertificate` —— 那一个只用于
+/// 「测试连接」，用在真正读目录上等于交付一个静默的中间人窗口。
 async fn list_with_protocol(
     resolved: &ResolvedConnection,
     user_data_dir: &Path,
@@ -220,7 +214,9 @@ async fn list_with_protocol(
                 .await
         }
         RemoteProtocol::FtpsExplicit | RemoteProtocol::FtpsImplicit => {
-            Err(RemoteError::unsupported(FTPS_PENDING_MESSAGE))
+            FtpsRemoteProvider::new(user_data_dir, app_data_dir)
+                .list(resolved, remote_path)
+                .await
         }
     }
 }
@@ -237,13 +233,19 @@ async fn stat_with_protocol(
                 .stat(resolved, remote_path)
                 .await
         }
-        RemoteProtocol::Ftp => {
-            FtpRemoteProvider::new(user_data_dir, app_data_dir)
-                .stat(resolved, remote_path)
-                .await
-        }
-        RemoteProtocol::FtpsExplicit | RemoteProtocol::FtpsImplicit => {
-            Err(RemoteError::unsupported(FTPS_PENDING_MESSAGE))
+        // 明文 FTP 与 FTPS 的 `stat` 都是「列父目录再按名字找」，
+        // 协议部分完全一样 —— 所以这里直接复用同一个 provider。
+        RemoteProtocol::Ftp | RemoteProtocol::FtpsExplicit | RemoteProtocol::FtpsImplicit => {
+            if resolved.connection.protocol == RemoteProtocol::Ftp {
+                FtpRemoteProvider::new(user_data_dir, app_data_dir)
+                    .stat(resolved, remote_path)
+                    .await
+            }
+            else {
+                FtpsRemoteProvider::new(user_data_dir, app_data_dir)
+                    .stat(resolved, remote_path)
+                    .await
+            }
         }
     }
 }
@@ -308,7 +310,7 @@ pub async fn remote_list_known_hosts(app: tauri::AppHandle) -> Result<Vec<KnownH
 /// 用户核对完指纹、点了「信任」之后调用。
 ///
 /// **指纹由后端从第一次连接的观测里拿不到，所以这里必须由前端把指纹原样带回来。**
-/// 后端只负责按 `(host, port)` 覆盖写入。
+/// 后端只负责按 `(host, port, kind)` 覆盖写入。
 #[tauri::command]
 pub async fn remote_trust_host(
     app: tauri::AppHandle,
@@ -316,16 +318,15 @@ pub async fn remote_trust_host(
     port: u16,
     fingerprint: String,
     key_type: String,
+    kind: TrustKind,
 ) -> Result<(), RemoteError> {
     if host.trim().is_empty() {
         return Err(RemoteError::protocol("不能信任一个没有地址的主机"));
     }
 
-    if !fingerprint.starts_with("SHA256:") {
-        // 只接受 SHA-256 形式：`ssh-keygen -lf` 给的就是这个，
-        // 用户拿它去对照才有意义。放过别的形状等于让用户核对一个对不上的串。
+    if !known_hosts::fingerprint_matches_kind(&fingerprint, kind) {
         return Err(RemoteError::protocol(
-            "主机指纹格式不对，应当形如 SHA256:…（可由 ssh-keygen -lf 得到）",
+            known_hosts::fingerprint_shape_hint(kind),
         ));
     }
 
@@ -336,6 +337,7 @@ pub async fn remote_trust_host(
         fingerprint,
         key_type,
         added_at: 0,
+        kind,
     };
 
     tauri::async_runtime::spawn_blocking(move || known_hosts::trust(&app_data_dir, entry))
@@ -345,16 +347,17 @@ pub async fn remote_trust_host(
         })?
 }
 
-/// 忘记一台主机。密钥变了之后用户必须先走到这一步才能重新信任。
+/// 忘记一台主机的**某一种**信任。密钥变了之后用户必须先走到这一步才能重新信任。
 #[tauri::command]
 pub async fn remote_forget_host(
     app: tauri::AppHandle,
     host: String,
     port: u16,
+    kind: TrustKind,
 ) -> Result<bool, RemoteError> {
     let app_data_dir = app_data_dir(&app)?;
 
-    tauri::async_runtime::spawn_blocking(move || known_hosts::forget(&app_data_dir, &host, port))
+    tauri::async_runtime::spawn_blocking(move || known_hosts::forget(&app_data_dir, &host, port, kind))
         .await
         .map_err(|join_error| {
             RemoteError::unknown(format!("删除已信任主机记录的后台任务失败: {join_error}"))

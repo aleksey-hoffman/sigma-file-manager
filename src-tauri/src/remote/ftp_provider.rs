@@ -131,7 +131,11 @@ where
 ///
 /// 不是 `struct` 上再放一堆方法，而是**持有全部状态**，好让
 /// [`open_data_channel`](Self::open_data_channel) 同时看到控制连接与数据连接所需的上下文。
-struct FtpControl<S> {
+///
+/// **泛型是为了让 FTPS 直接复用**：`ftps_provider.rs` 把同一条控制通道包在
+/// TLS 里跑，协议部分一个字都不用重写。复制一份的后果是明文 FTP 修好了、
+/// FTPS 还留着同一个 bug —— 而这两个 bug 用户会分别遇到。
+pub(crate) struct FtpControl<S> {
     stream: S,
     /// **控制连接**的主机名。数据通道用它，而不是 `PASV` 回复里的地址。
     host: String,
@@ -156,7 +160,7 @@ where
     S: AsyncReadWrite + Unpin + Send,
 {
     /// 发一条命令并要求回复落在 `accepted` 里。
-    async fn command(&mut self, command: &str, accepted: &[u16]) -> Result<String, RemoteError> {
+    pub(crate) async fn command(&mut self, command: &str, accepted: &[u16]) -> Result<String, RemoteError> {
         if contains_control_characters(command) {
             // 走到这里说明有人绕过 [`Self::command`] 直接调了 `send_command`，
             // 或者将来新增了一条拼路径的命令没过 [`contains_control_characters`]。
@@ -173,7 +177,7 @@ where
     ///
     /// 刻意**不发任何命令**：很多服务器在欢迎语之前对空命令回 `500`，
     /// 用「发一个空行去读回复」当欢迎语会把正常服务误判成不兼容。
-    async fn read_greeting(&mut self) -> Result<String, RemoteError> {
+    pub(crate) async fn read_greeting(&mut self) -> Result<String, RemoteError> {
         read_reply(&mut self.stream, &mut self.buffer).await?;
         let text = decode(&self.buffer);
 
@@ -194,7 +198,7 @@ where
     ///
     /// 顺序是 FTP 协议强制的：**先** `EPSV`/`PASV` 拿到端口，**再**连过去，
     /// 最后才发 `MLSD`/`LIST`。反过来（先发命令再连）会被服务器直接拒掉。
-    async fn open_data_channel(&mut self) -> Result<TransportStream, RemoteError> {
+    pub(crate) async fn open_data_channel(&mut self) -> Result<TransportStream, RemoteError> {
         let epsv = self.command("EPSV", &[229]).await;
 
         if let Ok(text) = epsv {
@@ -232,7 +236,7 @@ where
     /// 也有**不能改成 `NOOP` 的理由**：`226` 是这条回复本身，不是一条新命令的回复。
     /// 先发 `NOOP` 的话，读到的第一条是 `226`，于是 `NOOP` 校验必然失败 ——
     /// 每次列目录都会在最后一步报错，而列表其实早就取全了。
-    async fn finish_transfer(&mut self) -> Result<(), RemoteError> {
+    pub(crate) async fn finish_transfer(&mut self) -> Result<(), RemoteError> {
         read_reply(&mut self.stream, &mut self.buffer).await?;
         let text = decode(&self.buffer);
 
@@ -247,8 +251,101 @@ where
 
         Err(map_ftp_reply_code(code, &text))
     }
+
+    pub(crate) fn new(stream: S, host: &str, proxy: &ProxyConfig) -> Self {
+        Self {
+            stream,
+            host: host.to_string(),
+            proxy: proxy.clone(),
+            buffer: Vec::new(),
+        }
+    }
+
+    /// 把底层流取出来（`FtpControl` 被吃掉）。
+    ///
+    /// **显式 FTPS 专用**：`AUTH TLS` 之后要把这条明文流交给 TLS 握手。
+    /// 把缓冲一并丢掉是刻意的 —— 里面可能还有半条没读干净的回复，
+    /// 带着它进入 TLS 会让对端看到一段错位的字节。
+    pub(crate) fn into_stream(self) -> S {
+        self.stream
+    }
+
+    /// `USER` + 必要的 `PASS`，然后 `TYPE I`。
+    ///
+    /// **显式 FTPS 会调两次**（升级前、升级后）。这是 RFC 4217 的要求：
+    /// 升级之后服务器把会话当作重置了，不重登的话后面每条命令都会得到 530 ——
+    /// 而「登录成功了但列目录全 530」这个现象没有任何报错指向真正的原因。
+    pub(crate) async fn login(
+        &mut self,
+        username: &str,
+        password: Option<&str>,
+    ) -> Result<(), RemoteError> {
+        let username = if username.trim().is_empty() {
+            "anonymous".to_string()
+        } else {
+            username.to_string()
+        };
+
+        // USER 可能回 230（一次就登录成功），也可能回 331 让你接着发 PASS。
+        let user_reply = self.command(&format!("USER {username}"), &[230, 331]).await?;
+
+        if super::connection_test::parse_ftp_reply_code(&user_reply) != Some(230) {
+            let Some(password) = password else {
+                return Err(RemoteError::auth(
+                    "这条连接没有保存密码，服务器要求登录密码。请到设置页填写后重试。",
+                ));
+            };
+
+            self.command(&format!("PASS {password}"), &[230]).await?;
+        }
+
+        // TYPE I：`MLSD`/`LIST` 本身是文本，但沿用 ASCII 会让某些服务器对
+        // 含非 ASCII 文件名的目录行为异常。统一按二进制走。
+        self.command("TYPE I", &[200]).await?;
+
+        Ok(())
+    }
 }
 
+/// 在**已经建好并登录过**的通道上跑一次列目录。
+///
+/// 刻意做成自由函数而不是 `FtpRemoteProvider` 的方法：FTPS 要在
+/// 「TLS 升级 + 重新登录」之后调它，形态与明文路径不同，但协议部分一模一样。
+pub(crate) async fn list_via_control<S>(
+    control: &mut FtpControl<S>,
+    remote_path: &str,
+) -> Result<Vec<super::ftp_parsing::FtpRecord>, RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    // 根目录不能 CWD —— 多数服务器对 `CWD /` 的处理不一致，
+    // 而 `MLSD /` 本身是合法的，直接用它。
+    if remote_path != "/" {
+        control.command(&format!("CWD {remote_path}"), &[250]).await?;
+    }
+
+    let mut data = control.open_data_channel().await?;
+
+    control
+        .stream
+        .write_all(b"MLSD\r\n")
+        .await
+        .map_err(|error| RemoteError::disconnected(format!("发送 MLSD 失败：{error}")))?;
+
+    control
+        .stream
+        .flush()
+        .await
+        .map_err(|error| RemoteError::disconnected(format!("发送 MLSD 失败：{error}")))?;
+
+    // `read_listing` 按值吃掉 data 连接 —— 读满即 drop，
+    // 服务器那边才能干净地送出 `226`，我们随后读到的就是它。
+    let bytes = read_listing(data).await?;
+
+    control.finish_transfer().await?;
+
+    Ok(parse_listing(&String::from_utf8_lossy(&bytes)))
+}
 /// 控制通道需要的读写能力。`AsyncRead` 与 `AsyncWrite` 分开写，
 /// 是为了不依赖 `tokio::io::AsyncReadWrite` 的具体形态。
 pub trait AsyncReadWrite: tokio::io::AsyncRead + tokio::io::AsyncWrite {}
@@ -340,84 +437,36 @@ impl FtpRemoteProvider {
             transport::connect(&connection.proxy, &connection.host, connection.port, Socks5CommandKind::Connect)
                 .await?;
 
-        let mut control = FtpControl {
-            stream,
-            host: connection.host.clone(),
-            proxy: connection.proxy.clone(),
-            buffer: Vec::new(),
-        };
+        let mut control = FtpControl::new(stream, &connection.host, &connection.proxy);
 
         // 欢迎语。拒绝一个「不是 FTP 服务」的对端比让它在 USER 上含糊失败更有用。
         control.read_greeting().await?;
-
-        let username = if connection.username.trim().is_empty() {
-            "anonymous".to_string()
-        } else {
-            connection.username.clone()
-        };
-
-        // USER 可能回 230（一次就登录成功），也可能回 331 让你接着发 PASS。
-        let user_reply = control.command(&format!("USER {username}"), &[230, 331]).await?;
-
-        if super::connection_test::parse_ftp_reply_code(&user_reply) != Some(230) {
-            let Some(password) = resolved.password.as_deref() else {
-                return Err(RemoteError::auth(
-                    "这条连接没有保存密码，服务器要求登录密码。请到设置页填写后重试。",
-                ));
-            };
-
-            control.command(&format!("PASS {password}"), &[230]).await?;
-        }
-
-        // TYPE I：`MLSD`/`LIST` 本身是文本，但沿用 ASCII 会让某些服务器对
-        // 含非 ASCII 文件名的目录行为异常。统一按二进制走。
-        control.command("TYPE I", &[200]).await?;
+        control
+            .login(&connection.username, resolved.password.as_deref())
+            .await?;
 
         Ok(control)
     }
 
-    /// 打开一条控制通道，跑 `listing_command`，把结果交给 `parse`。
-    async fn with_listing<T>(
+    /// 打开一条控制通道、列一次目录。
+    ///
+    /// 外层套一个整体超时：SFTP 的 `readdir` 有自己的单次超时，
+    /// 这里要的是「别把界面卡死」的那一层。FTPS 走**同一个**
+    /// [`list_via_control`]，所以两边超时长短必然一致。
+    ///
+    /// **不接一个 `parse` 闭包** —— 早期版本有，结果是明文 FTP 与 FTPS
+    /// 各自传了一个解析函数，于是「解析失败时怎么办」在两条路上可以不一样。
+    /// 解析已经收敛在 `list_via_control` 一处，这里不该再有第二个决策点。
+    async fn with_listing(
         &self,
         resolved: &ResolvedConnection,
         remote_path: &str,
-        listing_command: &str,
-        parse: impl Fn(&str) -> T,
-    ) -> Result<T, RemoteError> {
+    ) -> Result<Vec<super::ftp_parsing::FtpRecord>, RemoteError> {
         let work = async {
             let mut control = Self::login(resolved).await?;
-
-            // 根目录不能 CWD —— 多数服务器对 `CWD /` 的处理不一致，
-            // 而 `MLSD /` 本身是合法的，直接用它。
-            if remote_path != "/" {
-                control.command(&format!("CWD {remote_path}"), &[250]).await?;
-            }
-
-            let mut data = control.open_data_channel().await?;
-
-            control
-                .stream
-                .write_all(format!("{listing_command}\r\n").as_bytes())
-                .await
-                .map_err(|error| {
-                    RemoteError::disconnected(format!("发送 {listing_command} 失败：{error}"))
-                })?;
-
-            control.stream.flush().await.map_err(|error| {
-                RemoteError::disconnected(format!("发送 {listing_command} 失败：{error}"))
-            })?;
-
-            // `read_listing` 按值吃掉 data 连接 —— 读满即 drop，
-            // 服务器那边才能干净地送出 `226`，我们随后读到的就是它。
-            let bytes = read_listing(data).await?;
-
-            control.finish_transfer().await?;
-
-            let text = String::from_utf8_lossy(&bytes).into_owned();
-
+            let records = list_via_control(&mut control, remote_path).await?;
             let _ = control.command("QUIT", &[221, 226]).await;
-
-            Ok(parse(&text))
+            Ok(records)
         };
 
         match tokio::time::timeout(self.timeout, work).await {
@@ -437,9 +486,7 @@ impl FtpRemoteProvider {
     ) -> Result<Vec<RemoteEntry>, RemoteError> {
         let connection_id = resolved.connection.id.clone();
         let parent = normalized.trim_end_matches('/').to_string();
-        let records = self
-            .with_listing(resolved, normalized, "MLSD", parse_listing)
-            .await?;
+        let records = self.with_listing(resolved, normalized).await?;
 
         let mut entries = Vec::with_capacity(records.len());
 

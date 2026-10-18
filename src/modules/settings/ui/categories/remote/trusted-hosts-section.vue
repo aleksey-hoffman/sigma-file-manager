@@ -22,7 +22,6 @@ import {
   listKnownHosts,
   type KnownHostSummary,
 } from '@/utils/remote-directory';
-
 const { t, locale } = useI18n();
 
 const hosts = ref<KnownHostSummary[]>([]);
@@ -73,9 +72,15 @@ async function handleForget(host: KnownHostSummary): Promise<void> {
   mutationError.value = null;
 
   try {
-    await forgetKnownHost(host.host, host.port);
+    // **带 `kind`** —— 同一台主机的 SSH 与证书是两行，
+    // 删一行不该动另一行。
+    await forgetKnownHost(host.host, host.port, host.kind);
     hosts.value = hosts.value.filter(
-      entry => !(entry.host === host.host && entry.port === host.port),
+      entry => !(
+        entry.host === host.host
+        && entry.port === host.port
+        && entry.kind === host.kind
+      ),
     );
   }
   catch (caught) {
@@ -131,13 +136,23 @@ const isEmpty = computed(() => !isLoading.value && !loadError.value && hosts.val
     >
       <li
         v-for="entry in hosts"
-        :key="`${entry.host}:${entry.port}`"
+        :key="`${entry.host}:${entry.port}:${entry.kind}`"
         class="remote-trusted-hosts__entry"
-        :data-test="`trusted-host-${entry.host}-${entry.port}`"
+        :data-test="`trusted-host-${entry.host}-${entry.port}-${entry.kind}`"
       >
         <div class="remote-trusted-hosts__entry-main">
           <div class="remote-trusted-hosts__entry-title">
             <span>{{ entry.host }}:{{ entry.port }}</span>
+            <!--
+              信任类型**必须显示**，而且它是一行与一条的分界：
+              同一台主机的 SSH 公钥与 X.509 证书是两条独立记录，
+              列表里看不出区别的话，用户不知道自己删掉的是哪一条。
+            -->
+            <span class="remote-trusted-hosts__kind">
+              {{ entry.kind === 'x509'
+                ? t('settings.remote.trustedHosts.kindX509')
+                : t('settings.remote.trustedHosts.kindSsh') }}
+            </span>
           </div>
           <div class="remote-trusted-hosts__entry-meta">
             <!--
@@ -158,7 +173,7 @@ const isEmpty = computed(() => !isLoading.value && !loadError.value && hosts.val
             variant="destructive"
             size="sm"
             :disabled="isMutating"
-            :data-test="`forget-trusted-host-${entry.host}-${entry.port}`"
+            :data-test="`forget-trusted-host-${entry.host}-${entry.port}-${entry.kind}`"
             @click="handleForget(entry)"
           >
             <TrashIcon :size="16" />
@@ -225,7 +240,20 @@ const isEmpty = computed(() => !isLoading.value && !loadError.value && hosts.val
 }
 
 .remote-trusted-hosts__entry-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
   font-weight: 500;
+}
+
+.remote-trusted-hosts__kind {
+  padding: 0.0625rem 0.375rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.25rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 400;
+  text-transform: none;
 }
 
 .remote-trusted-hosts__entry-meta {

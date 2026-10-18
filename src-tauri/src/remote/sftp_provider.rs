@@ -38,7 +38,7 @@ use russh_sftp::protocol::{FileAttributes, FileType, StatusCode};
 
 use super::connection_test::{classify_ssh_handshake_error, read_ssh_banner, BannerCheck};
 use super::error::{RemoteError, RemoteErrorKind};
-use super::known_hosts::{self, HostKeyDecision, KnownHostEntry};
+use super::known_hosts::{self, HostKeyDecision, KnownHostEntry, TrustKind};
 use super::path::{build_remote_path, normalize_remote_path};
 use super::provider::{RemoteEntry, RemoteProvider};
 use super::registry::{self, ResolvedConnection};
@@ -136,8 +136,13 @@ impl russh::client::Handler for HostKeyHandler {
             return Ok(false);
         };
 
-        let decision =
-            known_hosts::decide(&self.known_hosts, &self.host, self.port, &fingerprint);
+        let decision = known_hosts::decide(
+            &self.known_hosts,
+            &self.host,
+            self.port,
+            TrustKind::Ssh,
+            &fingerprint,
+        );
         let trusted = matches!(decision, HostKeyDecision::Trusted);
 
         if let Ok(mut slot) = self.observed.lock() {

@@ -22,6 +22,7 @@ import {
   listKnownHosts,
   readRemoteDirectory,
   statRemoteEntry,
+  trustKindForProtocol,
   type HostKeyTrustPrompt,
 } from '@/utils/remote-directory';
 import type { RemoteConnection } from '@/types/remote';
@@ -134,6 +135,68 @@ describe('remote-directory', () => {
       proxy: { kind: 'direct' },
     };
 
+    it('协议决定信任类型：SFTP 是 SSH 公钥，FTPS 是证书', () => {
+      // 键是 `(host, port, kind)` 三元，kind 必须由**连接**算出来。
+      // 错误载荷里不带它 —— 否则后端每个协议都要在自己的错误里塞一个 kind，
+      // 而错误是协议实现产的，不该由它回答「你属于哪一类信任」。
+      expect(trustKindForProtocol('sftp')).toBe('ssh');
+      expect(trustKindForProtocol('ftps_explicit')).toBe('x509');
+      expect(trustKindForProtocol('ftps_implicit')).toBe('x509');
+      // 明文 FTP 压根没有主机密钥概念。
+      expect(trustKindForProtocol('ftp')).toBeNull();
+      // 不认识的协议不猜：猜错等于把一张证书当成公钥写进信任记录。
+      expect(trustKindForProtocol('gopher')).toBeNull();
+    });
+
+    it('FTPS 连接的提示带 kind=x509，即使错误载荷与 SSH 一模一样', () => {
+      // 阳性对照：同一个错误载荷，换协议就换 kind。
+      // 少了这条，`kind` 就可能恒为 ssh，于是 FTPS 的证书被写进 SSH 记录 ——
+      // 界面上「已信任主机」看着正常，之后的 FTPS 连接却永远报「首次见到」。
+      const caught = {
+        kind: 'host_key_unknown',
+        message: '未信任这台主机',
+        fingerprint: 'SHA256:AA:BB:CC',
+        keyType: 'X509',
+      };
+
+      expect(buildHostKeyTrustPrompt(
+        caught,
+        'sfm://remote/c',
+        {
+          ...connection,
+          protocol: 'ftps_explicit',
+          port: 21,
+        },
+      )?.kind).toBe('x509');
+
+      expect(buildHostKeyTrustPrompt(
+        caught,
+        'sfm://remote/c',
+        {
+          ...connection,
+          protocol: 'ftps_implicit',
+          port: 990,
+        },
+      )?.kind).toBe('x509');
+    });
+
+    it('明文 FTP 连接上不弹主机密钥弹窗', () => {
+      // FTP 没有 TLS，把它导到信任流上只会产出一条永远写不进去的记录。
+      expect(buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_unknown',
+          message: 'x',
+          fingerprint: 'SHA256:aaa',
+          keyType: 'Ed25519',
+        },
+        'sfm://remote/c',
+        {
+          ...connection,
+          protocol: 'ftp',
+        },
+      )).toBeNull();
+    });
+
     it('首见（unknown）产出 changed=false 的提示', () => {
       const prompt = buildHostKeyTrustPrompt(
         {
@@ -152,6 +215,7 @@ describe('remote-directory', () => {
         port: 22,
         fingerprint: 'SHA256:aaa',
         keyType: 'Ed25519',
+        kind: 'ssh',
         changed: false,
       });
     });
@@ -277,6 +341,7 @@ describe('remote-directory', () => {
       port: 22,
       fingerprint: 'SHA256:aaa',
       keyType: 'Ed25519',
+      kind: 'ssh',
       changed: false,
     };
 
@@ -292,6 +357,27 @@ describe('remote-directory', () => {
         port: 22,
         fingerprint: 'SHA256:aaa',
         keyType: 'Ed25519',
+        kind: 'ssh',
+      });
+    });
+
+    it('证书信任带上 kind=x509，而不是默认成 ssh', () => {
+      // 漏掉 kind 的后果不是「少传一个字段」，而是**把证书写进 SSH 记录**：
+      // 界面上「已信任主机」看着正常，之后的 FTPS 连接却永远报「首次见到」。
+      invokeMock.mockResolvedValue(true);
+
+      return applyHostKeyTrust({
+        ...prompt,
+        kind: 'x509',
+        keyType: 'X509',
+      }).then(() => {
+        expect(invokeMock).toHaveBeenCalledWith('remote_trust_host', {
+          host: '192.168.1.9',
+          port: 22,
+          fingerprint: 'SHA256:aaa',
+          keyType: 'X509',
+          kind: 'x509',
+        });
       });
     });
 
@@ -309,9 +395,12 @@ describe('remote-directory', () => {
       });
 
       expect(order).toEqual(['remote_forget_host', 'remote_trust_host']);
+      // **两条命令都要带 kind**：漏掉的话，「删掉旧的证书信任」
+      // 会变成「删掉同一台主机的 SSH 信任」—— 而用户点的是证书那一条。
       expect(invokeMock).toHaveBeenNthCalledWith(1, 'remote_forget_host', {
         host: '192.168.1.9',
         port: 22,
+        kind: 'ssh',
       });
     });
   });
@@ -328,11 +417,25 @@ describe('remote-directory', () => {
     it('删除走 remote_forget_host 并把结果交回调用方', async () => {
       invokeMock.mockResolvedValue(true);
 
-      await expect(forgetKnownHost('192.168.1.9', 22)).resolves.toBe(true);
+      await expect(forgetKnownHost('192.168.1.9', 22, 'ssh')).resolves.toBe(true);
 
       expect(invokeMock).toHaveBeenCalledWith('remote_forget_host', {
         host: '192.168.1.9',
         port: 22,
+        kind: 'ssh',
+      });
+    });
+
+    it('删证书信任时传 kind=x509，不碰同端点的 SSH 信任', () => {
+      // 键是三元：同一台主机的 SSH 与证书是两行，点掉一行不该动另一行。
+      invokeMock.mockResolvedValue(true);
+
+      return forgetKnownHost('192.168.1.9', 990, 'x509').then(() => {
+        expect(invokeMock).toHaveBeenCalledWith('remote_forget_host', {
+          host: '192.168.1.9',
+          port: 990,
+          kind: 'x509',
+        });
       });
     });
   });

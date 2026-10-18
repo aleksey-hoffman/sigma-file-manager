@@ -670,7 +670,9 @@
         "empty": "还没有信任过任何主机。",
         "loadFailed": "读取已信任主机列表失败。",
         "forget": "删除记录",
-        "forgetFailed": "删除这条记录失败，它仍在列表中。"
+        "forgetFailed": "删除这条记录失败，它仍在列表中。",
+        "kindSsh": "SSH 公钥",
+        "kindX509": "X.509 证书"
       }
     }
   },
@@ -874,7 +876,8 @@
     },
     "remoteHostKeyCommon": {
       "algorithm": "主机公钥算法：{algorithm}",
-      "hint": "可以自己核对：ssh-keygen -lf <主机公钥文件>"
+      "hint": "可以自己核对：ssh-keygen -lf <主机公钥文件>",
+      "hintX509": "你可以自己核对：openssl x509 -fingerprint -sha256 -noout -in <证书文件>"
     }
   },
   "notifications": {

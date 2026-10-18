@@ -699,7 +699,9 @@
         "empty": "You have not trusted any host yet.",
         "loadFailed": "The trusted host list could not be read.",
         "forget": "Forget",
-        "forgetFailed": "That host could not be removed. It is still on the list."
+        "forgetFailed": "That host could not be removed. It is still on the list.",
+        "kindSsh": "SSH key",
+        "kindX509": "X.509 certificate"
       }
     }
   },
@@ -903,7 +905,8 @@
     },
     "remoteHostKeyCommon": {
       "algorithm": "Host key algorithm: {algorithm}",
-      "hint": "You can check it yourself with: ssh-keygen -lf <host key file>"
+      "hint": "You can check it yourself with: ssh-keygen -lf <host key file>",
+      "hintX509": "You can check it yourself with: openssl x509 -fingerprint -sha256 -noout -in <certificate file>"
     }
   },
   "notifications": {

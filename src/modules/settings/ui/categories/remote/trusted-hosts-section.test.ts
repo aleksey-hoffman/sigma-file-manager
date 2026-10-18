@@ -65,6 +65,7 @@ const HOSTS = [
     fingerprint: 'SHA256:one',
     keyType: 'Ed25519',
     addedAt: 1_700_000_000_000,
+    kind: 'ssh' as const,
   },
   {
     host: 'files.example.com',
@@ -72,6 +73,7 @@ const HOSTS = [
     fingerprint: 'SHA256:two',
     keyType: 'RsaSha2_256',
     addedAt: 1_700_000_100_000,
+    kind: 'x509' as const,
   },
 ];
 
@@ -111,11 +113,11 @@ describe('已信任主机分区', () => {
     const entries = wrapper.findAll('[data-test^="trusted-host-"]');
 
     expect(entries).toHaveLength(2);
-    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22"]').text())
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').text())
       .toContain('192.168.1.9:22');
-    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22"]').text())
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').text())
       .toContain('SHA256:one');
-    expect(wrapper.find('[data-test="trusted-host-files.example.com-2222"]').text())
+    expect(wrapper.find('[data-test="trusted-host-files.example.com-2222-x509"]').text())
       .toContain('SHA256:two');
   });
 
@@ -128,8 +130,8 @@ describe('已信任主机分区', () => {
     const wrapper = mountSection();
     await flushPromises();
 
-    const first = wrapper.find('[data-test="trusted-host-192.168.1.9-22"]').text();
-    const second = wrapper.find('[data-test="trusted-host-files.example.com-2222"]').text();
+    const first = wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').text();
+    const second = wrapper.find('[data-test="trusted-host-files.example.com-2222-x509"]').text();
 
     expect(first).toContain('Ed25519');
     expect(first).not.toContain('RsaSha2_256');
@@ -194,12 +196,13 @@ describe('已信任主机分区', () => {
     const wrapper = mountSection();
     await flushPromises();
 
-    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22"]').trigger('click');
+    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22-ssh"]').trigger('click');
     await flushPromises();
 
     expect(invokeMock).toHaveBeenCalledWith('remote_forget_host', {
       host: '192.168.1.9',
       port: 22,
+      kind: 'ssh',
     });
   });
 
@@ -207,11 +210,55 @@ describe('已信任主机分区', () => {
     const wrapper = mountSection();
     await flushPromises();
 
-    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22"]').trigger('click');
+    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22-ssh"]').trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="trusted-host-files.example.com-2222"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="trusted-host-files.example.com-2222-x509"]').exists()).toBe(true);
+  });
+
+  it('同一台主机的 SSH 与证书是两行，删一行不动另一行', async () => {
+    // 键是 `(host, port, kind)` 三元。漏掉 kind 的话，点掉证书那行
+    // 会把 SSH 那行也删掉 —— 而用户想收紧的是**一条**信任。
+    const sameEndpoint = [
+      { ...HOSTS[0] },
+      {
+        ...HOSTS[0],
+        fingerprint: 'SHA256:cert',
+        kind: 'x509' as const,
+      },
+    ];
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'remote_list_known_hosts') {
+        return sameEndpoint;
+      }
+
+      if (command === 'remote_forget_host') {
+        return true;
+      }
+
+      return undefined;
+    });
+
+    const wrapper = mountSection();
+    await flushPromises();
+
+    // 两行都在，而且各自可点。
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-x509"]').exists()).toBe(true);
+
+    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22-x509"]').trigger('click');
+    await flushPromises();
+
+    // **关键断言**：传出去的那条命令必须带 kind='x509'。
+    expect(invokeMock).toHaveBeenCalledWith('remote_forget_host', {
+      host: '192.168.1.9',
+      port: 22,
+      kind: 'x509',
+    });
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-x509"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').exists()).toBe(true);
   });
 
   it('删除后**不**重新拉全量', async () => {
@@ -222,7 +269,7 @@ describe('已信任主机分区', () => {
     const readsBefore = invokeMock.mock.calls
       .filter(call => call[0] === 'remote_list_known_hosts').length;
 
-    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22"]').trigger('click');
+    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22-ssh"]').trigger('click');
     await flushPromises();
 
     const readsAfter = invokeMock.mock.calls
@@ -254,11 +301,11 @@ describe('已信任主机分区', () => {
     const wrapper = mountSection();
     await flushPromises();
 
-    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22"]').trigger('click');
+    await wrapper.find('[data-test="forget-trusted-host-192.168.1.9-22-ssh"]').trigger('click');
     await flushPromises();
 
-    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="trusted-host-files.example.com-2222"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="trusted-host-192.168.1.9-22-ssh"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="trusted-host-files.example.com-2222-x509"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="trusted-hosts-mutation-error"]').exists()).toBe(true);
   });
 });

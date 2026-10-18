@@ -112,6 +112,37 @@ export function describeRemoteError(caught: unknown): string {
 // 主机密钥信任流（2026-10-18 决策 3：首见弹窗确认指纹）
 // ---------------------------------------------------------------------------
 
+/**
+ * 这条信任记录钉住的是**哪一种**身份。
+ *
+ * 与后端 `known_hosts::TrustKind` 一一对应。
+ *
+ * 为什么键里必须有它：一台主机可以同时跑 SSH 与 FTPS，两者的信任是两件事。
+ * 信任了 SSH 公钥**不构成**对 X.509 证书的任何信任，反过来也一样。
+ */
+export type TrustKind = 'ssh' | 'x509';
+
+/**
+ * 连接的协议 → 它会撞上哪一类主机密钥问题。
+ *
+ * **纯函数**，因为「SFTP 撞 SSH 密钥、FTPS 撞证书、明文 FTP 谁都不撞」
+ * 这条对应关系是整套信任流的地基，而它必须在**后端弹错之前**就能算出来 ——
+ * 错误载荷里不带 kind（带了的话 Rust 侧就要为每种协议各写一个 kind）。
+ *
+ * 明文 FTP 返回 `null`：它没有 TLS，证书那套完全用不上。
+ */
+export function trustKindForProtocol(protocol: string): TrustKind | null {
+  if (protocol === 'sftp') {
+    return 'ssh';
+  }
+
+  if (protocol === 'ftps_explicit' || protocol === 'ftps_implicit') {
+    return 'x509';
+  }
+
+  return null;
+}
+
 /** 已信任主机的一行。设置页的「查看 / 删除」用它。 */
 export interface KnownHostSummary {
   host: string;
@@ -119,6 +150,7 @@ export interface KnownHostSummary {
   fingerprint: string;
   keyType: string;
   addedAt: number;
+  kind: TrustKind;
 }
 
 /** 用户需要在弹窗里核对的内容。 */
@@ -129,6 +161,8 @@ export interface HostKeyTrustPrompt {
   port: number;
   fingerprint: string;
   keyType: string;
+  /** SSH 公钥还是 X.509 证书。决定写进记录的是哪一种信任。 */
+  kind: TrustKind;
   /** `true` = 与已信任记录不一致（要显式警告），`false` = 首次见到。 */
   changed: boolean;
   /** 只有 `changed` 时有值：用户当初信任的那一份。 */
@@ -138,10 +172,11 @@ export interface HostKeyTrustPrompt {
 /**
  * 从一次失败里拼出「要问用户什么」。**纯函数**，可以脱离 UI 逐条钉住。
  *
- * 返回 `null` 表示「这不是主机密钥问题，别弹窗」。三种判空的情形：
- * 不是主机密钥错误、路径不是远程路径、连接在表里查不到 ——
- * 最后一种发生时**宁可不弹**，因为弹出一个没有 host/port 的确认框
- * 只会让用户点「信任」之后仍然失败。
+ * 返回 `null` 表示「这不是主机密钥问题，别弹窗」。四种判空的情形：
+ * 不是主机密钥错误、路径不是远程路径、连接在表里查不到、
+ * **连接的协议压根不涉及主机密钥**（明文 FTP）——
+ * 最后一种发生时**宁可不弹**：弹出一个写不进任何记录、或写进去也没有意义的
+ * 确认框，只会让用户点完「信任」之后仍然失败。
  */
 export function buildHostKeyTrustPrompt(
   caught: unknown,
@@ -158,6 +193,15 @@ export function buildHostKeyTrustPrompt(
     return null;
   }
 
+  // 协议决定「这是一把 SSH 公钥还是一张证书」。它必须由**连接**算出来，
+  // 而不是从错误载荷里读 —— 那样后端就要为每种协议各发一个 kind，
+  // 而错误载荷是协议实现自己产的，不该由它回答「你属于哪一类信任」。
+  const kind = trustKindForProtocol(connection.protocol);
+
+  if (kind === null) {
+    return null;
+  }
+
   // `isHostKeyError` 已经把 `caught` 收窄成 `RemoteErrorPayload & { fingerprint: string }`，
   // 这里**刻意不再 as 一次**：一旦上游的类型守卫被改松，`error.keyType` 会立刻报错，
   // 而不是被一个断言悄悄吞掉。
@@ -170,6 +214,7 @@ export function buildHostKeyTrustPrompt(
     port: connection.port,
     fingerprint: error.fingerprint,
     keyType: error.keyType ?? '',
+    kind,
     changed,
     ...(changed && error.expectedFingerprint
       ? { expectedFingerprint: error.expectedFingerprint }
@@ -183,12 +228,17 @@ export function buildHostKeyTrustPrompt(
  * 顺序不能反：`trust` 遇到同名主机是**覆盖**（`known_hosts::trust` 的既定语义），
  * 所以其实只调 trust 也够。这里仍然先 forget，是为了让「密钥变了」这条路
  * 在后端被改成追加式时也不会留下两条互相矛盾的记录。
+ *
+ * ⚠️ **两条命令都必须带 `kind`**：键是 `(host, port, kind)` 三元。
+ * 漏掉它的话，「删掉旧的证书信任」会变成「删掉同一台主机的 **SSH** 信任」——
+ * 而用户点的是证书那一条。结果是证书信任删不掉、SSH 信任反而没了。
  */
 export async function applyHostKeyTrust(prompt: HostKeyTrustPrompt): Promise<void> {
   if (prompt.changed) {
     await invoke<boolean>('remote_forget_host', {
       host: prompt.host,
       port: prompt.port,
+      kind: prompt.kind,
     });
   }
 
@@ -197,6 +247,7 @@ export async function applyHostKeyTrust(prompt: HostKeyTrustPrompt): Promise<voi
     port: prompt.port,
     fingerprint: prompt.fingerprint,
     keyType: prompt.keyType,
+    kind: prompt.kind,
   });
 }
 
@@ -204,10 +255,21 @@ export async function listKnownHosts(): Promise<KnownHostSummary[]> {
   return invoke<KnownHostSummary[]>('remote_list_known_hosts');
 }
 
-export async function forgetKnownHost(host: string, port: number): Promise<boolean> {
+/**
+ * 忘记一条信任。
+ *
+ * **带 `kind`** —— 设置页上同一台主机的 SSH 与证书是**两行**，
+ * 点掉一行不该动另一行：用户想收紧一条信任，结果两条都松了。
+ */
+export async function forgetKnownHost(
+  host: string,
+  port: number,
+  kind: TrustKind,
+): Promise<boolean> {
   return invoke<boolean>('remote_forget_host', {
     host,
     port,
+    kind,
   });
 }
 
