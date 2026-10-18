@@ -559,8 +559,16 @@ mod tests {
 
     /// 起一个假 FTP 服务端，跑一次 `MLSD`/`LIST` 就返回。
     ///
-    /// `listing` 是数据通道上要发的那段文本。
-    fn spawn_stub_ftp(listing: &'static str, log: StubLog) -> u16 {
+    /// `listing` 是数据通道上要发的那段文本；
+    /// `completion_reply` 是数据发完之后在控制通道上回的那条
+    /// —— 必须是参数，因为**失败的那条回复**才是这里最要紧的一条：
+    /// 服务器可以先把半截数据送过来，再回一个 `550`。
+    /// 桩永远回 `226` 的话，「读完要校验完成回复」这道判断就没有任何测试碰得到。
+    fn spawn_stub_ftp_with(
+        listing: &'static str,
+        completion_reply: &'static str,
+        log: StubLog,
+    ) -> u16 {
         use std::io::{BufRead, BufReader, Write};
         use std::net::{TcpListener, TcpStream};
 
@@ -615,7 +623,7 @@ mod tests {
                     data_writer.flush().expect("flush");
                     drop(data_writer);
 
-                    writeln!(writer, "226 transfer complete").expect("226");
+                    writeln!(writer, "{completion_reply}").expect("completion reply");
                     continue;
                 }
 
@@ -634,6 +642,10 @@ mod tests {
         });
 
         port
+    }
+
+    fn spawn_stub_ftp(listing: &'static str, log: StubLog) -> u16 {
+        spawn_stub_ftp_with(listing, "226 transfer complete", log)
     }
 
     fn resolved(port: u16, password: Option<&str>) -> ResolvedConnection {
@@ -732,8 +744,50 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_failed_completion_reply_discards_the_half_received_listing() {
+        // 服务器可以**先**把半截数据送过来，再回一个 550（配额超了、
+        // 连接被中途掐断、磁盘满了）。这时数据通道里已经有东西了 ——
+        // 不校验完成回复就会把那半截当成完整目录返回，
+        // 界面上是一个「少了几个文件但不报错」的目录。
+        //
+        // 这条用例是被注入验证逼出来的：`skip-transfer-completion-check`
+        // 在只有「桩永远回 226」的情况下全绿 —— 也就是说，
+        // 「读完要校验完成回复」这句话此前**没有任何测试碰得到**。
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_with(
+            "type=file;size=10;modify=20230101120000; a.txt\n",
+            "550 transfer aborted",
+            log.clone(),
+        );
+
+        let error = provider()
+            .list(&resolved(port, Some("pw")), "/")
+            .await
+            .expect_err("a 550 completion reply must not look like success");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    #[tokio::test]
+    async fn a_226_completion_reply_is_accepted() {
+        // 阳性对照：与上一条配对。两条都在的话，上一条的红才是有意义的。
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_with(
+            "type=file;size=10;modify=20230101120000; a.txt\n",
+            "226 transfer complete",
+            log,
+        );
+
+        let entries = provider()
+            .list(&resolved(port, Some("pw")), "/")
+            .await
+            .expect("226 must be accepted");
+
+        assert_eq!(entries.len(), 1);
+    }
+
+    #[tokio::test]
     async fn a_wrong_password_surfaces_as_an_auth_error_not_a_protocol_one() {
-        // 阳性对照：控制通道真的走完了，后面的用例才有意义。
         let log = StubLog::default();
         let port = spawn_stub_ftp("type=file;size=1; a.txt\n", log);
 
