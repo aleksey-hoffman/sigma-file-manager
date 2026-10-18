@@ -579,6 +579,63 @@
         "confirmTitle": "Clear the thumbnail cache?",
         "confirmDescription": "This clears both image and video thumbnail caches and cannot be undone. Cleared thumbnails are regenerated the next time you browse those files."
       }
+    },
+    "remote": {
+      "connections": {
+        "title": "Remote connections",
+        "description": "Save FTP, FTPS and SFTP connections here. Passwords are encrypted with Windows DPAPI and never leave this machine.",
+        "empty": "No connections yet."
+      },
+      "action": {
+        "add": "Add connection",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "field": {
+        "name": "Name",
+        "protocol": "Protocol",
+        "host": "Server address",
+        "port": "Port",
+        "username": "Username",
+        "password": "Password",
+        "initialPath": "Initial directory",
+        "proxy": "Proxy",
+        "proxyHost": "Proxy address",
+        "proxyPort": "Proxy port",
+        "proxyUsername": "Proxy username",
+        "proxyPassword": "Proxy password"
+      },
+      "protocol": {
+        "ftp": "FTP",
+        "ftps_explicit": "FTPS (explicit)",
+        "ftps_implicit": "FTPS (implicit)",
+        "sftp": "SFTP"
+      },
+      "proxy": {
+        "direct": "Direct connection",
+        "socks5": "SOCKS5",
+        "http_connect": "HTTP CONNECT"
+      },
+      "password": {
+        "saved": "Password saved",
+        "savedHint": "Leave blank to keep the current password.",
+        "clear": "Remove the saved password"
+      },
+      "error": {
+        "nameRequired": "Connection name cannot be empty.",
+        "hostRequired": "Server address cannot be empty.",
+        "hostHasWhitespace": "Server address cannot contain spaces.",
+        "portInvalid": "Port must be between 1 and 65535.",
+        "initialPathInvalid": "Initial directory contains an invalid segment.",
+        "proxyHostRequired": "Proxy address cannot be empty.",
+        "proxyHostHasWhitespace": "Proxy address cannot contain spaces.",
+        "proxyPortInvalid": "Proxy port must be between 1 and 65535.",
+        "connectionIdInvalid": "Connection id is invalid.",
+        "remoteConnectionsStorageNotReady": "The connection list has not finished loading. Please try again in a moment.",
+        "unknown": "Failed to save the connection."
+      }
     }
   },
   "projectGithubButtons": {
@@ -594,7 +651,8 @@
     "dataStorage": "Stockage de données",
     "stats": "Statistiques",
     "experimental": "Expérimental",
-    "extensions": "Extensions"
+    "extensions": "Extensions",
+    "remote": "Remote"
   },
   "settingsTags": {
     "language": "Langue",

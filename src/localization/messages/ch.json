@@ -579,6 +579,63 @@
         "confirmTitle": "清理缩略图缓存？",
         "confirmDescription": "此操作会同时清除图片缩略图与视频缩略图缓存，且无法撤销。被缓存的缩略图会在下次浏览对应文件时重新生成。"
       }
+    },
+    "remote": {
+      "connections": {
+        "title": "远程连接",
+        "description": "在这里保存 FTP、FTPS 与 SFTP 连接。密码经 Windows DPAPI 加密，不会离开本机。",
+        "empty": "还没有任何连接。"
+      },
+      "action": {
+        "add": "添加连接",
+        "edit": "编辑",
+        "delete": "删除",
+        "save": "保存",
+        "cancel": "取消"
+      },
+      "field": {
+        "name": "名称",
+        "protocol": "协议",
+        "host": "服务器地址",
+        "port": "端口",
+        "username": "用户名",
+        "password": "密码",
+        "initialPath": "初始目录",
+        "proxy": "代理",
+        "proxyHost": "代理地址",
+        "proxyPort": "代理端口",
+        "proxyUsername": "代理用户名",
+        "proxyPassword": "代理密码"
+      },
+      "protocol": {
+        "ftp": "FTP（明文）",
+        "ftps_explicit": "FTPS（显式）",
+        "ftps_implicit": "FTPS（隐式）",
+        "sftp": "SFTP"
+      },
+      "proxy": {
+        "direct": "直连",
+        "socks5": "SOCKS5",
+        "http_connect": "HTTP CONNECT"
+      },
+      "password": {
+        "saved": "已保存密码",
+        "savedHint": "留空表示保持当前密码不变。",
+        "clear": "删除已保存的密码"
+      },
+      "error": {
+        "nameRequired": "连接名称不能为空。",
+        "hostRequired": "服务器地址不能为空。",
+        "hostHasWhitespace": "服务器地址不能包含空格。",
+        "portInvalid": "端口必须在 1 到 65535 之间。",
+        "initialPathInvalid": "初始目录含有不合法的段（不能是 . 或 ..）。",
+        "proxyHostRequired": "代理地址不能为空。",
+        "proxyHostHasWhitespace": "代理地址不能包含空格。",
+        "proxyPortInvalid": "代理端口必须在 1 到 65535 之间。",
+        "connectionIdInvalid": "连接 id 不合法。",
+        "remoteConnectionsStorageNotReady": "连接列表尚未加载完成，请稍后重试。",
+        "unknown": "保存连接失败。"
+      }
     }
   },
   "projectGithubButtons": {
@@ -594,7 +651,8 @@
     "dataStorage": "数据存储",
     "stats": "统计",
     "experimental": "实验性",
-    "extensions": "拓展功能"
+    "extensions": "拓展功能",
+    "remote": "远程"
   },
   "settingsTags": {
     "language": "语言",
