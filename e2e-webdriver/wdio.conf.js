@@ -70,7 +70,9 @@ export const config = {
     }
     catch (guardError) {
       console.error(guardError.message);
-      removeRunDataDirectory();
+      if (isRunDataDirectorySafe()) {
+        fs.rmSync(e2eDataDirectory, { recursive: true, force: true });
+      }
       process.exit(1);
     }
   },
@@ -155,7 +157,7 @@ export const config = {
     closeTauriDriver();
   },
 
-  onComplete: (exitCode) => {
+  onComplete: async (exitCode) => {
     if (exitCode !== 0) {
       copyAppLogsToFailureArtifacts();
     }
@@ -165,7 +167,7 @@ export const config = {
       return;
     }
 
-    removeRunDataDirectory();
+    await removeRunDataDirectory();
   },
 };
 
@@ -234,12 +236,15 @@ function isSamePath(firstPath, secondPath) {
   return typeof firstPath === 'string' && path.relative(path.resolve(firstPath), path.resolve(secondPath)) === '';
 }
 
-function assertRunDataDirectoryIsSafe() {
-  const isSafe = path.isAbsolute(e2eDataDirectory)
+function isRunDataDirectorySafe() {
+  return path.isAbsolute(e2eDataDirectory)
     && path.basename(e2eDataDirectory).startsWith(E2E_DATA_DIR_PREFIX)
     && isSamePath(path.dirname(e2eDataDirectory), os.tmpdir())
     && fs.existsSync(e2eDataDirectory);
-  if (!isSafe) {
+}
+
+function assertRunDataDirectoryIsSafe() {
+  if (!isRunDataDirectorySafe()) {
     throw new Error(`Unexpected isolated e2e data folder: ${e2eDataDirectory}`);
   }
 }
@@ -357,18 +362,32 @@ function copyAppLogsToFailureArtifacts() {
   }
 }
 
-function removeRunDataDirectory() {
-  try {
-    assertRunDataDirectoryIsSafe();
-    fs.rmSync(e2eDataDirectory, {
-      recursive: true,
-      force: true,
-      maxRetries: 10,
-      retryDelay: 500,
-    });
+// The app and its WebView2 processes can take a few seconds to release their
+// files after the last session ends, so removal is retried for a while.
+async function removeRunDataDirectory() {
+  if (!isRunDataDirectorySafe()) {
+    console.warn(`Not removing unexpected isolated e2e data folder: ${e2eDataDirectory}`);
+    return;
   }
-  catch (removeError) {
-    console.warn(`Failed to remove isolated e2e data folder ${e2eDataDirectory}:`, removeError);
+
+  const maxAttempts = 30;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      fs.rmSync(e2eDataDirectory, { recursive: true, force: true });
+      return;
+    }
+    catch (removeError) {
+      if (attempt === maxAttempts) {
+        const remainingEntries = fs.existsSync(e2eDataDirectory) ? fs.readdirSync(e2eDataDirectory) : [];
+        console.warn(
+          `Failed to remove isolated e2e data folder ${e2eDataDirectory} `
+          + `(remaining: ${remainingEntries.join(', ') || 'none'}):`,
+          removeError,
+        );
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
 }
 
