@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::security::verify_integrity_sha256_digest;
+use super::security::{is_private_ip_address, verify_integrity_sha256_digest};
 use super::types::{FetchUrlResult, MAX_TEXT_FETCH_BYTES};
 
 const HTTP_TIMEOUT_SECS: u64 = 900;
@@ -21,6 +21,7 @@ const HTTP_POOL_IDLE_TIMEOUT_SECS: u64 = 30;
 const HTTP_TCP_KEEPALIVE_SECS: u64 = 30;
 const PROGRESS_EMIT_INTERVAL_BYTES: u64 = 256 * 1024;
 const MAX_RETRY_AFTER_SECS: u64 = 60;
+const DNS_RESOLVE_TIMEOUT_SECS: u64 = 10;
 
 pub const HTTP_USER_AGENT: &str = concat!(
     "sigma-file-manager/",
@@ -28,13 +29,67 @@ pub const HTTP_USER_AGENT: &str = concat!(
     " (+https://github.com/aleksey-hoffman/sigma-file-manager)"
 );
 
-pub fn build_http_client() -> Result<reqwest::Client, String> {
+fn base_http_client_builder() -> reqwest::ClientBuilder {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(HTTP_TIMEOUT_SECS))
         .connect_timeout(Duration::from_secs(HTTP_CONNECT_TIMEOUT_SECS))
         .pool_idle_timeout(Duration::from_secs(HTTP_POOL_IDLE_TIMEOUT_SECS))
         .tcp_keepalive(Duration::from_secs(HTTP_TCP_KEEPALIVE_SECS))
         .user_agent(HTTP_USER_AGENT)
+}
+
+pub fn build_http_client() -> Result<reqwest::Client, String> {
+    base_http_client_builder()
+        .build()
+        .map_err(|error| format!("Failed to create HTTP client: {}", error))
+}
+
+/// Resolves `url`'s host ourselves and rejects it if any resolved address is
+/// loopback/private/link-local (including the cloud metadata address), then
+/// pins the client's resolution for that host to exactly the
+/// already-validated addresses.
+///
+/// This closes the gap in `validate_remote_url`, which only rejects a host
+/// that is itself a literal IP address: a hostname that *resolves* to a
+/// private/metadata address (an attacker fully controls this for any domain
+/// they own) previously passed validation and was then connected to as-is,
+/// a DNS-rebinding SSRF. Validating and pinning resolution here means the
+/// address actually connected to is the one we checked, not whatever a
+/// second, later DNS lookup might return.
+pub async fn build_http_client_for_validated_url(
+    url: &reqwest::Url,
+) -> Result<reqwest::Client, String> {
+    let host = url
+        .host_str()
+        .ok_or_else(|| "URL host is required".to_string())?
+        .to_string();
+    let port = url
+        .port_or_known_default()
+        .ok_or_else(|| "Unable to determine target port".to_string())?;
+
+    let lookup = tokio::time::timeout(
+        Duration::from_secs(DNS_RESOLVE_TIMEOUT_SECS),
+        tokio::net::lookup_host((host.as_str(), port)),
+    )
+    .await
+    .map_err(|_| format!("Timed out resolving host '{}'", host))?
+    .map_err(|error| format!("Failed to resolve host '{}': {}", host, error))?;
+
+    let resolved_addrs: Vec<std::net::SocketAddr> = lookup.collect();
+
+    if resolved_addrs.is_empty() {
+        return Err(format!("Host '{}' did not resolve to any address", host));
+    }
+
+    if resolved_addrs
+        .iter()
+        .any(|addr| is_private_ip_address(&addr.ip()))
+    {
+        return Err("Access denied: target host is not allowed".to_string());
+    }
+
+    base_http_client_builder()
+        .resolve_to_addrs(&host, &resolved_addrs)
         .build()
         .map_err(|error| format!("Failed to create HTTP client: {}", error))
 }
@@ -772,7 +827,7 @@ pub async fn download_url_bytes(
 ) -> Result<Vec<u8>, String> {
     let parsed_url =
         reqwest::Url::parse(url).map_err(|error| format!("Invalid URL '{}': {}", url, error))?;
-    let client = build_http_client()?;
+    let client = build_http_client_for_validated_url(&parsed_url).await?;
     let operation_label = request_error_label.to_string();
     let read_error_label = read_error_label.to_string();
     let config = RetryConfig::default();
