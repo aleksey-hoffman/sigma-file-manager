@@ -160,7 +160,7 @@ jobs:
           $localDirectory = Join-Path $env:LOCALAPPDATA 'com.sigma-file-manager.app'
           if ((Test-Path $localDirectory) -and (Get-ChildItem -Force $localDirectory | Select-Object -First 1)) { $leaks += $localDirectory }
           $leftoverRunDirectories = Get-ChildItem -Force -Directory -Path ([System.IO.Path]::GetTempPath()) -Filter 'sfm-e2e-*' -ErrorAction SilentlyContinue
-          $leaks += $leftoverRunDirectories.FullName
+          foreach ($runDirectory in $leftoverRunDirectories) { $leaks += $runDirectory.FullName }
           if ($leaks.Count -gt 0) {
             Write-Host "Unexpected app data after the e2e run:"
             $leaks | ForEach-Object { Write-Host "  $_"; Get-ChildItem -Force -Recurse $_ -ErrorAction SilentlyContinue | Select-Object -First 20 -ExpandProperty FullName }
