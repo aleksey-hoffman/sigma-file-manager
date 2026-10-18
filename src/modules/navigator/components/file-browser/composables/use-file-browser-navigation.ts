@@ -38,7 +38,12 @@ import {
   getLocationsEntriesDisplaySignature,
 } from '@/utils/virtual-locations';
 import { isRemotePath, parseRemotePath } from '@/utils/remote-paths';
-import { describeRemoteError } from '@/utils/remote-directory';
+import {
+  applyHostKeyTrust,
+  buildHostKeyTrustPrompt,
+  describeRemoteError,
+  type HostKeyTrustPrompt,
+} from '@/utils/remote-directory';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { getFileBrowserSortReadDirOptions } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
@@ -123,6 +128,62 @@ export function useFileBrowserNavigation(
   const statusCenterStore = useStatusCenterStore();
   const platformStore = usePlatformStore();
   const remoteConnectionsStore = useRemoteConnectionsStore();
+
+  /**
+   * FORK-MODIFICATION 2026-10-18：SSH 主机公钥的信任确认（阶段 2 决策 3）。
+   *
+   * 非 `null` 时导航器应当弹窗等用户决定。**这期间不写 `error`、
+   * 也不跳去默认目录** —— 弹窗本身就是「这一次连接还没结束」的表示，
+   * 顺手把它兜底掉的话，用户会看到弹窗一闪而过，然后被丢回本机目录。
+   */
+  const hostKeyPrompt = ref<HostKeyTrustPrompt | null>(null);
+
+  function findRemoteConnection(path: string) {
+    const parsed = parseRemotePath(path);
+
+    if (parsed === null) {
+      return undefined;
+    }
+
+    return remoteConnectionsStore.getConnection(parsed.connectionId);
+  }
+
+  /**
+   * 用户点了「我核对过了，信任」。信任落盘后**自动重试**刚才那次导航。
+   *
+   * 重试只走一次，不循环：若信任之后仍然拿到同一类错误（服务器又换了一把钥匙、
+   * 或中间人持续替换），循环会变成一个点不掉的弹窗循环。
+   */
+  async function confirmHostKeyTrust(): Promise<void> {
+    const prompt = hostKeyPrompt.value;
+    hostKeyPrompt.value = null;
+
+    if (!prompt) {
+      return;
+    }
+
+    try {
+      await applyHostKeyTrust(prompt);
+    }
+    catch (trustError) {
+      error.value = describeRemoteError(trustError);
+      console.error(trustError);
+      return;
+    }
+
+    await readDir(prompt.path, false);
+  }
+
+  /**
+   * 用户点了取消。
+   *
+   * **刻意什么都不做** —— 不写 `error`、不跳默认目录。
+   * 用户是主动放弃这一次连接的，界面停在原地就是正确结果；
+   * 反过来「顺手兜底一下」正是需求 1 最初那个静默跳走的毛病。
+   */
+  function dismissHostKeyTrust(): void {
+    hostKeyPrompt.value = null;
+  }
 
   /**
    * 这个目录要不要跑本地文件系统那两件配套工作：**目录监听**与**子目录大小统计**。
@@ -762,6 +823,22 @@ export function useFileBrowserNavigation(
         return;
       }
 
+      // FORK-MODIFICATION 2026-10-18：先看是不是主机公钥问题（阶段 2 决策 3）。
+      //
+      // 这两类错误**不能**落到下面的通用分支：`error.value` 一写，
+      // `init()` 就会把它当成「这个目录打不开」而静默跳去默认目录 ——
+      // 用户点一次「信任」之后被丢回本机目录，整个信任流程等于没有发生。
+      const hostKey = buildHostKeyTrustPrompt(
+        caughtError,
+        path,
+        findRemoteConnection(path),
+      );
+
+      if (hostKey) {
+        hostKeyPrompt.value = hostKey;
+        return;
+      }
+
       // FORK-MODIFICATION 2026-10-18：`String(caughtError)` 对远程错误无效（阶段 2 需求 1）。
       // 远程 `RemoteError` 序列化成**普通对象** `{ kind, message }`，走 `String()` 得到
       // 字面量 `[object Object]` —— 认证失败时用户看到的就是这一串。
@@ -978,6 +1055,9 @@ export function useFileBrowserNavigation(
     currentDirEntry,
     readDir,
     silentRefresh,
+    hostKeyPrompt,
+    confirmHostKeyTrust,
+    dismissHostKeyTrust,
     navigateToPath,
     navigateToEntry,
     navigateToParent,

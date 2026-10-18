@@ -6,6 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { resetSettingsItemStaggerIndex } from '@/utils/settings-item-stagger';
 import ConnectionsSection from './connections-section.vue';
+import TrustedHostsSection from './trusted-hosts-section.vue';
 
 resetSettingsItemStaggerIndex();
 </script>
@@ -13,6 +14,7 @@ resetSettingsItemStaggerIndex();
 <template>
   <div class="settings-category-remote">
     <ConnectionsSection />
+    <TrustedHostsSection />
   </div>
 </template>
 

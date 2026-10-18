@@ -123,6 +123,13 @@ describe('远程设置分类', () => {
         return {};
       }
 
+      // FORK-MODIFICATION 2026-10-18：已信任主机分区也挂在这个分类下。
+      // 不显式给空数组的话默认实现返回 undefined，分区会走错误分支 ——
+      // 让本文件测连接列表的用例顺带被一个无关分区拖进错误态。
+      if (command === 'remote_list_known_hosts') {
+        return [];
+      }
+
       return undefined;
     });
     lazyStoreSaveMock.mockReset();

@@ -30,6 +30,7 @@ import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.v
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from './file-browser-top-level-conflict-dialog.vue';
 import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue';
+import HostKeyTrustDialog from '@/modules/remote/components/host-key-trust-dialog.vue';
 import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode } from './address-bar-editor-utils';
 import ArchiveOptionsDialog, { type ArchiveOptions } from './archive-options-dialog.vue';
@@ -108,6 +109,13 @@ const fb = useFileBrowser({
 
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
 const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
+
+// FORK-MODIFICATION 2026-10-18：主机公钥信任流（阶段 2 决策 3）。
+// 与上面同理 —— `fb.xxx` 是普通对象上的 ref，模板只会解包**顶层**绑定，
+// 直接写 `:prompt="fb.hostKeyPrompt"` 会把整个 Ref 当成 HostKeyTrustPrompt 传进去。
+const hostKeyPrompt = fb.hostKeyPrompt;
+const confirmHostKeyTrust = fb.confirmHostKeyTrust;
+const dismissHostKeyTrust = fb.dismissHostKeyTrust;
 
 const showArchiveOptions = ref(false);
 const archiveNeedsPassword = ref(false);
@@ -471,6 +479,13 @@ defineExpose({
       :entries="permanentDeletePendingEntries"
       @update:open="fb.permanentDeleteConfirm.handleOpenChange"
       @confirm="fb.permanentDeleteConfirm.handleConfirm"
+    />
+
+    <!-- FORK-MODIFICATION 2026-10-18：SSH 主机公钥的信任确认（阶段 2 决策 3）。 -->
+    <HostKeyTrustDialog
+      :prompt="hostKeyPrompt"
+      @confirm="confirmHostKeyTrust"
+      @cancel="dismissHostKeyTrust"
     />
 
     <ArchiveOptionsDialog

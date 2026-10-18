@@ -47,7 +47,7 @@ pub use credentials::{
     REMOTE_CREDENTIALS_FILE,
 };
 pub use dir_adapter::{extension_of, to_dir_contents, to_dir_entry};
-pub use error::{RemoteError, RemoteErrorKind};
+pub use error::{HostKeyIdentity, RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
 pub use known_hosts::{
     decide as decide_host_key, forget as forget_host_key, describe_server_key, load as load_known_hosts,

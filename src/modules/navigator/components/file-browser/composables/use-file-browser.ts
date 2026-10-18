@@ -6,6 +6,7 @@ import {
   ref, computed, nextTick, toRef, onMounted, onUnmounted, watch,
 } from 'vue';
 import type { Ref, ComputedRef, ComponentPublicInstance } from 'vue';
+import type { HostKeyTrustPrompt } from '@/utils/remote-directory';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
@@ -101,6 +102,11 @@ interface DataSource {
   handlePathSubmit: () => Promise<void>;
   openFile: (path: string) => Promise<void>;
   silentRefresh: () => void;
+  // FORK-MODIFICATION 2026-10-18：主机公钥信任流（阶段 2 决策 3）。
+  // 非 null 时 file-browser.vue 弹窗等用户决定。
+  hostKeyPrompt: Ref<HostKeyTrustPrompt | null>;
+  confirmHostKeyTrust: () => Promise<void>;
+  dismissHostKeyTrust: () => void;
   filterQuery: Ref<string>;
   isFilterOpen: Ref<boolean>;
   shouldFocusFilterInput: Ref<boolean>;
@@ -183,6 +189,11 @@ function setupNavigationDataSource(
     currentPath: computed(() => navigation.currentPath.value),
     isDirectoryEmpty: computed(() => filteredIsDirectoryEmpty.value),
     dirContents: navigation.dirContents,
+    // FORK-MODIFICATION 2026-10-18：主机公钥信任流（阶段 2 决策 3）。
+    // 非 null 时 file-browser.vue 弹窗等用户决定。
+    hostKeyPrompt: navigation.hostKeyPrompt,
+    confirmHostKeyTrust: navigation.confirmHostKeyTrust,
+    dismissHostKeyTrust: navigation.dismissHostKeyTrust,
     isLoading: navigation.isLoading,
     isRefreshing: navigation.isRefreshing,
     error: navigation.error,
@@ -267,6 +278,12 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     silentRefresh: () => {
       globalSearchStore.search();
     },
+    // FORK-MODIFICATION 2026-10-18：外部模式没有导航，也就不存在「为远程目录建连」
+    // 这条链路，主机密钥信任流在这里只能是惰性桩。
+    // 刻意不是 `undefined`：DataSource 是契约，让调用方不必分支就能安全解构。
+    hostKeyPrompt: ref(null),
+    confirmHostKeyTrust: async () => {},
+    dismissHostKeyTrust: () => {},
     filterQuery: ref(''),
     isFilterOpen: ref(false),
     shouldFocusFilterInput: ref(false),
@@ -631,6 +648,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     refresh: dataSource.refresh,
     handlePathSubmit: dataSource.handlePathSubmit,
     openFile: dataSource.openFile,
+
+    // FORK-MODIFICATION 2026-10-18：主机公钥信任流（阶段 2 决策 3）。
+    hostKeyPrompt: dataSource.hostKeyPrompt,
+    confirmHostKeyTrust: dataSource.confirmHostKeyTrust,
+    dismissHostKeyTrust: dataSource.dismissHostKeyTrust,
 
     filterQuery: dataSource.filterQuery,
     isFilterOpen: dataSource.isFilterOpen,

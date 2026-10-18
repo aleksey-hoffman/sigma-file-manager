@@ -663,6 +663,14 @@
         "empty": "还没有配置任何远程连接。",
         "split": "双屏",
         "editConnection": "编辑该连接"
+      },
+      "trustedHosts": {
+        "title": "已信任的主机",
+        "description": "你已核对过的主机公钥。只有信任之后，远程目录才会打开。",
+        "empty": "还没有信任过任何主机。",
+        "loadFailed": "读取已信任主机列表失败。",
+        "forget": "删除记录",
+        "forgetFailed": "删除这条记录失败，它仍在列表中。"
       }
     }
   },
@@ -852,6 +860,21 @@
       "description": "此操作将永久性地从您的计算机中删除 {count} 个项目。",
       "confirm": "如果您了解此操作无法撤消，请确认。",
       "delete": "删除"
+    },
+    "remoteHostKeyUnknown": {
+      "title": "还没有核对过这台服务器的身份",
+      "description": "这是第一次连接这台主机。请把下面的指纹与服务器管理员给你的那份逐一对照，确认无误之后再决定是否信任。",
+      "trust": "信任并继续"
+    },
+    "remoteHostKeyChanged": {
+      "title": "这台服务器的身份变了",
+      "description": "它出示的主机公钥与你此前信任过的那份不一致。可能是服务器重装了密钥，也可能有人在中途。",
+      "expected": "此前已信任的指纹：",
+      "trustAnyway": "替换并继续"
+    },
+    "remoteHostKeyCommon": {
+      "algorithm": "主机公钥算法：{algorithm}",
+      "hint": "可以自己核对：ssh-keygen -lf <主机公钥文件>"
     }
   },
   "notifications": {

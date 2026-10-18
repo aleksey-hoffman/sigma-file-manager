@@ -92,6 +92,12 @@ pub struct RemoteError {
     /// 已记录、但与本次不一致的指纹。只在 `HostKeyChanged` 时有值。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub expected_fingerprint: Option<String>,
+    /// 本次收到的主机公钥算法名（如 `Ed25519`）。只有主机密钥类错误有值。
+    ///
+    /// 单给一串 `SHA256:…` 用户无从判断那是什么；给出算法名之后，
+    /// 他至少能和服务器管理员对上「这是一把 ed25519 公钥」。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub key_type: Option<String>,
 }
 
 impl RemoteError {
@@ -101,31 +107,34 @@ impl RemoteError {
             message: message.into(),
             fingerprint: None,
             expected_fingerprint: None,
+            key_type: None,
         }
     }
 
-    /// 首次见到这台主机。`fingerprint` 是本次收到的指纹，等用户确认。
-    pub fn host_key_unknown(host: &str, fingerprint: String) -> Self {
+    /// 首次见到这台主机。`identity` 是本次收到的指纹与算法名，等用户确认。
+    pub fn host_key_unknown(host: &str, identity: HostKeyIdentity) -> Self {
         Self {
             kind: RemoteErrorKind::HostKeyUnknown,
             message: format!(
                 "首次连接到 {host}，它的主机指纹还没有被信任。请核对下面的指纹后再决定是否信任。"
             ),
-            fingerprint: Some(fingerprint),
+            fingerprint: Some(identity.fingerprint),
             expected_fingerprint: None,
+            key_type: Some(identity.key_type),
         }
     }
 
     /// 主机密钥变了。两个指纹都要给出去，用户才有判断依据。
-    pub fn host_key_changed(host: &str, received: String, expected: String) -> Self {
+    pub fn host_key_changed(host: &str, identity: HostKeyIdentity, expected: String) -> Self {
         Self {
             kind: RemoteErrorKind::HostKeyChanged,
             message: format!(
                 "{host} 的主机公钥与已信任的记录不一致。可能是服务器重装了密钥，\
                  也可能是有人在中途。要继续请先删除旧记录再重新信任。"
             ),
-            fingerprint: Some(received),
+            fingerprint: Some(identity.fingerprint),
             expected_fingerprint: Some(expected),
+            key_type: Some(identity.key_type),
         }
     }
 
@@ -166,8 +175,24 @@ impl RemoteError {
     }
 }
 
-impl fmt::Display for RemoteError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+/// 一次握手里看到的主机公钥身份。指纹与算法名**成对**出现 ——
+/// 只有一个指纹的话，弹窗里就是一串无从判断的字符。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HostKeyIdentity {
+    pub fingerprint: String,
+    pub key_type: String,
+}
+
+impl HostKeyIdentity {
+    pub fn new(fingerprint: impl Into<String>, key_type: impl Into<String>) -> Self {
+        Self {
+            fingerprint: fingerprint.into(),
+            key_type: key_type.into(),
+        }
+    }
+}
+
+impl fmt::Display for RemoteError {    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(formatter, "{}: {}", self.kind.as_str(), self.message)
     }
 }
@@ -195,7 +220,7 @@ mod tests {
 
         let unknown = serde_json::to_value(&RemoteError::host_key_unknown(
             "192.168.1.9",
-            "SHA256:abc".to_string(),
+            HostKeyIdentity::new("SHA256:abc", "Ed25519"),
         ))
         .expect("serialize");
         assert_eq!(unknown["kind"], "host_key_unknown");
@@ -207,7 +232,7 @@ mod tests {
     fn a_changed_host_key_carries_both_fingerprints() {
         let error = RemoteError::host_key_changed(
             "192.168.1.9",
-            "SHA256:new".to_string(),
+            HostKeyIdentity::new("SHA256:new", "Ed25519"),
             "SHA256:old".to_string(),
         );
 
@@ -222,7 +247,7 @@ mod tests {
 
     #[test]
     fn an_unknown_host_key_has_no_expected_fingerprint() {
-        let error = RemoteError::host_key_unknown("nas", "SHA256:abc".to_string());
+        let error = RemoteError::host_key_unknown("nas", HostKeyIdentity::new("SHA256:abc", "Ed25519"));
 
         assert_eq!(error.kind, RemoteErrorKind::HostKeyUnknown);
         assert_eq!(error.expected_fingerprint, None);
@@ -233,11 +258,16 @@ mod tests {
     #[test]
     fn host_key_trust_failures_are_not_reported_as_auth_failures() {
         assert_ne!(
-            RemoteError::host_key_unknown("h", "SHA256:a".to_string()).kind,
+            RemoteError::host_key_unknown("h", HostKeyIdentity::new("SHA256:a", "Ed25519")).kind,
             RemoteError::auth("密码错了").kind
         );
         assert_ne!(
-            RemoteError::host_key_changed("h", "SHA256:a".to_string(), "SHA256:b".to_string()).kind,
+            RemoteError::host_key_changed(
+                "h",
+                HostKeyIdentity::new("SHA256:a", "Ed25519"),
+                "SHA256:b".to_string(),
+            )
+            .kind,
             RemoteError::auth("密码错了").kind
         );
     }

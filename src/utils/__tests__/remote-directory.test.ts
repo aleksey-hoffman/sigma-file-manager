@@ -14,11 +14,17 @@ import {
 import {
   REMOTE_READ_DIR_COMMAND,
   REMOTE_STAT_COMMAND,
+  applyHostKeyTrust,
+  buildHostKeyTrustPrompt,
   describeRemoteError,
+  forgetKnownHost,
   isRemoteErrorPayload,
+  listKnownHosts,
   readRemoteDirectory,
   statRemoteEntry,
+  type HostKeyTrustPrompt,
 } from '@/utils/remote-directory';
+import type { RemoteConnection } from '@/types/remote';
 
 const { invokeMock } = vi.hoisted(() => {
   return {
@@ -111,6 +117,222 @@ describe('remote-directory', () => {
       await expect(readRemoteDirectory('sfm://remote/c')).rejects.toEqual({
         kind: 'not_found',
         message: '没有那个条目',
+      });
+    });
+  });
+
+  // FORK-MODIFICATION 2026-10-18：主机公钥信任流（阶段 2 决策 3）。
+  describe('buildHostKeyTrustPrompt', () => {
+    const connection: RemoteConnection = {
+      id: 'c',
+      name: '速豹堂',
+      protocol: 'sftp',
+      host: '192.168.1.9',
+      port: 22,
+      username: 'duanyi',
+      initialPath: '/',
+      proxy: { kind: 'direct' },
+    };
+
+    it('首见（unknown）产出 changed=false 的提示', () => {
+      const prompt = buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_unknown',
+          message: '未信任这台主机',
+          fingerprint: 'SHA256:aaa',
+          keyType: 'Ed25519',
+        },
+        'sfm://remote/c/var/www',
+        connection,
+      );
+
+      expect(prompt).toEqual({
+        path: 'sfm://remote/c/var/www',
+        host: '192.168.1.9',
+        port: 22,
+        fingerprint: 'SHA256:aaa',
+        keyType: 'Ed25519',
+        changed: false,
+      });
+    });
+
+    it('变更（changed）带上用户当初信任的那一份指纹', () => {
+      // expectedFingerprint 是**变更**这一类错误独有的字段：它让用户能并排比对，
+      // 而不是只看到一串自己无从判断的新指纹。
+      const prompt = buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_changed',
+          message: '主机密钥变了',
+          fingerprint: 'SHA256:new',
+          expectedFingerprint: 'SHA256:old',
+          keyType: 'Ed25519',
+        },
+        'sfm://remote/c',
+        connection,
+      );
+
+      expect(prompt?.changed).toBe(true);
+      expect(prompt?.expectedFingerprint).toBe('SHA256:old');
+      expect(prompt?.fingerprint).toBe('SHA256:new');
+    });
+
+    it('unknown 不带 expectedFingerprint，键压根不出现', () => {
+      // 用 `in` 而不是 `toBeUndefined()`：属性存在且值为 undefined，
+      // 序列化出去会变成一个 null 字段，前端 `expectedFingerprint &&` 的判断反而更脆。
+      const prompt = buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_unknown',
+          message: '未信任这台主机',
+          fingerprint: 'SHA256:aaa',
+          keyType: 'Ed25519',
+        },
+        'sfm://remote/c',
+        connection,
+      );
+
+      expect(prompt && 'expectedFingerprint' in prompt).toBe(false);
+    });
+
+    it('缺 keyType 时落空串，不留 undefined', () => {
+      const prompt = buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_unknown',
+          message: 'x',
+          fingerprint: 'SHA256:aaa',
+        },
+        'sfm://remote/c',
+        connection,
+      );
+
+      expect(prompt?.keyType).toBe('');
+    });
+
+    it('不是主机密钥类错误一律不弹窗', () => {
+      // 阳性对照：同一批数据里只有 kind 变了，结果必须是 null。
+      // 没有这条，下面的「路径不匹配」等分支就可能只是判空逻辑恰好成立。
+      expect(buildHostKeyTrustPrompt(
+        {
+          kind: 'auth',
+          message: '密码错误',
+        },
+        'sfm://remote/c',
+        connection,
+      )).toBeNull();
+
+      expect(buildHostKeyTrustPrompt(
+        {
+          kind: 'unreachable',
+          message: '连不上',
+        },
+        'sfm://remote/c',
+        connection,
+      )).toBeNull();
+    });
+
+    it('缺 fingerprint 的主机密钥错误不弹窗', () => {
+      // 后端保证这两个 kind 一定带指纹；万一哪天漏了，
+      // 弹出一个指纹栏是空的确认框比不弹更糟 —— 用户点了信任也换不来任何东西。
+      expect(buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_unknown',
+          message: 'x',
+        },
+        'sfm://remote/c',
+        connection,
+      )).toBeNull();
+    });
+
+    it('连接查不到时宁可不弹', () => {
+      // 弹窗里没有 host/port，用户点「信任」也写不进任何记录，
+      // 只是把失败重来一遍 —— 比不弹更让人困惑。
+      expect(buildHostKeyTrustPrompt(
+        {
+          kind: 'host_key_unknown',
+          message: 'x',
+          fingerprint: 'SHA256:aaa',
+          keyType: 'Ed25519',
+        },
+        'sfm://remote/c',
+        undefined,
+      )).toBeNull();
+    });
+
+    it('路径不是远程路径，或指向另一个连接，都不弹', () => {
+      const caught = {
+        kind: 'host_key_unknown',
+        message: 'x',
+        fingerprint: 'SHA256:aaa',
+        keyType: 'Ed25519',
+      };
+
+      expect(buildHostKeyTrustPrompt(caught, 'C:\\Users\\Duanyi', connection)).toBeNull();
+      expect(buildHostKeyTrustPrompt(caught, 'sfm://remote/other', connection)).toBeNull();
+    });
+  });
+
+  describe('applyHostKeyTrust', () => {
+    const prompt: HostKeyTrustPrompt = {
+      path: 'sfm://remote/c',
+      host: '192.168.1.9',
+      port: 22,
+      fingerprint: 'SHA256:aaa',
+      keyType: 'Ed25519',
+      changed: false,
+    };
+
+    it('首见只写一条记录，不发 forget', async () => {
+      // 多发一次 forget 无害，但会让设置页「已信任主机」列表在用户点确认的瞬间闪一下。
+      invokeMock.mockResolvedValue(true);
+
+      await applyHostKeyTrust(prompt);
+
+      expect(invokeMock).toHaveBeenCalledTimes(1);
+      expect(invokeMock).toHaveBeenCalledWith('remote_trust_host', {
+        host: '192.168.1.9',
+        port: 22,
+        fingerprint: 'SHA256:aaa',
+        keyType: 'Ed25519',
+      });
+    });
+
+    it('变更时先删旧记录再写新记录，顺序不能反', async () => {
+      const order: string[] = [];
+      invokeMock.mockImplementation(async (command: string) => {
+        order.push(command);
+        return true;
+      });
+
+      await applyHostKeyTrust({
+        ...prompt,
+        changed: true,
+        expectedFingerprint: 'SHA256:old',
+      });
+
+      expect(order).toEqual(['remote_forget_host', 'remote_trust_host']);
+      expect(invokeMock).toHaveBeenNthCalledWith(1, 'remote_forget_host', {
+        host: '192.168.1.9',
+        port: 22,
+      });
+    });
+  });
+
+  describe('已信任主机管理', () => {
+    it('列表走 remote_list_known_hosts', async () => {
+      invokeMock.mockResolvedValue([]);
+
+      await listKnownHosts();
+
+      expect(invokeMock).toHaveBeenCalledWith('remote_list_known_hosts');
+    });
+
+    it('删除走 remote_forget_host 并把结果交回调用方', async () => {
+      invokeMock.mockResolvedValue(true);
+
+      await expect(forgetKnownHost('192.168.1.9', 22)).resolves.toBe(true);
+
+      expect(invokeMock).toHaveBeenCalledWith('remote_forget_host', {
+        host: '192.168.1.9',
+        port: 22,
       });
     });
   });

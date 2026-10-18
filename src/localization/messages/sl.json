@@ -692,6 +692,14 @@
         "empty": "No connections yet.",
         "split": "Split",
         "editConnection": "Edit this connection"
+      },
+      "trustedHosts": {
+        "title": "Trusted hosts",
+        "description": "Host keys you have confirmed. Remote directories only open after you trust the server here.",
+        "empty": "You have not trusted any host yet.",
+        "loadFailed": "The trusted host list could not be read.",
+        "forget": "Forget",
+        "forgetFailed": "That host could not be removed. It is still on the list."
       }
     }
   },
@@ -881,6 +889,21 @@
       "description": "Ta operacija bo trajno izbrisala {count} predmetov z vašega računalnika.",
       "confirm": "Potrdite, če razumete, da tega ni mogoče razveljaviti.",
       "delete": "Izbriši"
+    },
+    "remoteHostKeyUnknown": {
+      "title": "This server’s identity has not been verified yet",
+      "description": "Alpha File Manager has connected to this host for the first time. Compare the fingerprint below with the one your server administrator gave you, then decide whether to trust it.",
+      "trust": "Trust and continue"
+    },
+    "remoteHostKeyChanged": {
+      "title": "This server’s identity has changed",
+      "description": "The host key presented by this server does not match the one you trusted before. This can mean the server was reinstalled, or that someone is intercepting the connection.",
+      "expected": "Previously trusted fingerprint:",
+      "trustAnyway": "Replace and continue"
+    },
+    "remoteHostKeyCommon": {
+      "algorithm": "Host key algorithm: {algorithm}",
+      "hint": "You can check it yourself with: ssh-keygen -lf <host key file>"
     }
   },
   "notifications": {

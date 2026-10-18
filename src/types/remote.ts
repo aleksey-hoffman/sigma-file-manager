@@ -121,6 +121,8 @@ export interface RemoteErrorPayload {
   fingerprint?: string;
   /** 已记录、但与本次不一致的指纹。只有 `host_key_changed` 才有。 */
   expectedFingerprint?: string;
+  /** 本次收到的主机公钥算法名（如 `Ed25519`）。 */
+  keyType?: string;
 }
 
 /** 主机密钥类错误的两个 kind。抽出来是为了让调用点只能走「确认流程」。 */

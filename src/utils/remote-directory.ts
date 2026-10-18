@@ -25,6 +25,14 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
+import {
+  HOST_KEY_CHANGED_KIND,
+  HOST_KEY_UNKNOWN_KIND,
+  isHostKeyError,
+  type RemoteConnection,
+  type RemoteErrorPayload,
+} from '@/types/remote';
+import { parseRemotePath } from '@/utils/remote-paths';
 
 /** 列远程目录。失败时抛出的值是 `{ kind, message }`，不是 `String`。 */
 export const REMOTE_READ_DIR_COMMAND = 'remote_read_dir';
@@ -32,12 +40,17 @@ export const REMOTE_READ_DIR_COMMAND = 'remote_read_dir';
 /** 取单个远程条目的元数据。失败时抛出的值同 `remote_read_dir`。 */
 export const REMOTE_STAT_COMMAND = 'remote_stat_dir_entry';
 
-/** `RemoteError` 的前端形状，字段名与 `error.rs` 的 serde 输出一致。 */
-export interface RemoteErrorPayload {
-  kind: string;
-  message: string;
-}
-
+/**
+ * 认得出一个 `RemoteError` 载荷。
+ *
+ * 判定只要求 `kind` 与 `message` **都是 string** —— 主机密钥类错误额外带的
+ * `fingerprint` / `keyType` 是可选字段，不参与判定，所以老的测试载荷依然命中。
+ *
+ * 这里刻意**不再本地声明一份 `RemoteErrorPayload`**：那份只有 `{ kind, message }`
+ * 的简化镜像曾经把 `@/types/remote` 的正式类型遮住，导致 `buildHostKeyTrustPrompt`
+ * 读 `keyType` / `expectedFingerprint` 时报「属性不存在」——
+ * 一个「看起来对、实际少两个字段」的影子类型，比缺类型更危险。
+ */
 export function isRemoteErrorPayload(value: unknown): value is RemoteErrorPayload {
   return typeof value === 'object'
     && value !== null
@@ -94,3 +107,108 @@ export function describeRemoteError(caught: unknown): string {
 
   return String(caught);
 }
+
+// ---------------------------------------------------------------------------
+// 主机密钥信任流（2026-10-18 决策 3：首见弹窗确认指纹）
+// ---------------------------------------------------------------------------
+
+/** 已信任主机的一行。设置页的「查看 / 删除」用它。 */
+export interface KnownHostSummary {
+  host: string;
+  port: number;
+  fingerprint: string;
+  keyType: string;
+  addedAt: number;
+}
+
+/** 用户需要在弹窗里核对的内容。 */
+export interface HostKeyTrustPrompt {
+  /** 触发这次提示的远程路径，信任之后要重试的就是它。 */
+  path: string;
+  host: string;
+  port: number;
+  fingerprint: string;
+  keyType: string;
+  /** `true` = 与已信任记录不一致（要显式警告），`false` = 首次见到。 */
+  changed: boolean;
+  /** 只有 `changed` 时有值：用户当初信任的那一份。 */
+  expectedFingerprint?: string;
+}
+
+/**
+ * 从一次失败里拼出「要问用户什么」。**纯函数**，可以脱离 UI 逐条钉住。
+ *
+ * 返回 `null` 表示「这不是主机密钥问题，别弹窗」。三种判空的情形：
+ * 不是主机密钥错误、路径不是远程路径、连接在表里查不到 ——
+ * 最后一种发生时**宁可不弹**，因为弹出一个没有 host/port 的确认框
+ * 只会让用户点「信任」之后仍然失败。
+ */
+export function buildHostKeyTrustPrompt(
+  caught: unknown,
+  path: string,
+  connection: RemoteConnection | undefined,
+): HostKeyTrustPrompt | null {
+  if (!isHostKeyError(caught) || !connection) {
+    return null;
+  }
+
+  const parsed = parseRemotePath(path);
+
+  if (parsed === null || parsed.connectionId !== connection.id) {
+    return null;
+  }
+
+  // `isHostKeyError` 已经把 `caught` 收窄成 `RemoteErrorPayload & { fingerprint: string }`，
+  // 这里**刻意不再 as 一次**：一旦上游的类型守卫被改松，`error.keyType` 会立刻报错，
+  // 而不是被一个断言悄悄吞掉。
+  const error = caught;
+  const changed = error.kind === HOST_KEY_CHANGED_KIND;
+
+  return {
+    path,
+    host: connection.host,
+    port: connection.port,
+    fingerprint: error.fingerprint,
+    keyType: error.keyType ?? '',
+    changed,
+    ...(changed && error.expectedFingerprint
+      ? { expectedFingerprint: error.expectedFingerprint }
+      : {}),
+  };
+}
+
+/**
+ * 执行用户的「我核对过了」——**先删旧记录，再写新记录**。
+ *
+ * 顺序不能反：`trust` 遇到同名主机是**覆盖**（`known_hosts::trust` 的既定语义），
+ * 所以其实只调 trust 也够。这里仍然先 forget，是为了让「密钥变了」这条路
+ * 在后端被改成追加式时也不会留下两条互相矛盾的记录。
+ */
+export async function applyHostKeyTrust(prompt: HostKeyTrustPrompt): Promise<void> {
+  if (prompt.changed) {
+    await invoke<boolean>('remote_forget_host', {
+      host: prompt.host,
+      port: prompt.port,
+    });
+  }
+
+  await invoke('remote_trust_host', {
+    host: prompt.host,
+    port: prompt.port,
+    fingerprint: prompt.fingerprint,
+    keyType: prompt.keyType,
+  });
+}
+
+export async function listKnownHosts(): Promise<KnownHostSummary[]> {
+  return invoke<KnownHostSummary[]>('remote_list_known_hosts');
+}
+
+export async function forgetKnownHost(host: string, port: number): Promise<boolean> {
+  return invoke<boolean>('remote_forget_host', {
+    host,
+    port,
+  });
+}
+
+export { HOST_KEY_CHANGED_KIND, HOST_KEY_UNKNOWN_KIND };

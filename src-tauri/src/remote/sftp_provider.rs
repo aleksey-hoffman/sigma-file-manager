@@ -109,6 +109,14 @@ struct HostKeyObservation {
     decision: HostKeyDecision,
 }
 
+impl HostKeyObservation {
+    /// 指纹与算法名**成对**交给错误构造器：单给一串 `SHA256:…` 的话，
+    /// 弹窗里用户无从判断那是什么算法。
+    fn identity(&self) -> crate::remote::error::HostKeyIdentity {
+        crate::remote::error::HostKeyIdentity::new(&self.fingerprint, &self.key_type)
+    }
+}
+
 /// 只在指纹与已信任记录一致时放行。
 struct HostKeyHandler {
     known_hosts: Arc<Vec<KnownHostEntry>>,
@@ -151,12 +159,15 @@ fn host_key_rejection(
     host: &str,
 ) -> Option<RemoteError> {
     let slot = observed.lock().ok().and_then(|guard| guard.clone())?;
+    // **先取身份再匹配**：`slot.decision` 是按值匹配的，取完之后 slot 就被部分移动，
+    // 再去读它的指纹会编译不过。
+    let identity = slot.identity();
 
     match slot.decision {
         HostKeyDecision::Trusted => None,
-        HostKeyDecision::Unknown => Some(RemoteError::host_key_unknown(host, slot.fingerprint)),
+        HostKeyDecision::Unknown => Some(RemoteError::host_key_unknown(host, identity)),
         HostKeyDecision::Changed { expected } => {
-            Some(RemoteError::host_key_changed(host, slot.fingerprint, expected))
+            Some(RemoteError::host_key_changed(host, identity, expected))
         }
     }
 }
