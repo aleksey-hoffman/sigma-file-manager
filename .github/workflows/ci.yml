@@ -147,6 +147,27 @@ jobs:
         timeout-minutes: 15
         run: npm run test:e2e:webdriver:skip-build
 
+      # The suite keeps all app data in a temp folder (see e2e-webdriver/wdio.conf.js).
+      # On this fresh runner the app's default folders must therefore stay empty.
+      - name: Check that the e2e run left no app data behind
+        shell: pwsh
+        run: |
+          $leaks = @()
+          $roamingDirectory = Join-Path $env:APPDATA 'com.sigma-file-manager.app'
+          if (Test-Path $roamingDirectory) { $leaks += $roamingDirectory }
+          # Tauri creates this folder for the WebView profile before the
+          # WEBVIEW2_USER_DATA_FOLDER override applies; it must stay empty.
+          $localDirectory = Join-Path $env:LOCALAPPDATA 'com.sigma-file-manager.app'
+          if ((Test-Path $localDirectory) -and (Get-ChildItem -Force $localDirectory | Select-Object -First 1)) { $leaks += $localDirectory }
+          $leftoverRunDirectories = Get-ChildItem -Force -Directory -Path ([System.IO.Path]::GetTempPath()) -Filter 'sfm-e2e-*' -ErrorAction SilentlyContinue
+          $leaks += $leftoverRunDirectories.FullName
+          if ($leaks.Count -gt 0) {
+            Write-Host "Unexpected app data after the e2e run:"
+            $leaks | ForEach-Object { Write-Host "  $_"; Get-ChildItem -Force -Recurse $_ -ErrorAction SilentlyContinue | Select-Object -First 20 -ExpandProperty FullName }
+            exit 1
+          }
+          Write-Host 'No app data outside the run folder.'
+
       - name: Upload e2e artifacts
         if: failure()
         uses: actions/upload-artifact@v4
