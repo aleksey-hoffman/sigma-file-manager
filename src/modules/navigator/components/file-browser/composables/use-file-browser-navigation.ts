@@ -25,6 +25,7 @@ import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
@@ -36,6 +37,8 @@ import {
   resolveDirectoryContents,
   getLocationsEntriesDisplaySignature,
 } from '@/utils/virtual-locations';
+import { isRemotePath, parseRemotePath } from '@/utils/remote-paths';
+import { describeRemoteError } from '@/utils/remote-directory';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { getFileBrowserSortReadDirOptions } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
@@ -119,6 +122,53 @@ export function useFileBrowserNavigation(
   const itemCountsStore = useItemCountsStore();
   const statusCenterStore = useStatusCenterStore();
   const platformStore = usePlatformStore();
+  const remoteConnectionsStore = useRemoteConnectionsStore();
+
+  /**
+   * 这个目录要不要跑本地文件系统那两件配套工作：**目录监听**与**子目录大小统计**。
+   *
+   * FORK-MODIFICATION 2026-10-18：远程路径要一并排除（阶段 2 需求 1）。
+   *
+   * 改动前只排除 `isVirtualDirectoryPath`，于是远程目录照样触发
+   * `watch_directory` 与 `get_dir_sizes_batch`。两者都 catch 掉只打日志，不会崩，
+   * **所以它不会以报错的形式暴露** —— 表现是：远程目录卡片上「大小」那一列永远在转圈，
+   * 控制台刷一串本地路径 stat 失败的日志，而用户完全不知道发生了什么。
+   *
+   * 监听同理：`watch_directory` 盯的是本地 inotify/ReadDirectoryChangesW，
+   * 它对 `sfm://remote/...` 根本没有对应的 OS 句柄，永远不会触发事件。
+   */
+  function requiresLocalDirectorySideWork(path: string): boolean {
+    return !isVirtualDirectoryPath(path) && !isRemotePath(path);
+  }
+
+  /**
+   * FORK-MODIFICATION 2026-10-18：远程目录卡片要显示**连接名**而不是连接 id（阶段 2 需求 1）。
+   *
+   * 远程路径的「显示名」是 `sfm://remote/<uuid>`，而 uuid 是 `createRemoteConnectionId()`
+   * 生成的随机串。改动前标签页上写的就是那串 uuid，用户完全对不上是哪台机器。
+   *
+   * 查不到连接就退回 `getPathDisplayName` 的原结果，而不是空串 ——
+   * 连接被删掉后仍留在 workspace 里的标签页不该变成空白。
+   */
+  function getRemoteTabName(path: string): string | null {
+    const parsed = parseRemotePath(path);
+
+    if (parsed === null) {
+      return null;
+    }
+
+    const connection = remoteConnectionsStore.getConnection(parsed.connectionId);
+
+    if (!connection) {
+      return null;
+    }
+
+    // 连接根显示连接名；根以下的目录显示远端目录名，
+    // 否则面包屑显示「速豹堂 / pub」而标签页只写「速豹堂」，点进去就不知道在哪。
+    return parsed.remotePath === '/'
+      ? connection.name
+      : (getPathDisplayName(path) || connection.name);
+  }
 
   function getParentOfPath(path: string): string | null {
     return getNavigableParentPath(path, platformStore.currentPlatform);
@@ -131,6 +181,21 @@ export function useFileBrowserNavigation(
   async function directoryPathExists(path: string): Promise<boolean> {
     if (isVirtualDirectoryPath(path)) {
       return true;
+    }
+
+    // FORK-MODIFICATION 2026-10-18：远程路径要问远程，不要问本地盘。
+    // 改动前这里直接 `invoke('read_dir', …)`，远程路径必然失败 → 返回 false
+    // → `validateCurrentPath` 判成「当前目录没了」→ 一路往上走到默认目录。
+    // 今天它还没被触发（远程目录不启动目录监听，事件源不存在），
+    // 但这是一颗定时炸弹：谁给远程目录加上刷新轮询，谁就会踩到「点远程连接又被弹回本机」。
+    if (isRemotePath(path)) {
+      try {
+        await resolveDirectoryContents(path);
+        return true;
+      }
+      catch {
+        return false;
+      }
     }
 
     try {
@@ -447,9 +512,11 @@ export function useFileBrowserNavigation(
       currentTab.dirEntries = result.entries;
 
       if (options.updateTabName) {
-        currentTab.name = isVirtualLocationPath(result.path)
-          ? result.path
-          : (getPathDisplayName(result.path) || result.path);
+        // 远程路径优先：连接根要显示连接名而不是 uuid（见 getRemoteTabName）。
+        currentTab.name = getRemoteTabName(result.path)
+          ?? (isVirtualLocationPath(result.path)
+            ? result.path
+            : (getPathDisplayName(result.path) || result.path));
       }
     }
 
@@ -471,7 +538,7 @@ export function useFileBrowserNavigation(
       .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
       .map(entry => entry.path);
 
-    if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
+    if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && requiresLocalDirectorySideWork(result.path)) {
       dirSizesStore.requestSizesBatch(dirPaths);
     }
   }
@@ -538,7 +605,7 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && requiresLocalDirectorySideWork(result.path)) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
     }
@@ -682,7 +749,7 @@ export function useFileBrowserNavigation(
       isRefreshing.value = false;
       scheduleDirectoryIconPrefetch(result.entries);
 
-      if (!isVirtualDirectoryPath(result.path)) {
+      if (requiresLocalDirectorySideWork(result.path)) {
         logDirWatcherDiag('readDir starting watcher after load', {
           path: result.path,
           entryCount: result.entries.length,
@@ -695,7 +762,11 @@ export function useFileBrowserNavigation(
         return;
       }
 
-      const errorMessage = caughtError instanceof Error ? caughtError.message : String(caughtError);
+      // FORK-MODIFICATION 2026-10-18：`String(caughtError)` 对远程错误无效（阶段 2 需求 1）。
+      // 远程 `RemoteError` 序列化成**普通对象** `{ kind, message }`，走 `String()` 得到
+      // 字面量 `[object Object]` —— 认证失败时用户看到的就是这一串。
+      // `describeRemoteError` 对本地错误的行为与原来完全一致，只多认一种形状。
+      const errorMessage = describeRemoteError(caughtError);
       error.value = errorMessage;
       console.error(caughtError);
     }

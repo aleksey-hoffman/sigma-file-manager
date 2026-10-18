@@ -14,6 +14,7 @@ import normalizePath, {
 } from '@/utils/normalize-path';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
 import { getRemoteParentPath, isRemotePath } from '@/utils/remote-paths';
+import { readRemoteDirectory, statRemoteEntry } from '@/utils/remote-directory';
 import {
   isUnderUnixSystemMount,
   isWindowsLocationsScopePath,
@@ -207,6 +208,19 @@ export async function resolveDirectoryContents(
     return readWslHostDirectory();
   }
 
+  // FORK-MODIFICATION 2026-10-18：远程分支（阶段 2 需求 1）。
+  //
+  // 改动前 `sfm://remote/...` 落到下面的本地 `read_dir`，Rust 拿它去 `fs::metadata`
+  // 必然失败；导航器再把这个失败当「路径打不开」静默跳到默认目录 ——
+  // 用户看到的就是「点远程连接，右栏变成 C:\Users\...」。这不是渲染问题，是一次静默兜底。
+  //
+  // `options` 刻意**不传**：它控制的是本地盘的快捷方式目标、硬链接计数与条目数统计，
+  // 远程 provider 一个都给不出。把本地语义的开关塞给远程命令，
+  // 只会让后端多出一堆「收到但必须忽略」的字段。
+  if (isRemotePath(path)) {
+    return readRemoteDirectory(path);
+  }
+
   return invoke<DirContents>('read_dir', {
     path,
     options,
@@ -223,6 +237,12 @@ export async function resolveDirEntry(
 
   if (isWslHostVirtualPath(path)) {
     return createWslHostDirEntry();
+  }
+
+  // 远程路径没有「本地 stat 超时」这回事 —— 超时是本地盘慢目录的缓解手段，
+  // 远程的慢来自网络与服务器，塞一个本地阈值进去只会让人误以为它在防什么。
+  if (isRemotePath(path)) {
+    return statRemoteEntry(path);
   }
 
   try {

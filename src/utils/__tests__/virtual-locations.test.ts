@@ -2,7 +2,13 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
   LOCATIONS_VIRTUAL_PATH,
   WSL_HOST_VIRTUAL_PATH,
@@ -18,10 +24,24 @@ import {
   isVirtualDirectoryPath,
   isVirtualLocationPath,
   isWslHostVirtualPath,
+  resolveDirEntry,
+  resolveDirectoryContents,
   shouldPrependLocationsCrumb,
   virtualLocationPathExists,
 } from '@/utils/virtual-locations';
 import type { DriveInfo } from '@/types/drive-info';
+
+// FORK-MODIFICATION 2026-10-18：远程分支的判别点全在「invoke 了哪个 command」上，
+// 所以这里必须把 `@tauri-apps/api/core` 换成桩 —— 真实模块在测试环境里没有 IPC。
+const { invokeMock } = vi.hoisted(() => {
+  return {
+    invokeMock: vi.fn<(command: string, payload?: unknown) => Promise<unknown>>(),
+  };
+});
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: invokeMock,
+}));
 
 describe('virtual-locations', () => {
   it('detects the locations virtual path', () => {
@@ -309,6 +329,159 @@ describe('virtual-locations', () => {
       expect(shouldPrependLocationsCrumb('/Volumes/MyDisk', 'macos')).toBe(true);
       expect(shouldPrependLocationsCrumb('/media/user/disk', 'linux')).toBe(true);
       expect(shouldPrependLocationsCrumb('/', 'linux')).toBe(true);
+    });
+  });
+
+  // FORK-MODIFICATION 2026-10-18：远程目录的真实出口（阶段 2 需求 1）。
+  //
+  // 这是需求 1 的根因所在：改动前 `sfm://remote/...` 一律落到本地 `read_dir`，
+  // Rust 拿它去 `fs::metadata` 必然失败，导航器再把失败静默兜底成默认目录 ——
+  // 用户看到的就是「点远程连接，右栏变成 C:\Users\...」。
+  describe('远程路径分发', () => {
+    const remoteContents = {
+      path: 'sfm://remote/conn-a',
+      entries: [],
+      total_count: 0,
+      dir_count: 0,
+      file_count: 0,
+      opened_directory_times: {
+        modified_time: 0,
+        accessed_time: 0,
+        created_time: 0,
+      },
+    };
+
+    beforeEach(() => {
+      invokeMock.mockReset();
+    });
+
+    it('远程目录走 remote_read_dir，不再走本地 read_dir', async () => {
+      invokeMock.mockResolvedValue(remoteContents);
+
+      const result = await resolveDirectoryContents('sfm://remote/conn-a');
+
+      expect(invokeMock).toHaveBeenCalledTimes(1);
+      expect(invokeMock).toHaveBeenCalledWith('remote_read_dir', {
+        path: 'sfm://remote/conn-a',
+      });
+      expect(result).toBe(remoteContents);
+    });
+
+    it('remote_read_dir 的结果原样返回（字段名不做二次加工）', async () => {
+      const payload = {
+        ...remoteContents,
+        path: 'sfm://remote/conn-a/pub',
+        total_count: 1,
+        dir_count: 1,
+        entries: [{
+          name: 'docs',
+          path: 'sfm://remote/conn-a/pub/docs',
+          is_file: false,
+          is_dir: true,
+          is_hidden: false,
+          is_symlink: false,
+          size: 0,
+          item_count: null,
+          created_time: 0,
+          modified_time: 0,
+          accessed_time: 0,
+          ext: null,
+          mime: null,
+        }],
+      };
+      invokeMock.mockResolvedValue(payload);
+
+      const result = await resolveDirectoryContents('sfm://remote/conn-a/pub');
+
+      expect(result.entries[0]?.path).toBe('sfm://remote/conn-a/pub/docs');
+      expect(result.total_count).toBe(1);
+    });
+
+    it('不把本地的 readDirOptions 塞给远程 command', async () => {
+      // 这些开关（快捷方式目标 / 硬链接计数 / 条目数）远程一个都给不出。
+      // 传过去只会让后端多出一堆「收到但必须忽略」的字段。
+      invokeMock.mockResolvedValue(remoteContents);
+
+      await resolveDirectoryContents('sfm://remote/conn-a', {
+        includeShortcutTargets: true,
+        includeHardLinkCounts: true,
+      });
+
+      expect(invokeMock).toHaveBeenCalledWith('remote_read_dir', {
+        path: 'sfm://remote/conn-a',
+      });
+    });
+
+    it('远程单个条目走 remote_stat_dir_entry', async () => {
+      const entry = {
+        name: 'readme.txt',
+        path: 'sfm://remote/conn-a/readme.txt',
+        is_file: true,
+        is_dir: false,
+      };
+      invokeMock.mockResolvedValue(entry);
+
+      const result = await resolveDirEntry('sfm://remote/conn-a/readme.txt');
+
+      expect(invokeMock).toHaveBeenCalledWith('remote_stat_dir_entry', {
+        path: 'sfm://remote/conn-a/readme.txt',
+      });
+      expect(result).toBe(entry);
+    });
+
+    it('远程条目取不到时返回 null，不抛错', async () => {
+      // `resolveDirEntry` 的既有契约就是「拿不到给 null」，地址栏自动补全依赖它。
+      invokeMock.mockRejectedValue({
+        kind: 'not_found',
+        message: '没有那个条目',
+      });
+
+      await expect(resolveDirEntry('sfm://remote/conn-a/nope')).resolves.toBeNull();
+    });
+
+    it('远程目录读失败时原样抛出 RemoteError 载荷', async () => {
+      const remoteError = {
+        kind: 'auth',
+        message: '密码错误',
+      };
+      invokeMock.mockRejectedValue(remoteError);
+
+      // 不吞错误：导航器要靠它把「密码错」显示给用户，而不是静默跳走。
+      await expect(resolveDirectoryContents('sfm://remote/conn-a')).rejects.toBe(remoteError);
+    });
+
+    it('本地路径仍然走 read_dir（阳性对照）', async () => {
+      // 没有这一条，上面五条全绿也可能是「所有路径都改走远程了」。
+      invokeMock.mockResolvedValue(remoteContents);
+
+      await resolveDirectoryContents('C:/Users');
+
+      expect(invokeMock).toHaveBeenCalledWith('read_dir', {
+        path: 'C:/Users',
+        options: undefined,
+      });
+    });
+
+    it('本地单个条目仍然走 get_dir_entry_with_timeout（阳性对照）', async () => {
+      invokeMock.mockResolvedValue(null);
+
+      await resolveDirEntry('C:/Users', 250);
+
+      expect(invokeMock).toHaveBeenCalledWith('get_dir_entry_with_timeout', {
+        path: 'C:/Users',
+        timeoutMs: 250,
+      });
+    });
+
+    it('位置与 WSL 虚拟目录不受远程分支影响（阳性对照）', async () => {
+      invokeMock.mockResolvedValue([]);
+      await resolveDirectoryContents(LOCATIONS_VIRTUAL_PATH);
+      expect(invokeMock).toHaveBeenCalledWith('get_system_drives');
+
+      invokeMock.mockReset();
+      invokeMock.mockResolvedValue([]);
+      await resolveDirectoryContents(WSL_HOST_VIRTUAL_PATH);
+      expect(invokeMock).toHaveBeenCalledWith('get_system_drives');
     });
   });
 });

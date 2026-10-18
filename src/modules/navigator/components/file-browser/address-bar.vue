@@ -49,6 +49,7 @@ import {
 } from '@/utils/virtual-locations';
 import { useDrives } from '@/modules/home/composables/use-drives';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
+import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import { buildAddressBarParts } from './address-bar-parts';
 
 const props = defineProps<{
@@ -64,6 +65,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const platformStore = usePlatformStore();
+const remoteConnectionsStore = useRemoteConnectionsStore();
 const { drives } = useDrives();
 const locationsDirectoryPaths = computed(() => {
   return buildLocationsDirectoryFromDrives(drives.value).entries.map(entry => entry.path);
@@ -79,10 +81,23 @@ const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
 const openSeparatorIndex = ref<number | null>(null);
 
+// FORK-MODIFICATION 2026-10-18：远程面包屑要用连接名而不是连接 id（阶段 2 需求 1）。
+// 导航栏的 store 是懒加载的（面板 mounted 才 init），所以这里**不**主动 init ——
+// 查不到名字时面包屑会退回显示 id，而那条路径本来也只有从导航栏点进来才存在。
+const remoteConnectionNames = computed(() => {
+  return Object.fromEntries(
+    remoteConnectionsStore.connections.map(connection => [connection.id, connection.name]),
+  );
+});
+
 const addressParts = computed(() => buildAddressBarParts(
   props.currentPath,
   platformStore.currentPlatform,
   t('locations'),
+  {
+    rootLabel: t('settingsTabs.remote'),
+    connectionNames: remoteConnectionNames.value,
+  },
 ));
 
 watch(() => props.currentPath, () => {
