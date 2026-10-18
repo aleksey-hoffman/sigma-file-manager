@@ -638,7 +638,8 @@
         "connectionIdInvalid": "连接 id 不合法。",
         "remoteConnectionsStorageNotReady": "连接列表尚未加载完成，请稍后重试。",
         "unknown": "保存连接失败。",
-        "localPathHasWhitespace": "本地目录不能包含空格。"
+        "localPathHasWhitespace": "本地目录不能包含空格。",
+        "testInvalidInput": "当前设置无法测试，请先填好服务器地址与端口。"
       },
       "localPath": {
         "hint": "可选。填写后，打开该连接会自动显示左右双屏：左侧是本地目录，右侧是远端目录。"

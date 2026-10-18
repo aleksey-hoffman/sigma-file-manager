@@ -321,13 +321,19 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
    * `password` 传 `undefined` 表示「这次不提交凭据」，与空串是两件事：
    * 匿名 FTP 会回 `verified` + `passwordChecked: false`，
    * 传空串则会让后端把空口令真的发出去。
+   *
+   * ⚠️ **`clearPassword` 的优先级与 `saveConnection` 保持一致**：
+   * 那里是 `hasNewPassword = password.length > 0 && !clearPassword`，
+   * 即「勾了移除，键入的密码也不算数」。这里必须同规则，
+   * 否则同一张表单里这个勾选框会有两种含义 —— 用户勾掉密码、点测试，
+   * 却拿刚要被删掉的那条去认证并回一句「密码没问题」。
    */
   async function testConnection(
     form: RemoteConnectionForm,
   ): Promise<RemoteConnectionTestReport> {
-    let password = form.password.length > 0 ? form.password : undefined;
+    let password = form.password.length > 0 && !form.clearPassword ? form.password : undefined;
 
-    if (password === undefined && form.id) {
+    if (password === undefined && form.id && !form.clearPassword) {
       // 编辑既有连接且密码框留空：空串的语义是「不碰已存的密码」，
       // 所以要把存过的那条取出来用，否则测的其实是「空密码」。
       password = (await loadCredentialForTest(form.id)) ?? undefined;

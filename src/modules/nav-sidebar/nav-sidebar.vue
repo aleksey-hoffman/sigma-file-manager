@@ -34,6 +34,7 @@ import { formatKeybindingKeys } from '@/modules/extensions/api';
 import QuickAccessPanel from './components/quick-access-panel.vue';
 import RemoteNavPanel from './components/remote-nav-panel.vue';
 import { resolveRemoteOpenPanes } from '@/modules/remote/utils/remote-panes';
+import { openSettingsTab } from '@/modules/settings/utils/open-settings';
 import { buildRemoteConnectionPath } from '@/utils/remote-paths';
 import type { RemoteConnection } from '@/types/remote';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
@@ -158,9 +159,12 @@ function handleRemotePanelOpenChange(value: boolean) {
   remotePanelOpen.value = value;
 }
 
-function openRemoteSettings() {
+async function openRemoteSettings() {
   remotePanelOpen.value = false;
-  void router.push({ name: 'settings' });
+  // 不能只 `router.push({ name: 'settings' })`：用户若已经停在设置页的别的分类上，
+  // 点了这个入口会落在旧分类，看着像「按钮没反应」。仓库已有
+  // `openSettingsTab`，它会先 setCurrentTab 再跳转。
+  await openSettingsTab('remote');
 }
 
 /**

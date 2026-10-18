@@ -22,7 +22,9 @@
 //! 阶段 2 真正读取远端目录时**不得复用本模块**，那时必须先落地 known_hosts /
 //! 证书固定，否则就是一次静默的中间人窗口。
 
+use std::pin::Pin;
 use std::sync::{Arc, Mutex};
+use std::task::{Context, Poll};
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -30,10 +32,19 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use super::connection::RemoteProtocol;
 use super::error::{RemoteError, RemoteErrorKind};
-use super::transport::{self, ProxyConfig, Socks5CommandKind};
+use super::transport::{self, ProxyConfig, Socks5CommandKind, TransportStream};
 
 /// 整个探测的上限。用户点一次按钮不该等更久。
 pub const PROBE_TIMEOUT: Duration = Duration::from_secs(15);
+
+/// 先替 russh 替我们看一眼「这个端口上跑的是什么」的时限。
+const BANNER_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// 标识串预读的字节上限，与 russh 的 `SSH_ID_MAX_LINE_LEN` 对齐。
+const BANNER_MAX_BYTES: usize = 255;
+
+/// 允许的前导行数，与 russh 的 `SSH_ID_MAX_PRE_BANNER_LINES` 对齐。
+const BANNER_MAX_PRE_LINES: usize = 20;
 
 /// 单条 FTP 回复的上限。防「服务端一直不发换行」把内存吃光。
 const MAX_REPLY_BYTES: usize = 1024;
@@ -68,11 +79,16 @@ impl ProbeOutcome {
         }
     }
 
-    /// 归到 `RemoteErrorKind`，让前端的错误映射表能复用同一套措辞与配色。
+    /// 归到 `RemoteErrorKind`。
+    ///
+    /// ⚠️ **当前没有生产调用方**，前端是按 `outcome` 字符串分派的。
+    /// 留着是因为阶段 2 把「结论」接进统一错误提示时会用到；
+    /// 但在那之前它只有测试在调，**别把它当成已经接上的映射表**。
     pub fn error_kind(self) -> RemoteErrorKind {
         match self {
-            Self::Verified => RemoteErrorKind::Auth,
-            Self::AuthRejected | Self::MissingCredential => RemoteErrorKind::Auth,
+            Self::Verified | Self::AuthRejected | Self::MissingCredential => {
+                RemoteErrorKind::Auth
+            }
             Self::WrongProtocol | Self::ProtocolError => RemoteErrorKind::Protocol,
             Self::Unreachable => RemoteErrorKind::Unreachable,
         }
@@ -149,11 +165,16 @@ pub fn parse_ftp_reply_code(line: &str) -> Option<u16> {
 
 /// 服务端第一句就说自己不是 FTP 时用得上。
 ///
+/// **前置条件：`code` 一定不在 `200..=299` 里。** 两个调用点都在 `220` 这类
+/// 正常问候之后才走到这里（见 `probe_inner` 的显式 FTPS 分支与 `ftp_login`），
+/// 所以这里**没有 220 这个分支是刻意的**：给它挂一个 `ProtocolError` 看着像
+/// 「防止 220 被当成通过」，实际是一条永远走不到的死分支 —— 而它一旦被走到，
+/// 一条正常的欢迎语就会被报成协议错误。宁可让它显式落进 `_`。
+///
 /// `421` / `425` / `450` 都属于「我还在，只是现在不方便」，不是「协议不对」；
 /// 把它们误判成 wrong_protocol 会让用户去改协议设置，而真正的原因是稍后重试。
 pub fn classify_ftp_greeting(code: u16) -> ProbeOutcome {
     match code {
-        220 => ProbeOutcome::ProtocolError, // 220 之后还要 USER/PASS，这里只是「是 FTP」
         421 | 425 | 450 => ProbeOutcome::Unreachable,
         530 => ProbeOutcome::AuthRejected,
         _ => ProbeOutcome::WrongProtocol,
@@ -169,14 +190,6 @@ pub fn classify_ftp_auth_reply(code: u16) -> ProbeOutcome {
         421 | 425 | 450 => ProbeOutcome::Unreachable,
         _ => ProbeOutcome::ProtocolError,
     }
-}
-
-/// SFTP 用的 SSH 标识串。只用于在报告里显示与将来做 known_hosts。
-pub fn is_ssh_identifier(text: &str) -> bool {
-    let trimmed = text.trim();
-    trimmed.starts_with("SSH-2.0-")
-        || trimmed.starts_with("SSH-1.99-")
-        || trimmed.starts_with("SSH-1.100-")
 }
 
 // ---------------------------------------------------------------------------
@@ -314,12 +327,230 @@ impl russh::client::Handler for ProbeHandler {
     }
 }
 
+/// 把 SSH 握手失败分成「这不是 SSH 服务」与「网络/其它问题」。
+///
+/// **按 `russh::Error` 的变体匹配，不匹配错误文案。** 之前那版用
+/// `error.to_string().contains("kex" | "identification" | "handshake")`，
+/// 实际上 russh 0.63 的任何一条文案里都没有这些词（`Version` 是
+/// "invalid SSH version string"），于是「把 SFTP 指到 FTP 端口」永远落进
+/// `Unreachable`，界面让用户去检查地址与代理 —— 而那个端口明明有人在应答。
+/// 文案是 russh 的实现细节，变体才是契约。
+fn classify_ssh_handshake_error(error: russh::Error) -> RemoteError {
+    match error {
+        // 版本协商失败 = 对端第一句不是 SSH 标识串。
+        russh::Error::Version => RemoteError::protocol(format!(
+            "对端没有报出 SSH 标识串，可能不是 SSH 服务：{error}"
+        )),
+        // 换密钥失败：这台机器不认我们支持的算法，或它压根不是 SSH。
+        russh::Error::Kex | russh::Error::KexInit => {
+            RemoteError::protocol(format!("SSH 密钥交换失败，可能不是 SSH 服务：{error}"))
+        }
+        other => RemoteError::unreachable(format!("SSH 握手失败：{other}")),
+    }
+}
+
+/// 预读阶段对「这个端口上跑的是什么」的判断。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SshBanner {
+    /// 数据还不够，再读。
+    Pending,
+    /// 对端报出了 SSH 标识串。
+    Identified,
+    /// 对端说了很多话，但没有一行是 SSH 标识串。
+    Foreign,
+}
+
+/// 预读之后要不要继续握手。
+enum BannerCheck {
+    /// 是 SSH 服务（或对端还没开口），继续交给 russh。
+    Continue(ReplayStream<TransportStream>),
+    /// 对端有回应，但一直没报出 SSH 标识串。
+    NotSsh,
+}
+
+/// 从已收到的字节判断对端是不是 SSH 服务。**纯函数**，便于逐个字节钉住。
+///
+/// 逐行看：命中 `SSH-1.99-` / `SSH-2.0-` 前缀就是 SSH。RFC 4253 §4.2 允许
+/// 服务端在标识串之前先发几行前导文案，所以前若干行不是 SSH 并不下结论，
+/// 攒满 `BANNER_MAX_PRE_LINES` 行、或字节数触到 `BANNER_MAX_BYTES` 才判否。
+/// 最后一片还没换行时保持 `Pending`，等下一片。
+fn classify_ssh_banner(bytes: &[u8]) -> SshBanner {
+    let mut complete_lines = 0_usize;
+
+    for line in bytes.split_inclusive(|byte| *byte == b'\n') {
+        if !line.ends_with(b"\n") {
+            return SshBanner::Pending;
+        }
+        complete_lines += 1;
+        let text = String::from_utf8_lossy(line);
+        let text = text.trim_end_matches(['\r', '\n']);
+        if text.starts_with("SSH-1.99-") || text.starts_with("SSH-2.0-") {
+            return SshBanner::Identified;
+        }
+        if complete_lines >= BANNER_MAX_PRE_LINES {
+            return SshBanner::Foreign;
+        }
+    }
+
+    if bytes.len() >= BANNER_MAX_BYTES {
+        return SshBanner::Foreign;
+    }
+
+    SshBanner::Pending
+}
+
+/// 把预读时先取走的字节放回给读取方。
+///
+/// **没有它这一步就不成立**：读过的字节一旦丢掉，russh 会拿不到自己那份标识串，
+/// 于是对**每一个** SSH 服务都会失败。
+///
+/// 刻意做成泛型而不是绑死 `TransportStream`：这样回放逻辑可以脱离 socket
+/// 直接用 `Cursor` 验证 —— 一个「连不上就跳过」的测试等于没有测试。
+struct ReplayStream<R> {
+    prefix: std::io::Cursor<Vec<u8>>,
+    inner: R,
+}
+
+impl<R> AsyncRead for ReplayStream<R>
+where
+    R: AsyncRead + Unpin,
+{
+    fn poll_read(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+        buffer: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        let this = self.get_mut();
+        let start = this.prefix.position() as usize;
+        let available = this.prefix.get_ref().len().saturating_sub(start);
+
+        if available == 0 {
+            return Pin::new(&mut this.inner).poll_read(context, buffer);
+        }
+
+        let take = available.min(buffer.remaining());
+        match this.prefix.get_ref().get(start..start + take) {
+            Some(slice) => {
+                buffer.put_slice(slice);
+                this.prefix.set_position((start + take) as u64);
+                Poll::Ready(Ok(()))
+            }
+            // start..take 的两端都落在已知范围内，这里不可能失败。
+            // 真失败了也只能报出去 —— 悄悄返回空会变成永不推进的读循环。
+            None => Poll::Ready(Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "replay prefix out of range",
+            ))),
+        }
+    }
+}
+
+impl<R> AsyncWrite for ReplayStream<R>
+where
+    R: AsyncWrite + Unpin,
+{
+    fn poll_write(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+        buffer: &[u8],
+    ) -> Poll<std::io::Result<usize>> {
+        Pin::new(&mut self.get_mut().inner).poll_write(context, buffer)
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        Pin::new(&mut self.get_mut().inner).poll_flush(context)
+    }
+
+    fn poll_shutdown(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        Pin::new(&mut self.get_mut().inner).poll_shutdown(context)
+    }
+}
+
+/// 先自己读一眼对方的标识串，再决定要不要把它交给 russh。
+///
+/// # 为什么不能只靠 `classify_ssh_handshake_error`
+///
+/// russh 的 `read_ssh_id` 对客户端**允许 20 行前导行**（RFC 4253 §4.2 的
+/// pre-banner），只有先撞满这个上限才会吐 `Error::Version`。真实 FTP 服务
+/// 恰恰只发一行 `220 ...` 然后静静等待 —— 这一行被当前导行丢掉，russh 就
+/// 一直等，等到我们 15 秒后超时。用户看到的是「连接超时，服务器没有在时限内
+/// 回应」，于是去查地址和代理，可地址明明是对的，错的只是协议。
+///
+/// 所以这里**先读一眼**：读到的东西会由 `ReplayStream` 原样喂回去，
+/// 对真正的 SSH 服务完全透明；只有「对方说了话且不是 SSH 标识串」才提前下结论。
+async fn read_ssh_banner(
+    mut stream: TransportStream,
+) -> Result<BannerCheck, RemoteError> {
+    let mut buf: Vec<u8> = Vec::new();
+    let mut chunk = [0_u8; 256];
+
+    let read = tokio::time::timeout(BANNER_TIMEOUT, async {
+        let outcome: std::io::Result<()> = loop {
+            let taken = stream.read(&mut chunk).await?;
+            if taken == 0 {
+                // 对端关了连接：它连一句话都没说，交给 russh 报更准。
+                break Ok(());
+            }
+            buf.extend_from_slice(&chunk[..taken]);
+
+            if classify_ssh_banner(&buf) != SshBanner::Pending || buf.len() >= BANNER_MAX_BYTES {
+                break Ok(());
+            }
+        };
+        outcome
+    })
+    .await;
+
+    if let Ok(Err(error)) = read {
+        return Err(RemoteError::unreachable(format!("读取 SSH 标识串失败：{error}")));
+    }
+
+    // 一个字节都没收到 = 服务器没应答（例如 HTTP 这类「等你先说话」的服务）。
+    // 这种情况下 russh 自己再等一轮更合适，不要抢着下结论。
+    if buf.is_empty() {
+        return Ok(BannerCheck::Continue(ReplayStream {
+            prefix: std::io::Cursor::new(Vec::new()),
+            inner: stream,
+        }));
+    }
+
+    let identified = classify_ssh_banner(&buf) == SshBanner::Identified;
+
+    if !identified {
+        return Ok(BannerCheck::NotSsh);
+    }
+
+    Ok(BannerCheck::Continue(ReplayStream {
+        prefix: std::io::Cursor::new(buf),
+        inner: stream,
+    }))
+}
+
 async fn probe_sftp(
     target: &ProbeTarget,
     host: &str,
     command: Socks5CommandKind,
 ) -> Result<ConnectionTestReport, RemoteError> {
     let stream = transport::connect(&target.proxy, host, target.port, command).await?;
+
+    // 与 FTP 路径的「对端不是 FTP 服务」同一个结论码，用户拿到的处置一致：
+    // 去改协议或端口，而不是去查地址与代理。
+    let stream = match read_ssh_banner(stream).await? {
+        BannerCheck::Continue(stream) => stream,
+        BannerCheck::NotSsh => {
+            return Ok(ConnectionTestReport::new(
+                ProbeOutcome::WrongProtocol,
+                "该端口有回应，但对方没有报出 SSH 标识串 —— 多半不是 SSH 服务（协议选错，或端口填成了 FTP 等其它服务）",
+            ));
+        }
+    };
+
     let observed = Arc::new(Mutex::new(None));
     let handler = ProbeHandler {
         observed_key: Arc::clone(&observed),
@@ -331,17 +562,7 @@ async fn probe_sftp(
         handler,
     )
     .await
-    .map_err(|error| {
-            // 握手失败最常见的是「这台不是 SSH 服务」。别笼统报协议错。
-            let wrong_protocol = error.to_string().contains("kex")
-                || error.to_string().contains("identification")
-                || error.to_string().contains("handshake");
-            if wrong_protocol {
-                RemoteError::protocol(format!("对端没有完成 SSH 握手，可能不是 SSH 服务：{error}"))
-            } else {
-                RemoteError::unreachable(format!("SSH 握手失败：{error}"))
-            }
-        })?;
+    .map_err(classify_ssh_handshake_error)?;
 
     let identity = observed
         .lock()
@@ -425,6 +646,16 @@ where
     if user_code == 230 {
         return Ok(
             ConnectionTestReport::new(ProbeOutcome::Verified, "连接成功，服务器已接受该用户名")
+                .with_identity(identity),
+        );
+    }
+
+    // 530 在 USER 阶段就出来 = **用户名**被拒，不是「没提供密码」。
+    // 漏掉这一支会把它报成 missing_credential，让用户去检查密码框，
+    // 而密码一个字都没错。
+    if user_code == 530 || user_code == 532 {
+        return Ok(
+            ConnectionTestReport::new(ProbeOutcome::AuthRejected, "服务器拒绝了该用户名")
                 .with_identity(identity),
         );
     }
@@ -596,10 +827,12 @@ mod tests {
     }
 
     #[test]
-    fn greeting_220_means_it_is_an_ftp_server_not_that_login_worked() {
-        // 220 是「欢迎」，不是「通过」。归成 Verified 会让测试永远绿。
-        assert_eq!(classify_ftp_greeting(220), ProbeOutcome::ProtocolError);
+    fn greeting_classifier_only_ever_sees_non_2xx_replies() {
+        // 220 是「欢迎」，不是通过也不是失败。两个调用点都在 2xx 之后才调用，
+        // 所以这里刻意没有 220 分支 —— 加一个只会被误读成「代码处理过 220」。
+        assert_eq!(classify_ftp_greeting(421), ProbeOutcome::Unreachable);
         assert_eq!(classify_ftp_greeting(530), ProbeOutcome::AuthRejected);
+        assert_eq!(classify_ftp_greeting(500), ProbeOutcome::WrongProtocol);
     }
 
     #[test]
@@ -622,15 +855,6 @@ mod tests {
         assert_eq!(classify_ftp_auth_reply(532), ProbeOutcome::AuthRejected);
         assert_eq!(classify_ftp_auth_reply(421), ProbeOutcome::Unreachable);
         assert_eq!(classify_ftp_auth_reply(200), ProbeOutcome::ProtocolError);
-    }
-
-    #[test]
-    fn recognizes_ssh_identifiers() {
-        assert!(is_ssh_identifier("SSH-2.0-OpenSSH_9.6p1"));
-        assert!(is_ssh_identifier("SSH-1.99-OpenSSH_7.4"));
-        assert!(is_ssh_identifier("  SSH-2.0-OpenSSH\r\n"));
-        assert!(!is_ssh_identifier("220 ready"));
-        assert!(!is_ssh_identifier("SSH-1.5-老古董"));
     }
 
     #[test]
@@ -786,6 +1010,36 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_530_on_the_user_stage_is_a_rejected_username_not_a_missing_password() {
+        // 少了这条支路，它会落进 missing_credential，界面叫用户去检查密码框 ——
+        // 而密码一个字都没错，错的是用户名。
+        let (address, _, accepted) =
+            spawn_stub_ftp_with("230 已登录", "530 密码不对", "530 that account is not allowed");
+
+        let target = ProbeTarget {
+            protocol: RemoteProtocol::Ftp,
+            host: "127.0.0.1".to_string(),
+            port: address.port(),
+            username: "banned".to_string(),
+            password: Some("whatever".to_string()),
+            proxy: ProxyConfig::Direct,
+        };
+        let report = probe(&target).await.expect("探测应当成功返回报告");
+
+        assert_eq!(report.outcome, ProbeOutcome::AuthRejected);
+        assert!(
+            report.message.contains("用户名"),
+            "提示应当指向用户名，实际是：{}",
+            report.message
+        );
+        // 密码压根没被发出去，所以不能声称核验过。
+        assert!(!report.password_checked);
+        assert!(!commands_seen(&accepted)
+            .iter()
+            .any(|line| line.starts_with("PASS")));
+    }
+
+    #[tokio::test]
     async fn reports_missing_credential_instead_of_claiming_success() {
         let (address, _, mut accepted) = spawn_stub_ftp("230 已登录", "530 密码不对");
 
@@ -846,9 +1100,17 @@ mod tests {
         login_reply: &'static str,
         reject_reply: &'static str,
     ) -> (std::net::SocketAddr, String, StubLog) {
-        use std::io::{BufRead, BufReader, Write};
+        spawn_stub_ftp_with(login_reply, reject_reply, "331 need password")
+    }
+
+    /// `user_reply` 可变，是为了钉住「USER 阶段就回 530」这条支路 ——
+    /// 有些服务器在用户名上就拒绝，根本走不到 PASS。
+    fn spawn_stub_ftp_with(
+        login_reply: &'static str,
+        reject_reply: &'static str,
+        user_reply: &'static str,
+    ) -> (std::net::SocketAddr, String, StubLog) {
         use std::net::TcpListener;
-        use std::sync::{Arc, Mutex};
 
         const EXPECTED: &str = "s3cret";
 
@@ -858,7 +1120,7 @@ mod tests {
 
         let sink = Arc::clone(&accepted);
         std::thread::spawn(move || {
-            // **必须循环 accept**：一次探测只用一个连接，而这两个测试会对同一个
+            // **必须循环 accept**：一次探测只用一个连接，而有两个测试会对同一个
             // 假服务端探测两次（先对密码、再错密码）。只 accept 一次的话第二次
             // 直接 connection refused，断言读到的是 Unreachable ——
             // 看起来像「认证分类写错了」，其实压根没走到认证那一步。
@@ -868,7 +1130,7 @@ mod tests {
                 };
                 let log = Arc::clone(&sink);
                 std::thread::spawn(move || {
-                    serve_one_ftp_session(socket, login_reply, reject_reply, EXPECTED, log);
+                    serve_one_ftp_session(socket, login_reply, reject_reply, user_reply, EXPECTED, log);
                 });
             }
         });
@@ -880,6 +1142,7 @@ mod tests {
         socket: std::net::TcpStream,
         login_reply: &'static str,
         reject_reply: &'static str,
+        user_reply: &'static str,
         expected_password: &str,
         sink: StubLog,
     ) {
@@ -897,7 +1160,7 @@ mod tests {
         while reader.read_line(&mut line).unwrap_or(0) > 0 {
             let command = line.trim_end().to_string();
             let reply = if command.starts_with("USER") {
-                "331 need password"
+                user_reply
             } else if command.starts_with("PASS") {
                 if let Ok(mut log) = sink.lock() {
                     log.push(command.clone());
@@ -918,5 +1181,143 @@ mod tests {
 
     fn commands_seen(log: &StubLog) -> Vec<String> {
         log.lock().map(|entry| entry.clone()).unwrap_or_default()
+    }
+
+    // -----------------------------------------------------------------------
+    // SSH 标识串预读
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn one_foreign_line_alone_does_not_condemn_a_server() {
+        // RFC 4253 §4.2 允许 20 行前导文案，所以单独一行非 SSH **不能**判否。
+        // 真正判否的是「开口了却始终没报出标识串」——那条由
+        // `sftp_against_an_ftp_port_is_reported_as_wrong_protocol` 端到端钉住。
+        assert_eq!(
+            classify_ssh_banner(b"220 Welcome to my FTP server\r\n"),
+            SshBanner::Pending
+        );
+    }
+
+    #[test]
+    fn an_ssh_identifier_is_recognised() {
+        assert_eq!(
+            classify_ssh_banner(b"SSH-2.0-OpenSSH_9.6\r\n"),
+            SshBanner::Identified
+        );
+        // RFC 4253 允许 SSH-1.99- 的过渡标识串。
+        assert_eq!(
+            classify_ssh_banner(b"SSH-1.99-Acceptance\r\n"),
+            SshBanner::Identified
+        );
+    }
+
+    #[test]
+    fn pre_banner_lines_do_not_condemn_a_real_ssh_server() {
+        let mut payload = Vec::new();
+        for index in 0..5 {
+            payload.extend_from_slice(format!("banner line {index}\r\n").as_bytes());
+        }
+        payload.extend_from_slice(b"SSH-2.0-OpenSSH_9.6\r\n");
+
+        assert_eq!(classify_ssh_banner(&payload), SshBanner::Identified);
+    }
+
+    #[test]
+    fn a_server_that_never_stops_babbling_is_not_ssh() {
+        // 20 行是 russh 自己的前导行上限；对齐它才不会两处判断打架。
+        let payload = "220 nope\r\n".repeat(BANNER_MAX_PRE_LINES + 1);
+        assert_eq!(
+            classify_ssh_banner(payload.as_bytes()),
+            SshBanner::Foreign
+        );
+    }
+
+    #[test]
+    fn an_incomplete_line_stays_pending() {
+        // 只拿到半句时不能判否 —— 下一片数据可能正好补上换行。
+        assert_eq!(classify_ssh_banner(b"SSH-2.0-Open"), SshBanner::Pending);
+        assert_eq!(classify_ssh_banner(b""), SshBanner::Pending);
+    }
+
+    #[tokio::test]
+    async fn the_pre_read_bytes_are_handed_back_to_the_next_reader() {
+        // 没有回放，预读就会把每个 SSH 服务的标识串吃掉 —— 那比原来的
+        // 误判更糟。读完整条流，确认字节一个不少、顺序也不变。
+        let banner = b"SSH-2.0-OpenSSH_9.6\r\n".to_vec();
+        let mut replay = ReplayStream {
+            prefix: std::io::Cursor::new(banner.clone()),
+            inner: std::io::Cursor::new(b"after-the-banner".to_vec()),
+        };
+
+        let mut seen = Vec::new();
+        tokio::io::AsyncReadExt::read_to_end(&mut replay, &mut seen)
+            .await
+            .expect("read replay stream");
+
+        assert!(seen.starts_with(&banner), "回放字节必须排在最前面");
+        assert_eq!(seen, {
+            let mut expected = banner.clone();
+            expected.extend_from_slice(b"after-the-banner");
+            expected
+        });
+    }
+
+    #[tokio::test]
+    async fn the_pre_read_survives_a_small_read_buffer() {
+        // 预读的字节可能比读取方的缓冲区还长。若只按 buffer.remaining() 截断就返回，
+        // 剩余部分会被丢掉 —— 这里逐字节读，逼出那种错误。
+        let banner = vec![b'x'; 300];
+        let mut replay = ReplayStream {
+            prefix: std::io::Cursor::new(banner.clone()),
+            inner: std::io::Cursor::new(Vec::new()),
+        };
+
+        let mut seen = Vec::new();
+        let mut byte = [0_u8; 1];
+        loop {
+            let taken = tokio::io::AsyncReadExt::read(&mut replay, &mut byte)
+                .await
+                .expect("read one byte");
+            if taken == 0 {
+                break;
+            }
+            seen.push(byte[0]);
+        }
+
+        assert_eq!(seen, banner);
+    }
+
+    #[tokio::test]
+    async fn sftp_against_an_ftp_port_is_reported_as_wrong_protocol() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind");
+        let address = listener.local_addr().expect("addr");
+
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.expect("accept");
+            // 一句 FTP 欢迎语，然后按 FTP 的规矩等 USER。
+            let _ = socket.write_all(b"220 test server ready\r\n").await;
+            let mut sink = Vec::new();
+            let _ = tokio::io::AsyncReadExt::read_to_end(&mut socket, &mut sink).await;
+        });
+
+        let target = ProbeTarget {
+            protocol: RemoteProtocol::Sftp,
+            host: "127.0.0.1".to_string(),
+            port: address.port(),
+            username: "u".to_string(),
+            password: Some("p".to_string()),
+            proxy: ProxyConfig::Direct,
+        };
+
+        let started = std::time::Instant::now();
+        let report = probe(&target).await.expect("probe returns a report");
+
+        assert_eq!(report.outcome, ProbeOutcome::WrongProtocol);
+        assert!(
+            started.elapsed() < PROBE_TIMEOUT,
+            "判协议不符必须当场给出结论，不该拖到整体超时"
+        );
     }
 }

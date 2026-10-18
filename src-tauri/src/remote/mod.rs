@@ -36,7 +36,7 @@ pub use connection::{
 // 编译报 E0433。`dir_reader` 同样用的是 glob。
 pub use commands::*;
 pub use connection_test::{
-    is_ssh_identifier, parse_ftp_reply_code, ConnectionTestReport, ProbeOutcome, ProbeTarget,
+    parse_ftp_reply_code, ConnectionTestReport, ProbeOutcome, ProbeTarget,
 };
 pub use credentials::{
     delete_credential, load_credential, save_credential, credentials_path_in,

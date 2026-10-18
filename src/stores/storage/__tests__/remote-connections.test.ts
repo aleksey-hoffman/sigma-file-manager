@@ -534,6 +534,69 @@ describe('remote connections storage', () => {
       expect(report.passwordChecked).toBe(false);
     });
 
+    it('勾了「移除已保存密码」时不去取存档里的那条', async () => {
+      // 与 saveConnection 的 `hasNewPassword = ... && !clearPassword` 同规则。
+      // 否则同一张表单里这个勾选框有两种含义：用户勾掉密码、点测试，
+      // 却拿刚要被删掉的那条去认证并回一句「密码没问题」。
+      invokeMock.mockImplementation(async (command: string) => {
+        if (command === 'remote_load_credential') {
+          return 'stored-secret';
+        }
+
+        if (command === 'remote_test_connection') {
+          return {
+            outcome: 'missing_credential',
+            passwordChecked: false,
+            tlsVerified: false,
+            message: 'no password',
+          };
+        }
+
+        return undefined;
+      });
+      const store = useRemoteConnectionsStore();
+
+      const report = await store.testConnection(form({
+        id: 'c1',
+        password: '',
+        clearPassword: true,
+      }));
+
+      expect(invokeMock).not.toHaveBeenCalledWith('remote_load_credential', expect.anything());
+      const call = invokeMock.mock.calls.find(entry => entry[0] === 'remote_test_connection');
+      expect(call?.[1]).toMatchObject({
+        request: expect.objectContaining({ password: undefined }),
+      });
+      expect(report.outcome).toBe('missing_credential');
+    });
+
+    it('勾了「移除已保存密码」时，键入的新密码也不算数', async () => {
+      invokeMock.mockImplementation(async (command: string) => {
+        if (command === 'remote_test_connection') {
+          return {
+            outcome: 'missing_credential',
+            passwordChecked: false,
+            tlsVerified: false,
+            message: 'no password',
+          };
+        }
+
+        return undefined;
+      });
+      const store = useRemoteConnectionsStore();
+
+      await store.testConnection(form({
+        id: 'c1',
+        password: 'typed-in',
+        clearPassword: true,
+      }));
+
+      const call = invokeMock.mock.calls.find(entry => entry[0] === 'remote_test_connection');
+      expect(call?.[1]).toMatchObject({
+        request: expect.objectContaining({ password: undefined }),
+      });
+    });
+
     it('测试不写任何盘上的状态', async () => {
       // 纯读操作：测一次不能顺手改掉下次测试的输入。
       invokeMock.mockImplementation(async (command: string) => {

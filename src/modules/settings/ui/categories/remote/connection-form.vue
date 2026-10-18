@@ -178,8 +178,14 @@ async function handleTestConnection() {
     probeReport.value = await store.testConnection(buildForm());
   }
   catch (error) {
-    // 入参非法才会走到这里（空主机、端口 0），store 抛的是校验码。
-    errorCode.value = error instanceof Error ? error.message : 'unknown';
+    // ⚠️ 这里**不能**沿用 `handleSubmit` 的 `error instanceof Error` 判定。
+    // 保存路径抛的是 `new Error(校验码)`，走 instanceof 没问题；
+    // 而这里抛的是 Tauri 把 `RemoteError` 序列化后的**普通对象**
+    // `{ kind, message }` —— `instanceof` 为 false，于是落进 'unknown'，
+    // 界面上蹦出「保存连接失败。」：一条测试错误，顶着保存的文案。
+    // 这里只有一个失败模式（入参非法），所以统一成一条码。
+    console.error('Failed to probe remote connection:', error);
+    errorCode.value = 'testInvalidInput';
   }
   finally {
     isProbing.value = false;
@@ -469,8 +475,12 @@ function onProtocolChange(value: unknown) {
       >
         {{ t('settings.remote.test.passwordNotChecked') }}
       </span>
+      <!-- ⚠️ 只在 FTPS 上显示。SFTP 没有 TLS，跳过的是**主机密钥校验**，
+           挂一条「TLS 证书未经验证」纯属张冠李戴。 -->
       <span
-        v-if="probeReport.tlsVerified === false && probeReport.outcome === 'verified'
+        v-if="probeReport.outcome === 'verified'
+          && probeReport.tlsVerified === false
+          && protocol !== 'sftp'
           && probeReport.message"
         class="remote-connection-form__probe-note"
       >
