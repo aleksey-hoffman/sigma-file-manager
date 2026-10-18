@@ -95,10 +95,19 @@ export function hasRemoteLocalPath(connection: Pick<RemoteConnection, 'localPath
   return typeof connection.localPath === 'string' && connection.localPath.trim().length > 0;
 }
 
-/** Rust `RemoteError` 的前端镜像：`{ kind, message }`。 */
+/**
+ * Rust `RemoteError` 的前端镜像。
+ *
+ * `fingerprint` / `expectedFingerprint` 只在主机密钥类错误里出现，
+ * 其余错误的 JSON 里**没有这两个键**（Rust 侧 `skip_serializing_if`）。
+ * 前端要弹「信任这台主机吗」时拿 `fingerprint` 填确认框，
+ * 绝不靠解析 `message` 掏指纹。
+ */
 export interface RemoteErrorPayload {
   kind:
     | 'auth'
+    | 'host_key_unknown'
+    | 'host_key_changed'
     | 'unreachable'
     | 'permission'
     | 'not_found'
@@ -108,6 +117,29 @@ export interface RemoteErrorPayload {
     | 'unsupported'
     | 'unknown';
   message: string;
+  /** 本次连接**实际收到**的主机指纹，`SHA256:...`。 */
+  fingerprint?: string;
+  /** 已记录、但与本次不一致的指纹。只有 `host_key_changed` 才有。 */
+  expectedFingerprint?: string;
+}
+
+/** 主机密钥类错误的两个 kind。抽出来是为了让调用点只能走「确认流程」。 */
+export const HOST_KEY_UNKNOWN_KIND = 'host_key_unknown';
+export const HOST_KEY_CHANGED_KIND = 'host_key_changed';
+
+export function isHostKeyError(
+  error: unknown,
+): error is RemoteErrorPayload & { fingerprint: string } {
+  if (typeof error !== 'object' || error === null) {
+    return false;
+  }
+
+  const kind = (error as { kind?: unknown }).kind;
+  const fingerprint = (error as { fingerprint?: unknown }).fingerprint;
+
+  return (kind === HOST_KEY_UNKNOWN_KIND || kind === HOST_KEY_CHANGED_KIND)
+    && typeof fingerprint === 'string'
+    && fingerprint.length > 0;
 }
 
 /** IANA 登记的默认端口，与后端 `RemoteProtocol::default_port` 对齐。 */

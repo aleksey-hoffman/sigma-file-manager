@@ -195,6 +195,8 @@ pub fn validate_proxy(proxy: &ProxyConfig) -> Result<(), RemoteError> {
 pub fn connection_error_hint(error: &RemoteError) -> &'static str {
     match error.kind {
         RemoteErrorKind::Auth => "auth",
+        RemoteErrorKind::HostKeyUnknown => "host_key_unknown",
+        RemoteErrorKind::HostKeyChanged => "host_key_changed",
         RemoteErrorKind::Unreachable => "unreachable",
         RemoteErrorKind::Permission => "permission",
         RemoteErrorKind::NotFound => "not_found",
@@ -448,6 +450,8 @@ mod tests {
     fn every_error_kind_has_a_hint() {
         let kinds = [
             RemoteErrorKind::Auth,
+            RemoteErrorKind::HostKeyUnknown,
+            RemoteErrorKind::HostKeyChanged,
             RemoteErrorKind::Unreachable,
             RemoteErrorKind::Permission,
             RemoteErrorKind::NotFound,

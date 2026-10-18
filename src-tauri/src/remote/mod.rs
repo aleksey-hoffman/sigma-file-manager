@@ -23,8 +23,10 @@ mod connection_test;
 mod credentials;
 mod error;
 mod fake;
+mod known_hosts;
 mod path;
 mod provider;
+mod registry;
 mod transport;
 
 pub use connection::{
@@ -44,12 +46,20 @@ pub use credentials::{
 };
 pub use error::{RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
+pub use known_hosts::{
+    decide as decide_host_key, forget as forget_host_key, describe_server_key, load as load_known_hosts,
+    trust as trust_host_key, HostKeyDecision, KnownHostEntry, REMOTE_KNOWN_HOSTS_FILE,
+};
 pub use path::{
     build_remote_connection_path, build_remote_path, get_remote_parent_path,
     is_remote_connection_root_path, is_remote_path, normalize_remote_path, parse_remote_path,
     RemotePath, REMOTE_SCHEME,
 };
 pub use provider::{RemoteEntry, RemoteProvider};
+pub use registry::{
+    connections_path_in, find_connection, load_connections, resolve_connection, ConnectionsFile,
+    ResolvedConnection, REMOTE_CONNECTIONS_FILE,
+};
 pub use transport::{
     build_http_connect_request, is_http_connect_success, map_socks5_reply_to_kind, ProxyConfig,
     Socks5CommandKind, TransportStream,

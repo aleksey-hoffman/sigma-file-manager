@@ -1,0 +1,45 @@
+{
+  "connections": [
+    {
+      "credentialKey": "e2b24ab525544dc7adeb5cedb192179b",
+      "host": "192.168.1.9",
+      "id": "e2b24ab525544dc7adeb5cedb192179b",
+      "initialPath": "/",
+      "localPath": "E:/website_sbt",
+      "name": "速豹堂",
+      "port": 22,
+      "protocol": "sftp",
+      "proxy": {
+        "kind": "direct"
+      },
+      "username": "duanyi"
+    },
+    {
+      "credentialKey": "keep-me",
+      "host": "192.168.1.9",
+      "id": "keep-me",
+      "initialPath": "/pub",
+      "name": "发布目录",
+      "port": 21,
+      "protocol": "ftp",
+      "proxy": {
+        "host": "127.0.0.1",
+        "kind": "socks5",
+        "port": 1080
+      },
+      "username": "anonymous"
+    },
+    {
+      "host": "ftp.example.com",
+      "id": "no-secret",
+      "initialPath": "/",
+      "name": "匿名 FTP",
+      "port": 21,
+      "protocol": "ftp",
+      "proxy": {
+        "kind": "direct"
+      },
+      "username": ""
+    }
+  ]
+}
