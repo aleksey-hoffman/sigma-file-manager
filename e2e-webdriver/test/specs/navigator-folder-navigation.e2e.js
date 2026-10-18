@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { $, browser } from '@wdio/globals';
 import {
   ADDRESS_BAR_PARENT_BREADCRUMB_SELECTOR,
@@ -11,6 +12,16 @@ import {
   waitForNavigatorDirectoryListing,
 } from '../helpers/main-window.js';
 
+function isListableDirectory(directoryPath) {
+  try {
+    fs.readdirSync(directoryPath);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
 describe('Navigator folder navigation', () => {
   it('opens a subfolder on double-click and returns via the parent breadcrumb', async function () {
     await focusWindowThatContainsMainSidebar();
@@ -20,14 +31,23 @@ describe('Navigator folder navigation', () => {
     const initialPath = await getNavigatorCurrentPath();
     assert.ok(initialPath, 'Expected navigator to resolve a current directory path');
 
-    const directoryEntries = await $$(FILE_BROWSER_DIRECTORY_ENTRY_SELECTOR);
-    if (directoryEntries.length === 0) {
-      this.skip();
+    // Skip entries the current user cannot list, such as the legacy
+    // "Application Data" junction in a Windows profile folder: opening those
+    // correctly shows an access error instead of navigating.
+    let firstDirectoryEntry;
+    let folderPath;
+    for (const directoryEntry of await $$(FILE_BROWSER_DIRECTORY_ENTRY_SELECTOR)) {
+      const entryPath = await directoryEntry.getAttribute('data-entry-path');
+      if (entryPath && isListableDirectory(entryPath)) {
+        firstDirectoryEntry = directoryEntry;
+        folderPath = entryPath;
+        break;
+      }
     }
 
-    const firstDirectoryEntry = directoryEntries[0];
-    const folderPath = await firstDirectoryEntry.getAttribute('data-entry-path');
-    assert.ok(folderPath, 'Expected directory entry to expose data-entry-path');
+    if (!firstDirectoryEntry) {
+      this.skip();
+    }
 
     await firstDirectoryEntry.doubleClick();
     await waitForNavigatorCurrentPathChange(initialPath);
