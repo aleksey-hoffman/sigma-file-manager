@@ -78,3 +78,90 @@ jobs:
 
       - name: Cargo check release lib
         run: cargo check --manifest-path src-tauri/Cargo.toml --release --lib
+
+  e2e-windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      SFM_E2E_ARTIFACTS_DIR: ${{ github.workspace }}\e2e-webdriver\artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-windows-e2e
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install e2e dependencies
+        run: npm ci --prefix e2e-webdriver
+
+      - name: Install tauri-driver
+        run: cargo install tauri-driver --locked --version 2.1.0
+
+      - name: Install msedgedriver matching WebView2
+        run: npm run test:e2e:webdriver:install-edge-driver
+
+      # WebView2 Runtime 150+ ignores WEBVIEW2_* environment variables for
+      # elevated host processes, and runner processes are elevated, so the
+      # --remote-debugging-port that msedgedriver passes that way never reaches
+      # the app's WebView2. The HKLM policy is still honored under elevation.
+      - name: Allow WebDriver to attach to the app's WebView2
+        shell: pwsh
+        run: |
+          $policyKey = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+          New-Item -Path $policyKey -Force | Out-Null
+          New-ItemProperty -Path $policyKey -Name 'sigma-file-manager.exe' -PropertyType String -Value '--remote-debugging-port=0' -Force | Out-Null
+
+      - name: Build app (debug)
+        timeout-minutes: 30
+        shell: bash
+        run: npm run tauri -- build --debug --no-bundle
+
+      - name: Run WebDriver e2e tests
+        timeout-minutes: 15
+        run: npm run test:e2e:webdriver:skip-build
+
+      - name: Collect app logs
+        if: failure()
+        shell: pwsh
+        run: |
+          $logsDirectory = Join-Path $env:LOCALAPPDATA 'com.sigma-file-manager.app\logs'
+          New-Item -ItemType Directory -Force -Path $env:SFM_E2E_ARTIFACTS_DIR | Out-Null
+          if (Test-Path $logsDirectory) {
+            Copy-Item -Recurse -Force $logsDirectory (Join-Path $env:SFM_E2E_ARTIFACTS_DIR 'app-logs')
+          }
+
+      - name: Upload e2e artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-windows-artifacts
+          path: e2e-webdriver/artifacts
+          if-no-files-found: ignore
+          retention-days: 7
