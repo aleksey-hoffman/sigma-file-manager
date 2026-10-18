@@ -61,6 +61,7 @@ dependencies = [
  "dirs 6.0.0",
  "dunce",
  "encoding_rs",
+ "fast-socks5",
  "file_icon_provider",
  "flate2",
  "futures-util",
@@ -1788,6 +1789,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "fast-socks5"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9545787d8304a71e1bf1b711705070a4c400cce9b332c4a11800627b7c9a2067"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "log",
+ "socket2 0.5.10",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
 name = "fastdivide"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2777,7 +2793,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2",
+ "socket2 0.6.5",
  "tokio",
  "tower-service",
  "tracing",
@@ -3532,7 +3548,7 @@ dependencies = [
  "log",
  "mio",
  "socket-pktinfo",
- "socket2",
+ "socket2 0.6.5",
 ]
 
 [[package]]
@@ -4617,7 +4633,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls",
- "socket2",
+ "socket2 0.6.5",
  "thiserror 2.0.21",
  "tokio",
  "tracing",
@@ -4656,7 +4672,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2",
+ "socket2 0.6.5",
  "tracing",
  "windows-sys 0.61.2",
 ]
@@ -5649,8 +5665,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "612942246d0cc239cfd83af1dfd39be47f649208a3524e5e9da651910128e0ac"
 dependencies = [
  "libc",
- "socket2",
+ "socket2 0.6.5",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "socket2"
+version = "0.5.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e22376abed350d73dd1cd119b57ffccad95b4e585a7cda43e286245ce23c0678"
+dependencies = [
+ "libc",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -6710,7 +6736,7 @@ dependencies = [
  "mio",
  "pin-project-lite",
  "signal-hook-registry",
- "socket2",
+ "socket2 0.6.5",
  "tokio-macros",
  "tracing",
  "windows-sys 0.61.2",

@@ -21,6 +21,7 @@ mod error;
 mod fake;
 mod path;
 mod provider;
+mod transport;
 
 pub use error::{RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
@@ -30,3 +31,7 @@ pub use path::{
     RemotePath, REMOTE_SCHEME,
 };
 pub use provider::{RemoteEntry, RemoteProvider};
+pub use transport::{
+    build_http_connect_request, is_http_connect_success, map_socks5_reply_to_kind, ProxyConfig,
+    Socks5CommandKind, TransportStream,
+};
