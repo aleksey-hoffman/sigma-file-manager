@@ -177,6 +177,45 @@ describe('远程设置分类', () => {
     expect(wrapper.text()).toContain('sftp.example.com:22');
   });
 
+  it('列表里标出本地目录，没填的连接不标', async () => {
+    storageContents.set('connections', [
+      {
+        id: 'c1',
+        name: '有本地目录',
+        protocol: 'ftp',
+        host: 'a.example.com',
+        port: 21,
+        username: '',
+        initialPath: '/',
+        localPath: 'C:/Users/test/Downloads',
+        proxy: {
+          kind: 'direct',
+        },
+      },
+      {
+        id: 'c2',
+        name: '没有本地目录',
+        protocol: 'ftp',
+        host: 'b.example.com',
+        port: 21,
+        username: '',
+        initialPath: '/',
+        proxy: {
+          kind: 'direct',
+        },
+      },
+    ]);
+
+    const wrapper = mountedCategory();
+    await flushPromises();
+
+    // 本地目录是「会摆双屏」的唯一可见标志：填了必须看得见，没填不能留空位。
+    expect(wrapper.find('[data-test="entry-c1"] [data-test="local-path"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="entry-c1"] [data-test="local-path"]').text())
+      .toContain('C:/Users/test/Downloads');
+    expect(wrapper.find('[data-test="entry-c2"] [data-test="local-path"]').exists()).toBe(false);
+  });
+
   it('删除按钮删掉的是它自己那一条', async () => {
     storageContents.set('connections', [
       {

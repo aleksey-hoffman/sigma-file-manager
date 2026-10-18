@@ -102,6 +102,13 @@ function describeProxy(connection: RemoteConnection): string {
             <span v-if="connection.username">{{ connection.username }}</span>
             <span>{{ connection.initialPath }}</span>
             <span>{{ describeProxy(connection) }}</span>
+            <span
+              v-if="connection.localPath"
+              class="remote-connections__entry-local"
+              data-test="local-path"
+            >
+              {{ t('settings.remote.field.localPath') }} {{ connection.localPath }}
+            </span>
           </div>
         </div>
         <div class="remote-connections__entry-actions">
@@ -231,6 +238,14 @@ function describeProxy(connection: RemoteConnection): string {
   gap: 0.25rem 0.75rem;
   color: hsl(var(--muted-foreground));
   font-size: 0.8rem;
+}
+
+/*
+  本地目录带字段名渲染：裸路径混在协议/主机/初始目录里会被当成又一段远端信息，
+  而它其实是本机路径，也是「会摆双屏」的唯一可见标志。
+*/
+.remote-connections__entry-local {
+  color: hsl(var(--foreground));
 }
 
 .remote-connections__entry-actions {
