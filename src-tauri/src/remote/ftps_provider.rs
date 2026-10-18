@@ -1291,11 +1291,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn a_server_that_refuses_auth_tls_is_reported_rather_than_downgraded() {
+    async fn a_server_that_refuses_auth_tls_names_that_refusal_itself() {
         let certificate = stub_certificate();
         let log = StubLog::default();
         let mut options = StubOptions::explicit("type=file;size=1; a.txt\n");
-        options.auth_tls_reply = "500 AUTH not understood";
+        // 桩回 500 之后**继续待在明文里**（真实服务器此时在等下一条明文命令，
+        // 而客户端会开始发 TLS ClientHello），于是客户端的握手必然失败。
+        options.auth_tls_reply = "500 AUTH not understood by this server";
         let port = spawn_stub_ftps(
             StubCertificate {
                 der: certificate.der.clone(),
@@ -1312,16 +1314,25 @@ mod tests {
             .await
             .expect_err("a server without AUTH TLS must not yield a listing");
 
-        // 关键不是哪一类错误，而是**它必须是一类错误**。
-        // 静默继续的话，用户以为连的是 FTPS，实际后面全程明文 ——
-        // 而那种情况下界面看起来是完全正常的。
+        // 判据是**消息**，不是 `kind`。
+        //
+        // 「AUTH TLS 被拒」（`服务器拒绝了这条命令：500 AUTH not understood…`）
+        // 与「后面握手失败」（`TLS 握手失败：…`）**都是 `Protocol`** ——
+        // 只断言 `kind` 的话两种行为都通过，那条断言等于没有。
+        //
+        // 静默降级**不会**真的成功：客户端紧接着发 ClientHello，而服务器在等明文
+        // 命令，握手照样失败。真实危害在消息里 —— 用户看到「TLS 握手失败」会去查
+        // 网络与证书，而真正的原因是这台服务器压根不支持 FTPS。
         assert!(
-            matches!(
-                error.kind,
-                RemoteErrorKind::Protocol | RemoteErrorKind::Disconnected
-            ),
-            "expected the refusal to surface as an error, got {:?}",
-            error.kind
+            error.message.contains("AUTH not understood"),
+            "the error must name the AUTH TLS refusal, got {:?}: {}",
+            error.kind,
+            error.message
+        );
+        assert!(
+            !error.message.contains("TLS 握手失败"),
+            "the follow-up handshake failure must not be what the user sees, got {}",
+            error.message
         );
     }
 
