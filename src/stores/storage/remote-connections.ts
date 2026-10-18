@@ -76,6 +76,13 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
       return 'initialPathInvalid';
     }
 
+    // 本地目录**只查「像不像路径」**，不查存在性 ——
+    // 校验发生在写盘之前，去 stat 一个还没建好的目录只会误报。
+    // 与 Rust 侧 `RemoteConnection::validate` 同规则。
+    if (form.localPath.trim().length > 0 && /\s/.test(form.localPath)) {
+      return 'localPathHasWhitespace';
+    }
+
     if (form.proxy.kind !== 'direct') {
       if (form.proxy.host.trim().length === 0) {
         return 'proxyHostRequired';
@@ -198,6 +205,7 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
     const existing = getConnection(id);
     const hasNewPassword = form.password.length > 0 && !form.clearPassword;
     const normalizedPath = normalizeRemotePath(form.initialPath) ?? '/';
+    const trimmedLocalPath = form.localPath.trim();
 
     // 第一步：密文先行。
     let credentialKey = existing?.credentialKey;
@@ -224,6 +232,10 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
       port: form.port,
       username: form.username,
       initialPath: normalizedPath,
+      // 空串 / 纯空白 → 字段整个不写出去，保持与「不摆双屏」同义。
+      ...(trimmedLocalPath
+        ? { localPath: trimmedLocalPath }
+        : {}),
       proxy: form.proxy,
       ...(credentialKey
         ? { credentialKey }

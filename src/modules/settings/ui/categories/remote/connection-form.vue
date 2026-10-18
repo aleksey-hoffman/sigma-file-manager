@@ -6,6 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { open } from '@tauri-apps/plugin-dialog';
 import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import { getRemoteProtocolDefaultPort } from '@/types/remote';
+import normalizePath from '@/utils/normalize-path';
 import type { RemoteConnection, RemoteConnectionForm, RemoteProtocol, RemoteProxyConfig } from '@/types/remote';
 
 type Props = {
@@ -43,6 +45,7 @@ const username = ref('');
 const password = ref('');
 const clearPassword = ref(false);
 const initialPath = ref('/');
+const localPath = ref('');
 const proxyKind = ref<RemoteProxyConfig['kind']>('direct');
 const proxyHost = ref('');
 const proxyPort = ref<number>(1080);
@@ -66,6 +69,7 @@ watch(
     port.value = connection?.port ?? getRemoteProtocolDefaultPort(nextProtocol);
     username.value = connection?.username ?? '';
     initialPath.value = connection?.initialPath ?? '/';
+    localPath.value = connection?.localPath ?? '';
     password.value = '';
     clearPassword.value = false;
 
@@ -106,11 +110,25 @@ function reset() {
   password.value = '';
   clearPassword.value = false;
   initialPath.value = '/';
+  localPath.value = '';
   proxyKind.value = 'direct';
   proxyHost.value = '';
   proxyPort.value = 1080;
   proxyUsername.value = '';
   proxyPassword.value = '';
+}
+
+/** 选一个本地目录。留空即可不摆双屏，所以这里不做任何默认填充。 */
+async function handleBrowseLocalPath() {
+  const selected = await open({
+    directory: true,
+    multiple: false,
+    defaultPath: localPath.value || undefined,
+  });
+
+  if (selected) {
+    localPath.value = normalizePath(selected);
+  }
 }
 
 /** store 抛出的就是校验码，直接映射成文案，不去解析 message。 */
@@ -133,6 +151,7 @@ async function handleSubmit() {
     port: port.value,
     username: username.value,
     initialPath: initialPath.value,
+    localPath: localPath.value,
     proxy: buildProxy(),
     password: password.value,
     clearPassword: clearPassword.value,
@@ -281,6 +300,28 @@ function onProtocolChange(value: unknown) {
     </div>
 
     <div class="remote-connection-form__row">
+      <Label for="remote-local-path">{{ t('settings.remote.field.localPath') }}</Label>
+      <div class="remote-connection-form__inline">
+        <Input
+          id="remote-local-path"
+          v-model="localPath"
+          data-test="field-local-path"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          data-test="browse-local-path"
+          @click="handleBrowseLocalPath"
+        >
+          {{ t('settings.remote.action.browse') }}
+        </Button>
+      </div>
+      <p class="remote-connection-form__hint">
+        {{ t('settings.remote.localPath.hint') }}
+      </p>
+    </div>
+
+    <div class="remote-connection-form__row">
       <Label for="remote-proxy-kind">{{ t('settings.remote.field.proxy') }}</Label>
       <Select
         :model-value="proxyKind"
@@ -376,6 +417,12 @@ function onProtocolChange(value: unknown) {
 
 .remote-connection-form__row--inline {
   flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.remote-connection-form__inline {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
 }

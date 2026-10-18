@@ -50,6 +50,14 @@ export interface RemoteConnection {
   username: string;
   /** 打开该连接时进的目录。恒以 `/` 开头。 */
   initialPath: string;
+  /**
+   * 可选的本地目录。保存了它之后，打开该连接会自动摆成左右双屏：
+   * 左格是这个本地目录，右格是远端目录。
+   *
+   * **可选** —— 绝大多数用户只想在远端浏览。缺失或空串都表示「不摆双屏」，
+   * 不要给它编默认值。
+   */
+  localPath?: string;
   proxy: RemoteProxyConfig;
   /** DPAPI 密文的键。没有密码的连接没有这个字段。 */
   credentialKey?: string;
@@ -70,9 +78,21 @@ export interface RemoteConnectionForm {
   port: number;
   username: string;
   initialPath: string;
+  /** 可选。空串表示「不摆双屏」。 */
+  localPath: string;
   proxy: RemoteProxyConfig;
   password: string;
   clearPassword: boolean;
+}
+
+/**
+ * 「这条连接要不要摆双屏」的判定。
+ *
+ * 缺失、空串、纯空白一律当作「不要」—— 用户在表单里清空这一栏就是
+ * 想关掉双屏，不是想让它退化成摆一个空目录。
+ */
+export function hasRemoteLocalPath(connection: Pick<RemoteConnection, 'localPath'>): boolean {
+  return typeof connection.localPath === 'string' && connection.localPath.trim().length > 0;
 }
 
 /** Rust `RemoteError` 的前端镜像：`{ kind, message }`。 */

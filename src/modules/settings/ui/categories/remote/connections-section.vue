@@ -61,6 +61,7 @@ function describeProxy(connection: RemoteConnection): string {
 
 <template>
   <SettingsItem
+    class="remote-connections"
     :title="t('settings.remote.connections.title')"
     :description="t('settings.remote.connections.description')"
     :icon="ServerIcon"
@@ -152,6 +153,34 @@ function describeProxy(connection: RemoteConnection): string {
 </template>
 
 <style scoped>
+/*
+  用户要求（2026-10-18）：标题文本单行显示，设置内容放在标题**下方**，
+  而不是左右排版。
+
+  SettingsItem 的 header 与内容区默认是 `flex-direction: row` 加
+  `justify-content: space-between`，内容区被压成右侧一窄栏。放单个开关没问题，
+  但连接表单有十几个字段，全挤在右栏会窄到没法用 —— 这正是实机验收抓到的。
+
+  这里显式弹成竖排。**必须用 :deep() 限定影响**：`item.vue` 被另外 45 个设置项
+  共用，「设为默认文件管理器」就依赖横排（标题在左、开关在右），直接改它会
+  一次改掉全店。既有先例：`experimental/mcp-server.vue`。
+*/
+.remote-connections :deep(.settings-view-item__main) {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.remote-connections :deep(.settings-view-item__content) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 标题单行：长标题换行会把下面的表单推得更远，且和别的分类不一致。 */
+.remote-connections :deep(.settings-view-item__title) {
+  white-space: nowrap;
+}
+
 .remote-connections__list {
   display: flex;
   flex-direction: column;

@@ -256,6 +256,7 @@ describe('远程设置分类', () => {
       port: 21,
       username: '',
       initialPath: '/',
+      localPath: '',
       proxy: {
         kind: 'direct',
       },

@@ -62,6 +62,7 @@ function form(overrides: Partial<RemoteConnectionForm> = {}): RemoteConnectionFo
     port: 21,
     username: 'anonymous',
     initialPath: '/pub',
+    localPath: '',
     proxy: {
       kind: 'direct',
     },
@@ -360,6 +361,60 @@ describe('remote connections storage', () => {
         username: 'agent',
         password: 'proxy-pass',
       });
+    });
+
+    // ---- 本地目录（可选） -------------------------------------------------
+
+    it('本地目录会落盘', async () => {
+      const store = useRemoteConnectionsStore();
+      await store.init();
+
+      const saved = await store.saveConnection(form({
+        localPath: 'C:/Users/test/Downloads',
+      }));
+
+      expect(saved.localPath).toBe('C:/Users/test/Downloads');
+      expect(storedConnections()[0].localPath).toBe('C:/Users/test/Downloads');
+    });
+
+    it.each([
+      ['空串', ''],
+      ['纯空白', '   '],
+    ])('本地目录是%s时字段整个不写出去', async (_label, localPath) => {
+      const store = useRemoteConnectionsStore();
+      await store.init();
+
+      const saved = await store.saveConnection(form({ localPath }));
+
+      expect(saved.localPath).toBeUndefined();
+      expect(JSON.stringify(storedConnections())).not.toContain('localPath');
+    });
+
+    it('编辑时把本地目录清空等同于关掉双屏', async () => {
+      const store = useRemoteConnectionsStore();
+      await store.init();
+      await store.saveConnection(form({
+        id: 'c1',
+        localPath: 'C:/keep',
+      }));
+
+      const updated = await store.saveConnection(form({
+        id: 'c1',
+        localPath: '',
+      }));
+
+      expect(updated.localPath).toBeUndefined();
+      expect(storedConnections()[0].localPath).toBeUndefined();
+    });
+
+    it('拒绝含空格的本地目录', async () => {
+      const store = useRemoteConnectionsStore();
+      await store.init();
+
+      await expect(store.saveConnection(form({
+        localPath: 'C:/My Documents',
+      }))).rejects.toThrow('localPathHasWhitespace');
+      expect(storedConnections()).toEqual([]);
     });
   });
 

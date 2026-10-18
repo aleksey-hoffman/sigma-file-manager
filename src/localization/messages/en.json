@@ -620,7 +620,8 @@
         "edit": "Edit",
         "delete": "Delete",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "browse": "Browse…"
       },
       "field": {
         "name": "Name",
@@ -634,7 +635,8 @@
         "proxyHost": "Proxy address",
         "proxyPort": "Proxy port",
         "proxyUsername": "Proxy username",
-        "proxyPassword": "Proxy password"
+        "proxyPassword": "Proxy password",
+        "localPath": "Local folder"
       },
       "protocol": {
         "ftp": "FTP",
@@ -663,7 +665,11 @@
         "proxyPortInvalid": "Proxy port must be between 1 and 65535.",
         "connectionIdInvalid": "Connection id is invalid.",
         "remoteConnectionsStorageNotReady": "The connection list has not finished loading. Please try again in a moment.",
-        "unknown": "Failed to save the connection."
+        "unknown": "Failed to save the connection.",
+        "localPathHasWhitespace": "Local folder cannot contain spaces."
+      },
+      "localPath": {
+        "hint": "Optional. When set, opening this connection shows a split view: local folder on the left, remote folder on the right."
       }
     }
   },

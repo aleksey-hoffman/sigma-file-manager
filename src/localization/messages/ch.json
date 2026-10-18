@@ -591,7 +591,8 @@
         "edit": "编辑",
         "delete": "删除",
         "save": "保存",
-        "cancel": "取消"
+        "cancel": "取消",
+        "browse": "浏览…"
       },
       "field": {
         "name": "名称",
@@ -605,7 +606,8 @@
         "proxyHost": "代理地址",
         "proxyPort": "代理端口",
         "proxyUsername": "代理用户名",
-        "proxyPassword": "代理密码"
+        "proxyPassword": "代理密码",
+        "localPath": "本地目录"
       },
       "protocol": {
         "ftp": "FTP（明文）",
@@ -634,7 +636,11 @@
         "proxyPortInvalid": "代理端口必须在 1 到 65535 之间。",
         "connectionIdInvalid": "连接 id 不合法。",
         "remoteConnectionsStorageNotReady": "连接列表尚未加载完成，请稍后重试。",
-        "unknown": "保存连接失败。"
+        "unknown": "保存连接失败。",
+        "localPathHasWhitespace": "本地目录不能包含空格。"
+      },
+      "localPath": {
+        "hint": "可选。填写后，打开该连接会自动显示左右双屏：左侧是本地目录，右侧是远端目录。"
       }
     }
   },

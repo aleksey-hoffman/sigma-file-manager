@@ -61,6 +61,13 @@ pub struct RemoteConnection {
     pub username: String,
     /// 打开这个连接时进的目录。恒以 `/` 开头。
     pub initial_path: String,
+    /// 可选的本地目录。保存了它之后，打开该连接会自动摆成左右双屏：
+    /// 左格是这个本地目录，右格是远端目录。
+    ///
+    /// **可选** —— 绝大多数用户只想在远端浏览，不想每次都看见本地目录。
+    /// 前后端都用「缺失或空串 = 不摆双屏」判定，不要给这个字段编默认值。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub local_path: Option<String>,
     pub proxy: ProxyConfig,
     /// DPAPI 密文的键。没有密码的连接是 `None`。
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -101,6 +108,14 @@ impl RemoteConnection {
             ));
         }
 
+        // 本地目录**只查「像不像路径」**，不查存在性 ——
+        // 校验发生在写盘之前，去 stat 一个还没建好的目录只会误报。
+        if let Some(local_path) = self.local_path.as_deref() {
+            if !local_path.trim().is_empty() && local_path.chars().any(char::is_whitespace) {
+                return Err(RemoteError::protocol("本地目录不能包含空格"));
+            }
+        }
+
         Ok(())
     }
 
@@ -120,6 +135,8 @@ pub struct NewRemoteConnection {
     pub port: u16,
     pub username: String,
     pub initial_path: String,
+    /// 空串与 `None` 等价 —— 「不摆双屏」。
+    pub local_path: Option<String>,
     pub proxy: ProxyConfig,
     /// 空串表示「这个连接没有密码」，落盘时 `credential_key` 记 `None`。
     pub password: String,
@@ -137,6 +154,7 @@ impl NewRemoteConnection {
             port: self.port,
             username: self.username.clone(),
             initial_path: self.initial_path.clone(),
+            local_path: self.local_path.clone(),
             proxy: self.proxy.clone(),
             credential_key: None,
         };
@@ -201,6 +219,7 @@ mod tests {
             port: 21,
             username: "anonymous".to_string(),
             initial_path: "/pub".to_string(),
+            local_path: None,
             proxy: ProxyConfig::Direct,
             credential_key: Some("cred-1".to_string()),
         }
@@ -336,12 +355,74 @@ mod tests {
             port: 0,
             username: String::new(),
             initial_path: "/".to_string(),
+            local_path: None,
             proxy: ProxyConfig::Direct,
             password: String::new(),
         };
 
         assert_eq!(form.default_port(), 22);
         assert!(form.validate().is_err(), "端口 0 必须被拒");
+    }
+
+    // ---- 本地目录（可选） ---------------------------------------------------
+
+    #[test]
+    fn local_path_round_trips_through_json_when_present() {
+        let mut connection = valid();
+        connection.local_path = Some("C:/Users/test/Downloads".to_string());
+
+        let json = serde_json::to_string(&connection).expect("serialize");
+        assert!(json.contains("\"localPath\":\"C:/Users/test/Downloads\""));
+
+        let parsed: RemoteConnection = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(parsed.local_path.as_deref(), Some("C:/Users/test/Downloads"));
+        assert_eq!(parsed.validate(), Ok(()));
+    }
+
+    /// 老记录里没有这个键 —— 必须读得回来，不能因为新增字段把既有连接全判成损坏。
+    #[test]
+    fn connections_saved_before_local_path_existed_still_load() {
+        let json = r#"{
+            "id":"conn-1",
+            "name":"old",
+            "protocol":"ftp",
+            "host":"ftp.example.com",
+            "port":21,
+            "username":"anonymous",
+            "initialPath":"/pub",
+            "proxy":{"kind":"direct"},
+            "credentialKey":"cred-1"
+        }"#;
+
+        let parsed: RemoteConnection = serde_json::from_str(json).expect("deserialize");
+
+        assert_eq!(parsed.local_path, None);
+        assert_eq!(parsed.validate(), Ok(()));
+        assert!(!serde_json::to_string(&parsed)
+            .expect("serialize")
+            .contains("localPath"));
+    }
+
+    #[test]
+    fn local_path_with_whitespace_is_rejected() {
+        let mut connection = valid();
+        connection.local_path = Some("C:/My Documents/Downloads".to_string());
+
+        assert!(connection.validate().is_err(), "含空格的本地目录必须被拒");
+    }
+
+    #[test]
+    fn local_path_is_optional_and_empty_means_no_split_view() {
+        for local_path in [None, Some(String::new()), Some("   ".to_string())] {
+            let mut connection = valid();
+            connection.local_path = local_path.clone();
+
+            assert_eq!(
+                connection.validate(),
+                Ok(()),
+                "{local_path:?} 应当被当作「不摆双屏」放行"
+            );
+        }
     }
 
     #[test]
