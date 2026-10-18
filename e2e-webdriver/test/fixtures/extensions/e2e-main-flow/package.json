@@ -1,0 +1,16 @@
+{
+  "id": "sfm-e2e.main-flow",
+  "name": "E2E Main Flow",
+  "version": "1.0.0",
+  "description": "Local test extension used by the WebDriver e2e suite",
+  "repository": "https://github.com/aleksey-hoffman/sigma-file-manager",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "extensionType": "api",
+  "main": "index.js",
+  "permissions": ["notifications"],
+  "activationEvents": ["onStartup"],
+  "engines": {
+    "sigmaFileManager": ">=2.0.0"
+  }
+}
