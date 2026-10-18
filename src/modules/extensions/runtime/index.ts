@@ -12,8 +12,6 @@ export {
 } from './loader';
 
 export {
-  createSandbox,
-  createSandboxedFunction,
   validateExtensionCode,
   freezeObject,
   type ExtensionSandbox,
