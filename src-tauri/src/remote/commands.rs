@@ -26,7 +26,7 @@
 //! 要测逻辑就测 `credentials.rs` 的内核，不要测这里。
 //! 完整背景见 `src-tauri/src/remote/mod.rs` 顶部与 `src-tauri/src/dir_reader.rs`。
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use tauri::Manager;
@@ -38,9 +38,11 @@ use super::connection_test::{self, ConnectionTestReport, ProbeTarget};
 use super::credentials;
 use super::dir_adapter;
 use super::error::{RemoteError, RemoteErrorKind};
+use super::ftp_provider::FtpRemoteProvider;
 use super::known_hosts::{self, KnownHostEntry};
 use super::path::parse_remote_path;
-use super::registry;
+use super::provider::RemoteEntry;
+use super::registry::{self, ResolvedConnection};
 use super::sftp_provider::SftpRemoteProvider;
 use super::transport::ProxyConfig;
 
@@ -187,6 +189,65 @@ async fn resolve_connection_blocking(
     })?
 }
 
+/// FTPS 暂不支持时给用户的说明。
+///
+/// **这句话的措辞是有意的。** 用「忽略证书」的方式让它跑起来、再宣称支持，
+/// 等于把一个静默的中间人窗口交给用户 —— 那比「暂时不支持」坏得多。
+const FTPS_PENDING_MESSAGE: &str =
+    "FTPS 还没有接上证书固定，因此暂不支持。在它真正可用之前，我们不会用「忽略证书」的方式让你以为连接是安全的。";
+
+/// 按协议挑 provider。
+///
+/// FTPS 显式 / 隐式**故意不落在这里**：它们需要证书固定，而证书固定需要一条
+/// 与 SSH known_hosts 同构、但键不同的信任链（按证书指纹而非主机公钥）。
+/// 在那条链做好之前，把 `ftps_*` 路由到 `AcceptAnyCertificate` 等于开一个
+/// 静默的中间人窗口 —— 那比「暂时不支持」坏得多。
+async fn list_with_protocol(
+    resolved: &ResolvedConnection,
+    user_data_dir: &Path,
+    app_data_dir: &Path,
+    remote_path: &str,
+) -> Result<Vec<RemoteEntry>, RemoteError> {
+    match resolved.connection.protocol {
+        RemoteProtocol::Sftp => {
+            SftpRemoteProvider::new(user_data_dir, app_data_dir)
+                .list(resolved, remote_path)
+                .await
+        }
+        RemoteProtocol::Ftp => {
+            FtpRemoteProvider::new(user_data_dir, app_data_dir)
+                .list(resolved, remote_path)
+                .await
+        }
+        RemoteProtocol::FtpsExplicit | RemoteProtocol::FtpsImplicit => {
+            Err(RemoteError::unsupported(FTPS_PENDING_MESSAGE))
+        }
+    }
+}
+
+async fn stat_with_protocol(
+    resolved: &ResolvedConnection,
+    user_data_dir: &Path,
+    app_data_dir: &Path,
+    remote_path: &str,
+) -> Result<RemoteEntry, RemoteError> {
+    match resolved.connection.protocol {
+        RemoteProtocol::Sftp => {
+            SftpRemoteProvider::new(user_data_dir, app_data_dir)
+                .stat(resolved, remote_path)
+                .await
+        }
+        RemoteProtocol::Ftp => {
+            FtpRemoteProvider::new(user_data_dir, app_data_dir)
+                .stat(resolved, remote_path)
+                .await
+        }
+        RemoteProtocol::FtpsExplicit | RemoteProtocol::FtpsImplicit => {
+            Err(RemoteError::unsupported(FTPS_PENDING_MESSAGE))
+        }
+    }
+}
+
 /// 列出远端目录。前端只传 `path` —— 连接配置与密码由 Rust 自己解析
 /// （2026-10-18 拍板的方案 C），明文密码一次都不跨 IPC。
 #[tauri::command]
@@ -199,9 +260,7 @@ pub async fn remote_read_dir(app: tauri::AppHandle, path: String) -> Result<DirC
         resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
             .await?;
 
-    let entries = SftpRemoteProvider::new(&user_data_dir, &app_data_dir)
-        .list(&resolved, &remote_path)
-        .await?;
+    let entries = list_with_protocol(&resolved, &user_data_dir, &app_data_dir, &remote_path).await?;
 
     // 回显**规范化之后**的路径：用户手输 `pub//docs` 之后，
     // 地址栏要显示它实际去到的地方。
@@ -225,10 +284,7 @@ pub async fn remote_stat_dir_entry(
     let resolved =
         resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id).await?;
 
-    match SftpRemoteProvider::new(&user_data_dir, &app_data_dir)
-        .stat(&resolved, &remote_path)
-        .await
-    {
+    match stat_with_protocol(&resolved, &user_data_dir, &app_data_dir, &remote_path).await {
         Ok(entry) => Ok(Some(dir_adapter::to_dir_entry(&entry))),
         // 「取不到就给 null」是既有契约：地址栏的自动补全靠它判断路径是否存在。
         // 把错误抛出去会让每一次补全失败都变成一次未捕获异常。

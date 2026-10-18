@@ -24,6 +24,8 @@ mod credentials;
 mod dir_adapter;
 mod error;
 mod fake;
+mod ftp_parsing;
+mod ftp_provider;
 mod known_hosts;
 mod path;
 mod provider;
@@ -49,6 +51,14 @@ pub use credentials::{
 pub use dir_adapter::{extension_of, to_dir_contents, to_dir_entry};
 pub use error::{HostKeyIdentity, RemoteError, RemoteErrorKind};
 pub use fake::FakeRemoteProvider;
+pub use ftp_parsing::{
+    civil_to_unix_millis, parse_epsv_port, parse_ftp_timestamp, parse_list_line,
+    parse_mlsd_line, parse_pasv_endpoint, FtpRecord, MlsdKind,
+};
+pub use ftp_provider::{
+    map_ftp_reply_code, parse_listing, pasv_host_to_use, FtpRemoteProvider,
+    FTP_OPERATION_TIMEOUT,
+};
 pub use known_hosts::{
     decide as decide_host_key, forget as forget_host_key, describe_server_key, load as load_known_hosts,
     trust as trust_host_key, HostKeyDecision, KnownHostEntry, REMOTE_KNOWN_HOSTS_FILE,
