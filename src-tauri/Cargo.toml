@@ -132,6 +132,9 @@ drag = { path = "./patches/drag" }
 [dev-dependencies]
 tempfile = "3"
 tokio = { version = "1", features = ["macros", "test-util"] }
+# FTPS 的假服务端要签一张自签证书，用的是上面 `[dependencies]` 里那个 `rcgen`
+# （`lan_share/tls.rs` 早就在用了）。这里**不重复声明** ——
+# 测试能用的依赖就是生产能用的依赖，不必为了测试再开一份。
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

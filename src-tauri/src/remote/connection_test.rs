@@ -743,6 +743,10 @@ pub(crate) fn decode(bytes: &[u8]) -> String {
 ///
 /// 用 `TransportStream` 而不是 `tokio::net::TcpStream` 是刻意的：前者能穿过
 /// SOCKS5 / HTTP CONNECT 代理，后者不能。协议层不该知道走的哪条路。
+///
+/// ⚠️ 这个函数**无条件放行证书**（[`AcceptAnyCertificate`]），
+/// 只允许出现在「测试连接」里。列目录走 `ftps_provider::connect_pinned`，
+/// 那里是证书固定。两者不可互换。
 pub(crate) async fn upgrade_tls<S>(
     stream: S,
     host: &str,
@@ -750,6 +754,13 @@ pub(crate) async fn upgrade_tls<S>(
 where
     S: AsyncRead + AsyncWrite + Unpin + Send + 'static,
 {
+    // 与 `ftps_provider::connect_pinned` 同一条理由、同一行：
+    // 本仓库两个 rustls provider 同时可用，`ClientConfig::builder()` 拿不到
+    // process-level `CryptoProvider` 就会 panic，而全项目唯一的
+    // `install_default()` 在 LAN 分享的运行时函数里。
+    // 「先测连接再列目录」正是用户最先走的路，所以这一处同样要装。
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     let config = rustls::ClientConfig::builder()
         .dangerous()
         .with_custom_certificate_verifier(Arc::new(AcceptAnyCertificate))
