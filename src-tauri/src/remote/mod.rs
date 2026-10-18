@@ -17,6 +17,7 @@
 // 那正是这条红线的正中间。command 在阶段 1 才接入。
 // ---------------------------------------------------------------------------
 
+mod commands;
 mod connection;
 mod credentials;
 mod error;
@@ -28,6 +29,11 @@ mod transport;
 pub use connection::{
     connection_error_hint, validate_proxy, NewRemoteConnection, RemoteConnection, RemoteProtocol,
 };
+// 必须是 glob：`#[tauri::command]` 会额外生成 `__cmd__<name>` 与
+// `__tauri_command_name_<name>` 两个隐藏项，`generate_handler!` 要按名字找它们。
+// 具名再导出只搬函数本身，于是 `remote::__cmd__remote_save_credential` 找不到，
+// 编译报 E0433。`dir_reader` 同样用的是 glob。
+pub use commands::*;
 pub use credentials::{
     delete_credential, load_credential, save_credential, credentials_path_in,
     REMOTE_CREDENTIALS_FILE,
