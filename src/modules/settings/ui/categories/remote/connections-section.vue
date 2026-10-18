@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { SettingsItem } from '@/modules/settings';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,49 @@ const isCreating = ref(false);
 onMounted(async () => {
   await store.init();
 });
+
+/**
+ * 导航栏悬停面板上每条连接右侧的设置按钮，会先往 store 里放一个待编辑的
+ * 连接 id，再跳到本分类（用户 2026-10-18 要求）。
+ *
+ * **挂载后和变化时都要看**：从别的页面跳过来时分类是**新挂载**的；
+ * 而用户在设置页里又点一次那颗按钮时分类不会重新挂载，只有 watch 能接住。
+ *
+ * ⚠️ **查不到连接时不能立刻把请求丢掉**：`onMounted` 里 `store.init()` 是异步的，
+ * 组件挂载那一刻 `connections` 可能还是空的。此时消费掉请求就等于把用户的
+ * 那次点击吞掉，表单永远不打开 —— 表现是「点设置只是跳到了远程分类」。
+ * 所以只有「已加载完还查不到」才认定连接真被删了，这时才清除请求。
+ */
+function applyPendingEdit(): void {
+  const id = store.pendingEditId;
+
+  if (!id) {
+    return;
+  }
+
+  const target = store.getConnection(id);
+
+  if (!target) {
+    // 连接可能在这条请求排队期间被删了。找不到就不开表单 ——
+    // 凭空弹一个空表单会让用户以为多了一条连接。
+    if (store.isInitialized) {
+      store.consumeRemoteEdit();
+    }
+
+    return;
+  }
+
+  store.consumeRemoteEdit();
+  isCreating.value = false;
+  editing.value = target;
+}
+
+onMounted(async () => {
+  await store.init();
+  applyPendingEdit();
+});
+
+watch(() => store.pendingEditId, applyPendingEdit);
 
 function startCreate() {
   editing.value = null;
@@ -45,6 +88,15 @@ async function handleDelete(connection: RemoteConnection) {
     closeForm();
   }
 }
+
+/**
+ * 有存档密码时显示的掩码。
+ *
+ * **放在 script 而不是模板里**，是因为项目启用了 `@intlify/vue-i18n/no-raw-text`，
+ * 模板里的裸文本一律报错。星号本身不该翻译（译成别的语言它还是一串星号），
+ * 所以也不进语言包 —— 可读名称由 `settings.remote.password.saved` 承担。
+ */
+const PASSWORD_MASK = '***';
 
 function describeProtocol(connection: RemoteConnection): string {
   return t(`settings.remote.protocol.${connection.protocol}`);
@@ -88,13 +140,21 @@ function describeProxy(connection: RemoteConnection): string {
         <div class="remote-connections__entry-main">
           <div class="remote-connections__entry-title">
             <span>{{ connection.name }}</span>
+            <!--
+              有存档密码就显示 `***`，没有就整块不渲染（用户 2026-10-18 要求）。
+              用星号而不是「已保存密码」这种文案，是为了让「有没有密码」在一眼
+              扫过去时就分得出来 —— 文案徽标要读，没星号不要读。
+
+              `***` 是密码掩码，不该翻译（译成别的语言它就还是一串星号）；
+              可读名称挂在 title/aria-label 上，屏幕阅读器照样念得出来。
+            -->
             <span
               v-if="connection.credentialKey"
               class="remote-connections__badge"
               data-test="has-password"
-            >
-              {{ t('settings.remote.password.saved') }}
-            </span>
+              :title="t('settings.remote.password.saved')"
+              :aria-label="t('settings.remote.password.saved')"
+            >{{ PASSWORD_MASK }}</span>
           </div>
           <div class="remote-connections__entry-meta">
             <span>{{ describeProtocol(connection) }}</span>

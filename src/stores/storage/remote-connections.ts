@@ -41,6 +41,35 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
   const connections = ref<RemoteConnection[]>([]);
   const isInitialized = ref(false);
 
+  /**
+   * 「请打开某条连接的编辑表单」的一次性请求。
+   *
+   * 需求来源（2026-10-18）：导航栏悬停面板上每条连接右侧加一个设置按钮，
+   * 点它直接进那条连接的编辑界面。
+   *
+   * 为什么是 store 上的瞬态值而不是路由参数：设置页的分类切换已经有自己的
+   * 机制（`openSettingsTab`），再加一个 query 参数就要让分类、面板、滚动位置
+   * 三处都认识它。而这里要的只是「到了远程分类后，把这条连接的表单打开」，
+   * 一个消费即清空的 id 就够 —— **消费方必须清空**，否则用户关掉表单后再切回
+   * 远程分类，表单会凭空自己弹出来。
+   */
+  const pendingEditId = ref<string | null>(null);
+
+  function requestRemoteEdit(id: string): void {
+    if (!isValidConnectionId(id)) {
+      return;
+    }
+
+    pendingEditId.value = id;
+  }
+
+  /** 取走一次请求。取走即清空，避免下次进设置页时误开表单。 */
+  function consumeRemoteEdit(): string | null {
+    const id = pendingEditId.value;
+    pendingEditId.value = null;
+    return id;
+  }
+
   function isValidConnectionId(id: string): boolean {
     return id.length > 0 && !id.includes('/') && !id.includes('\\');
   }
@@ -355,6 +384,7 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
     storage,
     connections,
     isInitialized,
+    pendingEditId,
 
     init,
     loadStorageData,
@@ -365,5 +395,7 @@ export const useRemoteConnectionsStore = defineStore('remoteConnections', () => 
     saveProxySecret,
     loadCredentialForTest,
     testConnection,
+    requestRemoteEdit,
+    consumeRemoteEdit,
   };
 });

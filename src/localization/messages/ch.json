@@ -661,7 +661,8 @@
         "openSettings": "远程连接设置",
         "connect": "连接",
         "empty": "还没有配置任何远程连接。",
-        "split": "双屏"
+        "split": "双屏",
+        "editConnection": "编辑该连接"
       }
     }
   },

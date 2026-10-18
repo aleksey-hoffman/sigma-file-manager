@@ -33,9 +33,12 @@ import { CONTEXT_MENU_OPEN_COUNT_KEY } from '@/components/dir-entry-interactive'
 import { formatKeybindingKeys } from '@/modules/extensions/api';
 import QuickAccessPanel from './components/quick-access-panel.vue';
 import RemoteNavPanel from './components/remote-nav-panel.vue';
-import { resolveRemoteOpenPanes } from '@/modules/remote/utils/remote-panes';
+import {
+  editRemoteConnection,
+  openRemoteConnection,
+} from '@/modules/remote/utils/open-remote-connection';
 import { openSettingsTab } from '@/modules/settings/utils/open-settings';
-import { buildRemoteConnectionPath } from '@/utils/remote-paths';
+import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import type { RemoteConnection } from '@/types/remote';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { useTextDirection } from '@/composables/use-text-direction';
@@ -46,6 +49,7 @@ const extensionsStore = useExtensionsStore();
 const shortcutsStore = useShortcutsStore();
 const userSettingsStore = useUserSettingsStore();
 const workspacesStore = useWorkspacesStore();
+const remoteConnectionsStore = useRemoteConnectionsStore();
 const { drives } = useDrives();
 const { inlineEndSide } = useTextDirection();
 
@@ -168,23 +172,29 @@ async function openRemoteSettings() {
 }
 
 /**
- * 连一个远程：开一组标签页，左本地右远端。
+ * 连一个远程：切到导航器页，开一组标签页，左本地右远端。
  *
- * 摆几格完全交给 `resolveRemoteOpenPanes` 判定（连接有本地目录 → 两格，
- * 否则一格）。**不在这里自己 if 一次**：判定逻辑在别处、也已被测过，
- * 这里再抄一遍就是两份真相。
+ * 判定与顺序都在 `openRemoteConnection` 里（抽出去是为了能测），
+ * 这里只把 router / workspaces store 注入进去。**不在这里自己 if 一次**：
+ * 判定逻辑在别处、也已被测过，这里再抄一遍就是两份真相。
  */
-async function openRemoteConnection(connection: RemoteConnection) {
+async function handleRemoteOpen(connection: RemoteConnection) {
   remotePanelOpen.value = false;
+  await openRemoteConnection(connection, {
+    navigateToNavigator: () => router.push({ name: 'navigator' }),
+    openPanes: paths => workspacesStore.openNewTabGroupWithPaths(paths),
+  });
+}
 
-  const remotePath = buildRemoteConnectionPath(connection.id);
-
-  if (!remotePath) {
-    return;
-  }
-
-  const panes = resolveRemoteOpenPanes(remotePath, [connection]);
-  await workspacesStore.openNewTabGroupWithPaths(panes.map(pane => pane.path));
+/**
+ * 从悬停面板直接进某条连接的编辑表单（用户 2026-10-18 要求）。
+ */
+async function handleRemoteEdit(connection: RemoteConnection) {
+  remotePanelOpen.value = false;
+  await editRemoteConnection(connection, {
+    requestEdit: id => remoteConnectionsStore.requestRemoteEdit(id),
+    openSettingsTab: tab => openSettingsTab(tab),
+  });
 }
 </script>
 
@@ -306,7 +316,8 @@ async function openRemoteConnection(connection: RemoteConnection) {
         >
           <RemoteNavPanel
             @open-settings="openRemoteSettings"
-            @open="openRemoteConnection"
+            @open="handleRemoteOpen"
+            @edit="handleRemoteEdit"
           />
         </TooltipContent>
       </Tooltip>

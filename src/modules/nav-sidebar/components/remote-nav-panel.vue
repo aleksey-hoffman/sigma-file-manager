@@ -13,6 +13,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   连接列表**直接读 store**，不在这里缓存一份：
   面板可能在设置页改完连接后还开着（悬停面板本来就常驻），
   缓存的副本会列出已经删掉或改名的连接。
+
+  每条连接右侧还有一颗**设置按钮**（用户 2026-10-18 要求）：点它直接进那条
+  连接的编辑界面，而不是落到「远程」分类让用户自己再找一次。
+  行主体与按钮是**两个并列的 button**，不是按钮套按钮 —— 嵌套 button 是无效
+  HTML，而且外层的 click 会一起触发，等于点设置也把连接打开了。
 -->
 
 <script setup lang="ts">
@@ -26,12 +31,19 @@ import type { RemoteConnection } from '@/types/remote';
 const emit = defineEmits<{
   openSettings: [];
   open: [connection: RemoteConnection];
+  edit: [connection: RemoteConnection];
 }>();
 
 const { t } = useI18n();
 const store = useRemoteConnectionsStore();
 
 const connections = computed(() => store.connections);
+
+function describeSplitTag(connection: RemoteConnection): string | null {
+  // 双屏是这个连接的属性，不是全局开关，必须跟着连接一起显示，
+  // 否则用户不知道点下去会开一格还是两格。
+  return hasRemoteLocalPath(connection) ? t('settings.remote.nav.split') : null;
+}
 
 onMounted(async () => {
   // 导航栏可能先于设置页被打开，这里自己确保 store 已从盘上读过一遍。
@@ -63,25 +75,40 @@ onMounted(async () => {
       {{ t('settings.remote.nav.empty') }}
     </p>
 
-    <button
+    <div
       v-for="connection in connections"
       :key="connection.id"
-      type="button"
-      class="remote-nav-panel__row"
-      data-test="remote-nav-connection"
-      @click="emit('open', connection)"
+      class="remote-nav-panel__entry"
+      data-test="remote-nav-connection-row"
     >
-      <ServerIcon :size="14" />
-      <span class="remote-nav-panel__name">{{ connection.name }}</span>
-      <!-- 双屏是这个连接的属性，不是全局开关，必须跟着连接一起显示，
-           否则用户不知道点下去会开一格还是两格。 -->
-      <span
-        v-if="hasRemoteLocalPath(connection)"
-        class="remote-nav-panel__tag"
+      <button
+        type="button"
+        class="remote-nav-panel__row remote-nav-panel__row--open"
+        data-test="remote-nav-connection"
+        @click="emit('open', connection)"
       >
-        {{ t('settings.remote.nav.split') }}
-      </span>
-    </button>
+        <ServerIcon :size="14" />
+        <span class="remote-nav-panel__name">{{ connection.name }}</span>
+        <span
+          v-if="describeSplitTag(connection)"
+          class="remote-nav-panel__tag"
+          data-test="remote-nav-split-tag"
+        >
+          {{ describeSplitTag(connection) }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="remote-nav-panel__edit"
+        :title="t('settings.remote.nav.editConnection')"
+        :aria-label="`${t('settings.remote.nav.editConnection')}: ${connection.name}`"
+        data-test="remote-nav-edit"
+        @click="emit('edit', connection)"
+      >
+        <SettingsIcon :size="13" />
+      </button>
+    </div>
   </div>
 </template>
 
@@ -107,6 +134,48 @@ onMounted(async () => {
 
 .remote-nav-panel__row:hover {
   background-color: hsl(var(--foreground) / 5%);
+}
+
+/*
+  行 = 「打开这一格」的主按钮 + 右侧一颗设置按钮。
+  两者并列而不是嵌套：button 里再放 button 是无效 HTML，
+  而且外层的 click 会一起触发 —— 点设置等于把连接也打开了。
+*/
+.remote-nav-panel__entry {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  gap: 2px;
+}
+
+.remote-nav-panel__row--open {
+  flex: 1;
+  min-width: 0;
+}
+
+.remote-nav-panel__entry:hover {
+  background-color: hsl(var(--foreground) / 5%);
+}
+
+.remote-nav-panel__entry:hover .remote-nav-panel__row--open {
+  background-color: transparent;
+}
+
+.remote-nav-panel__edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  padding: 6px;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+}
+
+.remote-nav-panel__edit:hover {
+  background-color: hsl(var(--foreground) / 10%);
+  color: hsl(var(--foreground));
 }
 
 .remote-nav-panel__name {

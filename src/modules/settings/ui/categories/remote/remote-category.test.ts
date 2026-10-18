@@ -383,4 +383,158 @@ describe('远程设置分类', () => {
     expect(wrapper.find('[data-test="empty"]').exists()).toBe(false);
     expect(wrapper.text()).toContain('来自 store');
   });
+
+  // 用户 2026-10-18：有存档密码的连接要显示 `***`，和没存密码的一眼分得开。
+  // 断言的是「星号」而不是某句文案 —— 文案会随语言变，星号不会。
+  describe('存档密码标记', () => {
+    it('有密码的显示星号，没密码的整块不显示', async () => {
+      storageContents.set('connections', [
+        {
+          id: 'with-pw',
+          name: '有密码',
+          protocol: 'sftp',
+          host: 'a.example.com',
+          port: 22,
+          username: '',
+          initialPath: '/',
+          proxy: {
+            kind: 'direct',
+          },
+          credentialKey: 'with-pw',
+        },
+        {
+          id: 'no-pw',
+          name: '没密码',
+          protocol: 'sftp',
+          host: 'b.example.com',
+          port: 22,
+          username: '',
+          initialPath: '/',
+          proxy: {
+            kind: 'direct',
+          },
+        },
+      ]);
+
+      const wrapper = mountedCategory();
+      await flushPromises();
+
+      const marked = wrapper.find('[data-test="entry-with-pw"] [data-test="has-password"]');
+      expect(marked.exists()).toBe(true);
+      expect(marked.text()).toBe('***');
+      expect(wrapper.find('[data-test="entry-no-pw"] [data-test="has-password"]').exists())
+        .toBe(false);
+    });
+
+    it('星号是掩码不是文案，可读名称仍挂在 title 上', async () => {
+      storageContents.set('connections', [{
+        id: 'c1',
+        name: '备份',
+        protocol: 'sftp',
+        host: 'sftp.example.com',
+        port: 22,
+        username: '',
+        initialPath: '/',
+        proxy: {
+          kind: 'direct',
+        },
+        credentialKey: 'c1',
+      }]);
+
+      const wrapper = mountedCategory();
+      await flushPromises();
+
+      // i18n 打回键名，所以 title 就是键本身 —— 正好证明文案来自翻译表，
+      // 而不是把「已保存密码」硬编码进模板。
+      expect(wrapper.find('[data-test="has-password"]').attributes('title'))
+        .toBe('settings.remote.password.saved');
+    });
+  });
+
+  // 用户 2026-10-18：导航栏悬停面板上每条连接右侧的设置按钮，点它直接进
+  // 那条连接的编辑界面。
+  describe('导航栏发来的编辑请求', () => {
+    const connections = [
+      {
+        id: 'c1',
+        name: '甲',
+        protocol: 'ftp' as const,
+        host: 'a.example.com',
+        port: 21,
+        username: '',
+        initialPath: '/',
+        proxy: {
+          kind: 'direct' as const,
+        },
+      },
+      {
+        id: 'c2',
+        name: '乙',
+        protocol: 'ftp' as const,
+        host: 'b.example.com',
+        port: 21,
+        username: '',
+        initialPath: '/',
+        proxy: {
+          kind: 'direct' as const,
+        },
+      },
+    ];
+
+    it('跳转到本分类时挂载着组件也会打开对应表单', async () => {
+      storageContents.set('connections', connections);
+      const store = useRemoteConnectionsStore();
+      // 「先 request 再跳转」的那一路：组件是跳转后才挂载的。
+      store.requestRemoteEdit('c2');
+
+      const wrapper = mountedCategory();
+      await flushPromises();
+
+      const nameInput = wrapper.find('[data-test="field-name"]');
+      expect(nameInput.exists()).toBe(true);
+      expect((nameInput.element as HTMLInputElement).value).toBe('乙');
+    });
+
+    it('已经在本分类时再来一次请求也会打开', async () => {
+      storageContents.set('connections', connections);
+      const wrapper = mountedCategory();
+      await flushPromises();
+      expect(wrapper.find('[data-test="field-name"]').exists()).toBe(false);
+
+      const store = useRemoteConnectionsStore();
+      store.requestRemoteEdit('c1');
+      await flushPromises();
+
+      const nameInput = wrapper.find('[data-test="field-name"]');
+      expect(nameInput.exists()).toBe(true);
+      expect((nameInput.element as HTMLInputElement).value).toBe('甲');
+    });
+
+    it('请求指向一条已被删掉的连接时不开表单', async () => {
+      storageContents.set('connections', connections);
+      const store = useRemoteConnectionsStore();
+      store.requestRemoteEdit('已经不存在的连接');
+
+      const wrapper = mountedCategory();
+      await flushPromises();
+
+      // 凭空弹一个空表单，用户会以为多了一条连接。
+      expect(wrapper.find('[data-test="field-name"]').exists()).toBe(false);
+    });
+
+    it('请求被消费掉，再次进入本分类不会重复弹表单', async () => {
+      storageContents.set('connections', connections);
+      const store = useRemoteConnectionsStore();
+      store.requestRemoteEdit('c1');
+
+      const first = mountedCategory();
+      await flushPromises();
+      expect(first.find('[data-test="field-name"]').exists()).toBe(true);
+      first.unmount();
+
+      const second = mountedCategory();
+      await flushPromises();
+      expect(second.find('[data-test="field-name"]').exists()).toBe(false);
+    });
+  });
 });

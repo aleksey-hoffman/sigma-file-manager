@@ -661,7 +661,8 @@
         "openSettings": "Remote settings",
         "connect": "Connect",
         "empty": "No connections yet.",
-        "split": "Split"
+        "split": "Split",
+        "editConnection": "Edit this connection"
       }
     }
   },
