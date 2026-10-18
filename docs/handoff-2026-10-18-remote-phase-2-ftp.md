@@ -14,8 +14,13 @@
 
 ## 0. 下一次动手先做这个
 
-**`tauri build` → 打包产物真机验收。** 代码侧已全绿，但所有界面结论目前**一条都没有**
-在本项目成立过（AGENTS.md：`tauri dev` 的路由内容区整块空白，dev 上的验收结论一律作废）。
+**把真机验收剩下的部分做完（第 6.1 节）。** 本轮已经完成构建、安装、启动与
+「打包版界面完全正常」这一段，但**涉及交互的一条都没做成** ——
+原因是桌面会话不活动（第 6.0.1 节），不是代码问题。唤醒屏幕即可继续。
+
+代码侧门禁六项全绿（见第 7 节），FTPS 端到端测试已补（第 5.7 节），
+但**关于 SFTP / FTP / FTPS 的一切说法目前仍然只停留在代码层面** ——
+本轮结束前，三种协议**一次都没连过真服务器**。
 
 验收清单见第 6 节。FTP 那条连接（`Acceptance-localdir-01` → `C:\Users\Duanyi\Documents`）
 就是为此准备的。
@@ -247,19 +252,83 @@ RFC 4217 §4.2 规定握手之后的会话与普通 FTP 相同，而 FTP 会话�
 
 ## 6. 真机验收清单（`tauri build` 打包产物）
 
-1. 全量门禁六项，逐字对基线（口径必须是 `eslint src` = **179**）。
-2. `tauri build` → 静默安装 → **打包产物**。
-3. 用户连接：SFTP「速豹堂」`192.168.1.9:22` duanyi → `E:/website_sbt`；
-   FTP `Acceptance-localdir-01` → `C:\Users\Duanyi\Documents`。
+### 6.0 本轮实到的（2026-10-19 00:32–00:55）
+
+| 步骤 | 结果 |
+|---|---|
+| `tauri build` | ✅ release `Finished in 3m 00s`，NSIS 19.11 MiB，sha256 `026BFC3E…` |
+| 静默安装 `/S` | ✅ exit 0，装到 `D:\Program Files\Alpha File Manager\` |
+| 启动 + 主窗口 | ✅ 5s 出现，1721×927 物理 = 1147×618 逻辑（DPI 144） |
+| **打包版界面渲染** | ✅ **完全正常** —— 导航树、面包屑、列表、图标、项目数/大小/修改时间全在 |
+| 远程 tab 在工作区里 | ✅ 右栏 `sfm://remote/e2b24ab525544dc7adeb5cedb192179b` |
+| UIA 可见元素 | ⚠️ **只有 2 个**（窗口标题 + 「Web 内容」），Vue DOM 完全不暴露 |
+| 远程目录列出 / 信任弹窗 / 指纹对照 / 设置页已信任主机 | ❌ **一条都没做成**，原因见下 |
+
+⚠️ **「UIA 只有 2 个元素」这条是新测到的**：之前 AGENTS.md 记的是「拿不到 webview
+console」，没记过 UIA 树里 DOM 完全不暴露。所以**界面验收只能靠截图**，
+不能用 UIA 读文字来判断。
+
+### 6.0.1 ⛔ 阻塞：桌面会话不处于交互活动状态
+
+做到「输入交互」这一步时卡住了，**且不是代码问题**：
+
+```
+GetForegroundWindow()            = 0        （没有任何前台窗口）
+SetForegroundWindow(app)         = False
+SendInput(...)                   = 0，GetLastError() = 0   ← 不是 UIPI 的 5，也不是 87
+AttachThreadInput + SetForegroundWindow = attach=True 但 focus=False
+真实鼠标点击标题栏（mouse_event）      = 点击后前台仍是 0
+CopyFromScreen(...)              = 抛 Win32Exception「The handle is invalid」
+```
+
+最后一条是决定性的：**屏幕 DC 都拿不到**。这套组合只出现在
+屏幕锁定 / 显示器关闭 / 远程会话断开。
+
+**判别顺序值得记住**（下一次遇到同类现象照着走一遍）：
+
+1. `GetForegroundWindow()` 为 0 → 桌面会话状态问题，先别怀疑注入代码；
+2. `SetForegroundWindow` 返回 False + `SendInput` 返回 0 且 `lastError = 0`
+   → 与 UIPI（`lastError = 5`）和 `cbSize` 错误（`lastError = 87`）都不同；
+3. `CopyFromScreen` 抛「handle is invalid」→ 坐实。
+
+**另外记一笔**：`WindowFromPoint` 在屏幕中心命中 `msedgewebview2` 的
+`Chrome_RenderWidgetHostHWND` **不是遮挡** —— 它的 `root` 就是应用主窗口本身。
+AGENTS.md 里那条「白名单必须包含 msedgewebview2」的规则在这里正好救了一次误判：
+只认主进程 pid 的话每一张干净截图都会被判成「被遮挡」。
+
+### 6.1 剩下的清单（等桌面可用后接着做）
+
+1. 全量门禁六项 —— ✅ 本轮已完成，见第 7 节。
+2. `tauri build` → 静默安装 → 打包产物 —— ✅ 本轮已完成。
+3. 用户连接：SFTP「速豹堂」`192.168.1.9:22` duanyi → `E:/website_sbt`。
+   基准指纹已取好（`ssh-keygen -lf ~/.ssh/known_hosts`）：
+
+   ```
+   ED25519  SHA256:+kzmPUQscK027gqjcN/QaCcgLhIOARF6LvfJERdN4lc
+   RSA      SHA256:PFyCX0vWPSYdyBFz6HF82QRAg+iBE/0VgOqMEUswXwI
+   ECDSA    SHA256:Ty/9fp4m7xXV4mhJdcC8qPE0enRCupVCQhbBqDZGrPY
+   ```
+
+   弹窗里那串必须与其中一个**逐字一致**。
 4. 逐条验：
    - 点远程连接 → **右栏列出远端目录**，不再是 `C:\Users\Duanyi`
    - 首次弹「首次连接到 192.168.1.9」+ 指纹 → 信任 → 自动重试成功
-   - 用 `ssh-keygen -lf` 取 NAS 真实指纹与弹窗里的**逐字对照**
    - 故意改错密码 → 看到**认证错误**而不是别的
    - 设置页「已信任主机」能看到那一条，并能删掉；删后再连应重新弹「首次见到」
-   - **FTP 那条连接也要点开看目录** —— 本轮 FTP 一次都没连过真服务器
+   - **FTP 那条连接也要点开看目录** —— 但用户当前**一条 FTP/FTPS 连接都没配**
+     （`user-remote-connections.json` 里 3 条全是 `sftp`）
    - 面包屑每一级点得动、Tab 名显示连接名而不是 uuid
 5. 验收脚本在 `.superpowers/sdd/`（git-ignored），**新增脚本一律纯 ASCII**。
+   本轮新增：`set-remote-tab.cjs`（设 `currentTabGroupIndex`，带备份）、
+   `accept-remote-listing.ps1`（启动 + 冷启动 + 截图 + UIA）、
+   `diag-focus.ps1` / `activate-app.ps1` / `capture-desktop.ps1`（焦点与桌面诊断）。
+
+   ⚠️ **只改 `user-settings.json` 的 `navigator.defaultDirectory` 没用** ——
+   本轮把 `user-workspaces.json` 的 `currentTabGroupIndex` 从 5 改成 2 之后，
+   应用**仍然**开在「办公文件」。要么是启动后又被 store 写回，要么还有别的地方
+   在决定初始 tab。**这一条本身是个待查现象**，别当成「改对了」。
+
+
 
 ---
 
@@ -318,11 +387,15 @@ PowerShell 先解析了参数，**文件内容被写成了字面量 `utf8`**（3
 
 ## 9. 未结事项
 
-- **真机验收**（第 6 节）—— 本轮一条都没做，`tauri build` 是本轮最后启动的。
-- **FTPS 仍然没有真机验证**：NAS `192.168.1.9` 上没有 FTPS 服务
-  （443/139/445 可用但都不是 FTPS），所以成功路径要么另找服务器、要么用本地夹具。
-  本轮能验到的只有「未信任的证书被正确拒绝 + 弹窗出现」这一半。
-  代码侧的端到端测试**不能替代**真机：它验的是我们与假服务器，
+- ⛔ **真机验收只做到「构建 + 安装 + 启动 + 界面渲染」**（第 6.0 节）。
+  剩下的全部卡在**桌面会话不活动**（第 6.0.1 节），需要人唤醒屏幕后接着做。
+- ⚠️ **`currentTabGroupIndex` 改了不生效**：把 5 改成 2 之后应用仍开在
+  「办公文件」。要么启动后被 store 写回，要么还有别的地方决定初始 tab。
+  **这是个待查现象**，别再当成「改对了就等于打开远程目录」。
+- ⚠️ **用户当前一条 FTP / FTPS 连接都没配**（3 条全是 `sftp`），而 NAS 上
+  没有 FTPS 服务。所以 FTP/FTPS 的**真机**成功路径当前**无从验起** ——
+  除非临时加一条 FTP 连接（NAS 21 端口有服务，但需要账号），或者另找 FTPS 服务器。
+  代码侧的端到端测试不能替代真机：它验的是我们与假服务器，
   验不出真服务器对 `AUTH TLS` 的具体措辞差异。
 - **FTPS 数据通道未加密**（第 5.6 节）—— 需要补 `PBSZ 0` + `PROT P`。
 - **规格 §3.6 需要修订**（第 2 节）—— 三处自相矛盾，其中第 2.2 扩大了支持面。
