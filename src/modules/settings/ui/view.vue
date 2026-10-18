@@ -18,6 +18,7 @@ import AppearanceCategory from './categories/appearance/index.vue';
 import ExperimentalCategory from './categories/experimental/index.vue';
 import ExtensionsCategory from './categories/extensions/index.vue';
 import GeneralCategory from './categories/general/index.vue';
+import RemoteCategory from './categories/remote/index.vue';
 import SearchCategory from './categories/search/index.vue';
 import ShortcutsCategory from './categories/shortcuts/index.vue';
 import StatsCategory from './categories/stats/index.vue';
@@ -57,6 +58,7 @@ const categoryComponentMap: Record<string, unknown> = {
   tabs: TabsCategory,
   stats: StatsCategory,
   storage: StorageCategory,
+  remote: RemoteCategory,
   extensions: ExtensionsCategory,
 };
 

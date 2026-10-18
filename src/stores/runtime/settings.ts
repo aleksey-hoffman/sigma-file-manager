@@ -64,6 +64,10 @@ const settingsTabs: SettingsTab[] = [
     labelKey: 'settingsTabs.dataStorage',
   },
   {
+    name: 'remote',
+    labelKey: 'settingsTabs.remote',
+  },
+  {
     name: 'extensions',
     labelKey: 'settingsTabs.extensions',
   },
