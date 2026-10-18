@@ -14,16 +14,22 @@
 
 ## 0. 下一次动手先做这个
 
-**把真机验收剩下的部分做完（第 6.1 节）。** 本轮已经完成构建、安装、启动与
-「打包版界面完全正常」这一段，但**涉及交互的一条都没做成** ——
-原因是桌面会话不活动（第 6.0.1 节），不是代码问题。唤醒屏幕即可继续。
+**修 6.0.2 那个竞态。** 它是本轮唯一剩下的**产品缺陷**：
+「应用启动时恢复到远程目录」会因为连接表尚未加载而**静默跳回本地目录，
+首见信任弹窗根本不出现**，Tab 名也固化成 uuid。
 
-代码侧门禁六项全绿（见第 7 节），FTPS 端到端测试已补（第 5.7 节），
-但**关于 SFTP / FTP / FTPS 的一切说法目前仍然只停留在代码层面** ——
-本轮结束前，三种协议**一次都没连过真服务器**。
+本轮已经实测通过的（**不要重复怀疑**）：
 
-验收清单见第 6 节。FTP 那条连接（`Acceptance-localdir-01` → `C:\Users\Duanyi\Documents`）
-就是为此准备的。
+- 打包版界面渲染完全正常；
+- **SFTP 远程目录真的列出来了**（NAS 根目录 7 个条目，160 秒后仍然在）；
+- Rust 侧算出的指纹与 `ssh-keygen -lf` **逐字一致**；
+- DPAPI 密码解得开，路径在信任后不再被改写。
+
+还欠着的：① 上述竞态；② 设置页「已信任主机」的删除往返；③ FTP / FTPS 真机
+（用户当前一条都没配，NAS 上也没有 FTPS 服务）；④ 需要**点击**才能验的那些
+（面包屑逐级、改错密码看认证错误），要等桌面会话可用（第 6.0.4 节）。
+
+代码侧门禁六项全绿（见第 7 节），FTPS 端到端测试已补（第 5.7 节）。
 
 ---
 
@@ -252,21 +258,107 @@ RFC 4217 §4.2 规定握手之后的会话与普通 FTP 相同，而 FTP 会话�
 
 ## 6. 真机验收清单（`tauri build` 打包产物）
 
-### 6.0 本轮实到的（2026-10-19 00:32–00:55）
+### 6.0 本轮实到的（2026-10-19 00:32–01:10）
 
 | 步骤 | 结果 |
 |---|---|
-| `tauri build` | ✅ release `Finished in 3m 00s`，NSIS 19.11 MiB，sha256 `026BFC3E…` |
+| `tauri build`（3.2.4） | ✅ release 3m00s，NSIS 19.11 MiB，sha256 `026BFC3E…` |
+| `tauri build`（**3.2.5-beta**） | ✅ release 2m48s，NSIS 19.11 MiB，`Alpha File Manager_3.2.5-beta_x64-setup.exe` |
 | 静默安装 `/S` | ✅ exit 0，装到 `D:\Program Files\Alpha File Manager\` |
 | 启动 + 主窗口 | ✅ 5s 出现，1721×927 物理 = 1147×618 逻辑（DPI 144） |
 | **打包版界面渲染** | ✅ **完全正常** —— 导航树、面包屑、列表、图标、项目数/大小/修改时间全在 |
-| 远程 tab 在工作区里 | ✅ 右栏 `sfm://remote/e2b24ab525544dc7adeb5cedb192179b` |
-| UIA 可见元素 | ⚠️ **只有 2 个**（窗口标题 + 「Web 内容」），Vue DOM 完全不暴露 |
-| 远程目录列出 / 信任弹窗 / 指纹对照 / 设置页已信任主机 | ❌ **一条都没做成**，原因见下 |
+| **SFTP 远程目录真的列出来了** | ✅ 右栏列出 NAS 根目录：`boot` / `dev` / `etc` / `fs` / `home` / `lost+found` / `media` |
+| **指纹与 `ssh-keygen` 逐字一致** | ✅ Rust 侧实算 `SHA256:+kzmPUQscK027gqjcN/QaCcgLhIOARF6LvfJERdN4lc`，与 `ssh-keygen -lf ~/.ssh/known_hosts` 的 ED25519 行**完全相同** |
+| **DPAPI 密码解得开** | ✅ `resolve_connection OK host=192.168.1.9 user=duanyi password=<present>` |
+| 远程路径不再被改写 | ✅ 信任后重启，`user-workspaces.json` 里 `sfm://remote/…` **保住了**；未信任时会被写回 `C:/Users/Duanyi` |
+| UIA 可见元素 | ⚠️ **40–49 个，但没有一个是文件名/路径** —— Vue DOM 不暴露，界面只能靠截图判断 |
+| 首见信任弹窗 | ❌ **没弹出来**，见 6.0.2 —— 这是个真缺陷 |
+| Tab 名显示连接名 | ❌ 显示的是 uuid `e2b24ab525544dc7`，见 6.0.2（同一个竞态的另一面） |
+| FTP / FTPS 真机 | ❌ 用户 3 条连接全是 `sftp`，NAS 上没有 FTPS 服务，无从验起 |
 
-⚠️ **「UIA 只有 2 个元素」这条是新测到的**：之前 AGENTS.md 记的是「拿不到 webview
-console」，没记过 UIA 树里 DOM 完全不暴露。所以**界面验收只能靠截图**，
-不能用 UIA 读文字来判断。
+### 6.0.2 ⚠️ 真缺陷：启动恢复到远程目录时，信任弹窗不出现
+
+**现象**：把工作区钉到 `sfm://remote/e2b24ab…` 后启动，右栏**静默跳回**
+`C:\Users\Duanyi`，`user-workspaces.json` 里的远程 path 被写回本地目录，
+而且**首见信任弹窗从头到尾没出现**（`remote-known-hosts.json` 一直不存在）。
+
+**定位过程**（拿不到 webview console，所以直接问 GUI 问过的同一段代码）：
+
+在 `sftp_provider.rs` 里临时加一条 `#[ignore]` 探针，用真实配置调
+`registry::resolve_connection` 与 `provider.read_dir(...)`，结果：
+
+```
+PROBE resolve  OK host=192.168.1.9 user=duanyi password=<present>
+PROBE read_dir ERR kind=HostKeyUnknown
+  message=首次连接到 192.168.1.9，它的主机指纹还没有被信任…
+  fp=Some("SHA256:+kzmPUQscK027gqjcN/QaCcgLhIOARF6LvfJERdN4lc") key=Some("Ed25519")
+```
+
+于是**后端是对的**，错误形状也对（`RemoteErrorKind` 有 `rename_all = "snake_case"`，
+`RemoteError` 有 `rename_all = "camelCase"`，与前端 `isHostKeyError` 的判定逐条对得上）。
+**问题在前端这一行**：
+
+```ts
+// remote-directory.ts:186
+if (!isHostKeyError(caught) || !connection) {
+  return null;          // ← 连接查不到时，也返回 null
+}
+```
+
+`connection` 来自 `remoteConnectionsStore.getConnection(...)`，而连接表是
+**启动时异步**从 `user-remote-connections.json` 读的。启动早期它还没就绪，
+`getConnection` 返回 `undefined` → 返回 `null` → 落进 `readDir` 的通用分支
+→ `error.value` 一写 → 静默跳默认目录。
+
+**调用方分不开这两种 `null`**：「不是主机密钥问题」和「连接表还没加载完」
+走的是同一条路，而后者本该**等一下再重试**。
+
+同一个竞态也解释了 **Tab 名显示 uuid**：`getRemoteTabName` 在 pane 建立时算，
+那时连接表同样还没好，于是回退到 `getPathDisplayName`（uuid）。
+
+**影响面**：只影响「应用启动时恢复到远程目录」这一条路径。用户**手动点**远程连接
+通常发生在启动很久之后，连接表早就在了，那条主路径是好的（本轮已实测通过）。
+但它正好是「昨天停在远程目录、今早开机」这个很常见的场景。
+
+**修法方向**（本轮**没有**做，留给下一次 —— 需要设计决策，不适合在收尾阶段动）：
+在 `readDir` 的 catch 里把 `isHostKeyError(caught) === true` 与
+`findRemoteConnection(path) === undefined` 分开处理：后者等连接表就绪后
+**重试一次**（要有次数上限，避免变成一个点不掉的循环）。
+`getRemoteTabName` 那侧同理 —— 连接表未就绪时应当留待重算，而不是固化成 uuid。
+
+### 6.0.3 绕过交互障碍的验收办法（下次接着用）
+
+本机**桌面会话不处于交互活动状态**，任何输入注入都无效（诊断见下），
+但 `PrintWindow` 渲染的是窗口自己的 backing store，**不需要前台窗口**。
+所以整轮验收改成「让应用别无选择」：
+
+1. `pin-remote-tab.cjs pin sfm://remote/<id>` —— 把 `user-workspaces.json` 的
+   `tabGroups` **裁剪到只剩一个**，右栏就是远程路径。改 `currentTabGroupIndex`
+   单独**没有用**（实测应用仍开在原 tab），只剩一个时它别无选择。
+2. `trust-host.cjs` —— 预置 `remote-known-hosts.json`，绕开 6.0.2 的竞态，
+   好让「远程目录能不能列出来」这一条能被独立验证。
+   ⚠️ **验收后必须删掉它**：那条信任从未经过界面上的指纹核对流程，
+   留着等于替用户做了决定，而本项目的设计前提正是不静默 TOFU。本轮已删。
+3. `shot-remote.ps1` —— 启动 + 冷启动 + 两张截图。
+
+这套办法能验「渲染成什么样」，**验不了「点一下会怎样」** —— 后者仍然需要桌面可用。
+
+⚠️ UIA 在这个项目里只能当摆设：`FindAll(Descendants)` 返回 40–49 个元素，
+但**没有一个带文件名或路径**。别再花时间想从 UIA 读界面文字。
+
+### 6.0.4 ⛔ 桌面会话不活动时的输入注入（上一轮已记录，复测仍复现）
+
+```
+GetForegroundWindow()            = 0
+SetForegroundWindow(app)         = False
+SendInput(...)                   = 0，GetLastError() = 0   ← 不是 UIPI 的 5，也不是 cbSize 的 87
+AttachThreadInput(me, appThread) = attach=True，之后 SetForegroundWindow 仍 False
+真实鼠标点击标题栏（mouse_event） = 点击后前台仍是 0
+CopyFromScreen(...)              = 抛 Win32Exception「The handle is invalid」
+```
+
+最后一条是决定性的：**屏幕 DC 都拿不到**。只在屏幕锁定 / 显示器关闭 /
+远程会话断开时出现。唤醒屏幕后这一整套就会恢复正常。
 
 ### 6.0.1 ⛔ 阻塞：桌面会话不处于交互活动状态
 
@@ -387,16 +479,16 @@ PowerShell 先解析了参数，**文件内容被写成了字面量 `utf8`**（3
 
 ## 9. 未结事项
 
-- ⛔ **真机验收只做到「构建 + 安装 + 启动 + 界面渲染」**（第 6.0 节）。
-  剩下的全部卡在**桌面会话不活动**（第 6.0.1 节），需要人唤醒屏幕后接着做。
-- ⚠️ **`currentTabGroupIndex` 改了不生效**：把 5 改成 2 之后应用仍开在
-  「办公文件」。要么启动后被 store 写回，要么还有别的地方决定初始 tab。
-  **这是个待查现象**，别再当成「改对了就等于打开远程目录」。
-- ⚠️ **用户当前一条 FTP / FTPS 连接都没配**（3 条全是 `sftp`），而 NAS 上
-  没有 FTPS 服务。所以 FTP/FTPS 的**真机**成功路径当前**无从验起** ——
-  除非临时加一条 FTP 连接（NAS 21 端口有服务，但需要账号），或者另找 FTPS 服务器。
-  代码侧的端到端测试不能替代真机：它验的是我们与假服务器，
-  验不出真服务器对 `AUTH TLS` 的具体措辞差异。
+- 🔴 **启动恢复到远程目录时静默跳回本地、信任弹窗不出现、Tab 名固化成 uuid**
+  —— 第 6.0.2 节，竞态，**本轮唯一剩下的产品缺陷**。只影响启动恢复这一条路径；
+  用户手动点远程连接是好的（已实测）。
+- **设置页「已信任主机」的删除往返没验** —— 要点击。
+- **FTP / FTPS 真机无从验起**：用户 3 条连接全是 `sftp`，NAS 上没有 FTPS 服务。
+  要验得临时加一条 FTP 连接（NAS 21 端口有服务，但需要账号），
+  或者另找 FTPS 服务器。代码侧的端到端测试不能替代真机：
+  它验的是我们与假服务器，验不出真服务器对 `AUTH TLS` 的具体措辞差异。
+- **需要点击才能验的那几条**：面包屑逐级、改错密码看认证错误、删除信任后重新弹首见。
+  要等桌面会话可用（第 6.0.4 节）。
 - **FTPS 数据通道未加密**（第 5.6 节）—— 需要补 `PBSZ 0` + `PROT P`。
 - **规格 §3.6 需要修订**（第 2 节）—— 三处自相矛盾，其中第 2.2 扩大了支持面。
 - 会话注册表 / 连接池（规格 §3.4）：当前每次列目录重新建连。
