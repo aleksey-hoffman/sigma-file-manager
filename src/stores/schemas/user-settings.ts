@@ -14,9 +14,10 @@ import {
   legacyBackgroundStorageKeys,
 } from '@/modules/home/background-storage-keys';
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
+import { isInfusionBlendMode, normalizeInfusionBlendMode } from '@/utils/infusion-blend';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 26;
+export const USER_SETTINGS_SCHEMA_VERSION = 27;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -478,6 +479,10 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     }
   }
 
+  if (fromVersion === 26 && toVersion === 27) {
+    await migrateInfusionBlendModes(storage);
+  }
+
   if (fromVersion === 6 && toVersion === 7) {
     const appData = await appDataDir();
     const mediaDir = `${appData.replace(/\\/g, '/')}/user-data/media`.replace(/\/+/g, '/');
@@ -500,6 +505,27 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   }
 
   void storage;
+}
+
+const INFUSION_STORAGE_PAGE_KEYS = ['global', 'home', 'navigator', 'dashboard', 'settings', 'extensions'];
+
+/**
+ * The blend mode menu now only offers modes from the allowlist (see INFUSION_BLEND_MODES). Saved Hue and
+ * Saturation become Color, anything else that is not in the allowlist becomes Normal. Modes that are
+ * still offered, and pages without a saved mode, are left alone. Blend target and fill color are new
+ * and fall back to their defaults (interface, #3b82f6), which renders the same as before.
+ */
+async function migrateInfusionBlendModes(storage: StorageAdapter) {
+  for (const pageKey of INFUSION_STORAGE_PAGE_KEYS) {
+    const storageKey = `infusion.pages.${pageKey}.mixBlendMode`;
+    const storedMode = await storage.get<unknown>(storageKey);
+
+    if (storedMode === undefined || isInfusionBlendMode(storedMode)) {
+      continue;
+    }
+
+    await storage.set(storageKey, normalizeInfusionBlendMode(storedMode));
+  }
 }
 
 async function addDefaultGlobalSearchIgnoredPaths(

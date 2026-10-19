@@ -14,6 +14,11 @@ import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import type { InfusionPage } from '@/types/user-settings';
+import {
+  normalizeInfusionBlendMode,
+  normalizeInfusionBlendTarget,
+  normalizeInfusionBlendTint,
+} from '@/utils/infusion-blend';
 
 const userSettingsStore = useUserSettingsStore();
 const appStateStore = useAppStateStore();
@@ -97,8 +102,10 @@ const infusionBlendMode = computed(() => {
     return preview;
   }
 
-  return effectivePageSettings.value.mixBlendMode;
+  return normalizeInfusionBlendMode(effectivePageSettings.value.mixBlendMode);
 });
+const infusionBlendTarget = computed(() => normalizeInfusionBlendTarget(effectivePageSettings.value.blendTarget));
+const infusionBlendTint = computed(() => normalizeInfusionBlendTint(effectivePageSettings.value.blendTint));
 const infusionEnabled = computed(() => infusionSettings.value.enabled);
 
 const pauseOverlayBackgroundVideo = computed(() => {
@@ -127,6 +134,8 @@ const pauseOverlayBackgroundVideo = computed(() => {
     :noise-opacity="infusionNoise"
     :noise-scale="infusionNoiseScale"
     :blend-mode="infusionBlendMode"
+    :blend-target="infusionBlendTarget"
+    :blend-tint="infusionBlendTint"
     :pause-playback="pauseOverlayBackgroundVideo"
   />
 </template>
