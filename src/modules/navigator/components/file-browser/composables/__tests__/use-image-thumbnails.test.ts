@@ -124,6 +124,22 @@ describe('normalizeImageThumbnailMaxDimension', () => {
 });
 
 describe('useImageThumbnails', () => {
+  it('updates thumbnail cache keys without replacing the reactive cache', async () => {
+    mockInvoke.mockImplementation((_command, payload: { path: string }) => {
+      return Promise.resolve(`${payload.path}.thumbnail.png`);
+    });
+
+    const thumbnails = useImageThumbnails();
+    const cacheReference = thumbnails.imageThumbnails.value;
+
+    thumbnails.getImageThumbnail(createImageEntry('image-1.jpg'));
+    thumbnails.getImageThumbnail(createImageEntry('image-2.jpg'));
+    await flushThumbnailWork();
+
+    expect(thumbnails.imageThumbnails.value).toBe(cacheReference);
+    expect(Object.keys(cacheReference)).toHaveLength(2);
+  });
+
   it('removes queued thumbnail requests when they are cancelled', async () => {
     const pendingRequests: Deferred<string>[] = [];
     mockInvoke.mockImplementation(() => {

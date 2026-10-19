@@ -193,10 +193,7 @@ export function useVideoThumbnails() {
 
       if (cachedThumbnail) {
         if (request.generation === thumbnailGeneration && !cancelledThumbnails.has(processingKey)) {
-          videoThumbnails.value = {
-            ...videoThumbnails.value,
-            [request.thumbnailKey]: cachedThumbnail,
-          };
+          videoThumbnails.value[request.thumbnailKey] = cachedThumbnail;
         }
 
         return;
@@ -226,10 +223,7 @@ export function useVideoThumbnails() {
       }
 
       if (request.generation === thumbnailGeneration && !cancelledThumbnails.has(processingKey)) {
-        videoThumbnails.value = {
-          ...videoThumbnails.value,
-          [request.thumbnailKey]: thumbnailSrc,
-        };
+        videoThumbnails.value[request.thumbnailKey] = thumbnailSrc;
       }
     }
     catch {
