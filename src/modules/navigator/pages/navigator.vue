@@ -65,7 +65,7 @@ import { resolveDirEntry } from '@/utils/virtual-locations';
 // FORK-MODIFICATION 2026-10-19：跨族对应关系表只记跨族，同族要判出来。
 import { isRemotePath, parseRemotePath } from '@/utils/remote-paths';
 // FORK-MODIFICATION 2026-10-19：目录树切远程时要按连接定根、用连接名当标签。
-import { resolveTreeRoots, type TreeConnectionInfo } from '@/modules/navigator/utils/remote-tree-roots';
+import { resolveTreeActivePath, resolveTreeRoots, shouldDriveTreeSelection, type TreeConnectionInfo } from '@/modules/navigator/utils/remote-tree-roots';
 // FORK-MODIFICATION: 本地 ↔ 远程传输。导航器是**唯一**知道两格分别在哪儿的地方，
 // 所以传输目标（对面那一格）的登记也放在这里写。
 import { setRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
@@ -363,6 +363,27 @@ const activePaneLivePath = computed<string | null>(() => {
 });
 
 /**
+ * FORK-MODIFICATION 2026-10-19（用户第三次反馈「远程目录树仍然不正常」）：
+ * 目录树的**根**与**选中路径**必须用**同一个源**。
+ *
+ * 之前是两个源：
+ * - 根：`activeFolderSettingsPath` —— tab 上的**存档**路径；
+ * - 选中路径：`activePaneLivePath` —— 窗格的**实时**路径。
+ *
+ * 两者不一致时，树会自相矛盾：根是本地盘符、选中路径却是远程的，
+ * 于是远程那一层**根本不在树里**，展开与定位都无从谈起。
+ * 真机实测（2026-10-19 装机）：切到远程格后，树里还是 Win (C:) / Program (D:) …，
+ * 一个都没展开 —— 因为选中路径（远程）压根不在那棵本地树里。
+ *
+ * 真实路径才是对的：它就是窗格里**当前显示**的目录。
+ * 分屏时取窗格实时路径；单格时 `activePaneLivePath` 恒为 null，
+ * 退回 tab 路径（= 当前目录），与原来的行为一致。
+ */
+const treeActivePath = computed<string | undefined>(() => {
+  return resolveTreeActivePath(activePaneLivePath.value, activeFolderSettingsPath.value);
+});
+
+/**
  * FORK-MODIFICATION 2026-10-19（缺陷修复）：分屏下把当前格的路径同步进目录树 store。
  *
  * 原实现放在 `activeTabId` 正下方（见那里的注释），因 TDZ + `immediate: true`
@@ -373,9 +394,9 @@ const activePaneLivePath = computed<string | null>(() => {
  *   只盯 id 的 watch 永远不会触发。
  * - `isSplitView` 的守卫保留原语义：单格模式不动树（那是上游 v6.2 的原设计）。
  */
-watch([isSplitView, activePaneLivePath], () => {
+watch([isSplitView, treeActivePath], () => {
   if (!isSplitView.value) return;
-  folderTreeStore.setSelectedPath(activePaneLivePath.value ?? null);
+  folderTreeStore.setSelectedPath(treeActivePath.value ?? null);
 }, { immediate: true });
 
 const canUseFolderSettingsForActivePath = computed(() => {
@@ -498,8 +519,12 @@ const treeConnections = computed<Record<string, TreeConnectionInfo>>(() => {
 
 // FORK-MODIFICATION 2026-10-19：焦点在远程目录时，目录树切到远程目录树。
 // 判定本身在 `remote-tree-roots.ts`（纯函数，可单测），这里只喂数据。
+//
+// ⚠️ `activePath` 必须与下面 `setSelectedPath` 用的是**同一个** `treeActivePath`：
+// 根与选中路径分家时，树会自相矛盾（根是本地、选中路径是远程），
+// 远程那一层就不在树里，展开与定位全都无从谈起。
 const treeRoots = computed(() => resolveTreeRoots({
-  activePath: activeFolderSettingsPath.value,
+  activePath: treeActivePath.value,
   drivePaths: drives.value.map(d => d.path),
   driveLabels: treeDriveLabels.value,
   connectionsById: treeConnections.value,
@@ -787,13 +812,32 @@ function handleSearchSelectionChange(entries: DirEntry[]) {
   }
 }
 
-function handleCurrentDirChange(entry: DirEntry | null) {
+function handleCurrentDirChange(entry: DirEntry | null, paneId?: string) {
   currentDirEntry.value = entry;
+
   // FORK-MODIFICATION: tree sync v6 (issue #499). Drive the folder-tree store
   // directly here so FileBrowserTreeView (which subscribes via storeToRefs)
   // reveals the selected path's ancestor chain without any imperative ref
   // forwarding. Replaces the v0..v5 broken `treeViewRef.value?.expandToPath`
   // chain (see handoff-2026-09-26-tree-sync-retro.md).
+  //
+  // ⚠️ FORK-MODIFICATION 2026-10-19：只有**当前格**能改写树的选中路径。
+  //
+  // 分屏时**两个窗格都发**这个事件，而「最后发声的那个」不一定是当前格：
+  // 远程格要建连、要读目录，比本地格慢得多，它的 current-dir-entry 后到，
+  // 就把树的选中路径改成了**远程**的；而树的**根**跟着当前格走（本地盘符）。
+  // 于是树自相矛盾：根是本地、选中路径是远程 —— 远程那层根本不在树里，
+  // 树一个都不展开。
+  //
+  // 真机实测（2026-10-19 装包）：切到远程格后，树里是 Win (C:) / Program (D:) …，
+  // 全部折叠，而右格明明是远程目录。
+  //
+  // 与 `handleSelectionChange` / `handlePaneNavigation` 一样，
+  // 这里也必须知道事件来自**哪个**窗格。
+  if (!shouldDriveTreeSelection(isSplitView.value, paneId, activeTabId.value)) {
+    return;
+  }
+
   folderTreeStore.setSelectedPath(entry?.path ?? null);
 }
 
@@ -1655,7 +1699,7 @@ onUnmounted(() => {
                             @swap-panes="handleSwapSplitPanePaths"
                             @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                             @update:current-path="(path) => handlePaneNavigation(path, tab.id)"
-                            @update:current-dir-entry="handleCurrentDirChange"
+                            @update:current-dir-entry="(entry) => handleCurrentDirChange(entry, tab.id)"
                           />
                         </ResizablePanel>
                         <ResizableHandle
@@ -1842,7 +1886,7 @@ onUnmounted(() => {
                         @swap-panes="handleSwapSplitPanePaths"
                         @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                         @update:current-path="(path) => handlePaneNavigation(path, tab.id)"
-                        @update:current-dir-entry="handleCurrentDirChange"
+                        @update:current-dir-entry="(entry) => handleCurrentDirChange(entry, tab.id)"
                       />
                     </ResizablePanel>
                     <ResizableHandle

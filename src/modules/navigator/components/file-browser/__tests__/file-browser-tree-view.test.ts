@@ -434,7 +434,12 @@ describe('FileBrowserTreeView — 定位到当前目录（高亮 + 滚动）', (
 
         const parent = this.parentElement;
         const index = parent ? Array.from(parent.children).indexOf(this) : 0;
-        const top = index * rowSpacing;
+        // ⭐ 行的位置必须**跟着滚动走**：真实浏览器里，容器滚了之后
+        // `getBoundingClientRect().top` 减去容器顶边就是「行在可视区里的偏移」。
+        // 桩若返回固定值，第二次定位会拿同一个偏移再加一次 —— 滚动量被叠加
+        // （124 → 248），测出来的是假象。
+        const scrolled = parent ? parent.scrollTop : 0;
+        const top = index * rowSpacing - scrolled;
 
         return {
           top,
@@ -534,6 +539,67 @@ describe('FileBrowserTreeView — 定位到当前目录（高亮 + 滚动）', (
     const { wrapper, scroll } = await mountRemoteTree(400, 100);
 
     expect(scroll.value, '当前目录本来就在可视区里，不该滚动').toBe(0);
+
+    wrapper.unmount();
+  });
+
+  // FORK-MODIFICATION 2026-10-19：定位必须发生在「目标行已经出现」之后。
+  //
+  // 真实时序（真机装包实测）：焦点刚切到远程格时，树的**根**还停在本地盘符，
+  // 远程那一行此刻不在树上；等根切过去、目录读完，行才重新出现。
+  // 上一版的定位跑在切根之前 —— 那一刻目标行要么不存在、要么是被临时立起来的
+  // 并列根，于是「展开到了当前目录，却没滚过去」。
+  it('目标行晚出现时也要再定位一次（根晚一步切到远程树）', async () => {
+    vi.mocked(resolveDirectoryContents).mockImplementation(async (path: string) => {
+      if (path === REMOTE_ROOT) {
+        return dirContents(REMOTE_ROOT, [
+          entry(REMOTE_CWD, 'wp-content', true),
+        ]);
+      }
+
+      if (path === REMOTE_CWD) {
+        return dirContents(REMOTE_CWD, [
+          entry(`${REMOTE_CWD}/mu-plugins`, 'mu-plugins', true),
+        ]);
+      }
+
+      return dirContents(path, []);
+    });
+
+    stubRects(100, 200);
+
+    const store = useFolderTreeStore();
+
+    store.setSelectedPath(REMOTE_CWD);
+
+    // 先用**两个**本地盘符当根：远程那一行此刻被临时立成并列的根，
+    // 落在下标 2 —— 与它后来在远程树里的下标 1 不同。
+    // 这样「定位过一次」和「定位到了正确的那一行」就能被区分开。
+    const wrapper = mount(FileBrowserTreeView, {
+      props: { rootPaths: ['C:/', 'D:/'] },
+    });
+    const viewport = wrapper.find('.file-tree-view__scroll').element as HTMLElement;
+    const scroll = trackScrollTop(viewport);
+
+    await flushPromises();
+    await nextTick();
+
+    // 根切到远程树：并列的根被丢掉，远程那一行要重新读出来才会再出现。
+    await wrapper.setProps({ rootPaths: [REMOTE_ROOT] });
+    await flushPromises();
+    await nextTick();
+
+    // 远程树里：速豹堂(0) / wp-content(1) / mu-plugins(2)。
+    // wp-content 在下标 1 → 绝对位置 200、行高 24、视口高 100 →
+    // 它完全可见的滚动区间是 [200+24-100, 200] = [124, 200]。
+    //
+    // 修好之前：定位停在「并列根」那次的旧值 324（那一行早就不在树上了），
+    // 落在区间外 → 树展开到了当前目录，却没滚过去。
+    expect(
+      scroll.value,
+      '目标行晚出现时没有重新定位 —— 树展开到了当前目录，却没滚过去',
+    ).toBeGreaterThanOrEqual(124);
+    expect(scroll.value).toBeLessThanOrEqual(200);
 
     wrapper.unmount();
   });

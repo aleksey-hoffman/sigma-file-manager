@@ -168,6 +168,25 @@ describe.skipIf(!isWindows)('安装器单实例守卫：判定与判别力', () 
     expect(result.output).toContain('OK: all single-instance guard cases passed');
   });
 
+  it('「无兄弟」那条用例不许依赖机器状态（机器繁忙时会假红）', () => {
+    const harness = fs.readFileSync(HARNESS_PATH, 'utf8');
+    const guard = fs.readFileSync(GUARD_PATH, 'utf8');
+
+    // 守卫必须有「不问机器」的开关。
+    expect(
+      guard,
+      'check-single-instance.ps1 缺少 -NoSiblings 开关：验收脚本只能靠「传空兄弟列表」'
+      + '来表达「没有别的安装器」，而那会让守卫去枚举全机进程 —— '
+      + 'WMI 在机器繁忙时会失败（exit 2），共享镜像名还会造出假兄弟，'
+      + '门禁于是变成时绿时红。',
+    ).toMatch(/\[switch\]\$NoSiblings/);
+
+    // 那条用例必须用它。
+    expect(harness).toMatch(
+      /single instance is allowed to install[\s\S]{0,400}?-NoSiblings \$true/,
+    );
+  });
+
   it('判别力：把判定改坏之后，验收脚本必须转红', () => {
     const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'afm-guard-negative-'));
     const brokenPath = path.join(scratch, 'check-single-instance.ps1');

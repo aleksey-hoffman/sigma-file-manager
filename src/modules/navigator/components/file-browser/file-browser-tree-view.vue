@@ -272,6 +272,35 @@ watch(selectedPath, async (path) => {
   revealSelectedRow();
 }, { immediate: true });
 
+// FORK-MODIFICATION 2026-10-19：目标行**晚出现**时也要再定位一次。
+//
+// 上一条 watch 里的 `revealSelectedRow()` 跑得太早：那一刻树的**根**还可能是
+// 本地盘符（焦点刚切到远程格，根是跟着 `activePaneLivePath` 变的），
+// 远程那一行根本不在树上 —— 定位找不到行，安静地什么都不做。
+// 等根切过去、目录读完、行出现时，已经没有人再滚一次了。
+//
+// 真机实测（2026-10-19 装包）：树展开到了当前目录（`wp_root` 的子项都在），
+// 但**没有滚到那一行**。
+//
+// 所以改成盯住「目标行在 rows 里的下标」：
+// 行一出现（-1 → N）、或者位置变了（上面的兄弟多了/少了），就重新定位一次。
+// 盯下标而不是盯整棵树：用户自己滚动不会改下标，因此不会把人正在看的位置冲掉。
+const selectedRowIndex = computed(() => {
+  const target = selectedPath.value;
+
+  if (!target) {
+    return -1;
+  }
+
+  return rows.value.findIndex(row => row.path === target);
+});
+
+watch(selectedRowIndex, (index) => {
+  if (index < 0) return;
+  // 行元素要等这一轮渲染结束才在 DOM 里。
+  void nextTick().then(() => revealSelectedRow());
+}, { immediate: true });
+
 // v6.3: separate the chevron click (expand/collapse only) from the row
 // click (emit activate → parent navigates). Per user feedback: clicking the
 // icon should expand/collapse without changing the current path; clicking

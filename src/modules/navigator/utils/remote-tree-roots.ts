@@ -84,6 +84,56 @@ export function resolveRemoteTreeRoot(
 }
 
 /**
+ * 目录树用的「当前路径」—— 根与选中路径**必须**用同一个源。
+ *
+ * FORK-MODIFICATION 2026-10-19（用户第三次反馈「远程目录树仍然不正常」）。
+ *
+ * 之前是两个源：根取 tab 上的**存档**路径，选中路径取窗格的**实时**路径。
+ * 两者不一致时树会自相矛盾：根是本地盘符、选中路径却是远程的，
+ * 远程那一层根本不在树里，展开与定位都无从谈起。
+ * 真机实测（2026-10-19 装机）：切到远程格后树里还是 Win (C:) / Program (D:)，
+ * 一个都没展开 —— 选中路径（远程）压根不在那棵本地树里。
+ *
+ * 实时路径才是对的：它就是窗格里**当前显示**的目录。
+ */
+export function resolveTreeActivePath(
+  livePath: string | null | undefined,
+  settingsPath: string | null | undefined,
+): string | undefined {
+  return livePath ?? settingsPath ?? undefined;
+}
+
+/**
+ * 这个窗格的事件**能不能**改写目录树的选中路径。
+ *
+ * FORK-MODIFICATION 2026-10-19（真机装包实测抓到的第三条）。
+ *
+ * 分屏时**两个窗格都发** `current-dir-entry`，而「最后发声的那个」不一定是当前格：
+ * 远程格要建连、要读目录，比本地格慢得多，它的 current-dir-entry 后到，
+ * 就把树的选中路径改成了**远程**的；而树的**根**跟着当前格走（本地盘符）。
+ * 于是树自相矛盾：根是本地、选中路径是远程 —— 远程那层根本不在树里，
+ * 树一个都不展开（真机截图：切到远程格后树里是 Win (C:) / Program (D:) …，全折叠）。
+ *
+ * 规则：**只有当前格能改写树**。单格模式只有一个窗格，恒为真。
+ */
+export function shouldDriveTreeSelection(
+  isSplitView: boolean,
+  paneId: string | undefined,
+  activePaneId: string | null | undefined,
+): boolean {
+  if (!isSplitView) {
+    return true;
+  }
+
+  // 拿不到窗格 id（旧调用方）时不拦 —— 拦掉会让树彻底不动。
+  if (!paneId) {
+    return true;
+  }
+
+  return paneId === activePaneId;
+}
+
+/**
  * 焦点在远程 → 根是那条连接的**配置目录**，标签是连接名。
  * 焦点不在远程（或 id 解析不出来）→ 回盘符列表，不让树变成空的。
  */

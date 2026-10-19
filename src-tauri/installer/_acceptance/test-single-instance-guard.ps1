@@ -53,7 +53,7 @@ $LogFile = Join-Path $Scratch 'guard.log'
 $script:failures = 0
 
 function Invoke-Guard {
-  param([int]$SelfPid, [string]$SiblingPids, [string]$VerdictFile)
+  param([int]$SelfPid, [string]$SiblingPids, [string]$VerdictFile, [bool]$NoSiblings = $false)
 
   # NOT $args: that is an automatic variable, and assigning to it inside a
   # function is at best confusing and at worst silently drops arguments.
@@ -67,6 +67,10 @@ function Invoke-Guard {
 
   if ($SiblingPids) {
     $psArgs += @('-SiblingPids', $SiblingPids)
+  }
+
+  if ($NoSiblings) {
+    $psArgs += '-NoSiblings'
   }
 
   $output = & powershell @psArgs 2>&1
@@ -84,11 +88,12 @@ function Assert-Case {
     [int]$SelfPid,
     [string]$SiblingPids,
     [int]$ExpectedExit,
-    [bool]$ExpectVerdictFile
+    [bool]$ExpectVerdictFile,
+    [bool]$NoSiblings = $false
   )
 
   $verdict = Join-Path $Scratch ([guid]::NewGuid().ToString('N') + '.flag')
-  $result = Invoke-Guard -SelfPid $SelfPid -SiblingPids $SiblingPids -VerdictFile $verdict
+  $result = Invoke-Guard -SelfPid $SelfPid -SiblingPids $SiblingPids -VerdictFile $verdict -NoSiblings $NoSiblings
   $verdictExists = Test-Path -LiteralPath $verdict
 
   $ok = ($result.ExitCode -eq $ExpectedExit) -and ($verdictExists -eq $ExpectVerdictFile)
@@ -123,8 +128,13 @@ Assert-Case -Name 'newest instance steps aside for several older ones' `
   -SelfPid 300 -SiblingPids '100,200' -ExpectedExit 10 -ExpectVerdictFile $true
 
 # Nobody else around: ordinary install, nothing changes.
+#
+# -NoSiblings instead of an empty -SiblingPids: an empty list made the guard
+# enumerate every live process, so the verdict depended on what happened to be
+# running (WMI failures under load -> exit 2; a shared image name -> phantom
+# siblings). That is a flaky gate, and a flaky gate is worse than no gate.
 Assert-Case -Name 'single instance is allowed to install' `
-  -SelfPid 100 -SiblingPids '' -ExpectedExit 0 -ExpectVerdictFile $false
+  -SelfPid 100 -SiblingPids '' -ExpectedExit 0 -ExpectVerdictFile $false -NoSiblings $true
 
 Write-Output ''
 

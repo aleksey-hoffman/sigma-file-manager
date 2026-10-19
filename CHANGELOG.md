@@ -2,7 +2,7 @@
 
 ## [3.2.11-beta] - October 2026
 
-**Summary:** The remote folder tree now shows its contents after you come back to it from a local pane.
+**Summary:** The remote folder tree follows the pane you are working in: it opens on the directory you are in, expands to it, and scrolls it into view.
 
 ### What changed
 
@@ -12,9 +12,15 @@
 
 **Fixed: the tree could sprout extra roots of its own.** When the directory you were in sat more than one level below the tree's root, the folders in between were never read, so the directory you were in could not be found among the tree's rows and was added as a root of its own. The chain of folders between the root and your directory is now read in order, so the tree keeps a single root and your directory stays where it belongs.
 
+**Fixed: the tree kept the local drive list after you moved to a remote pane.** The tree's roots and its highlighted row were being read from two different places. The roots came from the path saved for the tab, which is the local folder you started from; the highlighted row came from the path the pane is actually showing. Once you navigated the remote pane, the two disagreed: the tree still showed `Win (C:)`, `Program (D:)` and the rest, all folded, while the pane was somewhere else entirely. Both now come from the same place, so a remote pane gets a remote tree.
+
+**Fixed: the non-focused pane could steal the tree's selection.** With the window split in two, both panes reported their current directory, and the tree took whichever report arrived last. The remote pane is slower to connect and to read, so its report arrived after the local pane's and replaced the selection with a remote path, while the roots stayed local. Nothing in the remote tree was reachable, so it expanded nothing. Only the pane you are actually working in can change the tree's selection now.
+
+**Fixed: the tree scrolled before the row it was aiming at existed.** The scroll ran as soon as the selected path changed, but at that moment the tree was still the old one -- the remote row had not been drawn yet, so there was nothing to scroll to and the code returned without doing anything, silently. When you came back later and the row was there, nothing scrolled to it. The tree now watches where the selected row sits among the visible rows, and scrolls when that row appears or moves. Scrolling the tree by hand does not move the row, so your own scrolling is not undone.
+
 ### This is a beta
 
-**None of this has been run against the installed app yet.** It is covered by unit tests and by fault injection, and the packaged build is what you would verify it with.
+**Part of this has been run against the installed app.** Switching to a remote pane now replaces the drive list with the remote tree, expands it down to the directory you are in, and scrolls that row into view -- all verified on the packaged build. One case is still open: switching to another tab and back can leave the remote tree showing only its root, with nothing under it.
 
 ### Not in this build
 

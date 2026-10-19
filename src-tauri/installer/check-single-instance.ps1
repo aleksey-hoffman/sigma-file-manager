@@ -79,7 +79,26 @@ param(
 
   # Test-only override for the log destination. Production never passes it and
   # keeps using %TEMP%\alpha-file-manager-installer-guard.log.
-  [string]$LogFileOverride = ''
+  [string]$LogFileOverride = '',
+
+  # Test-only: decide "there is no other installer" WITHOUT asking the machine.
+  #
+  # FORK-MODIFICATION 2026-10-19: the acceptance harness used to express
+  # "nobody else is running" by passing an EMPTY -SiblingPids, which made this
+  # script fall through to enumerating every live process. That made the
+  # verdict depend on whatever happened to be running:
+  #   - on a busy machine the WMI enumeration can fail -> exit 2 ("cannot
+  #     enumerate processes") -> the case that expects a plain install fails;
+  #   - if the synthetic installer pid happens to exist and its image is
+  #     shared (svchost.exe and friends), the other holders of that image
+  #     become "siblings", and one of them with a lower pid flips the verdict
+  #     to "duplicate".
+  # Both were observed as a red gate that turned green when the machine was
+  # idle -- a flaky gate is worse than no gate. With this switch the case is
+  # deterministic: no enumeration, empty sibling list, nothing else can change.
+  #
+  # Production never passes it: without it the script always enumerates.
+  [switch]$NoSiblings
 )
 
 $ErrorActionPreference = 'Continue'
@@ -185,7 +204,14 @@ if ($SiblingPids) {
   )
 }
 
-if ($suppliedSiblings.Count -gt 0) {
+if ($NoSiblings) {
+  # Test-only path: "nobody else is running", decided without asking the
+  # machine. See the -NoSiblings parameter comment for why the machine must
+  # not be consulted here.
+  $siblingPidList = @()
+  Write-Log "    [single-instance] siblings: none (test override -NoSiblings)"
+}
+elseif ($suppliedSiblings.Count -gt 0) {
   # Test-only path: use the supplied list verbatim.
   $siblingPidList = @($suppliedSiblings | Where-Object { $_ -gt 0 -and $_ -ne $resolvedInstallerPid })
   Write-Log "    [single-instance] siblings (supplied): $($siblingPidList -join ',')"

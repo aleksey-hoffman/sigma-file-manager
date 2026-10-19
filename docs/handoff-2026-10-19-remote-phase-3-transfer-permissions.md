@@ -149,28 +149,140 @@ delete firstNonCommentChildren.props?.ref;
 ref 才活得下来），滚动容器也因此不再挂着 `display: contents`，
 `overflow-y: auto` 一定生效。
 
+#### 根因 D（**真机装包后才暴露的接线分家**）：树的根与选中路径取自两个不同的源
+
+上面三条都是**树内部**的问题。修完之后装包实测，远程格激活时树里仍然是
+**本地盘符**（`Win (C:) / Program (D:) / Office (E:) …`），一个都没展开。
+
+看 `navigator.vue` 才发现根和选中路径取自**两个不同的路径源**：
+
+| 消费者 | 原来用的源 | 含义 |
+|---|---|---|
+| `treeRoots`（树的**根**） | `activeFolderSettingsPath` | tab 上的**存档**路径 |
+| `setSelectedPath`（树的**选中路径**） | `activePaneLivePath` | 窗格的**实时**路径 |
+
+两者不一致时，树会**自相矛盾**：根是本地盘符、选中路径却是远程的 ——
+远程那一层**根本不在树里**，于是展开与定位都无从谈起。
+（`activeFolderSettingsPath` 在分屏下取的是 `activeTab.path`，
+而远程格的 tab 路径**还没落盘**时它是空的，于是回退到 `currentActivePath` —— 本地路径。）
+
+修复：新增 `treeActivePath`（= `resolveTreeActivePath(activePaneLivePath, activeFolderSettingsPath)`），
+**根与选中路径读同一个变量**，并加了一条**源码级守卫**测试
+（`navigator-tree-wiring.test.ts`）钉住这个不变量 ——
+纯函数测不出「谁把谁换了」，而这正是这次翻车的形式。
+
+> 这一条也印证了 §1.1 的教训：**单测全绿 ≠ 界面对**。
+> 树的数据层、展开链、滚动定位三块都测过、都绿，
+> 真机却是一棵本地盘符树 —— 差的那一环在**两个 computed 之间的接线**上，
+> 纯函数测不到，必须装机看。
+
+#### 根因 E（**分屏时「谁的声音最后到」赢了**）：非当前格也能改写树的选中路径
+
+修完根因 D 再装包，树里仍然是本地盘符、仍然一个都没展开。往下再追一层，
+发现树的选中路径还有**第三个写入方**：
+
+```js
+// navigator.vue
+function handleCurrentDirChange(entry: DirEntry | null) {
+  currentDirEntry.value = entry;
+  folderTreeStore.setSelectedPath(entry?.path ?? null);   // ← 树的选中路径
+}
+```
+
+而这个 handler 挂在了**所有**窗格的 `@update:current-dir-entry` 上：
+
+```html
+@update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+@update:current-path="(path) => handlePaneNavigation(path, tab.id)"
+@update:current-dir-entry="handleCurrentDirChange"      <!-- ← 只有它不带窗格 id -->
+```
+
+分屏时**两个窗格都发**这个事件，而「最后发声的那个」不一定是当前格：
+远程格要建连、要读目录，比本地格慢得多，它的 `current-dir-entry` **后到**，
+就把树的选中路径改成了**远程**的；而树的**根**跟着当前格走（本地盘符）。
+于是树彻底自相矛盾：根是本地、选中路径是远程 —— 远程那层根本不在树里，
+于是**一层都展不开**（真机实测：切到远程格后树里是 Win (C:) / Program (D:) …，全折叠）。
+
+同页的 `handleSelectionChange` / `handlePaneNavigation` **都带 `tab.id`** ——
+只有 `handleCurrentDirChange` 不带，这正是漏掉的那一处。
+
+修复：给它补上窗格 id，并用纯函数 `shouldDriveTreeSelection(isSplitView, paneId, activePaneId)`
+判定「**只有当前格能改写树**」。单格模式恒为真；拿不到窗格 id 时也不拦
+（拦掉会让树彻底不动）。
+
+#### 根因 F（**定位代码一直在跑，但跑早了**）：reveal 发生在根切换**之前**
+
+修完根因 D/E 再装包，树**已经**是远程树、也已经展开到当前目录（真机截图里
+`wp_root` 的子项 `wp-mail.php`、`wp-admin` 都在），但**没有滚到那一行**。
+
+原因不在滚动算法，而在**时序**。上一条 watch 是这么写的：
+
+```ts
+watch(selectedPath, async (path) => {
+  await folderTreeStore.ensureAncestorsLoaded(path);   // 读远程目录，几十~几百 ms
+  revealSelectedRow();                                 // ← 此刻行还不一定在树上
+}, { immediate: true });
+```
+
+焦点刚切到远程格时，`selectedPath` 已经变成远程路径，于是这条 watch 立刻开跑；
+但它的第一件事是**等远程目录读完**。等它终于走到 `revealSelectedRow()`，
+根可能才刚切过去、目标行正在被重新渲染 —— 更常见的是那一刻行**根本还不在**树上
+（还是本地盘符那棵树），`revealSelectedRow()` 按 `dataset.treePath` 找不到，
+**安静地什么都不做、不报任何错**。等行真的出现时，已经没有人再滚一次了。
+
+修复：改成盯**目标行在 `rows` 里的下标**，而不是盯选中路径：
+
+```ts
+const selectedRowIndex = computed(() =>
+  selectedPath.value ? rows.value.findIndex(row => row.path === selectedPath.value) : -1);
+
+watch(selectedRowIndex, (index) => {
+  if (index < 0) return;
+  void nextTick().then(() => revealSelectedRow());   // 行元素要等这一轮渲染结束
+}, { immediate: true });
+```
+
+盯下标（而不是盯整棵树）是刻意的：
+
+- 下标从 `-1` 变 `N` = **行出现了** → 滚一次；
+- 下标从 `N` 变 `M` = **上面的兄弟多了/少了** → 再滚一次；
+- **用户自己滚动不会改下标**，所以不会把人正在看的位置冲掉
+  （如果盯整棵树，任何一次展开/收起都会把人拽走）。
+
 #### 本轮的新测试
 
 - `src/modules/navigator/composables/__tests__/remote-tree-reveal.test.ts`（7 条）
   —— 打通 store → `useFileTree` 的真实链路，用用户真机数据
   （连接「速豹堂」，root `…/wp_root`，cwd `…/wp_root/wp-content`）；
   含**第三层**用例（根因 A）与「切回远程格」用例（根因 B）。
-- `src/modules/navigator/components/file-browser/__tests__/file-browser-tree-view.test.ts`（+3 条）
+- `src/modules/navigator/components/file-browser/__tests__/file-browser-tree-view.test.ts`（13 条）
   —— 组件层：当前目录被高亮、落在可视区外时**滚到刚好露出它**、
-  已经在可视区里时**不滚**（不冲掉用户手动展开的位置）。
+  已经在可视区里时**不滚**（不冲掉用户手动展开的位置）、
+  以及根因 F 的**「目标行晚出现时也要再定位一次」**
+  （用两根本地盘符让并列根落在下标 2，与远程树里的下标 1 区分开，
+  断言最终 `scrollTop ∈ [124, 200]`）。
+- `src/modules/navigator/pages/__tests__/navigator-tree-wiring.test.ts`（15 条，根因 D + E）
+  —— 行为侧：`resolveTreeActivePath` 让根与选中路径落在同一棵树上；
+  `shouldDriveTreeSelection` 保证「只有当前格能改写树」。
+  接线侧：**读 `navigator.vue` 源码**钉住「两处消费者读同一个变量」、
+  「分屏窗格把 `tab.id` 传进去」、以及 `treeActivePath` 声明在它们之前（TDZ 安全）。
 - `src/modules/navigator/utils/__tests__/tree-reveal.test.ts`（7 条，上一轮新增）——
   滚动量本身是纯函数 `computeRevealScrollTop`，单独钉住。
 
-#### 注入验证（4 条，每条恰好 1 条转红）
+#### 注入验证（7 条，每条恰好 1 条转红，随后全部回退）
 
-| 注入 | 转红的用例 |
-|---|---|
-| `loadChain(anchor, missing)` → `loadChain(anchor, [])` | 「当前目录在第三层时不会被立成并列的根」 |
-| 清账只清根自己（`vanished.has(p)`） | 「切回远程格（树根重建、expandedPaths 不变）后当前目录仍然是展开的」 |
-| ref 挪回 trigger 的直接子元素 | 「当前目录落在可视区之外时，滚动容器被滚到刚好露出它」 |
-| 算出滚动量但不赋值 | 同上 |
+| # | 注入 | 转红的用例 |
+|---|---|---|
+| 1 | `loadChain(anchor, missing)` → `loadChain(anchor, [])` | 「当前目录在第三层时不会被立成并列的根」 |
+| 2 | 清账只清根自己（`vanished.has(p)`） | 「切回远程格（树根重建、expandedPaths 不变）后当前目录仍然是展开的」 |
+| 3 | ref 挪回 trigger 的直接子元素 | 「当前目录落在可视区之外时，滚动容器被滚到刚好露出它」 |
+| 4 | 算出滚动量但不赋值 | 同上 |
+| 5 | 根改回 `activeFolderSettingsPath` | 「根用 treeActivePath（不是 activeFolderSettingsPath）」 |
+| 6 | `shouldDriveTreeSelection` 恒返回 true | 「非当前格（远程格后到的事件）：不能改写」 |
+| 7 | 去掉 `selectedRowIndex` 的 watcher（根因 F） | 「目标行晚出现时也要再定位一次」 |
 
 第 3 条的失败输出是 `expected +0 to be 124` —— 与真机症状逐字吻合。
+第 7 条是**把修好的代码整个拿掉**再看它转红，证明这条用例真的在盯根因 F 修的那件事。
 
 #### ⚠️ 本轮在这条上踩的坑
 
@@ -489,70 +601,168 @@ reka-ui 的 `as-child` 走 `node_modules/reka-ui/dist/Primitive/Slot.js`，
 > 这条的通用教训与 §1.6 根因 C 相同：**「代码写了」不等于「值到了」**。
 > 判据只能是「目标状态真的变了吗」，不是「实现看起来对吗」。
 
+### 5.9 验收脚本不许依赖机器状态（门禁假红比门禁红更费时间）
+
+本轮跑全量单测时，`single-instance-guard.test.ts` 有一条**假红**：
+「判定表全部符合预期」失败，耗时 30 秒；单独重跑却是绿的。
+
+根因：验收脚本里「没有别的安装器」那条用例，是用**空的 `-SiblingPids`** 表达的 ——
+而空的兄弟列表会让守卫脚本**去枚举全机进程**。于是判定取决于当时机器上有什么：
+
+- 机器繁忙时 WMI 枚举可能失败 → 守卫按「无法枚举」返回 `exit 2` → 用例期望 0，红；
+- 合成出来的 pid 若恰好存在、且它的镜像名是共享的（`svchost.exe` 之类），
+  别的持有者就成了「兄弟」，其中 pid 更小的那个会把判定翻成「重复」→ 同样红。
+
+**规则**：
+
+- 验收脚本里凡是「某个外部状态不存在」的断言，都要有一条**不查机器**的显式开关
+  （这里加的是 `-NoSiblings`），不要靠「传空值让它去查」。
+- 门禁**不要与重构建并行跑**：会抢 CPU，WMI 与子进程启动都会被拖慢，
+  时序敏感的用例会假红。串行跑。
+- 假红要**先单独重跑一次**再下结论 —— 「假红」和「真红」在输出里长得一样。
+
+### 5.10 「定位」类功能要盯**目标元素出现的那一刻**，不是选中路径变化的那一刻
+
+根因 F 的通用教训。选中路径一变就去滚动，有个致命的盲区：
+**选中路径的变化和数据到位是异步的**。
+
+`selectedPath` 立刻变成远程路径，但「远程那棵树渲染出来、目标行出现在 `rows` 里」
+要等根切换 + 目录读完，几百毫秒之后。于是滚动的那个时刻，行**根本还不在**，
+按 `dataset.treePath` 找不到 → **安静地什么都不做、不报错**。
+
+**规则**：把「目标状态」（目标行的下标）抽成 computed，用 watch 盯**它**，
+而不是盯触发它的那次事件。目标状态从「没有」变「有」的那一刻，才是动作的时机。
+判断依据是「**要滚的那个东西出现了吗**」，不是「**我要滚的东西变了吗**」。
+
+推论：**「找不到就 return」是这类功能最危险的写法**。
+它让「没找到」和「找到了但不用滚」两种情况在日志里完全一样 ——
+本轮就是这样把「功能从未执行」误读成了「功能执行了但位置算得不对」。
+
 ---
 
 ## 6. 最终门禁数字
 
-> 下表是**第二轮（目录树定位）做完并重新打包后**的数字。
-> 第一轮的 202 文件 / 1777 用例那组数字见 git 历史与本文件 §1.6 之前的内容。
+> 下表是**第三轮（补根因 F、重新打包）做完之后**的数字。
+> 第二轮是 204 文件 / 1795 用例；第一轮是 202 文件 / 1777 用例。
 
 | 项 | 结果 |
 |---|---|
-| `cargo test --lib` | **645 通过 / 0 失败**（Rust 侧本轮无改动，与第一轮同） |
-| `npx vitest run` | **204 文件 / 1795 用例全过**（第一轮 202 / 1777） |
+| `cargo test --lib` | **645 通过 / 0 失败**（Rust 侧第二、三轮无改动，与第一轮同） |
+| `npx vitest run` | **204 文件 / 1808 用例全过** |
 | `npx vue-tsc --build` | **0 error** |
-| `npx eslint src` | **170**（= 基线；本轮新增 8 条 → 已全部修掉，**没有把基线存量一起改掉**） |
+| `npx eslint src` | **170**（= 基线） |
 | 本轮新增/改动文件的 eslint 增量 | **0**（只修自己新写的代码，存量违规一行没动） |
-| `makensis installer.nsi` | **编译通过**（exit 0，第一轮） |
+| `makensis installer.nsi` | **编译通过**（exit 0） |
 
 > 本轮新增/改动的单测：
 > - `src/modules/navigator/composables/__tests__/remote-tree-reveal.test.ts`（7 条）
 >   —— store → `useFileTree` 真实链路；含第三层深层树与「切回远程格」两条关键用例。
-> - `src/modules/navigator/components/file-browser/__tests__/file-browser-tree-view.test.ts`（+3 条）
->   —— 组件层的高亮 + 滚动定位。
+> - `src/modules/navigator/components/file-browser/__tests__/file-browser-tree-view.test.ts`（13 条）
+>   —— 组件层的高亮 + 滚动定位 + 根因 F 的「行晚出现也要再定位」。
+> - `src/modules/navigator/pages/__tests__/navigator-tree-wiring.test.ts`（15 条，根因 D + E）
+>   —— 行为侧纯函数 + **源码级接线守卫**。
 > - `src/modules/navigator/utils/__tests__/tree-reveal.test.ts`（7 条）——
 >   `computeRevealScrollTop` 的纯算术。
+> - `src-tauri/installer/__tests__/single-instance-guard.test.ts`（9 条）——
+>   多的那条是「无兄弟用例不许依赖机器状态」。
 
 > ⚠️ **eslint 的 170 是怎么守住的**（本轮踩过的坑，见 §5.6）：
-> 第一轮结束时 `eslint src` 是 170；本轮一度涨到 **178**。
-> 定位办法是**逐文件数**，不是看总数：
-> - `use-file-tree.ts` +2（新写的两处缺空行）
-> - `file-browser-tree-view.vue` +1（模板多套一层，属性挤在一行）
-> - `file-browser-tree-view.test.ts` +4（新测试块的对象字面量 / 缺空行）
->
-> **只修自己新写的 8 条**，不碰基线存量 —— `eslint src --fix` 会把存量一起修掉，
+> 第二轮结束时 `eslint src` 是 170；第三轮一度涨到 **171**，
+> 增量来自根因 E 加的守卫块（`currentDirEntry.value = entry;` 与注释块之间缺空行，
+> 触发 `@stylistic/padding-line-between-statements`）。
+> **只修自己新写的 1 条**，不碰基线存量 —— `eslint src --fix` 会把存量一起修掉，
 > 总数就掉到 170 以下，**下轮就没法拿同一个数字对照了**（见 AGENTS.md 的门禁口径约定）。
+>
+> 顺带一条：`padding-line-between-statements` **不把注释块当分隔符** ——
+> 「上一条语句 + 一大段解释性注释 + 下一个语句」照样判违规，空行要加在**语句之后**。
+
 
 ---
 
 ## 7. 还没做的
 
-1. **本轮全部功能没有真机验收。**
-   下一轮必须用 `tauri build` 的**打包产物**装机（`tauri dev` 的路由页内容区是空白的，
-   界面结论一律作废），逐条验：
-   - 本地面板右键「上传」→ 传到对面远程格；
-   - 远程面板右键「下载」→ 存到对面本地格；
-   - 远程面板右键「权限设置」→ 读出当前权限、改完生效；
-   - 目录树激活远程后**真的展开**到当前目录；
-   - **当前目录那一行高亮、并且被滚到可见处**（远程路径深，本地只有两三层，
-     这个缺陷在本地几乎看不出来）；
-   - **当前目录在第三层**（远程里再往里点一层）时，树里**不能冒出并列的根**；
-   - 故意连开几个安装包 → 只有一个装、只启动一次。
+### 7.1 真机验收进度
 
-2. **#4 的守卫没有真机验证**（见 §2.5）。
+**build6（`release/Alpha File Manager_3.2.11-beta_x64-setup.exe`，SHA256 `2721CC51…`，
+与 `src-tauri/target/release/bundle/nsis/` 下同名文件逐字节一致）已装机验证。**
 
-3. **后端没做的**（worker 明确列出）：
+已取证通过的：
+
+| 项 | 证据 |
+|---|---|
+| **根因 D**：树的根跟着当前格走 | UIA 枚举左侧树，第一行是 `e2b24ab525544dc7adeb5cedb192179b`（连接 id = 远程根），下面挂 `vol1/@team/study_platform/wp_root` 与兄弟 `obsidian` / `F04报表` / `rime`。**不是** `Win (C:)` / `Program (D:)` 那串本地盘符 |
+| **根因 A**：不冒并列根 | 修复前树上有三根（`wp_root`、`wp-content/themes`、`themes/twentytwenty`）；修复后整棵树**只有一根** |
+| **根因 B/E**：远程目录真的被读出来并展开 | 树里 `vol1 → @team → study_platform → wp_root → wp-content` 整条链都在，`wp-content` 是展开的，下面的 `mu-plugins` / `plugins` 渲染出来了 |
+| **根因 F**：滚动定位 | `.superpowers/sdd/f3-focus-full.png`：切到远程格后树**停在 `wp-content` 那一行**（视口底边、刚好露出、灰底高亮），不是停在顶部 |
+
+### 7.2 ⚠️ **还没定位的缺陷：切走标签页再切回来，远程树只剩一根、没有子项**
+
+**这是用户报的那条症状本身，本轮没有修好。** 如实记录，下一轮从这里接手。
+
+复现路径（build6 已装机）：
+
+1. 停在 `wp-content | wp-content`（分屏，左本地 + 右远程）标签页，焦点在远程格；
+2. 切到 `办公文件` / `人群报表` 之类的本地标签页；
+3. 再切回 `wp-content | wp-content`；
+4. **树里只剩一行 `e2b24ab…`，折叠箭头朝下（展开态），下面一个子节点都没有。**
+
+观察到的三个判别点（UIA 枚举 + 截图，`.superpowers/sdd/g2-back-full.png`、`g3-after25s-full.png`）：
+
+- 根那一行**是展开的** → `expandedPaths` 里有它；
+- 根那一行**没有 `!` 错误标记**（`file-browser-tree-view.vue:395` 的 `v-if="isRowLoadError"`）
+  → `readDir` **没抛错**；
+- 等 25 秒以上、再折开再展开，**子节点永远不出现** → 不是「慢」，是被记成了「已经读过了」。
+
+**本轮排除掉的假设（都写了复现脚本，跑出来是绿的 —— 不要重复排查）：**
+
+| 假设 | 复现脚本的形状 | 结果 |
+|---|---|---|
+| `useFileTree` 在「本地根 → 远程根」这条路径上漏了补读 | 单测：本地根建树 → `setSelectedPath(远程)` → 根切远程 | **通过**，读到了 |
+| 组件重新挂载时根还是旧的（`isSplitView` 翻转那一刻） | 单测：新实例用旧根挂载 + 展开集合已是远程 → 再换根 | **通过** |
+| 换根时正在飞的读取写进了被丢弃的旧节点（detached node 竞态） | 单测：`readDir` 用手动 gate 卡住，换根后再放行 | **通过**，新节点拿到了子项 |
+
+> ⚠️ 第一条假设最初**看起来复现了**，其实是**探针自己的 bug**：
+> 测试里传的是 `store.expandedPaths`，而 Pinia store 的属性访问会**解包 `.value`**，
+> 拿到的是一个再也不会变的普通 Set，watch 盯了个空。
+> 真实组件（`file-browser-tree-view.vue:68`）用的是 `storeToRefs()` 拿到的**真 Ref**。
+> 换成 `storeToRefs` 之后同一条断言直接变绿。
+> **「复现了」之前先问「探针真的接到被测对象了吗」。**
+
+**下一步（需要真机，且大概率要打一次带插桩的包）：**
+
+`tauri.conf.json` 里**没有 `devtools` 键**，release 包开不了 DevTools，
+而 wry 不透传 `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`、CDP 也连不上（AGENTS.md 已记录），
+所以装好的应用里**读不到任何前端日志**。要在真机上定位，只能：
+
+1. 临时把诊断信息**渲染进树那一行的文字**（例如 `e2b24ab… [loaded=0 children=0 err=0]`）
+   —— 必须渲染进 DOM，`PrintWindow` 才拍得到（`title` 提示层不渲染）；
+2. `npm run tauri:build` → 装包 → 复现 → 截图读数；
+3. 按读数定位，再正经修 + 补判别性测试 + 注入验证；
+4. 撤掉插桩，重新打包。
+
+**不要在没有读数的情况下猜着改。** 本轮已经排除了三类假设，
+再猜下去只会重复「注释声称的因果从头到尾没被验证过」这个错误
+（见 agent memory：「注释里关于因果的每一句主张，都是一条待验证的断言」）。
+
+### 7.3 下一轮必须验的（都用 `tauri build` 产物，`tauri dev` 的界面结论一律作废）
+
+- [ ] **切走标签页再切回来，远程树要真的展开**（§7.2，最关键，本轮未修）
+- [ ] 远程面板右键「上传」→ 传到对面远程格；
+- [ ] 远程面板右键「下载」→ 存到对面本地格；
+- [ ] 远程面板右键「权限设置」→ 读出当前权限、改完生效；
+- [ ] 故意连开几个安装包 → 只有一个装、只启动一次（#4 守卫，见 §2.5）。
+
+### 7.4 其它没做的
+
+1. **#4 的守卫没有真机验证**（见 §2.5）。
+
+2. **后端没做的**（worker 明确列出）：
    断点续传、大文件流式（全量进内存）、权限保持（uid/gid/mtime）、
    符号链接（不跟随、不传输，进 `failures`）、会话复用（每个条目一次建连 + DPAPI 解密）。
 
-4. **SFTP 端到端无真服务端测试** —— 仓库没有假 SFTP 夹具，
+3. **SFTP 端到端无真服务端测试** —— 仓库没有假 SFTP 夹具，
    SFTP 侧只测到「开 socket 之前」这一层，叶子动作靠假 provider 覆盖。
 
-5. **交接文档本身没写完的部分**：`docs/handoff-2026-10-18-remote-phase-2-ftp.md`
+4. **交接文档本身没写完的部分**：`docs/handoff-2026-10-18-remote-phase-2-ftp.md`
    本轮被继续修改（追加了本轮内容？—— 提交前请确认它与本文件的关系，不要两份打架）。
 
-6. **未提交。** 提交前请：
-   - `git status` 看清全部已跟踪 + 未跟踪路径的全貌；
-   - 提交信息用 `write` 工具落盘再 `git commit -F`（**不要**用 `node -e` 内联生成，
-     PowerShell 会先于 node 解析引号）；
-   - 提交信息文件放在 `.superpowers/sdd/` 这类 git-ignored 路径，不要放 `.git/`。
