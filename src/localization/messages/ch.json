@@ -100,6 +100,9 @@
   "splitViewMode": "分屏模式",
   "splitViewModeSplit": "分割",
   "splitViewModeLinked": "联动",
+  "syncBrowsing": "同步浏览",
+  "syncBrowsingOn": "同步浏览：已开启",
+  "syncBrowsingHint": "在左格选中一个目录，右格会跳到同名目录。",
   "filter": {
     "filter": "筛选",
     "showHiddenItems": "显示隐藏的项目",
@@ -1634,6 +1637,42 @@
       "undoFailed": "撤销失败",
       "blockedBy": "以下名称已被占用，无法还原：{names}",
       "notFound": "该条历史记录已不存在。"
+    }
+  },
+  "remote": {
+    "transfer": {
+      "uploadToRemote": "上传到远程",
+      "downloadToLocal": "下载到本地",
+      "uploadSucceeded": "已上传 {files} 个文件到远程目录。",
+      "uploadFailed": "上传没有完全成功：成功 {files} 个，跳过 {skipped} 个，失败 {failed} 个。",
+      "downloadSucceeded": "已下载 {files} 个文件到本地目录。",
+      "downloadFailed": "下载没有完全成功：成功 {files} 个，跳过 {skipped} 个，失败 {failed} 个。"
+    },
+    "permissions": {
+      "menuItem": "权限设置...",
+      "title": "权限设置",
+      "modeLabel": "权限（八进制）",
+      "modeHint": "例如 0754 表示所有者可读、可写、可执行，组可读、可执行，其他可读。",
+      "unknownMode": "读不到当前权限，请手动填写。",
+      "owner": "所有者",
+      "group": "组",
+      "others": "其他",
+      "read": "读",
+      "write": "写",
+      "execute": "执行",
+      "none": "无",
+      "separator": "、",
+      "recursive": "同时应用到子目录和其中的文件",
+      "apply": "应用",
+      "success": "权限已更新（{changed} 项）。",
+      "partialFailure": "权限已更新 {changed} 项，另有 {failed} 项失败。",
+      "failed": "权限设置失败：{message}",
+      "error": {
+        "empty": "请填写八进制权限，例如 0754。",
+        "tooLong": "最多 4 位八进制数字。",
+        "notOctal": "只能使用 0-7 这几个数字。",
+        "unknown": "无法识别这个权限值。"
+      }
     }
   }
 }

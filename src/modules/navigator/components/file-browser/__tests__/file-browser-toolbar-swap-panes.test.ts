@@ -22,6 +22,10 @@ const stubs = {
   FileBrowserToolbarCreateButton: EmptyStub,
   FileBrowserToolbarFilter: EmptyStub,
   FileBrowserToolbarAddressBar: EmptyStub,
+  // FORK-MODIFICATION 2026-10-19：同步浏览按钮与互换按钮同在工具栏里。
+  // 它要读 userSettingsStore，而本测试没有 Pinia，所以必须打桩掉 ——
+  // 不打桩的话，工具栏一挂载就抛错，断言变成「工具栏挂了」而不是「按钮在不在」。
+  FileBrowserToolbarSyncBrowsingButton: EmptyStub,
   Tooltip: EmptyStub,
   TooltipTrigger: EmptyStub,
   TooltipContent: EmptyStub,

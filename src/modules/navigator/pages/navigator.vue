@@ -60,11 +60,25 @@ import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { provideNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { arePathsEquivalent, getParentPath } from '@/utils/file-operation-paths';
+// FORK-MODIFICATION 2026-10-19：同步前先探目标是否存在（它有远程分支）。
+import { resolveDirEntry } from '@/utils/virtual-locations';
+// FORK-MODIFICATION 2026-10-19：跨族对应关系表只记跨族，同族要判出来。
+import { isRemotePath, parseRemotePath } from '@/utils/remote-paths';
+// FORK-MODIFICATION 2026-10-19：目录树切远程时要按连接定根、用连接名当标签。
+import { resolveTreeRoots, type TreeConnectionInfo } from '@/modules/navigator/utils/remote-tree-roots';
+// FORK-MODIFICATION: 本地 ↔ 远程传输。导航器是**唯一**知道两格分别在哪儿的地方，
+// 所以传输目标（对面那一格）的登记也放在这里写。
+import { setRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
+import { useRemotePermissionsDialogState } from '@/modules/remote/utils/remote-permissions-dialog-state';
+import RemotePermissionsDialog from '@/modules/remote/components/remote-permissions-dialog.vue';
+import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import {
-  createLinkedPaneSyncQueueState,
-  drainLinkedPaneSyncQueue,
-  getLinkedPaneNavigationTarget,
-  queueLinkedPaneNavigation,
+  decideLinkedPaneGate,
+  planLinkedPaneNavigation,
+  recordLinkedPanePair,
+  type LinkedPanePairs,
+  type LinkedPanePosition,
+  type LinkedPaneTarget,
 } from '@/modules/navigator/utils/linked-split-sync';
 import { getPathDisplayName } from '@/utils/normalize-path';
 
@@ -106,6 +120,8 @@ const workspacesStore = useWorkspacesStore();
 const clipboardStore = useClipboardStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const folderTreeStore = useFolderTreeStore();
+// FORK-MODIFICATION 2026-10-19：树根标签要用连接名。
+const remoteConnectionsStore = useRemoteConnectionsStore();
 const globalSearchStore = useGlobalSearchStore();
 const shortcutsStore = useShortcutsStore();
 const terminalsStore = useTerminalsStore();
@@ -229,19 +245,24 @@ const currentDirEntry = ref<DirEntry | null>(
 const activeTabId = ref<string | null>(null);
 const isSmallScreen = useIsSmallScreen();
 
-// FORK-MODIFICATION: split-view tree sync (issue #499, v6.2).
-// In split view the tree should reflect the path of whichever pane the user
-// last focused, not just `workspacesStore.currentTab` (which is always the
-// first tab in the group). When the active pane changes — via
-// `activateTabPane`, a click on a pane, or split-view toggling — mirror its
-// path into the folder-tree store so the sidebar tree expands to it.
-watch([activeTabId, () => isSplitView.value], () => {
-  if (!isSplitView.value) return;
-  const activeTab = workspacesStore.currentTabGroup?.find(
-    (tab) => tab.id === activeTabId.value,
-  );
-  folderTreeStore.setSelectedPath(activeTab?.path ?? null);
-}, { immediate: true });
+// FORK-MODIFICATION 2026-10-19（缺陷修复）：原来「分屏下把当前格的路径同步进
+// 目录树 store」这条 watch 就写在这里，引用了**下面 57 行**才声明的 `isSplitView`，
+// 又带 `immediate: true` —— Vue 会同步执行 source getter
+// （@vue/reactivity `watch()` 里的 `job(true)`），当场命中 TDZ 抛
+// `ReferenceError: Cannot access 'isSplitView' before initialization`。
+//
+// 页面之所以没崩：Vue 把 source getter 包在 `callWithAsyncErrorHandling` 里
+// （`reactivity.cjs.js` 的 `return call ? call(s, 2) : s()`），异常被吞成控制台
+// 警告。但代价是 `effect.run()` 没跑完，**一个依赖都没被收集** ——
+// 这个 watch 从 2026-09-26 建好那天起就彻底是死的。
+//
+// 表现：分屏下目录树永远不跟着面板走，本地远程都一样，只有手动点树才动
+// （那条路在下面 `onTreeEntryActivate` 里，不经过这个 watch）。
+// 上一轮只修了 `computeAncestorPaths` 认得远程根，没人调用它，所以看不出变化。
+//
+// 现在这段挪到 `activeFolderSettingsPath` 声明之后（TDZ 安全），并且把
+// 「当前格的路径」也放进 source —— 原版只盯 `activeTabId` 与 `isSplitView`，
+// 面板在自己内部导航时 id 根本不变，回调不会触发。
 
 watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   const currentTabIds = new Set(
@@ -313,6 +334,49 @@ const activeFolderSettingsPath = computed(() => {
 
   return currentActivePath.value ?? workspacesStore.currentTabGroup?.[0]?.path;
 });
+
+/**
+ * FORK-MODIFICATION 2026-10-19：当前格的**实时**路径。
+ *
+ * 不能直接拿 `activeFolderSettingsPath` 展开目录树 —— 它读的是 tab 上的 path，
+ * 而本文件自己写着「tab 路径有写盘延迟」（见 `collectLinkedPanePositions`）。
+ * 用它的话树会慢一拍，用户看到的就是「停在上一层」。
+ *
+ * 这里的两个前提让实时路径可读：
+ * - `paneRefsMap = ref(new Map())` —— Map 被 reactive 代理，`get` / `set` 都被追踪，
+ *   所以窗格挂载与卸载都会让本 computed 重算；
+ * - `FileBrowser` 用 `defineExpose({ currentPath: fb.currentPath })` 暴露的是 ref，
+ *   Vue 解包后仍保持响应，面板内部导航同样会触发。
+ *
+ * 窗格还没挂上时退回 tab 路径 —— 慢一拍总比不展开强。
+ */
+const activePaneLivePath = computed<string | null>(() => {
+  if (!isSplitView.value) {
+    return null;
+  }
+
+  const live = activeTabId.value
+    ? paneRefsMap.value.get(activeTabId.value)?.currentPath
+    : null;
+
+  return live ?? activeFolderSettingsPath.value ?? null;
+});
+
+/**
+ * FORK-MODIFICATION 2026-10-19（缺陷修复）：分屏下把当前格的路径同步进目录树 store。
+ *
+ * 原实现放在 `activeTabId` 正下方（见那里的注释），因 TDZ + `immediate: true`
+ * 从建好那天起就没生效过。这里是修好后的版本：
+ *
+ * - 位置在 `activePaneLivePath` 之后 —— 位置本身就是修复的一半：反向声明会命中 TDZ。
+ * - source 跟着**路径**而不是 `activeTabId` —— 面板在自己内部导航时 id 根本不变，
+ *   只盯 id 的 watch 永远不会触发。
+ * - `isSplitView` 的守卫保留原语义：单格模式不动树（那是上游 v6.2 的原设计）。
+ */
+watch([isSplitView, activePaneLivePath], () => {
+  if (!isSplitView.value) return;
+  folderTreeStore.setSelectedPath(activePaneLivePath.value ?? null);
+}, { immediate: true });
 
 const canUseFolderSettingsForActivePath = computed(() => {
   if (!activeFolderSettingsPath.value) {
@@ -395,21 +459,14 @@ const showFolderTree = ref(
   userSettingsStore.userSettings.navigator.showFolderTree ?? true,
 );
 const { drives } = useDrives();
-const treeRootPaths = computed(() => drives.value.map((d) => d.path));
-// v6.4: drive volume labels + drive path set so the sidebar tree can show
-// "Win (C:)" instead of just "C:" and use a drive icon instead of a
-// folder icon for drive roots.
-//
-// The Rust backend (DriveInfo.name) already includes the drive letter in
-// the form "VolumeLabel (X:)" — e.g. "Win (C:)", "Program (D:)". Don't
-// append the path again or you get "Win (C:) (C:)" (regression caught
-// in v6.4 testing). Use `drive.name` as-is; fall back to the path
-// basename for drives without a label.
-const treeRootLabels = computed<Record<string, string>>(() => {
+
+const treeDriveLabels = computed<Record<string, string>>(() => {
   const out: Record<string, string> = {};
+
   for (const d of drives.value) {
     if (!d.path) continue;
     const name = d.name?.trim();
+
     if (name) {
       out[d.path] = name;
     }
@@ -419,9 +476,50 @@ const treeRootLabels = computed<Record<string, string>>(() => {
       out[d.path] = parts[parts.length - 1] ?? d.path;
     }
   }
+
   return out;
 });
-const drivePaths = computed<string[]>(() => drives.value.map((d) => d.path));
+
+const treeConnections = computed<Record<string, TreeConnectionInfo>>(() => {
+  const out: Record<string, TreeConnectionInfo> = {};
+
+  for (const connection of remoteConnectionsStore.connections) {
+    out[connection.id] = {
+      name: connection.name,
+      // 树根要用它 —— 用户 2026-10-19 要求「根显示设置里的远程目录」。
+      // 连接表是异步填充的，这里读到的 initialPath 可能暂时是 undefined，
+      // 那一轮先退回连接根，等表到位后 computed 重算，根和标签一起纠正。
+      initialPath: connection.initialPath,
+    };
+  }
+
+  return out;
+});
+
+// FORK-MODIFICATION 2026-10-19：焦点在远程目录时，目录树切到远程目录树。
+// 判定本身在 `remote-tree-roots.ts`（纯函数，可单测），这里只喂数据。
+const treeRoots = computed(() => resolveTreeRoots({
+  activePath: activeFolderSettingsPath.value,
+  drivePaths: drives.value.map(d => d.path),
+  driveLabels: treeDriveLabels.value,
+  connectionsById: treeConnections.value,
+}));
+
+const treeRootPaths = computed(() => treeRoots.value.rootPaths);
+// v6.4: drive volume labels + drive path set so the sidebar tree can show
+// "Win (C:)" instead of just "C:" and use a drive icon instead of a
+// folder icon for drive roots.
+//
+// The Rust backend (DriveInfo.name) already includes the drive letter in
+// the form "VolumeLabel (X:)" — e.g. "Win (C:)", "Program (D:)". Don't
+// append the path again or you get "Win (C:) (C:)" (regression caught
+// in v6.4 testing). Use `drive.name` as-is; fall back to the path
+// basename for drives without a label.
+// FORK-MODIFICATION 2026-10-19：标签跟着根走。远程根用**连接名**（「速豹堂」），
+// 否则树里那行只能显示连接 id 的一串 32 位十六进制。
+const treeRootLabels = computed<Record<string, string>>(() => treeRoots.value.rootLabels);
+
+const drivePaths = computed<string[]>(() => drives.value.map(d => d.path));
 
 watch(showFolderTree, (next) => {
   void userSettingsStore.set('navigator.showFolderTree', next);
@@ -433,38 +531,189 @@ function handleToggleFolderTree() {
 
 const isLinkedMode = computed(() => splitViewMode.value === 'linked' && isSplitView.value);
 
-const linkedPaneSyncQueue = createLinkedPaneSyncQueueState();
+/**
+ * FORK-MODIFICATION 2026-10-19：同步浏览从「选中驱动」改成「进目录驱动」。
+ *
+ * 用户实测反馈：按钮点了之后「点击进入本地或远程一个子目录（比如 wp-content)，
+ * 另一侧没有同步打开」。两个错都在旧实现里：
+ * - 旧实现挂的是 `update:selected-entries`，**选中**才触发。
+ *   用户双击进目录时，选中态在导航瞬间被清掉，信号就丢了。
+ * - 旧实现硬编码「只有 tabGroup[0]（左格）能驱动」，右格选中什么都被忽略。
+ *
+ * 现在由 `FileBrowser` 的 `update:currentPath` 驱动（见 file-browser.vue），
+ * 谁动谁说了算。
+ */
 
-function syncLinkedPane(entries: DirEntry[], tabId: string) {
+/** 我们刚下发的联动目标。用来识别回声，否则两格会互相触发到停不下来。 */
+let pendingLinkedTarget: LinkedPaneTarget | null = null;
+
+/**
+ * FORK-MODIFICATION 2026-10-19：每一格**第一次**报上来的路径只算「就位」，不算「用户动了一下」。
+ *
+ * 用户实测反馈 1 的根因：打开连接时两格各自挂载、各自加载，先后顺序不定。
+ * 联动是开着的（`splitViewMode` 持久化了），于是**先加载完的那一格会把刚打开的
+ * 路径当成用户操作**，指挥另一格跳到自己路径的最后一段 ——
+ * 结果两端都被推离各自配置的默认目录（`localPath` / `initialPath`），
+ * 本地那格还撞上一个不存在的子目录。
+ *
+ * 规则：每一格的首次上报只记账；**两格都记账之后**才开始联动。
+ */
+const linkedPaneSettledTabIds = new Set<string>();
+
+/**
+ * FORK-MODIFICATION 2026-10-19，用户实测反馈 2：「从子目录提升到上一级目录时，
+ * 由于建立关联的目录名称不同，无法同步切换」。
+ *
+ * 跨族只按目录名对齐管不了「上一级」：本地 `wp-content` 的父级是 `E:/website_sbt`，
+ * 远端 `wp_root/wp-content` 的父级是 `…/wp_root`，名字根本不同。
+ *
+ * 这张表由**同步成功的事实**累积而成 —— 不是配置出来的，是两格真的对上过的路径对。
+ * 每成功同步一次就记一对（连同它们的父级），点「上一级」时先查它。
+ * 语义与边界全在 `linked-split-sync.ts` 里。
+ */
+const linkedPanePairs: LinkedPanePairs = new Map();
+
+/** 标签组换了（新开一组、切组）就重新记账 —— 旧组的状态对新组没有意义。 */
+watch(() => workspacesStore.currentTabGroup?.map(tab => tab.id).join('|'), () => {
+  linkedPaneSettledTabIds.clear();
+  linkedPanePairs.clear();
+  pendingLinkedTarget = null;
+});
+
+/**
+ * FORK-MODIFICATION 2026-10-19：两格「属于哪一边」的签名 ——
+ * 本地格记 `local`，远程格记 `remote:<连接id>`。
+ *
+ * 只在上面那个「切标签组」的 watch 里清表是不够的：用户**在同一个标签组里**
+ * 把远程格换成另一个连接时，tab id 不变，签名也不变，旧连接积累下来的路径对
+ * 会继续被查用 —— 下一次同步就把另一格送到**旧连接**的目录去。
+ * 那正是这个功能本来要消灭的「跳到错误目录」，只是换了个来源。
+ */
+watch(
+  () => collectLinkedPanePositions()
+    .map((pane) => {
+      const connectionId = parseRemotePath(pane.path)?.connectionId;
+
+      return connectionId ? `remote:${connectionId}` : 'local';
+    })
+    .sort()
+    .join('|'),
+  () => {
+    linkedPanePairs.clear();
+  },
+);
+
+/** 两格窗格各自的当前位置。路径取自窗格实例，而不是 tab —— tab 路径有写盘延迟。 */
+function collectLinkedPanePositions(): LinkedPanePosition[] {
   const tabGroup = workspacesStore.currentTabGroup;
-  const targetPath = getLinkedPaneNavigationTarget(
-    entries,
-    tabId,
-    tabGroup?.[0]?.id ?? null,
-    tabGroup?.length ?? 0,
-  );
 
-  if (!targetPath) {
+  if (!tabGroup) {
+    return [];
+  }
+
+  return tabGroup.flatMap((tab) => {
+    const panePath = paneRefsMap.value.get(tab.id)?.currentPath;
+
+    return panePath
+      ? [{
+          tabId: tab.id,
+          path: panePath,
+        }]
+      : [];
+  });
+}
+
+/**
+ * 登记「对面那一格」当前在哪儿，供传输类右键菜单（上传 / 下载）取目标。
+ *
+ * 路径同样取自**窗格实例**（`collectLinkedPanePositions`）而不是 tab ——
+ * tab 路径有写盘延迟，用它会把文件传到上一次的目录里去，而那一步没有任何提示。
+ */
+watch(
+  () => collectLinkedPanePositions().map(pane => pane.path).join('|'),
+  () => {
+    setRemoteTransferTargets(collectLinkedPanePositions().map(pane => pane.path));
+  },
+  { immediate: true },
+);
+
+const remotePermissionsDialog = useRemotePermissionsDialogState();
+
+function handlePaneNavigation(path: string, tabId: string) {
+  const tabGroup = workspacesStore.currentTabGroup ?? [];
+  const decision = decideLinkedPaneGate({
+    isLinkedMode: isLinkedMode.value,
+    fromTabId: tabId,
+    fromPath: path,
+    allTabIds: tabGroup.map(tab => tab.id),
+    settledTabIds: linkedPaneSettledTabIds,
+    pending: pendingLinkedTarget,
+  });
+
+  if (decision === 'echo') {
+    pendingLinkedTarget = null;
+
     return;
   }
 
-  queueLinkedPaneNavigation(
-    linkedPaneSyncQueue,
-    targetPath,
-    () => drainLinkedPaneSyncQueue(
-      linkedPaneSyncQueue,
-      () => workspacesStore.currentTabGroup?.length ?? 0,
-      () => {
-        const latestTabGroup = workspacesStore.currentTabGroup;
+  if (decision === 'settle') {
+    linkedPaneSettledTabIds.add(tabId);
 
-        if (!latestTabGroup || latestTabGroup.length < 2) {
-          return undefined;
+    return;
+  }
+
+  if (decision !== 'sync') {
+    return;
+  }
+
+  const target = planLinkedPaneNavigation({
+    fromTabId: tabId,
+    fromPath: path,
+    panes: collectLinkedPanePositions(),
+    pending: pendingLinkedTarget,
+    pairs: linkedPanePairs,
+  });
+
+  if (!target) {
+    return;
+  }
+
+  const navigate = paneRefsMap.value.get(target.tabId)?.navigateToPath;
+
+  if (!navigate) {
+    return;
+  }
+
+  pendingLinkedTarget = target;
+
+  // FORK-MODIFICATION 2026-10-19：目标不存在就**静默放弃**这次同步。
+  //
+  // 用户实测反馈 2：另一端没有同名目录时，不该把那一格推到「无法打开此文件夹」。
+  // 本地 ↔ 远程按名字对齐，「同名」只是常见情况而不是保证 ——
+  // 远端 `wp_root` 里的 `wp-content` 就是个空残桩，本地根本没有对应项。
+  //
+  // `resolveDirEntry` 已经有远程分支（`statRemoteEntry`），所以这一句两边通用。
+  void resolveDirEntry(target.path)
+    .then((entry) => {
+      if (entry) {
+        // 只记真正同步成功过的这一对 —— 对应关系得是事实，不能是猜测。
+        // 同族不需要记：那边的规则是「跳到同一个绝对路径」，本来就不靠对应表。
+        if (isRemotePath(path) !== isRemotePath(target.path)) {
+          recordLinkedPanePair(linkedPanePairs, path, target.path);
         }
 
-        return paneRefsMap.value.get(latestTabGroup[1].id)?.navigateToPath;
-      },
-    ),
-  );
+        return navigate(target.path);
+      }
+
+      pendingLinkedTarget = null;
+
+      return undefined;
+    })
+    .catch(() => {
+      // 探测本身失败（网络断了之类）同样按「放弃同步」处理 ——
+      // 宁可不同步，也不要把错误甩到用户脸上。
+      pendingLinkedTarget = null;
+    });
 }
 
 async function handleToggleInfoPanel() {
@@ -496,9 +745,8 @@ function activateTabPane(tabId: string) {
 }
 
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
-  if (isLinkedMode.value && tabId) {
-    syncLinkedPane(entries, tabId);
-  }
+  // FORK-MODIFICATION 2026-10-19：这里原来会 `syncLinkedPane(entries, tabId)`。
+  // 同步浏览已改为「进目录驱动」，见 `handlePaneNavigation`。
 
   if (entries.length > 0) {
     isSearchSelectionActive.value = false;
@@ -1406,6 +1654,7 @@ onUnmounted(() => {
                             class="navigator-page__pane"
                             @swap-panes="handleSwapSplitPanePaths"
                             @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                            @update:current-path="(path) => handlePaneNavigation(path, tab.id)"
                             @update:current-dir-entry="handleCurrentDirChange"
                           />
                         </ResizablePanel>
@@ -1427,6 +1676,7 @@ onUnmounted(() => {
                           :is-active-pane="true"
                           class="navigator-page__pane"
                           @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
+                          @update:current-path="(path) => handlePaneNavigation(path, workspacesStore.currentTabGroup![0].id)"
                           @update:current-dir-entry="handleCurrentDirChange"
                         />
                       </ResizablePanel>
@@ -1591,6 +1841,7 @@ onUnmounted(() => {
                         class="navigator-page__pane"
                         @swap-panes="handleSwapSplitPanePaths"
                         @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                        @update:current-path="(path) => handlePaneNavigation(path, tab.id)"
                         @update:current-dir-entry="handleCurrentDirChange"
                       />
                     </ResizablePanel>
@@ -1612,6 +1863,7 @@ onUnmounted(() => {
                       :is-active-pane="true"
                       class="navigator-page__pane"
                       @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
+                      @update:current-path="(path) => handlePaneNavigation(path, workspacesStore.currentTabGroup![0].id)"
                       @update:current-dir-entry="handleCurrentDirChange"
                     />
                   </ResizablePanel>
@@ -1666,6 +1918,12 @@ onUnmounted(() => {
         />
       </div>
     </div>
+    <!-- FORK-MODIFICATION: 远程权限设置对话框。整个页面**只渲染一个** ——
+         对话框状态是模块级的，两格各渲染一个会出现两个弹窗。 -->
+    <RemotePermissionsDialog
+      v-model:open="remotePermissionsDialog.isOpen.value"
+      :target="remotePermissionsDialog.target.value"
+    />
   </div>
 </template>
 
@@ -1801,7 +2059,9 @@ onUnmounted(() => {
  * 上一版注释里「0,3,0 压过 [data-panel] 的 0,2,0」的推理漏掉了内联这一层，
  * 所以那条规则在打包产物里编译出来了、也确实排最后，却从未生效。
  *
- * 现在滚动容器是树自己（见 file-browser-tree-view.vue 的 .file-tree-view）。
+ * 现在滚动容器是树自己（见 file-browser-tree-view.vue 的
+ * `.file-tree-view__scroll`；2026-10-19 起从 `.file-tree-view` 下移一层，
+ * 因为 trigger 的直接子元素上的模板 ref 会被 reka-ui 的 Slot 删掉）。
  * 这里只保留 `flex-direction: column` —— 面板内联样式里没有 flex-direction，
  * 这条仍然有效，且让面板成为纵向 flex 容器，树才能用 flex:1 撑满并自己滚。
  * 不要在这里再加 overflow：写了也是白写，反而会让人以为滚动靠的是它。

@@ -25,6 +25,18 @@
 Var RESOLVEDAPPDATA
 
 ; -----------------------------------------------------------------------
+; 2026-10-19 单实例守卫用的变量。
+;
+; AlphaSingleInstanceDuplicate = 1 表示「本安装器是重复实例，应当退出」。
+; AlphaSilentMode              = 1 表示安装器以 /S 静默模式运行（没有界面，
+;                               弹模态框会永远卡住）。
+; AlphaTempOption              是 GetOptions 的临时落点。
+; -----------------------------------------------------------------------
+Var AlphaSingleInstanceDuplicate
+Var AlphaSilentMode
+Var AlphaTempOption
+
+; -----------------------------------------------------------------------
 ; AlphaNormalizeInstDir — the single gate between "a registry string" and
 ; "$INSTDIR".
 ;
@@ -165,7 +177,87 @@ FunctionEnd
 Function un.AlphaTerminateAppProcesses
   !insertmacro AlphaTerminateAppProcessesBody
 FunctionEnd
+
+; -----------------------------------------------------------------------
+; AlphaCheckSingleInstance — 2026-10-19 单实例守卫。
+;
+; 真机症状：用户只点了一次安装，同一份安装包却跑起了 6 个安装器进程
+; （kill 日志里 15:54:24 同时活着的就有 3 个）。每一个都完整跑一遍 PREINSTALL，
+; 每一个都把上一个刚启动的应用杀掉，于是表现为「装完又自动启动一次安装」。
+;
+; 已逐条排除的仓库内触发源：应用不 spawn setup.exe；自更新只弹 toast、
+; 由用户点按钮才运行安装包（且版本比较正确处理预发布号）；NSIS 模板不
+; 自重启动；注册表与启动项里没有自启动条目。**触发源在仓库之外**，
+; 但产品仍然必须扛得住它 —— 重复的安装器不许杀应用、不许再装一遍。
+;
+; 规则：**最低 PID 当选**。同一份 setup 可执行文件同时活着多个副本时，
+; PID 最小的那个继续安装，其余的立刻退出。
+;
+; 为什么不用「谁先到谁当选」：那是竞态 —— 两个安装器同时到 PREINSTALL 时
+; 可能互相都看不到对方，于是两个都装。最低 PID 当选是确定性的：无论怎么交错，
+; **恰好一个**会继续。不死锁、不重装。
+;
+; 为什么不用互斥体：互斥体要「整个安装期间」持有，而 Tauri 的 NSIS 模板
+; 在向导页之前没有任何钩子（只有 PREINSTALL / POSTINSTALL / PREUNINSTALL /
+; POSTUNINSTALL 四个，.onInit 是模板自己的、无法覆盖），能拿锁的地方
+; 恰好就是现在做检查的地方 —— 锁和选举解决的是同一个问题。
+;
+; 判定逻辑在 installer/check-single-instance.ps1 里（可单测，见
+; installer/_acceptance/test-single-instance-guard.ps1）。本函数只负责
+; 把脚本解包出来、跑它、并把「判定为重复」这件事转成一个标记文件。
+; 用标记文件而不是读 nsExec 的退出码，是因为 nsExec 的 ExecToLog 不回传
+; 退出码，而 ExecToStack 的压栈顺序（先压返回值还是先压输出）不值得赌。
+; -----------------------------------------------------------------------
+Function AlphaCheckSingleInstance
+  StrCpy $AlphaSingleInstanceDuplicate 0
+
+  ; 编译期内嵌原文件、运行期原样解包到 $PLUGINSDIR：字节精确，
+  ; 不经 ANSI 代码页转换，也不需要任何转义。
+  File /oname=$PLUGINSDIR\check-single-instance.ps1 "${__FILEDIR__}\check-single-instance.ps1"
+
+  ; 先清掉残留的标记文件。这样「脚本根本没跑成」与「判定为重复」两种情况
+  ; 彻底分开：跑不成时标记文件不存在，守卫按「放行」处理 ——
+  ; 守卫坏了不能变成「谁都装不上」。
+  Delete "$PLUGINSDIR\alpha-single-instance-duplicate.flag"
+  ClearErrors
+
+  DetailPrint "==> [PREINSTALL HOOK] Checking whether another installer instance is running ..."
+  DetailPrint "==> [PREINSTALL HOOK] guard log: $TEMP\alpha-file-manager-installer-guard.log"
+  nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\check-single-instance.ps1" -VerdictFile "$PLUGINSDIR\alpha-single-instance-duplicate.flag"'
+
+  IfFileExists "$PLUGINSDIR\alpha-single-instance-duplicate.flag" 0 alpha_single_instance_done
+    StrCpy $AlphaSingleInstanceDuplicate 1
+  alpha_single_instance_done:
+FunctionEnd
+
 !macro NSIS_HOOK_PREINSTALL
+  ; ---------------------------------------------------------------------
+  ; 2026-10-19: 单实例守卫。**必须排在最前面** ——
+  ; 后面的 AlphaTerminateAppProcesses 会杀掉当前正在运行的应用，
+  ; 而重复的安装器正是「装完又启动一次安装」的元凶：它杀掉了上一个
+  ; 安装器刚启动的应用，于是用户看到应用反复重启。
+  ; 先判定、先退出，就不会有第二次杀应用。
+  ; ---------------------------------------------------------------------
+  Call AlphaCheckSingleInstance
+  ${If} $AlphaSingleInstanceDuplicate == "1"
+    DetailPrint "==> [PREINSTALL HOOK] Another installer instance is already running; this one exits without touching the installation."
+    ; 静默模式（/S）下没有界面，弹模态框会把安装永远卡住 —— 没人点它。
+    ; 所以只在有界面的情况下才提示。
+    StrCpy $AlphaSilentMode 0
+    ${GetOptions} $CMDLINE "/S" $AlphaTempOption
+    ${IfNot} ${Errors}
+      StrCpy $AlphaSilentMode 1
+    ${EndIf}
+    ${GetOptions} $CMDLINE "/s" $AlphaTempOption
+    ${IfNot} ${Errors}
+      StrCpy $AlphaSilentMode 1
+    ${EndIf}
+    ${If} $AlphaSilentMode == "0"
+      MessageBox MB_ICONINFORMATION|MB_OK "Another installation of Alpha File Manager is already running.$\n$\nThis installer will close now. The installation that is already running will finish normally."
+    ${EndIf}
+    Quit
+  ${EndIf}
+  ; ---------------------------------------------------------------------
   ; ---------------------------------------------------------------------
   ; v0.5.11: 把关键事实落盘。
   ;

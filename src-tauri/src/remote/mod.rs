@@ -32,6 +32,7 @@ mod path;
 mod provider;
 mod registry;
 mod sftp_provider;
+mod transfer;
 mod transport;
 
 pub use connection::{
@@ -66,9 +67,10 @@ pub use known_hosts::{
     trust as trust_host_key, HostKeyDecision, KnownHostEntry, TrustKind, REMOTE_KNOWN_HOSTS_FILE,
 };
 pub use path::{
-    build_remote_connection_path, build_remote_path, get_remote_parent_path,
-    is_remote_connection_root_path, is_remote_path, normalize_remote_path, parse_remote_path,
-    RemotePath, REMOTE_SCHEME,
+    build_remote_connection_path, build_remote_path, contains_control_characters,
+    get_remote_parent_path, is_remote_connection_root_path, is_remote_path, normalize_remote_path,
+    parse_remote_path, reject_path_control_characters, split_remote_parent_and_name, RemotePath,
+    REMOTE_SCHEME,
 };
 pub use provider::{RemoteEntry, RemoteProvider};
 pub use registry::{
@@ -78,6 +80,11 @@ pub use registry::{
 pub use sftp_provider::{
     is_hidden_remote_name, map_sftp_error, map_sftp_status, sftp_seconds_to_unix_millis,
     SftpRemoteProvider, SFTP_OPERATION_TIMEOUT,
+};
+pub use transfer::{
+    chmod, download, format_octal_mode, join_local_child, join_remote_child, mode_is_valid,
+    mode_to_permission_triplets, permission_triplets_to_mode, unsupported_set_permissions, upload,
+    RemoteChmodReport, RemoteTransferFailure, RemoteTransferReport, PERMISSION_MASK,
 };
 pub use transport::{
     build_http_connect_request, is_http_connect_success, map_socks5_reply_to_kind, ProxyConfig,

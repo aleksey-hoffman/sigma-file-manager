@@ -392,13 +392,12 @@ function handleSettingsScopeChange(value: string | number) {
             :disabled="props.isGlobalSearchOpen"
             @click="emit('toggle-split-view')"
           >
-            <PanelLeftRightDashedIcon
-              v-if="splitViewMode === 'linked'"
-              :size="16"
-              class="navigator-toolbar-actions__icon"
-            />
+            <!--
+              固定用 FlipHorizontalIcon。原来这里会按 splitViewMode 换成
+              PanelLeftRightDashedIcon，而「联动」现在有了自己那颗按钮，
+              在分屏开关上换图标只会让人以为那个按钮管的是联动。
+            -->
             <FlipHorizontalIcon
-              v-else
               :size="16"
               class="navigator-toolbar-actions__icon"
             />

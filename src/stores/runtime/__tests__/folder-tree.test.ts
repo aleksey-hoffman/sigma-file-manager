@@ -49,6 +49,51 @@ describe('computeAncestorPaths', () => {
     expect(computeAncestorPaths('foo/bar/baz'))
       .toEqual(['foo', 'foo/bar']);
   });
+
+  // FORK-MODIFICATION 2026-10-19：远程连接根就是根。
+  // 用户实测：树根切到「速豹堂」了，但永远展不开 —— 祖先链爬到了
+  // `sfm://remote` 和 `sfm:` 这些树里根本不存在的路径上。
+  it('expands remote path down to the connection root, and stops there', () => {
+    const CONN = 'e2b24ab525544dc7adeb5cedb192179b';
+
+    expect(computeAncestorPaths(`sfm://remote/${CONN}/vol1/@team/study_platform`))
+      .toEqual([
+        `sfm://remote/${CONN}`,
+        `sfm://remote/${CONN}/vol1`,
+        `sfm://remote/${CONN}/vol1/@team`,
+      ]);
+  });
+
+  it('never emits `sfm:` or `sfm://remote` as an ancestor', () => {
+    const CONN = 'e2b24ab525544dc7adeb5cedb192179b';
+    const ancestors = computeAncestorPaths(`sfm://remote/${CONN}/vol1`);
+
+    expect(ancestors).not.toContain('sfm:');
+    expect(ancestors).not.toContain('sfm://remote');
+    expect(ancestors).not.toContain('sfm://');
+  });
+
+  it('connection root itself has no ancestors', () => {
+    const CONN = 'e2b24ab525544dc7adeb5cedb192179b';
+
+    expect(computeAncestorPaths(`sfm://remote/${CONN}`)).toEqual([]);
+    expect(computeAncestorPaths(`sfm://remote/${CONN}/`)).toEqual([]);
+  });
+});
+
+describe('parentDirectoryPath · 远程', () => {
+  const CONN = 'e2b24ab525544dc7adeb5cedb192179b';
+
+  it('到连接根就停', () => {
+    expect(parentDirectoryPath(`sfm://remote/${CONN}/vol1/@team`))
+      .toBe(`sfm://remote/${CONN}/vol1`);
+    expect(parentDirectoryPath(`sfm://remote/${CONN}/vol1`))
+      .toBe(`sfm://remote/${CONN}`);
+  });
+
+  it('连接根没有父级', () => {
+    expect(parentDirectoryPath(`sfm://remote/${CONN}`)).toBeNull();
+  });
 });
 
 describe('useFolderTreeStore', () => {

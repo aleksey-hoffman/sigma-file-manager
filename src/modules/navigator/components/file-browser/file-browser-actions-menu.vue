@@ -25,6 +25,10 @@ import {
   UnplugIcon,
   InfoIcon,
   TextCursorInputIcon,
+  // FORK-MODIFICATION: 本地 ↔ 远程传输与远程权限设置。
+  UploadIcon,
+  DownloadIcon,
+  ShieldIcon,
 } from '@lucide/vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { usePlatformStore } from '@/stores/runtime/platform';
@@ -446,6 +450,33 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   >
     <CopyIcon :size="16" />
     <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
+  </component>
+  <!-- FORK-MODIFICATION: 本地 ↔ 远程传输。三个动作的前提都是「对面还有一格」，
+       所以可见性判定不在 `CONTEXT_MENU_ITEMS` 那张表里，见
+       `src/modules/remote/utils/remote-context-menu-visibility.ts`。 -->
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('upload-to-remote')"
+    @select="emitAction('upload-to-remote')"
+  >
+    <UploadIcon :size="16" />
+    <span>{{ t('remote.transfer.uploadToRemote') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('download-to-local')"
+    @select="emitAction('download-to-local')"
+  >
+    <DownloadIcon :size="16" />
+    <span>{{ t('remote.transfer.downloadToLocal') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('remote-permissions')"
+    @select="emitAction('remote-permissions')"
+  >
+    <ShieldIcon :size="16" />
+    <span>{{ t('remote.permissions.menuItem') }}</span>
   </component>
   <FileBrowserNewSubmenu
     v-if="selectionStats.hasDirectories && !hasVirtualLocationSelection"

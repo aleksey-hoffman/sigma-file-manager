@@ -35,11 +35,12 @@ use std::time::Duration;
 use async_trait::async_trait;
 use russh_sftp::client::SftpSession;
 use russh_sftp::protocol::{FileAttributes, FileType, StatusCode};
+use tokio::io::AsyncWriteExt;
 
 use super::connection_test::{classify_ssh_handshake_error, read_ssh_banner, BannerCheck};
 use super::error::{RemoteError, RemoteErrorKind};
 use super::known_hosts::{self, HostKeyDecision, KnownHostEntry, TrustKind};
-use super::path::{build_remote_path, normalize_remote_path};
+use super::path::{build_remote_path, normalize_remote_path, reject_path_control_characters};
 use super::provider::{RemoteEntry, RemoteProvider};
 use super::registry::{self, ResolvedConnection};
 use super::transport::{self, Socks5CommandKind};
@@ -279,12 +280,13 @@ async fn open_sftp_session(
 
 async fn with_timeout<T>(
     timeout: Duration,
+    what: &'static str,
     work: impl std::future::Future<Output = Result<T, RemoteError>>,
 ) -> Result<T, RemoteError> {
     match tokio::time::timeout(timeout, work).await {
         Ok(result) => result,
         Err(_) => Err(RemoteError::disconnected(format!(
-            "读取远端目录超过 {} 秒仍未完成，已放弃这次操作",
+            "{what}超过 {} 秒仍未完成，已放弃这次操作",
             timeout.as_secs()
         ))),
     }
@@ -327,6 +329,30 @@ impl SftpRemoteProvider {
             known_hosts: Arc::new(known_hosts),
             timeout,
         }
+    }
+
+    /// trait 的五个方法共用的入参处理：挡控制字符 → 规范化路径 → 解析连接。
+    ///
+    /// **全部在开 socket 之前完成**：控制字符是本地判定，路径不合法也是。
+    /// 让它们先走一遍网络，等于把「用户敲错了一个字符」变成一次 15 秒超时。
+    fn prepare(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<(ResolvedConnection, String), RemoteError> {
+        reject_path_control_characters(remote_path)?;
+
+        let normalized = normalize_remote_path(remote_path).ok_or_else(|| {
+            RemoteError::protocol(format!("远端路径含有不合法的段: {remote_path}"))
+        })?;
+
+        let resolved = registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        Ok((resolved, normalized))
     }
 
     /// 打开连接并列出 `normalized` 下的直接子项。
@@ -381,11 +407,12 @@ impl SftpRemoteProvider {
             }
         };
 
-        with_timeout(self.timeout, work).await
+        with_timeout(self.timeout, "读取远端目录", work).await
     }
 
     /// 单个条目的元数据。地址栏自动补全与「属性」都走这里。
-    pub async fn stat(        &self,
+    pub async fn stat(
+        &self,
         resolved: &ResolvedConnection,
         normalized: &str,
     ) -> Result<RemoteEntry, RemoteError> {
@@ -416,7 +443,147 @@ impl SftpRemoteProvider {
             }
         };
 
-        with_timeout(self.timeout, work).await
+        with_timeout(self.timeout, "读取远端条目属性", work).await
+    }
+
+    /// 下载一个远程文件（整份进内存）。
+    pub async fn read_file(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<Vec<u8>, RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            sftp.read(normalized.to_string())
+                .await
+                .map_err(map_sftp_error)
+        };
+
+        with_timeout(self.timeout, "下载远程文件", work).await
+    }
+
+    /// 上传一个远程文件（**覆盖**语义）。
+    ///
+    /// 用 [`SftpSession::create`]（`CREATE | TRUNCATE | WRITE`）而不是
+    /// [`SftpSession::write`]：后者只带 `WRITE`，文件不存在时不会创建它。
+    /// 「不静默覆盖」由 `transfer` 在调用**之前**判重，这一层只负责「要覆盖就覆盖」。
+    pub async fn write_file(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        content: Vec<u8>,
+    ) -> Result<(), RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            let mut file = sftp
+                .create(normalized.to_string())
+                .await
+                .map_err(map_sftp_error)?;
+
+            file.write_all(&content).await.map_err(|error| {
+                RemoteError::disconnected(format!("写入远端文件失败：{error}"))
+            })?;
+            file.close().await.map_err(|error| {
+                RemoteError::disconnected(format!("关闭远端文件失败：{error}"))
+            })?;
+
+            Ok(())
+        };
+
+        with_timeout(self.timeout, "上传远程文件", work).await
+    }
+
+    /// 建一个远程目录。**已存在视为成功。**
+    ///
+    /// 「先问一次」而不是把失败当成功：服务器在「目录已存在」时回的是
+    /// `SSH_FX_FAILURE`，而**真正的失败也是它** —— 吞掉它就等于把
+    /// 「目录建不出来」伪装成成功。
+    pub async fn make_dir(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<(), RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            if sftp
+                .try_exists(normalized.to_string())
+                .await
+                .map_err(map_sftp_error)?
+            {
+                return Ok(());
+            }
+
+            sftp.create_dir(normalized.to_string())
+                .await
+                .map_err(map_sftp_error)
+        };
+
+        with_timeout(self.timeout, "创建远程目录", work).await
+    }
+
+    /// 设置权限位。`mode` 是八进制数值。
+    pub async fn set_permissions(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        mode: u32,
+    ) -> Result<(), RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            // 只带权限位，不带文件类型位：SFTP 的 `setstat` 把这一栏原样交给
+            // `chmod`，传 `0o100755` 进去等于让服务器去改一个带类型位的模式。
+            let attributes = FileAttributes {
+                permissions: Some(mode & 0o7777),
+                ..FileAttributes::empty()
+            };
+
+            sftp.set_metadata(normalized.to_string(), attributes)
+                .await
+                .map_err(map_sftp_error)
+        };
+
+        with_timeout(self.timeout, "设置远程权限", work).await
+    }
+
+    /// 读取权限位（低 12 位）。
+    ///
+    /// `stat` **跟随**符号链接，所以指向一个文件的链接读到的是目标文件的权限。
+    /// 递归 chmod 侧靠「不跟进链接」来保证不越界；这里读的则是用户点开
+    /// 「权限设置」时看到的那一条 —— 用户想改的就是那个文件。
+    pub async fn get_permissions(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<Option<u32>, RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            match sftp.metadata(normalized.to_string()).await {
+                Ok(attributes) => Ok(attributes.permissions.map(|mode| mode & 0o7777)),
+                // 「取不到就给 None」与 `remote_stat_dir_entry` 的既有契约一致：
+                // 权限对话框要靠它显示「读不到当前权限」，而不是每次开框都炸。
+                Err(error) => {
+                    let mapped = map_sftp_error(error);
+
+                    if mapped.kind == RemoteErrorKind::NotFound {
+                        return Ok(None);
+                    }
+
+                    Err(mapped)
+                }
+            }
+        };
+
+        with_timeout(self.timeout, "读取远程权限", work).await
     }
 }
 
@@ -429,17 +596,56 @@ impl RemoteProvider for SftpRemoteProvider {
     ) -> Result<Vec<RemoteEntry>, RemoteError> {
         // 调用方可能是用户手输的 `pub//docs`，先按路径族规则规范化。
         // **必须在开连接之前**：路径不合法是本地判定，一秒都不该花在网络上。
-        let normalized = normalize_remote_path(remote_path).ok_or_else(|| {
-            RemoteError::protocol(format!("远端路径含有不合法的段: {remote_path}"))
-        })?;
-
-        let resolved = registry::resolve_connection(
-            &self.user_data_dir,
-            &self.app_data_dir,
-            connection_id,
-        )?;
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
 
         self.list(&resolved, &normalized).await
+    }
+
+    async fn read_file(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<Vec<u8>, RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.read_file(&resolved, &normalized).await
+    }
+
+    async fn write_file(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+    ) -> Result<(), RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.write_file(&resolved, &normalized, content).await
+    }
+
+    async fn make_dir(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<(), RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.make_dir(&resolved, &normalized).await
+    }
+
+    async fn set_permissions(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        mode: u32,
+    ) -> Result<(), RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.set_permissions(&resolved, &normalized, mode).await
+    }
+
+    async fn get_permissions(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<Option<u32>, RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.get_permissions(&resolved, &normalized).await
     }
 }
 
@@ -614,5 +820,46 @@ mod tests {
             Box::new(SftpRemoteProvider::new(dir.path(), dir.path()));
 
         assert!(provider.read_dir("nobody", "/").await.is_err());
+    }
+
+    /// 连接表是空的 ⇒ 任何先走 `resolve_connection` 的实现都会得到 `NotFound`。
+    /// 拿到 `Protocol` 就证明控制字符那道闸真的在**开 socket 之前**。
+    ///
+    /// 走 `RemoteProvider::` 显式路径而不是 `provider.read_file(..)` ——
+    /// provider 上还有一个**同名固有方法**（签名第一个参数是 `ResolvedConnection`），
+    /// 裸调用会被它抢走，测的就不是 trait 那条路了。
+    #[tokio::test]
+    async fn a_control_character_in_the_path_never_reaches_the_wire() {
+        let dir = TempDir::new().expect("temp dir");
+        let provider = SftpRemoteProvider::new(dir.path(), dir.path());
+
+        let error = RemoteProvider::read_file(&provider, "conn-a", "/pub/a\r\nQUIT")
+            .await
+            .expect_err("must be refused");
+
+        assert_eq!(error.kind, RemoteErrorKind::Protocol);
+    }
+
+    #[tokio::test]
+    async fn every_new_trait_method_fails_before_a_socket_when_the_connection_is_unknown() {
+        // 这些方法将来都会各自长出实现；这条一次性把它们钉在
+        // 「先解析连接、再开 socket」这个顺序上 ——
+        // 顺序反了的话，用户敲错一个连接 id 要等 15 秒超时才知道。
+        let dir = TempDir::new().expect("temp dir");
+        let provider = SftpRemoteProvider::new(dir.path(), dir.path());
+
+        assert!(RemoteProvider::read_file(&provider, "nobody", "/a.txt")
+            .await
+            .is_err());
+        assert!(RemoteProvider::write_file(&provider, "nobody", "/a.txt", b"x".to_vec())
+            .await
+            .is_err());
+        assert!(RemoteProvider::make_dir(&provider, "nobody", "/d").await.is_err());
+        assert!(RemoteProvider::set_permissions(&provider, "nobody", "/a.txt", 0o755)
+            .await
+            .is_err());
+        assert!(RemoteProvider::get_permissions(&provider, "nobody", "/a.txt")
+            .await
+            .is_err());
     }
 }

@@ -14,7 +14,7 @@
 // `routes is not iterable` 直接崩（`remote-category.test.ts` 顶部有同样的说明）。
 
 import type { RemoteConnection } from '@/types/remote';
-import { buildRemoteConnectionPath } from '@/utils/remote-paths';
+import { buildRemotePath, normalizeRemotePath } from '@/utils/remote-paths';
 import { resolveRemoteOpenPanes } from './remote-panes';
 
 /** 抽出来是为了能在测试里断言顺序与参数，同时把真实实现留在组件那边。 */
@@ -36,12 +36,24 @@ export interface RemoteOpenActions {
  *
  * 连接 id 非法时什么都不做：那不是一个能构造出路径的 id，硬开只会得到一格
  * 打不开的远程路径。
+ *
+ * 远端那一格落在连接配置的 `initialPath` 上，**不是**连接根。
+ * 这一点在 2026-10-19 之前是错的：`buildRemoteConnectionPath` 只吃 `id`，
+ * 产出恒为 `sfm://remote/<id>`，`initialPath` 存了但没人读 ——
+ * 用户在设置里填好路径，连接后照样落在远程根，每次都得手动翻进去。
+ * `buildRemotePath(id, '/')` 的产出与旧的连接根**逐字相同**，
+ * 所以改成它对 `initialPath` 为 `/` 的连接没有任何行为变化。
  */
 export async function openRemoteConnection(
   connection: RemoteConnection,
   actions: RemoteOpenActions,
 ): Promise<void> {
-  const remotePath = buildRemoteConnectionPath(connection.id);
+  // 存储侧保存时已经规范化过，这里再过一次是因为 `RemoteConnection`
+  // 可以从别的构造路径进来（导入、测试、未来的迁移脚本），
+  // 而 `buildRemotePath` 碰到 `.` / `..` 段会直接返回 `null` ——
+  // 那会让「初始路径非法」变成「点了连接什么都没发生」，比落到根更难查。
+  const initialPath = normalizeRemotePath(connection.initialPath) ?? '/';
+  const remotePath = buildRemotePath(connection.id, initialPath);
 
   if (!remotePath) {
     return;

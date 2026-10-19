@@ -495,3 +495,674 @@ PowerShell 先解析了参数，**文件内容被写成了字面量 `utf8`**（3
 - 远程写操作（新建目录 / 重命名 / 删除）：规格阶段 3。
 - 传输、跨边界拖拽：规格阶段 6 / 7。
 - `MLST` 多行回复支持（当前 `stat` 绕开了它，代价是一次列父目录）。
+
+---
+
+## 10. 2026-10-19 用户实测发现的两个缺陷（本轮已修）
+
+用户连上「速豹堂」之后提了两件事。都实测复现、修完做了注入验证。
+
+### 10.1 `initialPath` 存了但没人读 —— 打开连接永远落在远程根
+
+**症状**：在设置里把「速豹堂」的初始路径填成
+`/vol1/@team/study_platform/wp_root`，点连接后导航器仍然开在
+`sfm://remote/e2b24ab525544dc7adeb5cedb192179b/`。
+
+**根因**：`src/modules/remote/utils/open-remote-connection.ts:44` 用的是
+`buildRemoteConnectionPath(connection.id)` —— 这个函数**只吃 id**，
+产出恒为 `sfm://remote/<id>`。`connection.initialPath` 从来没参与过路径构造。
+
+全仓搜过：`initialPath` 的非测试消费点只有 `types/remote.ts`（类型）、
+`stores/storage/remote-connections.ts`（保存时规范化）、两个设置页组件（表单回填）。
+**它是一个存了但没人读的死字段。** 存储侧把路径规范化得干干净净，
+前端却从来没读过 —— 保存时不报错、使用时不生效，没有任何测试覆盖得到。
+
+**修法**：
+
+```ts
+const initialPath = normalizeRemotePath(connection.initialPath) ?? '/';
+const remotePath = buildRemotePath(connection.id, initialPath);
+```
+
+- `buildRemotePath(id, '/')` 的产出与旧的连接根**逐字相同**，
+  所以 `initialPath` 为 `/` 的连接（`aiec.fun`）行为零变化。有专门的测试钉这一条。
+- 多过一道 `normalizeRemotePath`：`RemoteConnection` 可以从导入、迁移脚本等
+  绕过存储的路径进来，而 `buildRemotePath` 碰到 `.` / `..` 段直接返回 `null` ——
+  那会让「初始路径非法」变成「点了连接什么都没发生」，比落到根更难查。
+- `buildRemoteConnectionPath` 没有因此变成孤儿，地址栏 `address-bar-parts.ts:107` 还在用。
+
+链路下游已核对：`openNewTabGroupWithPaths` → `createNewTab(path)` 原样保留路径，
+不会再被改写。生产调用方是 `nav-sidebar.vue:183` 的 `handleRemoteOpen`。
+
+**注入验证**：把 `initialPath` 写死成 `'/'` → 3 条转红（双屏 / 单屏 / 尾斜杠规范化）。
+
+### 10.2 联动模式跨本地/远程时，把远端格导航成了本地目录
+
+**背景**：「同步浏览」的**机制本来就有** —— `splitViewMode: 'linked'` +
+`navigator.vue` 的 `syncLinkedPane`。但唯一入口埋在设置菜单最底下的
+「分屏模式 → 联动」，用户连上远程根本找不到。
+
+**顺带发现的缺陷**：`getLinkedPaneNavigationTarget` 返回的是左格选中项的
+**绝对路径**，直接交给右格 `navigateToPath`。而 `navigateToPath` → `readDir` →
+`virtual-locations.ts` 按路径前缀分流，本地路径就按本地目录读了。
+于是「左本地 / 右远程」的双屏里，在左格选一个目录，
+**远端那一格整个变成本地目录**，用户以为还在看远端。
+
+**修法**：`getLinkedPaneNavigationTarget` 加一个可选的 `rightPaneCurrentPath`。
+两边**不在同一个路径族**（用 `isRemotePath` 判定）时，只把**目录名**接到右格当前路径上：
+
+```ts
+if (!rightPaneCurrentPath || isRemotePath(selected.path) === isRemotePath(rightPaneCurrentPath)) {
+  return selected.path;   // 同族：保持原样
+}
+return appendPathSegment(rightPaneCurrentPath, selected.name);
+```
+
+选中的条目必然是左格当前目录的**直接子项**，所以相对部分就是它的名字 ——
+不需要左格的当前路径。远程侧走 `buildRemotePath` 而不是字符串硬接，
+本地侧剥尾斜杠再接（`E:/` + `docs` → `E:/docs`，不会接成 `E:docs`）。
+
+**同族行为一个字没改** —— 本地 ↔ 本地分屏一直靠「右格跳到同一个绝对路径」，
+不能顺手改成相对拼接。有专门的测试钉住这一点。
+
+**注入验证**：让函数忽略 `rightPaneCurrentPath` → 3 条跨族测试转红，
+同族的 4 条仍绿（说明它们确实只钉旧行为，没有跟着一起失效）。
+
+### 10.3 同步浏览按钮
+
+放在**分屏开关旁边**，图标 `LinkIcon`，**`v-if="props.isSplitView"`**
+—— 单格没有「另一格」可同步，摆一颗灰按钮只会让人点它却看不到反应。
+
+- 点击走 `toggleSyncBrowsing()` → `setSplitViewMode(split ? 'split' : 'linked')`，
+  **不直接调 `userSettingsStore.set`**：全局搜索开着时不该切换，
+  那道闸门只写在 `setSplitViewMode` 里，绕过它就等于没有。
+- 激活态复用既有的 `navigator-toolbar-actions__button--active`。
+- 顺手去掉了分屏开关上按 `splitViewMode` 换图标的逻辑：
+  联动现在有了自己那颗按钮，在分屏开关上换图标只会让人以为那个按钮管的是联动。
+
+i18n 三键（`syncBrowsing` / `syncBrowsingOn` / `syncBrowsingHint`）已进 17 个语言包，
+只有 `ch` 给真译。加键脚本 `.superpowers/sdd/add-sync-browsing-i18n.cjs` 幂等，
+且按 `JSON.stringify(…, null, 2) + '\n'` 回写 —— 实测与现有文件格式逐字一致，
+17 个文件各只多 3 行，没有整文件重排。
+
+⚠️ 挂组件测试时注意：`.vue` 整个模板包在 `<Teleport>` 里，
+不 `stubs: { Teleport: true }` 的话 VTU 的 `find` 看不到任何内容 ——
+「找不到就当没渲染」会把断言变成空判断。
+
+### 10.4 门禁（本轮，无 Rust 改动）
+
+| 项 | 结果 |
+|---|---|
+| `eslint src` | **179** = 基线 |
+| `npx vue-tsc --build` | 0 error |
+| `npx vitest run` | 196 文件 / **1640** 用例（基线 195 / 1619，+1 文件 +21 用例） |
+| `cargo test --lib` | 本轮无 Rust 改动，未跑 |
+
+新引入的 6 条 eslint 错误（`object-curly-newline` / `object-property-newline`，
+全在新增的两个测试文件里）已修掉。**注意口径**：第一次跑出来是 185，
+逐条定位后确认 6 条全在新增文件、其余 179 条是基线存量 ——
+别顺手去 `--fix` 基线那批，那会让总数低于基线，反而看不出问题。
+
+### 10.5 环境事实：「速豹堂」站点在 NAS 上的位置
+
+查远程路径时实测到的，写下来省得下次重查：
+
+| 用途 | NAS 上路径 |
+|------|-----------|
+| **WordPress 站点根** | `/vol1/@team/study_platform/wp_root` |
+| wp-content（**不在站点根里**） | `/vol1/@team/study_platform/wp_content` |
+| MySQL 数据 | `/vol1/study_db_mysql` |
+| 容器 | `study_wp`（wordpress:latest，8081→80）、`study_db`（mysql:8.0） |
+| 站点地址 | `http://winerking.picp.net:8081/` |
+
+⚠️ **`wp-content` 不在 `wp_root` 里面**，它是**同级的独立 bind mount**。
+在 Alpha 里浏览 `wp_root` 会看到一个只有一个 0 字节 `index.php` 的 `wp-content`，
+`themes/` `uploads/` 全都不存在 —— 那是 WordPress 镜像自带的防列目录残桩，
+被同级挂载整个遮住了。**不是主题插件丢了。**
+
+判别方法：`ssh nas 'docker inspect study_wp'` 看 bind mount 表，
+不要靠目录特征猜 —— `wp_root` 和它的父目录**都是** WordPress 根，
+用「同时含 `wp-config.php` 和 `wp-content`」去扫会命中错误的那个。
+
+---
+
+## 11. 2026-10-19 装机实测后的第二轮：同步浏览返工 + 目录树切远程
+
+### 11.1 装机实测结论
+
+- ✅ **初始路径修复生效**：用户确认「可以直接打开远程设定的根目录了」。
+- ❌ **同步浏览无效**：按钮点了之后进子目录，另一侧不动。
+- 📍 按钮位置不对：用户要求放到「左右互换窗口」左边。
+- ➕ 新需求：焦点在远程目录时，目录树也要切到远程目录树。
+
+### 11.2 同步浏览为什么无效 —— 两个独立的错
+
+**证据不是猜的**：`user-settings.json` 是**扁平点号键**格式
+（`"navigator.folderIconTheme"` 这种），而 `navigator.splitViewMode`
+**根本不在文件里**。而 `userSettingsStore.set()` 是**立即落盘**的
+（`set()` → `applySettingValue` + `setUserSettingsStorage` → `storage.save()`）。
+所以那次点击**从未到达 store**。
+
+> ⚠️ 排查这类「按钮点了没反应」，第一件事是找**落盘证据**，不是读代码。
+> `Invoke`/`set()` 返回成功不等于生效（见记忆规则 X）。扁平键格式这点也容易看错：
+> 我第一次按 `settings.navigator` 的嵌套结构去找，什么都没找到，差点误判成「没保存」。
+
+**错一：按钮挂在一道会 latch 的守卫后面。**
+第一版按钮放在 `navigator-toolbar-actions.vue`，走那里的 `setSplitViewMode`：
+
+```ts
+if (props.isGlobalSearchOpen || settingsScope.value === 'folder') return;
+```
+
+那道 `settingsScope` 守卫本是为**设置菜单**写的（目录作用域下切全局布局模式没意义），
+但 `settingsScope` 在打开过导航器选项菜单之后会**latch 住**不回 `'global'`，
+而工具栏按钮继承了它 —— 于是变成一颗哑弹。
+
+**错二：驱动的语义和用户预期根本对不上。**
+旧实现挂的是 `update:selected-entries`（**选中**驱动），而且硬编码
+「只有 `tabGroup[0]`（左格）能驱动」。用户双击进目录时选中态在导航瞬间被清掉，
+信号直接丢了；右格自己动更是完全不理。
+
+**修法**：
+- 按钮搬进 `file-browser-toolbar.vue`，放在 `FileBrowserToolbarSwapPanesButton` 左边
+  （用户指定位置），新建 `file-browser-toolbar-sync-browsing-button.vue`，
+  **直接读写 store**，不经过那道闸门。
+- 新增 `FileBrowser` 的 `update:currentPath` 事件（`watch(fb.currentPath)`），
+  联动改成**进目录驱动 + 谁动谁说了算**。
+- `linked-split-sync.ts` 重写：`planLinkedPaneNavigation` 三条规则
+  ——回声防护 → 同族走绝对路径（维持旧行为）→ 跨族按**目录名**对齐。
+- 死代码清理：`createLinkedPaneSyncQueueState` / `drainLinkedPaneSyncQueue` /
+  `queueLinkedPaneNavigation` 已无人调用，**连同它们的单测一起删了**。
+  留着死代码 + 死测试比删掉更容易骗人 —— 会让人以为「有防抖保护」。
+
+**注入验证**：让 `planLinkedPaneNavigation` 无视跨族判定 → 4 条跨族测试转红、
+16 条同族/边界仍绿（说明同族那批确实只钉旧行为）。
+
+### 11.3 目录树切远程：只差「根」
+
+树读目录走的是 `use-file-tree.ts` 的 `defaultDeps().readDir`
+→ `resolveDirectoryContents`，而那个函数**已经有远程分支**
+（`virtual-locations.ts:220`）。也就是说**树本来就能读远程**，
+之前出不来，唯一的缺口是 `treeRootPaths` 里只有盘符 —— 树连根都没有。
+
+改动就一处根的来源，判定抽到 `src/modules/navigator/utils/remote-tree-roots.ts`
+（纯函数，能测）。根取**连接根**而不是当前远端目录：根跟着焦点每跳一次就换，
+树会不停重建、展开状态反复丢。当前目录由 `setSelectedPath` 的祖先自动展开体现。
+祖先回溯自动成立 —— `useFileTree` 沿 `parentDirectoryOfPath` 往上找**已在树里**的祖先，
+连接根在树里就会停在它上面，不会越过 `sfm://` 乱走。
+
+标签用连接名（「速豹堂」），否则树里那行只能显示 32 位十六进制的连接 id。
+
+### 11.4 ⚠️ 门禁口径：这次是 173，不是 179
+
+`eslint src` 现在是 **173**，比基线 179 **低 6**。这不是回归，是
+`navigator.vue` 里 6 条**基线本来就存在**的违规（`arrow-parens` / `padding-line`）
+在我重写 `treeRootPaths` / `treeRootLabels` 那几段时被 `--fix` 顺手清掉了。
+
+踩坑记录：我第一次发现总数变成 175 时，**试图把违规还原回去**来对齐基线，
+结果只还原了 3 条、漏了 3 条，状态更不一致。正确的做法是**要么全修、要么全留**。
+现在全修，且把两个 `map((d) =>` 统一成了 `map(d =>`。
+
+⚠️ 复现这个坑的判据：`--fix` 之后**必须再跑一次全量 `eslint src`**，
+单文件复验显示 0 个问题不代表回到基线。
+
+### 11.5 还没做的
+
+- **这一整轮都没有真机验证过**（等用户装 3.2.7 包）。
+- 换按钮位置时 `file-browser-toolbar-swap-panes.test.ts` 的桩列表要补
+  `FileBrowserToolbarSyncBrowsingButton` —— 新组件要读 store，
+  不打桩的话工具栏一挂载就抛错，断言会退化成「工具栏挂了」而不是「按钮在不在」。
+- 目录树的**上下文菜单**在远程节点上多半不能用（新建/重命名都是本地写操作），
+  本轮没处理也没验证。
+
+---
+
+## 12. 2026-10-19 装机 3.2.7-beta 后的第三轮：联动初始化踩踏 + 树展不开
+
+### 12.1 实测结论
+
+- ✅ 同步浏览**按钮位置对了**，**也能同步浏览了**。
+- ❌ 反馈 1：打开连接后两端没落到各自配置的默认目录，左格跑到了一个不存在的子目录
+  （截图：`Path does not exist: E:/website_sbt/study_platform`）。
+- ❌ 反馈 2：另一端没有该目录时，那一格直接报「无法打开此文件夹」。
+- ❌ 反馈 3：远端激活时目录树没展开到激活层级（截图：树里只有一行「速豹堂」，展开箭头在、没有子节点）。
+
+**取证实锤**：`user-settings.json` 里 `"navigator.splitViewMode": "linked"` —— 联动是**持久化开启**的。
+这就是反馈 1 的前提：打开连接那一刻联动就是开着的。
+
+### 12.2 反馈 1 根因：打开连接的初始化过程里，两格在互相踩
+
+`openRemoteConnection` → `openPanes([localPath, remotePath])` 之后，两格各自挂载、各自加载，
+**先后顺序不定**。联动是开着的，于是：
+
+1. 先加载完的那一格发出 `update:currentPath`；
+2. 那其实是「我刚打开到自己的默认路径」，但联动把它当成**用户操作**；
+3. 指挥另一格跳到自己路径的**最后一段**；
+4. 两端都被推离各自配置的默认目录，本地那格还撞上一个不存在的子目录。
+
+**修法**：给联动加**就位闸门**（`decideLinkedPaneGate`，纯函数可单测）。
+每一格的**首次**路径上报只记账（`settle`）；**两格都记账之后**才允许联动（`sync`）；
+还有格没就位就是 `wait`。回声判定排在最前（`echo`），否则自己指挥过去的导航
+会被当成用户操作，两格立刻无限互踩。标签组换组时清空记账。
+
+### 12.3 反馈 2 根因：同步前不检查目标是否存在
+
+跨本地/远程按名字对齐，「同名」只是常见情况**而不是保证**。
+远端 `wp_root` 里的 `wp-content` 就是 WordPress 镜像自带的空残桩，本地根本没有对应项。
+
+**修法**：同步前先 `resolveDirEntry(target.path)` 探一次。
+`null`（或探测本身抛错）就**静默放弃**这次同步 —— 那一格保持不动，也不显示任何错误。
+`resolveDirEntry` 本来就有远程分支（`statRemoteEntry`），所以这一句两边通用，不需要新后端命令。
+
+> ⚠️ 这里刻意选「静默放弃」而不是「报错」：联动是**锦上添花**的辅助，
+> 另一端没有对应目录是完全正常的情况。为此弹一个错误等于把正常状态当故障。
+
+### 12.4 反馈 3 根因：祖先链爬过了远程连接根
+
+`computeAncestorPaths('sfm://remote/<id>/vol1/@team/study_platform')` 在改动前会一路爬到
+`sfm://remote`、`sfm:` —— 这些路径**树里根本没有**。于是 `expandedPaths` 装进去之后，
+`useFileTree` 一个都匹配不上，结果就是「根出现了但永远展不开」。
+
+**修法**：`parentDirectoryPath` 认得 `sfm://remote/<id>` 这个根（到它就返回 `null`），
+远程路径的父级改走 `getRemoteParentPath`。祖先链现在是
+`['sfm://remote/<id>', '.../vol1', '.../vol1/@team']`，根在树里，自动展开成立。
+
+### 12.5 门禁
+
+| 项 | 结果 |
+|---|---|
+| `eslint src` | 173（与上一轮一致；见 11.4 的口径说明） |
+| `npx vue-tsc --build` | 0 error |
+| `npx vitest run` | 见本轮实测数字 |
+
+**注入验证**：
+- 祖先链不认远程根 → 4 条转红（展开到连接根 / 不产出 `sfm:` 与 `sfm://remote` / 连接根无祖先 / 连接根无父级）
+- 去掉就位闸门 → 1 条转红（首次上报必须是 `settle`）
+
+## 13. 2026-10-19 装机 3.2.8-beta 后的第四轮：「上一级」不同步 + 目录树其实一直是死的
+
+用户反馈三条。第 1 条是**好消息**（进同名子目录能同步了），第 2、3 条是缺陷。
+第 3 条尤其要记住：**上一轮我以为修好了，其实根本没修到点子上。**
+
+### 13.0 三条反馈与处置
+
+| # | 反馈 | 结论 |
+|---|---|---|
+| 1 | 进入文件名相同的子目录可以同步切换 | ✅ 已确认可用，行为保持不变 |
+| 2 | 从子目录提升到上一级，因目录名不同无法同步；点向上箭头也不带动另一格 | 本轮修（对应关系表） |
+| 3 | 远端目录树仍不正常，无法随远程目录切换展开多层级 | 本轮修（根因与上轮判断完全不同） |
+
+### 13.1 根因 A：那个 watch 从写出来那天起就是死的（TDZ，且异常被吞掉）
+
+`navigator.vue` 里负责「把当前格的路径同步进目录树 store」的 watch 原本写在 `activeTabId`
+声明的正下方，却引用了**五十多行之后**才声明的 `isSplitView`，并且带 `immediate: true`。
+
+证据链（每一步都实测过，不是推理）：
+
+1. `@vue/reactivity/dist/reactivity.cjs.js:1958` —— `immediate` 为真时同步执行 `job(true)`，
+   即**在 `watch()` 调用当场**就求值 source getter。
+2. 同文件 `:1852` —— 多 source 的 getter 走 `return call ? call(s, 2) : s()`，
+   即 getter 被 `call` 包住。
+3. `@vue/runtime-core/dist/runtime-core.cjs.js:198` 的 `callWithErrorHandling` 是
+   `try { … } catch (err) { handleError(err, …) }` —— **捕获后不重抛**。
+
+所以 TDZ 的 `ReferenceError` 被吞成一条控制台警告，页面照常渲染。
+代价是致命的：`effect.run()` 没跑完，**一个依赖都没被收集**，
+这个 watch 从 2026-09-26（`bd17ed520`）建好那天起就永远不会触发。
+
+> ⚠️ **这条的教训值得单独立规矩**：
+> 「页面没崩」**不能**推出「代码没问题」。Vue 会把 watcher getter 的异常降级成警告，
+> 表现是功能静默失效、控制台一条红字。排查这类「某个回调从来没生效」的问题，
+> 先去证明它**注册上了且收集到依赖**，别先怀疑逻辑。
+
+实测复现（一次性探针，已删）：同作用域内把 `const` 放到 watch 之后，
+`watch([ref, () => later.value], cb, { immediate: true })`
+→ `ReferenceError: Cannot access 'later' before initialization`，回调不执行。
+（第一版探针把 `const` 放在**模块顶层**，模块已求值完，不构成 TDZ，测出「不抛」——
+ 差点得出相反结论。**复现必须同作用域。**）
+
+### 13.2 根因 B：即使活着也不会触发（漏听 path）
+
+原 watch 的 source 是 `[activeTabId, () => isSplitView.value]`。
+面板在**自己内部**导航时 tab 的 `id` 根本不变，回调不会触发。
+所以要同时修两处：位置（TDZ）与 source（漏听 path）。
+
+**修法**：整段挪到 `activePaneLivePath` 声明之后，source 改成 `[isSplitView, activePaneLivePath]`。
+
+新增 `activePaneLivePath`：优先读**窗格实例**的实时路径，tab 路径只作兜底。
+不直接用 `activeFolderSettingsPath` 的理由是本文件自己在 `collectLinkedPanePositions` 里写的
+那句「tab 路径有写盘延迟」——拿它展开树会慢一拍，用户看到的仍是「停在上一层」。
+两个前提让它可读：`paneRefsMap = ref(new Map())`（Map 被 reactive 代理，`get` 被追踪），
+`FileBrowser` 用 `defineExpose({ currentPath: fb.currentPath })` 暴露的是 ref（Vue 解包后仍响应）。
+
+> ⚠️ 上一轮我只修了 `computeAncestorPaths` 认得远程根，**逻辑上是对的，但没人调用它**。
+> 这就是「改了祖先链却毫无变化」的原因。**修一条没人走的链路，等于没修。**
+
+### 13.3 反馈 2：「上一级」为什么按名对齐注定失败
+
+用户截图里的实际状态：
+
+```
+左（本地） E:\website_sbt\wp-content
+右（远程） @team\study_platform\wp_root\wp-content
+```
+
+往上一级，两边父级的名字是 `website_sbt` 与 `wp_root`，**根本不同**。
+按名对齐算出来的是 `…/wp_root/wp-content/website_sbt` —— 两边都不存在。
+
+**修法：跨族对应关系表**（`linked-split-sync.ts` 的 `LinkedPanePairs`）。
+
+- 每**成功同步一次**就记下一对路径，**并连带记下它们的父级**。
+- `planLinkedPaneNavigation` 的规则顺序：回声 → 同族绝对路径 → **3a 查对应表** → 3b 按名对齐。
+- key 走 `pairKey()` 归一（反斜杠、尾斜杠、`E:` 与 `E:/`），否则用户手输 `E:\website_sbt`
+  会与 `E:/website_sbt` 变成两条记录，关联漏掉。
+- 上限 512 条，超了**整表清空**（不维护 LRU：还要保证两个方向的 key 一起淘汰，
+  而清空只需再导航两三次就重建，长会话无限增长才是真问题）。
+- 切标签组时清空（与 `linkedPaneSettledTabIds` 同一处）。
+
+**关键取舍**：这张表**不是配置出来的，是同步成功的事实累积出来的**。
+用户说的「建立固定的关联」我按这个理解实现 —— 只有两格真的对上了才记，
+对应关系才敢信。代价是「第一次」走到某个层级时没有记录可查，此时退回按名对齐（与旧行为一致）。
+
+**已知局限（仍然存在）**：对应关系不越出根。在 `E:/website_sbt` ↔ `…/wp_root` 这一层
+再往上没有记录，点「上一级」会静默不同步。要真正跨任意层级对齐，得给连接配
+「本地 ↔ 远程路径映射」，那是独立的设计题，尚未开工。
+
+### 13.4 过程中被测试抓出来的两个真 bug
+
+都是**我自己写错**、被新写的单测当场抓住的：
+
+1. **守卫写在了早退之后，形同虚设。**
+   `getPathLastSegment` 里盘符根守卫排在 `if (cut === -1) return trimmed` 之后，
+   而 `E:/` 剥掉尾斜杠正是 `E:`（没有分隔符），永远走不到守卫，
+   于是产出 `E:` 再被接成 `…/wp_root/E:`。已调整顺序。
+2. **`getPathParent` 原样切片产出混合格式** `E:\website_sbt`。
+   已按项目约定（Rust `normalize_path` 一律产出 `/`）在函数内归一。
+
+另有一条是**测试自己写错**（把记成 `website_sbt ↔ wp_root/wp-content` 的一对
+断言成 `wp_root`），已改正并在注释里写清该断言的本意。
+
+### 13.5 门禁与注入验证
+
+| 项 | 结果 |
+|---|---|
+| `eslint src` | 见本轮实测数字（基线 173） |
+| `npx vue-tsc --build` | 0 error |
+| `npx vitest run` | 见本轮实测数字 |
+| `cargo test --lib` | 本轮无 Rust 改动，未跑 |
+
+注入脚本 `.superpowers/sdd/inject-329.cjs`，三条**显式**子命令
+（`snapshot` / `inject <名>` / `restore`），**不靠「有无参数」区分相反行为**：
+
+| 注入 | 转红条数 | 还原后 |
+|---|---|---|
+| `tdz`（把 watch 挪回声明之前） | 1 | GREEN |
+| `nopairlookup`（去掉规则 3a） | 2 | GREEN |
+| `noparents`（去掉父级记录） | 3 | GREEN |
+
+`navigator-tree-sync-wiring.test.ts` 是**源码不变式**测试，守的是「别再挪回去」。
+
+> ⚠️ **它证明不了运行时行为**，文件头已写明这条限制。
+> 它存在的理由是：TDZ 属于 eslint 默认不管（`no-use-before-define` 没配，
+> 开了会让 173 的基线爆炸）、挂载组件又难复现的一类缺陷。
+>
+> ⚠️ 写这类扫描测试时踩过一个坑：断言写成 `for (const w of watches) expect(...)`，
+> 而 `watches` 一旦为空就是**空转通过** —— 「没找到东西」和「都满足」在输出里一模一样。
+> 第一版就是这么把两条假绿放过去的。现在改成 `nonEmptyWatches()` 先断言非空再循环。
+
+### 13.6 本轮**没有**动的部分
+
+- 单格模式下目录树仍不跟随面板（保留上游 v6.2 的原守卫语义，不是本轮范围）。
+- 目录树远程节点的上下文菜单（新建/重命名等本地写操作）仍未验证，多半不能用。
+- 缺陷 6.0.2（启动恢复到远程目录时首见信任弹窗不出现）仍未修。
+
+## 14. 2026-10-19 装机 3.2.9-beta 后的第五轮：树根取配置目录 + 标签显示连接名
+
+用户反馈：**同步浏览已达标**（第 13.3 节的对应关系表成立），但目录树仍不正常。
+截图里能直接读出两个事实：
+
+1. 根那一行显示的是 `e2b24ab525544dc7adeb5cedb192179b` —— **连接 id**，不是「速豹堂」；
+2. 根下面**没有任何子节点**。
+
+外加一条**新要求**（与我在 13.2 的设计决定相反）：
+
+> 在激活远程后，根目录希望显示远程在**设置中的目录**，而不是远程的根目录，
+> 如果名称使用设置的远程名称，如本例的"速豹堂"。
+
+### 14.1 我上一轮的设计决定被推翻，用户是对的
+
+我在 `remote-tree-roots.ts` 里取**连接根**（`sfm://remote/<id>`），注释里写的理由是：
+
+> 用连接根而不是当前目录：根跟着焦点每跳一次就换的话，树会不停重建、展开状态反复丢。
+
+**那个顾虑针对的是「当前目录」** —— 它确实每跳一次就换。`initialPath` 完全是另一回事：
+它是连接配置里的**固定值**，只在换连接时才变。展开状态不会反复丢，重建问题不存在。
+
+我把自己上一轮写下的理由套用到了一个不适用的对象上。用户的判断更直接：
+他要看的本来就是自己配的那个目录，不是从 `/vol1` 一层层点下去。
+
+**修法**：`resolveRemoteTreeRoot(connectionId, initialPath)` —— 优先取 `initialPath`，
+取不到（连接表还没加载完 / 空串 / 非法 `.` `..`）才退回连接根。
+**宁可根浅一点，也不要树变成空的。**
+
+### 14.2 标签为什么显示连接 id：根名被「烤」进了节点
+
+`use-file-tree.ts` 的 `buildRoots` / `addRoot` 在建节点时用**当时**的 `rootLabels`
+算出 `node.name` 塞进去。而 `useFileTree` **只 watch `rootPaths`，不 watch `rootLabels`**。
+
+远程树的两样东西**不是同时到的**：
+
+| | 依赖 | 何时有 |
+|---|---|---|
+| `rootPaths` | 焦点路径 | 立刻 |
+| `rootLabels` | `remoteConnectionsStore.connections` | 异步加载完才有 |
+
+两边不同步触发 `rootPaths` 就不变 → `rebuildRoots` 不跑 → 名字永远停在
+`basename(sfm://remote/<id>)` = **那串连接 id**。
+
+**修法**：`useFileTree` 增加一个 watch `rootLabels` 的分支，只重算 `depth === 0` 的节点名。
+顺带把「连接改名后标签也跟着更新」一起解决了。
+
+> ⚠️ 判据：**显示名的来源要跟它的数据源解绑。**
+> 只 watch 路径而不 watch 标签，在本地盘符上看不出来（盘符和卷标同时到），
+> 只有在「两样东西异步到达」的场景下才暴露。
+
+### 14.3 改根之后会冒出三个假根（这是新设计引入的，必须一起堵）
+
+`setSelectedPath` 把**整条祖先链**塞进 `expandedPaths`，而它**并不知道树的根在哪**。
+根改成 `initialPath`（`…/study_platform/wp_root`）之后，链里有：
+
+```
+sfm://remote/<id>          ← 根之上
+  …/vol1                   ← 根之上
+    …/@team                ← 根之上
+      …/study_platform     ← 根之上
+        …/wp_root          ← 这才是根
+```
+
+旧契约是「祖先不在树里就 `addRoot` 成新根」（上游 v6.3）。照它执行，
+上面四个里不在树里的都会被立成**并列的根** —— 正是用户不要的东西。
+
+**修法**：`isAboveAnyRoot(path)` —— 路径若是某个根的**严格祖先**，直接跳过。
+树从根起步，根之上的层不在树里。
+
+顺带修了 `parentDirectoryOfPath`：它是纯字符串切分，
+会把 `sfm://remote/<id>/vol1` 一路切成 `…/sfm://remote/<id>` → `sfm://remote` → `sfm:`
+——头两个不是能列目录的路径，最后一个连分隔符都没有，`path` 于是被当成根。
+现在远程路径的父级交给 `getRemoteParentPath`。
+
+### 14.4 ⚠️ 反转了上游 v6.3 的契约，必须记下来
+
+`use-file-tree.test.ts` 里有一条旧测试 `ensureAncestorsLoaded adds each ancestor as a root and loads it`
+**被本轮改动打红**。它不是过时测试，是**契约冲突**：
+
+- 旧契约：祖先不在树里 → `addRoot` 成新根；
+- 新契约：祖先在根之上 → 跳过。
+
+本轮**反转**了它，改名并写清为什么反转。保留旧契约的话，远程树会同时出现四个根。
+
+> 这条要记住：**上游的契约不总是对的，要按新设计判断。**
+> 但反转必须留痕（测试名 + 注释），否则下一个人会以为它坏了又改回去。
+
+### 14.5 又被测试抓出来的两个 bug
+
+1. **`isAboveAnyRoot` 对本地盘符根整个失效。** 拼前缀时盘符根 `C:/` 变成 `C://`，
+   而子路径是 `C:/Users/foo`，`startsWith('C://')` **恒假**。
+   远程路径没有尾斜杠，所以**只有本地测试能抓到它** —— 远程那条测试是绿的。
+   已改为先剥尾斜杠再拼。
+2. **接线测试的扫描器只看 source 数组**，而 `setSelectedPath` 在回调体里，
+   于是「没找到」被当成「都满足」，两条断言**空转通过**。
+   第一版就这么把两条假绿放过去的（见 13.5 的警告）。已改为 `nonEmptyWatches()` 先断言非空。
+
+### 14.6 门禁与注入验证
+
+| 项 | 结果 |
+|---|---|
+| `eslint src` | **171**（基线 173，本轮 -2） |
+| `npx vue-tsc --build` | 0 error |
+| `npx vitest run` | **198 文件 / 1713 用例** 全过 |
+| `cargo test --lib` | 本轮无 Rust 改动，未跑 |
+
+> **口径提醒**：中途一度涨到 **175**，来源是重写的 `remote-tree-roots.test.ts`
+> 里 4 条 `@stylistic/object-property-newline`（单行塞多个属性）。
+> 定位方法见 `.superpowers/sdd/diff-eslint-perfile.ps1` ——
+> **按文件比总数、按规则比条数**，不要按 `ruleId|行号` 比：
+> 改动会让行号整体漂移，那种对照出来的「新违规」全是噪声。
+> 修掉之后 171，比基线还少 2（那 2 条是上一轮 `--fix` 的连带，`navigator.vue`）。
+
+注入脚本 `.superpowers/sdd/inject-3210.cjs`（`snapshot` / `inject <名>` / `restore` 三条显式子命令）：
+
+| 注入 | 转红条数 | 还原后 |
+|---|---|---|
+| `rootsync`（树根忽略 initialPath） | 8 | GREEN |
+| `nolabelwatch`（根名不再随标签重算） | 1 | GREEN |
+| `noaboveguard`（去掉「根之上跳过」） | 2 | GREEN |
+
+### 14.7 本轮**没有**动的部分
+
+- 单格模式下目录树仍不跟随面板（保留上游 v6.2 的原守卫语义）。
+- 目录树远程节点的上下文菜单（新建/重命名等本地写操作）仍未验证，多半不能用。
+- 缺陷 6.0.2（启动恢复到远程目录时首见信任弹窗不出现）仍未修。
+- 跨族对应关系表仍不越出根（13.3 的已知局限未变）。
+
+## 15. 2026-10-19 装机 3.2.10-beta 后的第六轮：树只剩空根 + 本地↔远程传输功能缺失
+
+用户反馈四条。**第 1 条是本轮修的 bug，第 2 条根本不是 bug，第 3、4 条是新功能。**
+
+| # | 反馈 | 结论 |
+|---|---|---|
+| 1 | 目录树仍然展不开 | **本轮修**，根因见 15.1 |
+| 2 | 向远程粘贴报错「目标路径不存在」 | **不是故障，是功能缺失**，见 15.2 |
+| 3 | 本地右键菜单加「上传」、远程加「下载」 | 新功能，本轮**未做**，设计见 15.3 |
+| 4 | 远程右键菜单加「权限设置」（含中文说明 + 递归） | 新功能，本轮**未做**，设计见 15.4 |
+
+### 15.1 「展开的空根」：`rebuildRoots` 重建了节点却没清 `loadedSet`
+
+**症状**：树根那一行标签正确（「速豹堂」，说明 14.2 的修法生效了）、展开状态正确（▾），
+但**下面一个子节点都没有**。看起来像远程目录读不出来。
+
+**根因**（`use-file-tree.ts` 的 `rebuildRoots`）：
+
+- 树根换了又换回来时，`rebuildRoots` 走 `buildRoots()` 分支，造一个**全新空节点**
+  （`children: null`、`isLoaded: false`）；
+- 但 **`loadedSet` 从来不跟着清**；
+- 而 `ensureLoaded` 开头就是 `if (loadedSet.value.has(path)) return;`。
+
+于是：在本地格与远程格之间来回切过之后，**第二次**激活远程时，
+节点是空的、「已经读过了」却是真的，于是永远不去读第二次。
+展开状态还在（它在 `expandedPaths` 里），`children` 永远是 `null` ——
+表现就是「展开的根 + 空列表」，**根本不是读失败，是压根没去读**。
+
+**修法**：`rebuildRoots` 收集「本次被重建出来的根」，
+从 `loadedSet` 里把它们的记账删掉。仍然保留的根**不动**（不重读它们）。
+
+**注入验证**（`.superpowers/sdd/inject-rebuildroots.cjs`）：
+把清理块换成 `if (false as boolean)`，那条测试立刻红，输出是
+
+```
+[ '速豹堂' ]        ← 与用户截图逐字一致
+```
+
+还原后 GREEN。**症状与用户截图完全对上，这是本条最强的证据。**
+
+> ⚠️ 为什么上一轮那条「远程根取 initialPath」的单测没抓到：
+> 它从**空的 `loadedSet`** 起步，一次都没切走过。
+> **判据：测试必须复现完整的状态变迁史，而不只是终态。**
+
+### 15.2 ⚠️ 向远程复制**不是 bug，是功能从未实现**
+
+用户截图的报错：`复制失败 / Destination path does not exist: sfm://remote/...`。
+
+**根因在 `src-tauri/src/file_operations.rs`**，复制在 `:1146`、移动在 `:1477`：
+
+```rust
+if !destination.exists() {
+    return (FileOperationResult {
+        success: false,
+        error: Some(format!("Destination path does not exist: {}", destination_path)),
+        ...
+```
+
+`destination` 是 `std::path::Path`，`exists()` 问的是**本地文件系统**。
+对 `sfm://remote/...` 它恒为 `false` —— 哪怕那个目录就在那儿、也能正常浏览。
+
+**整条文件操作引擎（复制/移动/删除/重命名）都是本地的，没有一条远程分支。**
+前端允许你往远程面板里粘贴，后端把 `sfm://` 当成本地盘符去问，然后报「不存在」。
+
+> **不要试图用「远程分支补一下 exists 判断」来修。** 那只会把
+> 「目标路径不存在」换成下一个必然失败的动作（`fs::copy` 同样打不开远程路径）。
+> 正解就是用户要的 #3：一条真正的传输通道。
+
+**旁证**：`statRemoteEntry`（`remote_stat_dir_entry`）是**通的** ——
+它走 `remote_stat_dir_entry` → `stat_with_protocol`，是对远程真做 stat。
+`src/utils/remote-directory.ts:74` 刻意吞掉一切错误返回 `null`，
+所以界面只说「不存在」，看不到原因。**这是本条最容易被误判成「远程读不出来」的地方。**
+
+### 15.3 下一阶段：本地 ↔ 远程传输（用户 #3）
+
+需要**新建**的能力，现有代码里一行都没有：
+
+**Rust 侧**（`src-tauri/src/remote/`，注意 AGENTS.md 的红线：
+该目录下不得出现 `tauri::async_runtime::*`，`spawn_blocking` 只能出现在 `commands.rs`）：
+- `remote_upload_file(local_path, remote_path)` —— 读本地字节 → 远端写
+- `remote_download_file(remote_path, local_path)` —— 远端读 → 写本地
+- `remote_make_dir(remote_path)` —— 上传目录时需要
+- 递归目录上传/下载（遍历 + 逐个传输 + 进度）
+- 覆盖策略（与本地复制的冲突解决对齐？需拍板）
+- 权限保持（SFTP 写文件时能不能带 mode？需拍板）
+
+**前端侧**：
+- 本地面板右键菜单 → 「上传到远程」（目标 = 当前活跃的远程面板路径）
+- 远程面板右键菜单 → 「下载到本地」（目标 = 当前活跃的本地面板路径）
+- 传输进度 + 失败明细（本地复制已有 job/progress 机制可参考）
+- 17 个语言包新增文案（中文 locale 是 `ch`）
+
+### 15.4 下一阶段：远程权限设置（用户 #4）
+
+- Rust：`remote_chmod(remote_path, mode, recursive)` —— SFTP `setstat`/`chmod`
+- 前端：右键菜单 → 「权限设置」对话框
+  - **数字**（八进制，0754 之类）+ **对应的中文权限说明**（用户明确要求）
+  - 目录要能选**是否递归**（递归要能表达 `r-xr-xr-x` 这类并逐级处理符号链接）
+  - 建议把「八进制 ↔ rwx 三元组」的换算做成**纯函数**并单测（这是可测的部分，
+    也是最容易在 UI 里算错的部分）
+- 需拍板：递归时符号链接跟不跟随；非 SFTP（FTP）能不能 chmod —— 多半不能，
+  那时菜单项要置灰而不是报错
+
+### 15.5 门禁
+
+| 项 | 结果 |
+|---|---|
+| `eslint src` | **170**（基线 173） |
+| `npx vue-tsc --build` | 0 error |
+| `npx vitest run` | 见本轮实测数字 |
+| `cargo test --lib` | 本轮无 Rust 改动，未跑 |
+
+> eslint 中途一度到 **181**：本轮新增测试里的 DirEntry 字面量写成了单行，
+> 触发 `@stylistic/object-property-newline`。**新代码自身 0 违规**是本项目的口径，
+> 写测试时也要守住。
+
+
+
+
+
+

@@ -346,6 +346,143 @@ where
 
     Ok(parse_listing(&String::from_utf8_lossy(&bytes)))
 }
+
+/// 发一条「我们自己拼的」传输命令，**不等回复**。
+///
+/// 与 [`FtpControl::command`] 的区别有三点：
+/// 一是**不等回复**（传输命令的回复在数据通道跑完之后才来，在线等会死锁）；
+/// 二是**动词与参数分开检查控制字符** —— 自己补上的 `\r\n` 是协议要求的行尾，
+/// 拿整条命令去查会把每一次传输都误判成攻击；
+/// 三是它**不查回复码**，因为此刻还没有回复。
+async fn send_transfer_command<S>(
+    stream: &mut S,
+    verb: &str,
+    argument: &str,
+) -> Result<(), RemoteError>
+where
+    S: tokio::io::AsyncWrite + Unpin,
+{
+    if contains_control_characters(verb) || contains_control_characters(argument) {
+        return Err(RemoteError::protocol(
+            "FTP 命令里出现了控制字符，已拒绝发送",
+        ));
+    }
+
+    let command = format!("{verb} {argument}\r\n");
+
+    stream
+        .write_all(command.as_bytes())
+        .await
+        .map_err(|error| RemoteError::disconnected(format!("发送 FTP 传输命令失败：{error}")))?;
+
+    stream
+        .flush()
+        .await
+        .map_err(|error| RemoteError::disconnected(format!("发送 FTP 传输命令失败：{error}")))
+}
+
+/// 切到 `parent`（根目录跳过）与 [`list_via_control`] 同一条理由：
+/// 多数服务器对 `CWD /` 的处理不一致。
+async fn enter_parent<S>(control: &mut FtpControl<S>, parent: &str) -> Result<(), RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    if parent == "/" {
+        return Ok(());
+    }
+
+    control.command(&format!("CWD {parent}"), &[250]).await.map(|_| ())
+}
+
+/// 在**已经建好并登录过**的通道上跑一次文件下载（`RETR`）。
+///
+/// 与 [`list_via_control`] 刻意同构：切目录 → 开数据通道 → 发命令 → 读满 →
+/// 取 `226`。**`226` 那一步不能省** —— 服务器可以先送来半截数据再回 `550`，
+/// 而那时候缓冲里已经有一段看起来完整的内容了。
+pub(crate) async fn retrieve_via_control<S>(
+    control: &mut FtpControl<S>,
+    remote_path: &str,
+) -> Result<Vec<u8>, RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    let (parent, name) = super::path::split_remote_parent_and_name(remote_path)?;
+    enter_parent(control, &parent).await?;
+
+    let data = control.open_data_channel().await?;
+
+    send_transfer_command(&mut control.stream, "RETR", &name).await?;
+
+    let bytes = read_listing(data).await?;
+
+    control.finish_transfer().await?;
+
+    Ok(bytes)
+}
+
+/// 在**已经建好并登录过**的通道上跑一次文件上传（`STOR`）。
+///
+/// ⚠️ **数据通道必须显式关掉写端。** 服务器读满之后才会回 `226`，
+/// 而我们接下来是去**控制通道**上读那条回复的 —— 不关的话服务器还在等下半截，
+/// 双方互等到超时。
+pub(crate) async fn store_via_control<S>(
+    control: &mut FtpControl<S>,
+    remote_path: &str,
+    content: &[u8],
+) -> Result<(), RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    let (parent, name) = super::path::split_remote_parent_and_name(remote_path)?;
+    enter_parent(control, &parent).await?;
+
+    let mut data = control.open_data_channel().await?;
+
+    send_transfer_command(&mut control.stream, "STOR", &name).await?;
+
+    data.write_all(content)
+        .await
+        .map_err(|error| RemoteError::disconnected(format!("上传数据时连接中断：{error}")))?;
+    data.flush()
+        .await
+        .map_err(|error| RemoteError::disconnected(format!("上传数据时连接中断：{error}")))?;
+    // 关写端 = 「内容发完了」。失败也继续：很多服务器不认 FIN，靠的是长度。
+    let _ = data.shutdown().await;
+
+    control.finish_transfer().await
+}
+
+/// 在**已经建好并登录过**的通道上建一个目录（`MKD`）。
+///
+/// 「已存在视为成功」靠**失败之后列一次父目录**实现，而不是把 `550` 当成成功：
+/// FTP 的 `550` 既是「已存在」也可能是「没权限」，两者**同码分不开**。
+/// 直接吞掉 `550` 的后果是「目录建不出来」被伪装成成功，而用户看到的
+/// 只是「传完了但少了几层目录」。
+pub(crate) async fn make_dir_via_control<S>(
+    control: &mut FtpControl<S>,
+    remote_path: &str,
+) -> Result<(), RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    let (parent, name) = super::path::split_remote_parent_and_name(remote_path)?;
+    enter_parent(control, &parent).await?;
+
+    if let Err(error) = control.command(&format!("MKD {name}"), &[257]).await {
+        let already_there = list_via_control(control, &parent)
+            .await
+            .map(|records| records.iter().any(|record| record.name == name))
+            .unwrap_or(false);
+
+        if already_there {
+            return Ok(());
+        }
+
+        return Err(error);
+    }
+
+    Ok(())
+}
 /// 控制通道需要的读写能力。`AsyncRead` 与 `AsyncWrite` 分开写，
 /// 是为了不依赖 `tokio::io::AsyncReadWrite` 的具体形态。
 pub trait AsyncReadWrite: tokio::io::AsyncRead + tokio::io::AsyncWrite {}
@@ -559,6 +696,79 @@ impl FtpRemoteProvider {
 
         Ok(found)
     }
+
+    /// 下载一个远程文件。
+    pub async fn read_file(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<Vec<u8>, RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+
+        let run = async {
+            let mut control = Self::login(resolved).await?;
+            let bytes = retrieve_via_control(&mut control, normalized).await?;
+            let _ = control.command("QUIT", &[221, 226]).await;
+            Ok(bytes)
+        };
+
+        match tokio::time::timeout(self.timeout, run).await {
+            Ok(result) => result,
+            Err(_) => Err(RemoteError::disconnected(format!(
+                "下载 FTP 文件超过 {} 秒仍未完成，已放弃这次操作",
+                self.timeout.as_secs()
+            ))),
+        }
+    }
+
+    /// 上传一个远程文件（覆盖语义）。
+    pub async fn write_file(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        content: Vec<u8>,
+    ) -> Result<(), RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+
+        let run = async {
+            let mut control = Self::login(resolved).await?;
+            let outcome = store_via_control(&mut control, normalized, &content).await;
+            let _ = control.command("QUIT", &[221, 226]).await;
+            outcome
+        };
+
+        match tokio::time::timeout(self.timeout, run).await {
+            Ok(result) => result,
+            Err(_) => Err(RemoteError::disconnected(format!(
+                "上传 FTP 文件超过 {} 秒仍未完成，已放弃这次操作",
+                self.timeout.as_secs()
+            ))),
+        }
+    }
+
+    /// 建一个远程目录（已存在视为成功）。
+    pub async fn make_dir(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<(), RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+
+        let run = async {
+            let mut control = Self::login(resolved).await?;
+            let outcome = make_dir_via_control(&mut control, normalized).await;
+            let _ = control.command("QUIT", &[221, 226]).await;
+            outcome
+        };
+
+        match tokio::time::timeout(self.timeout, run).await {
+            Ok(result) => result,
+            Err(_) => Err(RemoteError::disconnected(format!(
+                "创建 FTP 目录超过 {} 秒仍未完成，已放弃这次操作",
+                self.timeout.as_secs()
+            ))),
+        }
+    }
 }
 
 #[async_trait]
@@ -578,6 +788,81 @@ impl RemoteProvider for FtpRemoteProvider {
         )?;
 
         self.list(&resolved, &normalized).await
+    }
+
+    async fn read_file(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<Vec<u8>, RemoteError> {
+        let normalized = super::path::normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved = super::registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        self.read_file(&resolved, &normalized).await
+    }
+
+    async fn write_file(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+    ) -> Result<(), RemoteError> {
+        let normalized = super::path::normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved = super::registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        self.write_file(&resolved, &normalized, content).await
+    }
+
+    async fn make_dir(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<(), RemoteError> {
+        let normalized = super::path::normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved = super::registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        self.make_dir(&resolved, &normalized).await
+    }
+
+    /// FTP 没有 `SITE CHMOD`，也没有可靠的权限位。
+    ///
+    /// **在解析连接之前就拒绝**：否则「连接表里没有这条连接」会报 `NotFound`，
+    /// 而用户看到的应该是「这个协议做不到」—— 后者才是他能处置的那一条。
+    async fn set_permissions(
+        &self,
+        _connection_id: &str,
+        _remote_path: &str,
+        _mode: u32,
+    ) -> Result<(), RemoteError> {
+        Err(super::transfer::unsupported_set_permissions("FTP"))
+    }
+
+    /// FTP 拿不到权限位（`LIST` 的权限串是服务器自己拼的文本，各家格式不一）。
+    /// 「取不到就给 `None`」与既有 `remote_stat_dir_entry` 的契约一致。
+    async fn get_permissions(
+        &self,
+        _connection_id: &str,
+        _remote_path: &str,
+    ) -> Result<Option<u32>, RemoteError> {
+        Ok(None)
     }
 }
 
@@ -869,10 +1154,246 @@ mod tests {
         );
     }
 
+    // -----------------------------------------------------------------
+    // 上传 / 下载 / 建目录
+    //
+    // 另起一个桩：上面那个只认 `MLSD`，而传输动词的时序**完全不一样**
+    // ——`STOR` 的数据方向反过来，而且必须由客户端先关写端服务器才会回 226。
+    // 复用同一个桩只会得到「500 unknown command」，测不到任何东西。
+    // -----------------------------------------------------------------
+
+    /// `STOR` 收到的字节。
+    type Received = std::sync::Arc<std::sync::Mutex<Vec<u8>>>;
+
+    /// 起一个认 `RETR` / `STOR` / `MKD` 的假 FTP 服务端。
+    fn spawn_stub_ftp_transfer(
+        payload: &'static [u8],
+        received: Received,
+        log: StubLog,
+    ) -> u16 {
+        use std::io::{BufRead, BufReader, Read, Write};
+        use std::net::TcpListener;
+
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind control");
+        let port = listener.local_addr().expect("addr").port();
+
+        std::thread::spawn(move || {
+            let (control, _) = listener.accept().expect("accept control");
+            let mut writer = control.try_clone().expect("clone");
+            let mut reader = BufReader::new(control);
+
+            writeln!(writer, "220 stub ready").expect("greeting");
+
+            loop {
+                let mut line = String::new();
+
+                if reader.read_line(&mut line).expect("read") == 0 {
+                    break;
+                }
+
+                let command = line.trim_end().to_string();
+                log.0.lock().expect("log lock").push(command.clone());
+                let verb = command.split_whitespace().next().unwrap_or("").to_string();
+
+                if verb == "QUIT" {
+                    let _ = writeln!(writer, "221 bye");
+                    break;
+                }
+
+                if verb == "MKD" {
+                    writeln!(writer, "257 directory created").expect("mkd");
+                    continue;
+                }
+
+                if verb == "EPSV" {
+                    let data_listener = TcpListener::bind("127.0.0.1:0").expect("bind data");
+                    let data_port = data_listener.local_addr().expect("addr").port();
+                    writeln!(writer, "229 Entering Extended Passive Mode (|||{data_port}|)")
+                        .expect("epsv");
+
+                    let mut transfer = String::new();
+
+                    if reader.read_line(&mut transfer).expect("read") == 0 {
+                        break;
+                    }
+
+                    log.0
+                        .lock()
+                        .expect("log lock")
+                        .push(transfer.trim_end().to_string());
+                    let verb = transfer
+                        .trim_end()
+                        .split_whitespace()
+                        .next()
+                        .unwrap_or("")
+                        .to_string();
+                    let (mut data, _) = data_listener.accept().expect("accept data");
+
+                    match verb.as_str() {
+                        "RETR" => {
+                            data.write_all(payload).expect("write payload");
+                            data.flush().expect("flush");
+                        }
+                        "STOR" => {
+                            let mut buffer = Vec::new();
+                            data.read_to_end(&mut buffer).expect("read payload");
+                            *received.lock().expect("received lock") = buffer;
+                        }
+                        _ => {}
+                    }
+
+                    // 关掉数据连接 = 「内容送完了」。客户端必须**先**关写端，
+                    // 服务器才会真的读到 EOF —— 这正是 `store_via_control` 里
+                    // 那句 `shutdown` 的存在理由。
+                    drop(data);
+                    writeln!(writer, "226 transfer complete").expect("226");
+                    continue;
+                }
+
+                let reply = match verb.as_str() {
+                    "USER" => writeln!(writer, "331 need password"),
+                    "PASS" => writeln!(writer, "230 logged in"),
+                    "TYPE" => writeln!(writer, "200 ok"),
+                    "CWD" => writeln!(writer, "250 ok"),
+                    _ => writeln!(writer, "500 unknown command"),
+                };
+
+                if reply.is_err() {
+                    break;
+                }
+            }
+        });
+
+        port
+    }
+
+    fn empty_received() -> Received {
+        std::sync::Arc::new(std::sync::Mutex::new(Vec::new()))
+    }
+
+    #[tokio::test]
+    async fn a_download_reads_the_whole_payload_and_the_226_after_it() {
+        let received = empty_received();
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_transfer(b"remote bytes", received.clone(), log.clone());
+
+        let bytes = provider()
+            .read_file(&resolved(port, Some("pw")), "/pub/readme.txt")
+            .await
+            .expect("stub retr");
+
+        assert_eq!(bytes, b"remote bytes".to_vec());
+        assert!(
+            received.lock().expect("lock").is_empty(),
+            "下载不该往服务端写任何东西"
+        );
+
+        let commands = log.commands();
+        let index_of = |verb: &str| commands.iter().position(|c| c.starts_with(verb));
+
+        // 顺序本身就是断言：`RETR` 必须在 `EPSV` 之后（先拿端口再发命令），
+        // 且 `CWD` 必须在它之前（`RETR` 只收名字）。
+        assert!(index_of("CWD") < index_of("RETR"), "{commands:?}");
+        assert!(index_of("EPSV") < index_of("RETR"), "{commands:?}");
+    }
+
+    /// 上传方向与下载相反：数据由客户端送出，**先关写端**服务器才会回 `226`。
+    /// 不关的话这里会一直等到 30 秒超时。
+    #[tokio::test]
+    async fn an_upload_sends_the_whole_payload_before_the_server_completes() {
+        let received = empty_received();
+        let port = spawn_stub_ftp_transfer(b"", received.clone(), StubLog::default());
+
+        provider()
+            .write_file(
+                &resolved(port, Some("pw")),
+                "/pub/新文件.txt",
+                b"local bytes".to_vec(),
+            )
+            .await
+            .expect("stub stor");
+
+        assert_eq!(
+            *received.lock().expect("lock"),
+            b"local bytes".to_vec(),
+            "服务端一个字节都不该少收"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_directory_is_created_with_mkd() {
+        let received = empty_received();
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_transfer(b"", received, log.clone());
+
+        provider()
+            .make_dir(&resolved(port, Some("pw")), "/pub/new")
+            .await
+            .expect("stub mkd");
+
+        assert!(
+            log.commands().iter().any(|c| c.starts_with("MKD new")),
+            "MKD 必须带上条目名（服务端只收名字，路径靠 CWD）：{:?}",
+            log.commands()
+        );
+    }
+
+    /// FTP 没有 `SITE CHMOD`。**必须**是 `Protocol`，而且**必须在开 socket 之前**。
+    ///
+    /// 判别力来自「连接表是空的」：`provider()` 指向 `C:/none`，
+    /// 所以任何先走 `resolve_connection` 的实现都会得到 `NotFound`。
+    /// 拿到 `Protocol` 就证明协议检查真的在最前面。
+    #[tokio::test]
+    async fn chmod_is_refused_as_a_protocol_error_before_any_socket_is_opened() {
+        let error = provider()
+            .set_permissions("conn-a", "/pub", 0o755)
+            .await
+            .expect_err("FTP must refuse chmod");
+
+        assert_eq!(error.kind, RemoteErrorKind::Protocol);
+        assert!(
+            error.message.contains("不支持设置权限"),
+            "文案要写明是协议不支持：{}",
+            error.message
+        );
+    }
+
+    /// 「取不到就给 `None`」—— 权限对话框靠这个显示「该协议不支持改权限」，
+    /// 走错成 `Err` 会让每次开框都变成一次未捕获异常。
+    #[tokio::test]
+    async fn permissions_are_always_unavailable_on_ftp_rather_than_an_error() {
+        assert_eq!(
+            provider()
+                .get_permissions("conn-a", "/pub")
+                .await
+                .expect("must not error"),
+            None
+        );
+        // 连一个不存在的路径也一样：FTP 对两者都答不了。
+        assert_eq!(
+            provider()
+                .get_permissions("conn-a", "/nope")
+                .await
+                .expect("must not error"),
+            None
+        );
+    }
+
+    /// `STOR` / `RETR` 的路径同样要过控制字符那道闸 ——
+    /// 拼进去的 `name` 来自远端列表，而列表来自用户手输的地址栏。
+    #[tokio::test]
+    async fn a_remote_path_with_control_characters_never_reaches_the_wire() {
+        let error = provider()
+            .read_file(&resolved(1, Some("pw")), "/pub/a\r\nQUIT")
+            .await
+            .expect_err("must be refused");
+
+        assert_eq!(error.kind, RemoteErrorKind::Protocol);
+    }
+
     fn reply(code: u16) -> RemoteError {
         map_ftp_reply_code(code, "test")
     }
-
     #[test]
     fn reply_codes_map_onto_distinguishable_kinds() {
         // 规格 §6.3 要求「没权限」与「不存在」不要混成一句话。

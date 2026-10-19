@@ -453,6 +453,61 @@ impl FtpsRemoteProvider {
             .find(|entry| entry.name == name)
             .ok_or_else(|| RemoteError::not_found(format!("远端没有这个条目：{normalized}")))
     }
+
+    /// 下载一个远程文件。
+    pub async fn read_file(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<Vec<u8>, RemoteError> {
+        let mut control = self.session(resolved, normalized).await?;
+        let bytes = super::ftp_provider::retrieve_via_control(&mut control, normalized).await?;
+        let _ = control.command("QUIT", &[221, 226]).await;
+
+        Ok(bytes)
+    }
+
+    /// 上传一个远程文件（覆盖语义）。
+    pub async fn write_file(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        content: Vec<u8>,
+    ) -> Result<(), RemoteError> {
+        let mut control = self.session(resolved, normalized).await?;
+        let outcome =
+            super::ftp_provider::store_via_control(&mut control, normalized, &content).await;
+        let _ = control.command("QUIT", &[221, 226]).await;
+
+        outcome
+    }
+
+    /// 建一个远程目录（已存在视为成功）。
+    pub async fn make_dir(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<(), RemoteError> {
+        let mut control = self.session(resolved, normalized).await?;
+        let outcome = super::ftp_provider::make_dir_via_control(&mut control, normalized).await;
+        let _ = control.command("QUIT", &[221, 226]).await;
+
+        outcome
+    }
+
+    /// 入参处理 + 建好一条已登录的控制通道。
+    ///
+    /// 与明文 FTP 的差别只有「通道是在 [`Self::open`] 里开好的」这一点，
+    /// 协议部分（`RETR` / `STOR` / `MKD` 的时序）与 `ftp_provider` **逐字共用**。
+    async fn session(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+    ) -> Result<FtpControl<SendStream>, RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+
+        self.open(resolved, Self::mode_of(resolved)).await
+    }
 }
 
 /// 两条 FTPS 流（明文升级来的、TLS 直连的）在控制层看到的是同一个类型。
@@ -476,6 +531,68 @@ impl RemoteProvider for FtpsRemoteProvider {
             registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
 
         self.list(&resolved, &normalized).await
+    }
+
+    async fn read_file(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<Vec<u8>, RemoteError> {
+        let normalized = normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved =
+            registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
+
+        self.read_file(&resolved, &normalized).await
+    }
+
+    async fn write_file(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+    ) -> Result<(), RemoteError> {
+        let normalized = normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved =
+            registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
+
+        self.write_file(&resolved, &normalized, content).await
+    }
+
+    async fn make_dir(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+    ) -> Result<(), RemoteError> {
+        let normalized = normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved =
+            registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
+
+        self.make_dir(&resolved, &normalized).await
+    }
+
+    /// FTPS 同样没有 `SITE CHMOD`，也没有可靠的权限位。
+    /// **在解析连接之前就拒绝**，理由与明文 FTP 完全相同。
+    async fn set_permissions(
+        &self,
+        _connection_id: &str,
+        _remote_path: &str,
+        _mode: u32,
+    ) -> Result<(), RemoteError> {
+        Err(super::transfer::unsupported_set_permissions("FTPS"))
+    }
+
+    async fn get_permissions(
+        &self,
+        _connection_id: &str,
+        _remote_path: &str,
+    ) -> Result<Option<u32>, RemoteError> {
+        Ok(None)
     }
 }
 

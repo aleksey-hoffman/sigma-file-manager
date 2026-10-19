@@ -42,9 +42,10 @@ use super::ftp_provider::FtpRemoteProvider;
 use super::ftps_provider::FtpsRemoteProvider;
 use super::known_hosts::{self, KnownHostEntry, TrustKind};
 use super::path::parse_remote_path;
-use super::provider::RemoteEntry;
+use super::provider::{RemoteEntry, RemoteProvider};
 use super::registry::{self, ResolvedConnection};
 use super::sftp_provider::SftpRemoteProvider;
+use super::transfer::{self, RemoteChmodReport, RemoteTransferReport};
 use super::transport::ProxyConfig;
 
 /// 凭据存档与 `mcp-access.json` 同级，都在 app-data 目录根，不在 `user-data/` 下。
@@ -364,6 +365,146 @@ pub async fn remote_forget_host(
         })?
 }
 
+// ---------------------------------------------------------------------------
+// 上传 / 下载 / 权限设置
+//
+// 这一段是 `transfer.rs`（无 tauri 的内核）与 tauri 的接缝，接缝只有三件事：
+// 解析两个目录、把路径拆成 `(连接 id, 远端路径)`、按协议挑 provider。
+// ---------------------------------------------------------------------------
+
+/// 按协议挑一个 provider，交给 `transfer` 去跑。
+///
+/// 刻意返回 `Box<dyn RemoteProvider>` 而不是逐协议分派：`transfer` 里的递归规则
+/// 三种协议完全一样（见该文件顶部），在这里分派一次就等于把那套规则复制三份。
+async fn provider_with_protocol(
+    protocol: RemoteProtocol,
+    user_data_dir: &Path,
+    app_data_dir: &Path,
+) -> Box<dyn RemoteProvider> {
+    match protocol {
+        RemoteProtocol::Sftp => {
+            Box::new(SftpRemoteProvider::new(user_data_dir, app_data_dir))
+        }
+        RemoteProtocol::Ftp => Box::new(FtpRemoteProvider::new(user_data_dir, app_data_dir)),
+        RemoteProtocol::FtpsExplicit | RemoteProtocol::FtpsImplicit => {
+            Box::new(FtpsRemoteProvider::new(user_data_dir, app_data_dir))
+        }
+    }
+}
+
+/// 上传：本地文件**或目录** → 远程目录（`sfm://remote/<id>/<path>`）。
+///
+/// 目录会**递归**传整棵子树。本地符号链接既不跟随也不复制，原样进 `failures`。
+/// 「目标已存在同名文件」进 `skipped` 而不是被覆盖 —— 规格 §5 的硬要求。
+#[tauri::command]
+pub async fn remote_upload_path(
+    app: tauri::AppHandle,
+    local_path: String,
+    remote_dir: String,
+) -> Result<RemoteTransferReport, RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&remote_dir)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let provider =
+        provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
+
+    transfer::upload(&*provider, &connection_id, Path::new(&local_path), &remote_path).await
+}
+
+/// 下载：远程文件**或目录** → 本地目录（本地绝对路径）。
+///
+/// 与上传对称：远程符号链接不下载，本地同名文件进 `skipped`。
+#[tauri::command]
+pub async fn remote_download_path(
+    app: tauri::AppHandle,
+    remote_path: String,
+    local_dir: String,
+) -> Result<RemoteTransferReport, RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&remote_path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let provider =
+        provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
+
+    transfer::download(&*provider, &connection_id, &remote_path, Path::new(&local_dir)).await
+}
+
+/// 权限设置。`mode` 是八进制数值（如 `0755` 传 `0o755` = `493`）。
+///
+/// 递归时对目录自身 + 全部后代设同一个 `mode`，**不跟随符号链接**。
+///
+/// **FTP / FTPS 在这里就以 `Err` 返回**，而不是进 `failures`：
+/// 「这个协议不支持改权限」不是一次「部分成功的批量操作」，
+/// 让用户在一个「成功」的报告里去找失败项，只会把这件事拖成下一次困惑。
+#[tauri::command]
+pub async fn remote_chmod(
+    app: tauri::AppHandle,
+    remote_path: String,
+    mode: u32,
+    recursive: bool,
+) -> Result<RemoteChmodReport, RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&remote_path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    if resolved.connection.protocol != RemoteProtocol::Sftp {
+        return Err(transfer::unsupported_set_permissions(
+            match resolved.connection.protocol {
+                RemoteProtocol::Ftp => "FTP",
+                _ => "FTPS",
+            },
+        ));
+    }
+
+    let provider = provider_with_protocol(RemoteProtocol::Sftp, &user_data_dir, &app_data_dir).await;
+
+    transfer::chmod(&*provider, &connection_id, &remote_path, mode, recursive).await
+}
+
+/// 读取远程条目的权限位（低 12 位）。
+///
+/// **取不到时返回 `Ok(None)`，不要返回 `Err`** —— 与既有 `remote_stat_dir_entry`
+/// 「取不到就给 null」的契约一致：前端用它判断「这个连接支不支持改权限」，
+/// 返回错误会让每一次打开对话框都变成一次未捕获异常。
+///
+/// FTP / FTPS 没有可靠的权限位 ⇒ 一律返回 `Ok(None)`。
+#[tauri::command]
+pub async fn remote_get_permissions(
+    app: tauri::AppHandle,
+    path: String,
+) -> Result<Option<u32>, RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let provider =
+        provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
+
+    match provider.get_permissions(&connection_id, &remote_path).await {
+        Ok(permissions) => Ok(permissions),
+        Err(error) if error.kind == RemoteErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     /// 阶段 1 的远程 command。**改这个数组必须同步改 `lib.rs` 的
@@ -379,6 +520,10 @@ mod tests {
         "remote_list_known_hosts",
         "remote_trust_host",
         "remote_forget_host",
+        "remote_upload_path",
+        "remote_download_path",
+        "remote_chmod",
+        "remote_get_permissions",
     ];
 
     /// 抽出 `lib.rs` 里 `generate_handler![ ... ]` 的那一段。

@@ -1,7 +1,7 @@
 [package]
 name = "alpha-file-manager"
 description = "Alpha File Manager"
-version = "3.2.5-beta"
+version = "3.2.11-beta"
 license = "GPL-3.0-or-later"
 authors = ["Aleksey Hoffman"]
 repository = "https://github.com/aleksey-hoffman/sigma-file-manager"

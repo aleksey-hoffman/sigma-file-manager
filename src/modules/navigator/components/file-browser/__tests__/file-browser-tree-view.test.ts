@@ -352,3 +352,189 @@ describe('FileBrowserTreeView — filesystem mutation reaches the tree (v6.5)', 
     wrapper.unmount();
   });
 });
+
+// FORK-MODIFICATION 2026-10-19：目录树「定位到当前目录」的组件层验收。
+//
+// 用户真机原话：「点击可以展开，但不会定位到当前打开的目录」。
+// 渲染出来 ≠ 用户看得到 —— 远程树的深度远大于本地，
+// 当前目录往往落在折叠区之外。
+//
+// jsdom 里 `getBoundingClientRect()` 一律返回全 0，
+// 所以这里给 `.file-tree-view` 与每一行**造出真实的坐标**，
+// 再断言「滚动容器被滚到了该滚的位置」。
+// 滚动量本身的算术在 `tree-reveal.test.ts` 里单独钉住，
+// 这里钉的是**接线**：找没找对行、滚没滚对容器、该不该滚。
+describe('FileBrowserTreeView — 定位到当前目录（高亮 + 滚动）', () => {
+  const CONN = 'e2b24ab525544dc7adeb5cedb192179b';
+  const REMOTE_ROOT = `sfm://remote/${CONN}/vol1/@team/study_platform/wp_root`;
+  const REMOTE_CWD = `${REMOTE_ROOT}/wp-content`;
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.mocked(resolveDirectoryContents).mockReset();
+  });
+
+  function entry(path: string, name: string, isDir: boolean): DirEntry {
+    return {
+      name,
+      ext: null,
+      path,
+      size: 0,
+      item_count: null,
+      modified_time: 0,
+      accessed_time: 0,
+      created_time: 0,
+      mime: null,
+      is_file: !isDir,
+      is_dir: isDir,
+      is_symlink: false,
+      is_hidden: false,
+    };
+  }
+
+  function dirContents(path: string, entries: DirEntry[]): DirContents {
+    return {
+      path,
+      entries,
+      total_count: entries.length,
+      dir_count: entries.filter(e => e.is_dir).length,
+      file_count: entries.filter(e => !e.is_dir).length,
+      opened_directory_times: {
+        modified_time: 0,
+        accessed_time: 0,
+        created_time: 0,
+      },
+    };
+  }
+
+  /**
+   * 给「滚动容器」与「每一行」造出坐标。
+   *
+   * @param viewportHeight 可视区高度
+   * @param rowSpacing     相邻两行的顶边间距（行高固定 24）
+   */
+  function stubRects(viewportHeight: number, rowSpacing: number): void {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: Element) {
+        // 滚动容器是 `.file-tree-view__scroll`（不是 trigger 的直接子元素，
+        // 那个位置上的模板 ref 会被 reka-ui 的 Slot 删掉）。
+        if (this.classList.contains('file-tree-view__scroll')) {
+          return {
+            top: 0,
+            left: 0,
+            right: 200,
+            bottom: viewportHeight,
+            width: 200,
+            height: viewportHeight,
+            x: 0,
+            y: 0,
+            toJSON: () => ({}),
+          } as DOMRect;
+        }
+
+        const parent = this.parentElement;
+        const index = parent ? Array.from(parent.children).indexOf(this) : 0;
+        const top = index * rowSpacing;
+
+        return {
+          top,
+          left: 0,
+          right: 200,
+          bottom: top + 24,
+          width: 200,
+          height: 24,
+          x: 0,
+          y: top,
+          toJSON: () => ({}),
+        } as DOMRect;
+      },
+    );
+  }
+
+  /**
+   * jsdom 没有布局，`scrollTop` 写进去读出来还是 0。
+   * 这里在元素**上**挂一个自己的属性，把赋值记下来。
+   */
+  function trackScrollTop(viewport: HTMLElement): { value: number } {
+    const tracker = { value: 0 };
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      get: () => tracker.value,
+      set: (v: number) => { tracker.value = v; },
+    });
+
+    return tracker;
+  }
+
+  async function mountRemoteTree(viewportHeight: number, rowSpacing: number) {
+    vi.mocked(resolveDirectoryContents).mockImplementation(async (path: string) => {
+      if (path === REMOTE_ROOT) {
+        return dirContents(REMOTE_ROOT, [
+          entry(REMOTE_CWD, 'wp-content', true),
+          entry(`${REMOTE_ROOT}/wp-admin`, 'wp-admin', true),
+        ]);
+      }
+
+      if (path === REMOTE_CWD) {
+        return dirContents(REMOTE_CWD, [
+          entry(`${REMOTE_CWD}/mu-plugins`, 'mu-plugins', true),
+        ]);
+      }
+
+      return dirContents(path, []);
+    });
+
+    stubRects(viewportHeight, rowSpacing);
+
+    const store = useFolderTreeStore();
+    store.setSelectedPath(REMOTE_CWD);
+
+    const wrapper = mount(FileBrowserTreeView, {
+      props: { rootPaths: [REMOTE_ROOT] },
+    });
+
+    // ⚠️ 必须在 mount 之后**同步**装上：定位是在异步加载完之后才做的，
+    // 而这里要赶在那之前把 scrollTop 的记录器装好。
+    const viewport = wrapper.find('.file-tree-view__scroll').element as HTMLElement;
+    const scroll = trackScrollTop(viewport);
+
+    await flushPromises();
+    await nextTick();
+
+    return {
+      store,
+      wrapper,
+      scroll,
+    };
+  }
+
+  it('当前目录那一行被高亮（渲染出来 + 选中态）', async () => {
+    const { wrapper } = await mountRemoteTree(100, 200);
+
+    const row = wrapper.find(`[data-tree-path="${REMOTE_CWD}"]`);
+
+    expect(row.exists(), '当前目录这一行根本没渲染出来').toBe(true);
+    expect(row.classes()).toContain('file-tree-row--selected');
+
+    wrapper.unmount();
+  });
+
+  it('当前目录落在可视区之外时，滚动容器被滚到刚好露出它', async () => {
+    // 视口高 100、行距 200：当前目录在第 2 行（顶边 200），
+    // 底边 224 超出 100 —— 必须滚 224-100=124 才能看见底边。
+    const { wrapper, scroll } = await mountRemoteTree(100, 200);
+
+    expect(scroll.value, '当前目录在可视区外，却没有滚动定位').toBe(124);
+
+    wrapper.unmount();
+  });
+
+  it('当前目录已经在可视区里时**不滚**（不冲掉用户手动展开的位置）', async () => {
+    const { wrapper, scroll } = await mountRemoteTree(400, 100);
+
+    expect(scroll.value, '当前目录本来就在可视区里，不该滚动').toBe(0);
+
+    wrapper.unmount();
+  });
+});

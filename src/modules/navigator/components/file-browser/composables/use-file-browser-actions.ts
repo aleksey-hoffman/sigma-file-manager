@@ -15,6 +15,14 @@ import { isContextMenuActionVisible } from '@/modules/navigator/components/file-
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
+// FORK-MODIFICATION: 本地 ↔ 远程传输（上传 / 下载）与远程权限设置。
+import {
+  downloadFromRemote,
+  uploadToRemote,
+  type RemoteTransferReport,
+} from '@/modules/remote/utils/remote-transfer';
+import { useRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
+import { openRemotePermissionsDialog } from '@/modules/remote/utils/remote-permissions-dialog-state';
 
 type ContextMenuState = {
   targetEntry: DirEntry | null;
@@ -48,6 +56,113 @@ export function useFileBrowserActions(options: {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
   const router = useRouter();
+  const transferTargets = useRemoteTransferTargets();
+
+  /** 汇总多次传输的结果。 */
+  interface AggregatedTransfer {
+    files: number;
+    dirs: number;
+    bytes: number;
+    skipped: string[];
+    failures: string[];
+  }
+
+  function emptyAggregate(): AggregatedTransfer {
+    return {
+      files: 0,
+      dirs: 0,
+      bytes: 0,
+      skipped: [],
+      failures: [],
+    };
+  }
+
+  function mergeReport(aggregate: AggregatedTransfer, report: RemoteTransferReport) {
+    aggregate.files += report.transferred_files;
+    aggregate.dirs += report.transferred_dirs;
+    aggregate.bytes += report.total_bytes;
+    aggregate.skipped.push(...report.skipped);
+
+    for (const failure of report.failures) {
+      aggregate.failures.push(`${failure.path}: ${failure.message}`);
+    }
+  }
+
+  function reportTransferOutcome(
+    aggregate: AggregatedTransfer,
+    successKey: string,
+    failureKey: string,
+  ) {
+    if (aggregate.failures.length > 0) {
+      toast.error(t(failureKey, {
+        files: aggregate.files,
+        skipped: aggregate.skipped.length,
+        failed: aggregate.failures.length,
+      }));
+
+      return;
+    }
+
+    if (aggregate.skipped.length > 0) {
+      toast.warning(t(successKey, {
+        files: aggregate.files,
+        skipped: aggregate.skipped.length,
+        failed: 0,
+      }));
+
+      return;
+    }
+
+    toast.success(t(successKey, {
+      files: aggregate.files,
+      skipped: 0,
+      failed: 0,
+    }));
+  }
+
+  /**
+   * 逐个上传。**顺序执行**，不并发 ——
+   * 并发开多条连接会打满服务器的并发连接数，而用户一次通常也就选几个条目。
+   */
+  async function uploadEntries(entries: DirEntry[], remoteDir: string) {
+    const aggregate = emptyAggregate();
+
+    for (const entry of entries) {
+      try {
+        mergeReport(aggregate, await uploadToRemote(entry.path, remoteDir));
+      }
+      catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        aggregate.failures.push(`${entry.path}: ${message}`);
+      }
+    }
+
+    reportTransferOutcome(
+      aggregate,
+      'remote.transfer.uploadSucceeded',
+      'remote.transfer.uploadFailed',
+    );
+  }
+
+  async function downloadEntries(entries: DirEntry[], localDir: string) {
+    const aggregate = emptyAggregate();
+
+    for (const entry of entries) {
+      try {
+        mergeReport(aggregate, await downloadFromRemote(entry.path, localDir));
+      }
+      catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        aggregate.failures.push(`${entry.path}: ${message}`);
+      }
+    }
+
+    reportTransferOutcome(
+      aggregate,
+      'remote.transfer.downloadSucceeded',
+      'remote.transfer.downloadFailed',
+    );
+  }
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
     return isContextMenuActionVisible(action, entries, {
@@ -177,6 +292,49 @@ export function useFileBrowserActions(options: {
       openNavigatorRevealEntry(router, targetEntry.path, {
         filterQuery: options.getFilterQuery?.() ?? '',
       });
+
+      return;
+    }
+
+    // FORK-MODIFICATION: 「上传到远程」——目标是**对面那一格**当前所在的远程目录。
+    //
+    // 目标从模块级登记表取（由导航器写入）。没有对面那一格时菜单项压根不出现，
+    // 所以这里拿到 `null` 只可能是状态刚变，按「什么都不做」处理。
+    if (action === 'upload-to-remote') {
+      const entries = options.contextMenu.value.selectedEntries;
+      const target = transferTargets.remotePanePath.value;
+
+      if (entries.length > 0 && target) {
+        void uploadEntries(entries, target);
+      }
+
+      return;
+    }
+
+    // FORK-MODIFICATION: 「下载到本地」——目标是**对面那一格**当前所在的本地目录。
+    if (action === 'download-to-local') {
+      const entries = options.contextMenu.value.selectedEntries;
+      const target = transferTargets.localPanePath.value;
+
+      if (entries.length > 0 && target) {
+        void downloadEntries(entries, target);
+      }
+
+      return;
+    }
+
+    // FORK-MODIFICATION: 「权限设置」——只对单条目有意义（多个条目权限各不相同）。
+    // 可见性判定已经保证选中的全是远程条目且协议支持改权限。
+    if (action === 'remote-permissions') {
+      const entry = options.contextMenu.value.selectedEntries[0];
+
+      if (entry) {
+        openRemotePermissionsDialog({
+          path: entry.path,
+          name: entry.name,
+          isDirectory: entry.is_dir,
+        });
+      }
 
       return;
     }

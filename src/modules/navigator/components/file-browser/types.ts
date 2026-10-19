@@ -44,7 +44,14 @@ export interface GroupedEntries {
   others: DirEntry[];
 }
 
-export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory' | 'open-containing-directory-in-app';
+// FORK-MODIFICATION: `upload-to-remote` / `download-to-local` / `remote-permissions`
+// 是「本地 ↔ 远程传输」这三个动作。
+//
+// 它们**不**进 `context-menu-action-visibility.ts` 的 `CONTEXT_MENU_ITEMS` 表：
+// 那张表只管「条目本身允不允许做这件事」，而这三个动作的前提是
+// **对面还有一格**（上传要远程格、下载要本地格），跟选中的是不是远程条目无关。
+// 可见性判定在 `src/modules/remote/utils/remote-context-menu-visibility.ts`。
+export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory' | 'open-containing-directory-in-app' | 'upload-to-remote' | 'download-to-local' | 'remote-permissions';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

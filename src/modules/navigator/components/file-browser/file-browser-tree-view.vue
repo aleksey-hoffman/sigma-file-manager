@@ -14,7 +14,7 @@ list and loaded. Failures surface via `store.markLoadError` and the row
 stays visible (just with no children). See handoff-2026-09-26-tree-sync-retro.
 -->
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import {
   ChevronRightIcon,
   ChevronDownIcon,
@@ -28,6 +28,7 @@ import {
   useFolderTreeStore,
 } from '@/stores/runtime/folder-tree';
 import { useFileTree } from '@/modules/navigator/composables/use-file-tree';
+import { computeRevealScrollTop } from '@/modules/navigator/utils/tree-reveal';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -179,7 +180,7 @@ function isDrivePath(path: string): boolean {
   return drivePathSet.value.has(path);
 }
 
-const { rows, ensureAncestorsLoaded, invalidate } = useFileTree({
+const { rows, ensureLoaded, ensureAncestorsLoaded, invalidate } = useFileTree({
   rootPaths: () => props.rootPaths,
   rootLabels: () => props.rootLabels ?? {},
   expandedPaths,
@@ -208,12 +209,67 @@ watch(() => folderTreeStore.staleTreeRevision, () => {
   }
 }, { immediate: true });
 
+// FORK-MODIFICATION 2026-10-19：把当前目录**滚动到可见处**。
+//
+// 用户原话：「点击可以展开，但不会定位到当前打开的目录」。
+// 远程树的深度远大于本地 —— `vol1/@team/study_platform/wp_root/wp-content`
+// 在第 5 层，当前目录往往落在折叠区之外。渲染出来 ≠ 用户看得到，
+// 而本地路径只有两三层，所以这个缺陷在本地几乎看不出来。
+//
+// 「已经在可视区里就不滚」是刻意的：用户手动展开过树之后，
+// 一次远距离跳转会把他正在看的浏览位置冲掉。
+const treeViewport = ref<HTMLElement | null>(null);
+
+function revealSelectedRow(): void {
+  const viewport = treeViewport.value;
+  const target = selectedPath.value;
+
+  if (!viewport || !target) {
+    return;
+  }
+
+  // 按 dataset 匹配而不是拼 CSS 选择器：路径里有 `/`、`:`、`@`、`:` 和中文，
+  // 直接拼选择器要处理一整类转义，而这里只是遍历一次子节点。
+  for (const child of Array.from(viewport.children)) {
+    const row = child as HTMLElement;
+
+    if (row.dataset?.treePath !== target) {
+      continue;
+    }
+
+    const rowRect = row.getBoundingClientRect();
+    const viewRect = viewport.getBoundingClientRect();
+
+    const nextScrollTop = computeRevealScrollTop({
+      scrollTop: viewport.scrollTop,
+      viewportHeight: viewRect.height,
+      rowTopInViewport: rowRect.top - viewRect.top,
+      rowHeight: rowRect.height,
+    });
+
+    if (nextScrollTop !== null) {
+      viewport.scrollTop = nextScrollTop;
+    }
+
+    return;
+  }
+}
+
 // Whenever the selected path changes, make sure every ancestor directory has
 // its children loaded so the user sees the selected entry highlighted in its
 // expanded ancestor chain.
+//
+// FORK-MODIFICATION 2026-10-19：原来只有 `ensureAncestorsLoaded`，**不含当前目录自身**。
+// 祖先加载完并不代表当前目录那一行会在树上出现 —— 它要**自己**被读到，
+// 否则树里只有「展开的祖先 + 空壳当前目录」，既没有子节点可显示，
+// 也没有可供高亮/滚动的真实行（jsdom 下退化成全 0，行为未定义）。
 watch(selectedPath, async (path) => {
   if (!path) return;
   await ensureAncestorsLoaded(computeAncestorPaths(path));
+  await ensureLoaded(path);
+  // rows 是 computed，要等它重算完，行元素才真的在 DOM 里。
+  await nextTick();
+  revealSelectedRow();
 }, { immediate: true });
 
 // v6.3: separate the chevron click (expand/collapse only) from the row
@@ -254,42 +310,64 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
 <template>
   <ContextMenu>
     <ContextMenuTrigger as-child>
+      <!--
+        FORK-MODIFICATION 2026-10-19：滚动容器**不能**是 ContextMenuTrigger
+        的直接子元素。
+
+        reka-ui 的 `as-child` 走 `Primitive/Slot.js`，那里有一行：
+            delete firstNonCommentChildren.props?.ref;
+        —— 它会**主动删掉子节点上的模板 ref**。
+
+        后果（用户 2026-10-19 真机反馈「点击可以展开，但不会定位到当前打开的目录」
+        的真正根因）：ref 挂在 trigger 的直接子元素上 → `treeViewport` 永远是 null
+        → `revealSelectedRow()` 第一行就 return → 定位**从来没有生效过**，
+        而且**不报任何错**，看起来像「功能没做」。
+
+        所以这里往里再套一层：trigger 的直接子元素是 `.file-tree-view`，
+        真正带 ref 的是它里面的 `.file-tree-view__scroll`。
+      -->
       <div class="file-tree-view" data-e2e-root="file-tree-view">
         <div
-          v-for="row in rows"
-          :key="row.path"
-          class="file-tree-row"
-          :class="{
-            'file-tree-row--selected': isRowSelected(row.path),
-            'file-tree-row--loading': isRowLoading(row.path),
-            'file-tree-row--error': isRowLoadError(row.path),
-          }"
-          :style="{ paddingLeft: `${row.depth * 16 + 8}px` }"
-          :aria-expanded="row.isDirectory ? row.isExpanded : undefined"
-          :data-tree-path="row.path"
-          :data-selected="isRowSelected(row.path) || undefined"
-          :title="row.path"
-          @click="onRowClick(row)"
-          @contextmenu="openContextMenu(row)"
+          ref="treeViewport"
+          class="file-tree-view__scroll"
+          data-e2e-root="file-tree-view-scroll"
         >
-          <component
-            :is="row.isDirectory && row.isExpanded ? ChevronDownIcon : ChevronRightIcon"
-            v-if="row.isDirectory"
-            :size="14"
-            class="file-tree-row__chevron"
-            @click.stop="onChevronClick(row)"
-          />
-          <span v-else class="file-tree-row__spacer" />
-          <component
-            :is="getRowIcon(row)"
-            :size="14"
-          />
-          <span class="file-tree-row__name" :title="row.name">{{ row.name }}</span>
-          <span
-            v-if="isRowLoadError(row.path)"
-            class="file-tree-row__error-marker"
-            title="Failed to load children"
-          >!</span>
+          <div
+            v-for="row in rows"
+            :key="row.path"
+            class="file-tree-row"
+            :class="{
+              'file-tree-row--selected': isRowSelected(row.path),
+              'file-tree-row--loading': isRowLoading(row.path),
+              'file-tree-row--error': isRowLoadError(row.path),
+            }"
+            :style="{ paddingLeft: `${row.depth * 16 + 8}px` }"
+            :aria-expanded="row.isDirectory ? row.isExpanded : undefined"
+            :data-tree-path="row.path"
+            :data-selected="isRowSelected(row.path) || undefined"
+            :title="row.path"
+            @click="onRowClick(row)"
+            @contextmenu="openContextMenu(row)"
+          >
+            <component
+              :is="row.isDirectory && row.isExpanded ? ChevronDownIcon : ChevronRightIcon"
+              v-if="row.isDirectory"
+              :size="14"
+              class="file-tree-row__chevron"
+              @click.stop="onChevronClick(row)"
+            />
+            <span v-else class="file-tree-row__spacer" />
+            <component
+              :is="getRowIcon(row)"
+              :size="14"
+            />
+            <span class="file-tree-row__name" :title="row.name">{{ row.name }}</span>
+            <span
+              v-if="isRowLoadError(row.path)"
+              class="file-tree-row__error-marker"
+              title="Failed to load children"
+            >!</span>
+          </div>
         </div>
       </div>
     </ContextMenuTrigger>
@@ -344,17 +422,36 @@ function getRowIcon(row: { path: string; isDirectory: boolean }): typeof FolderI
  * 面板是 `display:flex; flex-direction:column`，本元素是它唯一的 flex 项。
  * `flex:1` + `min-height:0` 不依赖百分比高度解析，稳。
  *
- * `display: flex` 用的是 scoped 规则，特异性 (0,2,0) 高于全局
+ * `display: flex` 用的是 scoped 规则，特异性高于全局
  * `.sigma-ui-context-menu-trigger` 的 (0,1,0)，可以覆盖 display:contents，
  * 且只作用于本组件，不波及 context-menu-trigger 的其它 as-child 用法。
+ *
+ * ─────────────────────────────────────────────────────────────
+ * FORK-MODIFICATION 2026-10-19：滚动容器下移一层。
+ *
+ * `.file-tree-view` 仍然是 trigger 的直接子元素（要接住行上的右键事件），
+ * 但它同时还挂着全局的 `display: contents` 类 —— **模板 ref 也会被 reka-ui
+ * 的 `Slot` 组件删掉**（`delete firstNonCommentChildren.props?.ref`），
+ * 于是没法拿它当滚动容器去 `scrollTop`。
+ *
+ * 所以真正的滚动容器是里层的 `.file-tree-view__scroll`：
+ * 它不是 trigger 的直接子元素，ref 活得好好的；
+ * 而且它不挂 `display: contents`，`overflow-y: auto` 一定生效。
  */
 .file-tree-view {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
   font-size: 13px;
+}
+
+.file-tree-view__scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .file-tree-row {

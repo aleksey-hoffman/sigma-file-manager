@@ -9,6 +9,7 @@ import FileBrowserToolbarNavButtons from './file-browser-toolbar-nav-buttons.vue
 import FileBrowserToolbarCreateButton from './file-browser-toolbar-create-button.vue';
 import FileBrowserToolbarFilter from './file-browser-toolbar-filter.vue';
 import FileBrowserToolbarSwapPanesButton from './file-browser-toolbar-swap-panes-button.vue';
+import FileBrowserToolbarSyncBrowsingButton from './file-browser-toolbar-sync-browsing-button.vue';
 
 withDefaults(defineProps<{
   pathInput: string;
@@ -98,6 +99,9 @@ function handleAddressBarNavigate(path: string) {
           @update:is-filter-open="emit('update:isFilterOpen', $event)"
           @filter-input-focused="emit('filterInputFocused')"
         />
+        <!-- FORK-MODIFICATION 2026-10-19：同步浏览开关，位置在用户指定的
+             「左右互换窗口」左边。两者都只在分屏下出现。 -->
+        <FileBrowserToolbarSyncBrowsingButton :is-split-view="isSplitView" />
         <!-- FORK-MODIFICATION: 分屏时把左右两格的路径对调。只在分屏下出现，
              单格时没有「另一格」可换，摆出来只是个永远无效的按钮。 -->
         <FileBrowserToolbarSwapPanesButton

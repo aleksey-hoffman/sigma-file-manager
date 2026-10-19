@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { getScrollRestorationKey } from '@/stores/runtime/scroll-restoration';
@@ -63,6 +63,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:selectedEntries': [entries: DirEntry[]];
   'update:currentDirEntry': [entry: DirEntry | null];
+  'update:currentPath': [path: string];
   'openEntry': [entry: DirEntry];
   'swapPanes': [];
 }>();
@@ -116,6 +117,19 @@ const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
 const hostKeyPrompt = fb.hostKeyPrompt;
 const confirmHostKeyTrust = fb.confirmHostKeyTrust;
 const dismissHostKeyTrust = fb.dismissHostKeyTrust;
+
+// FORK-MODIFICATION 2026-10-19：把「这一格换目录了」这件事报给外层。
+//
+// 为什么原来不报：同步浏览（联动）当时挂的是 `update:selected-entries`，
+// 也就是**选中**驱动。可用户心里的「同步浏览」是**进目录**驱动 ——
+// 他双击 `wp-content` 进去，另一格跟着进，结果什么都没发生。
+// 选中驱动还有两个先天毛病：右格自己选中东西也会被当成信号，
+// 而它连「另一格」在哪都不知道。
+watch(fb.currentPath, (path) => {
+  if (path) {
+    emit('update:currentPath', path);
+  }
+});
 
 const showArchiveOptions = ref(false);
 const archiveNeedsPassword = ref(false);

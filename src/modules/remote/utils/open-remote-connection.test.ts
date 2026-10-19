@@ -142,6 +142,72 @@ describe('从导航栏连一个远程连接', () => {
   });
 });
 
+// 2026-10-19 用户实测发现的缺陷：`initialPath` 存了但没人读，
+// 连「速豹堂」（initialPath=/vol1/@team/study_platform/wp_root）打开的
+// 仍然是 `sfm://remote/e2b24ab5…`，每次都要手动翻三层进去。
+describe('远端那一格落在 initialPath 上，而不是连接根', () => {
+  it('双屏时远端格指向配置的初始路径', async () => {
+    const { calls, actions } = createRecorder();
+
+    await openRemoteConnection(makeConnection({
+      localPath: 'E:/website_sbt',
+      initialPath: '/vol1/@team/study_platform/wp_root',
+    }), actions);
+
+    expect(calls).toEqual([
+      'navigate',
+      'openPanes:E:/website_sbt|sfm://remote/c1/vol1/@team/study_platform/wp_root',
+    ]);
+  });
+
+  it('单屏时同样指向初始路径', async () => {
+    const { calls, actions } = createRecorder();
+
+    await openRemoteConnection(makeConnection({
+      initialPath: '/www/wwwroot/default',
+    }), actions);
+
+    expect(calls).toEqual(['navigate', 'openPanes:sfm://remote/c1/www/wwwroot/default']);
+  });
+
+  it('initialPath 为 / 时产出与连接根逐字相同', async () => {
+    const { calls, actions } = createRecorder();
+
+    await openRemoteConnection(makeConnection({ initialPath: '/' }), actions);
+
+    // 防「改成 buildRemotePath 之后单连接也被波及」：根目录不能多出尾斜杠，
+    // `sfm://remote/c1/` 与 `sfm://remote/c1` 在地址栏与面包屑上是两种显示。
+    expect(calls).toEqual(['navigate', 'openPanes:sfm://remote/c1']);
+  });
+
+  it('initialPath 带尾斜杠或连续斜杠时按规范化后的路径开', async () => {
+    const { calls, actions } = createRecorder();
+
+    await openRemoteConnection(makeConnection({
+      initialPath: '/vol1//@team/study_platform/wp_root/',
+    }), actions);
+
+    // 存储侧保存时已经规范化过，这里再过一次是为了防住绕过存储的构造路径。
+    expect(calls).toEqual([
+      'navigate',
+      'openPanes:sfm://remote/c1/vol1/@team/study_platform/wp_root',
+    ]);
+  });
+
+  it.each([
+    ['父级段', '/vol1/../etc'],
+    ['当前目录段', '/vol1/./etc'],
+  ])('initialPath 含%s时退回连接根，而不是静默什么都不做', async (_label, initialPath) => {
+    const { calls, actions } = createRecorder();
+
+    await openRemoteConnection(makeConnection({ initialPath }), actions);
+
+    // 非法路径不能让整次点击变成空操作：用户至少还能看到远程根，
+    // 「路径非法」这件事由远端那一格自己去报。
+    expect(calls).toEqual(['navigate', 'openPanes:sfm://remote/c1']);
+  });
+});
+
 describe('从导航栏直接编辑某条连接', () => {
   it('先记下编辑请求，再跳到远程分类', async () => {
     const calls: string[] = [];

@@ -12,6 +12,12 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+// FORK-MODIFICATION 2026-10-19：祖先链要认得 `sfm://remote/<id>` 这个根。
+import {
+  getRemoteParentPath,
+  isRemoteConnectionRootPath,
+  isRemotePath,
+} from '@/utils/remote-paths';
 
 /**
  * Pure helper: return all ancestor directories of `path`, root-most first,
@@ -54,6 +60,15 @@ export function parentDirectoryPath(path: string): string | null {
   if (path === '/') return null;
   // Windows drive root: 'C:/', 'C:'
   if (/^[A-Z]:\/?$/i.test(path)) return null;
+
+  // FORK-MODIFICATION 2026-10-19：远程连接根 `sfm://remote/<id>` 就是根。
+  //
+  // 不认它的话，祖先链会一路爬到 `sfm://remote`、`sfm:` —— 这些路径树里根本没有，
+  // `expandedPaths` 装进去之后 `useFileTree` 一个都匹配不上，结果就是
+  // 「根出现了但永远展不开」（用户 2026-10-19 实测）。
+  if (isRemotePath(path)) {
+    return isRemoteConnectionRootPath(path) ? null : getRemoteParentPath(path);
+  }
 
   const lastSlash = path.lastIndexOf('/');
   if (lastSlash === -1) return null;

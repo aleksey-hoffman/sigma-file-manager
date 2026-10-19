@@ -10,6 +10,14 @@ import {
   getContextMenuSelectionStats,
   isContextMenuActionVisible,
 } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
+// FORK-MODIFICATION: 传输类动作（上传 / 下载 / 权限设置）的可见性判定。
+import {
+  isRemoteTransferActionVisible,
+  resolveSelectionProtocol,
+  type RemoteTransferMenuAction,
+} from '@/modules/remote/utils/remote-context-menu-visibility';
+import { useRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
+import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 
 export function useContextMenuItems(
   selectedEntries: Ref<DirEntry[]>,
@@ -20,10 +28,41 @@ export function useContextMenuItems(
   },
 ) {
   const platformStore = usePlatformStore();
+  const remoteConnectionsStore = useRemoteConnectionsStore();
+  const transferTargets = useRemoteTransferTargets();
 
   const selectionStats = computed(() => getContextMenuSelectionStats(selectedEntries.value));
 
+  /**
+   * 传输类动作需要的上下文。
+   *
+   * 「对面那一格在哪儿」来自模块级登记表（由导航器写入），
+   * 「选中条目的连接支不支持改权限」来自连接表。
+   */
+  const remoteTransferContext = computed(() => {
+    const entries = selectedEntries.value;
+
+    return {
+      hasRemoteCounterpart: Boolean(transferTargets.remotePanePath.value),
+      hasLocalCounterpart: Boolean(transferTargets.localPanePath.value),
+      selectionProtocol: resolveSelectionProtocol(
+        entries,
+        connectionId => remoteConnectionsStore.getConnection(connectionId)?.protocol,
+      ),
+    };
+  });
+
+  function isRemoteTransferAction(action: ContextMenuAction): action is RemoteTransferMenuAction {
+    return action === 'upload-to-remote'
+      || action === 'download-to-local'
+      || action === 'remote-permissions';
+  }
+
   function isActionVisible(action: ContextMenuAction): boolean {
+    if (isRemoteTransferAction(action)) {
+      return isRemoteTransferActionVisible(action, selectedEntries.value, remoteTransferContext.value);
+    }
+
     return isContextMenuActionVisible(action, selectedEntries.value, {
       platform: platformStore.currentPlatform,
       disableDestructiveActions: options?.disableDestructiveActions?.value,
