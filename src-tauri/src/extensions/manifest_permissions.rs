@@ -10,7 +10,7 @@ use std::time::SystemTime;
 use serde_json::Value;
 
 use super::paths::get_extension_dir;
-use super::security::validate_http_host_pattern;
+use super::security::{authorize_extension_caller, validate_http_host_pattern};
 use super::types::EXTENSION_MANIFEST_FILE;
 
 struct CachedHttpAllowedHosts {
@@ -141,10 +141,255 @@ pub fn load_extension_http_allowed_hosts(
     Ok(allowed_hosts)
 }
 
+/// Returns `true` when the manifest's `permissions` array declares `permission`,
+/// either as a bare string entry (for example `"shell"`) or as an object entry
+/// whose `name` field matches (for example `{ "name": "http", ... }`).
+pub fn extension_declares_permission(manifest: &Value, permission: &str) -> bool {
+    let Some(permissions) = manifest.get("permissions").and_then(Value::as_array) else {
+        return false;
+    };
+
+    permissions.iter().any(|entry| match entry {
+        Value::String(name) => name == permission,
+        Value::Object(object) => {
+            object.get("name").and_then(Value::as_str) == Some(permission)
+        }
+        _ => false,
+    })
+}
+
+/// Enforces, on the host (Rust) side, that the extension installed under
+/// `extension_id` declares `permission` in its on-disk manifest before a
+/// privileged command is allowed to run.
+///
+/// The manifest in the extension install directory is the authoritative source
+/// of granted permissions: it is written at install time and is not writable by
+/// the running extension, so this check does not depend on any value supplied by
+/// the IPC caller. It is a defence-in-depth backstop that mirrors the host-side
+/// enforcement already performed for the `http` permission in
+/// [`load_extension_http_allowed_hosts`].
+pub fn require_extension_permission(
+    app_handle: &tauri::AppHandle,
+    extension_id: &str,
+    permission: &str,
+) -> Result<(), String> {
+    let extension_dir = get_extension_dir(app_handle, extension_id)?;
+    require_extension_permission_in_dir(&extension_dir, extension_id, permission)
+}
+
+/// Directory-based core of [`require_extension_permission`], split out so the
+/// host-side permission enforcement can be exercised directly against a real
+/// manifest file in tests without constructing a Tauri `AppHandle`.
+pub fn require_extension_permission_in_dir(
+    extension_dir: &std::path::Path,
+    extension_id: &str,
+    permission: &str,
+) -> Result<(), String> {
+    let manifest_path = extension_dir.join(EXTENSION_MANIFEST_FILE);
+
+    if !manifest_path.exists() {
+        return Err(format!(
+            "Access denied: {} not found for extension {}",
+            EXTENSION_MANIFEST_FILE, extension_id
+        ));
+    }
+
+    let manifest_content = fs::read_to_string(&manifest_path).map_err(|error| {
+        format!(
+            "Access denied: failed to read {} for extension {}: {}",
+            EXTENSION_MANIFEST_FILE, extension_id, error
+        )
+    })?;
+
+    let manifest: Value = serde_json::from_str(&manifest_content).map_err(|error| {
+        format!(
+            "Access denied: failed to parse {} for extension {}: {}",
+            EXTENSION_MANIFEST_FILE, extension_id, error
+        )
+    })?;
+
+    if extension_declares_permission(&manifest, permission) {
+        Ok(())
+    } else {
+        Err(format!(
+            "Access denied: extension {} is missing the required permission: {}",
+            extension_id, permission
+        ))
+    }
+}
+
+/// Host-side gate for privileged extension commands that act on the
+/// filesystem on the extension's behalf.
+///
+/// Two things have to hold before such a command may run:
+/// 1. the caller identity presented over IPC must be the extension itself
+///    (see [`authorize_extension_caller`]), and
+/// 2. the extension's on-disk manifest must declare the `shell` permission.
+///
+/// Both are checked on the host so that a compromised extension front-end
+/// cannot talk the Rust side into running a privileged command that the
+/// manifest never granted.
+pub fn require_extension_shell_permission(
+    app_handle: &tauri::AppHandle,
+    extension_id: &str,
+    caller_extension_id: Option<&str>,
+) -> Result<(), String> {
+    let extension_dir = get_extension_dir(app_handle, extension_id)?;
+    require_extension_shell_permission_in_dir(&extension_dir, extension_id, caller_extension_id)
+}
+
+/// Directory-based core of [`require_extension_shell_permission`], split out so
+/// the gate can be exercised in tests against a real manifest file without
+/// constructing a Tauri `AppHandle`.
+pub fn require_extension_shell_permission_in_dir(
+    extension_dir: &std::path::Path,
+    extension_id: &str,
+    caller_extension_id: Option<&str>,
+) -> Result<(), String> {
+    authorize_extension_caller(caller_extension_id, extension_id)?;
+    require_extension_permission_in_dir(extension_dir, extension_id, "shell")
+}
+
 #[cfg(test)]
 mod tests {
-    use super::parse_extension_http_allowed_hosts;
+    use super::{extension_declares_permission, parse_extension_http_allowed_hosts};
     use serde_json::json;
+
+    #[test]
+    fn detects_declared_string_permission() {
+        let manifest = json!({ "permissions": ["commands", "shell"] });
+        assert!(extension_declares_permission(&manifest, "shell"));
+    }
+
+    #[test]
+    fn detects_declared_object_permission() {
+        let manifest = json!({
+            "permissions": [
+                "commands",
+                { "name": "http", "hosts": ["https://example.com"] }
+            ]
+        });
+        assert!(extension_declares_permission(&manifest, "http"));
+    }
+
+    #[test]
+    fn rejects_undeclared_permission() {
+        let manifest = json!({ "permissions": ["commands", "fs.read"] });
+        assert!(!extension_declares_permission(&manifest, "shell"));
+    }
+
+    #[test]
+    fn rejects_permission_when_permissions_missing() {
+        let manifest = json!({ "name": "example" });
+        assert!(!extension_declares_permission(&manifest, "shell"));
+    }
+
+    #[test]
+    fn require_permission_in_dir_allows_declared_permission() {
+        use super::require_extension_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        std::fs::write(
+            dir.path().join(super::EXTENSION_MANIFEST_FILE),
+            r#"{ "permissions": ["commands", "shell"] }"#,
+        )
+        .expect("write manifest");
+
+        assert!(require_extension_permission_in_dir(dir.path(), "test.ext", "shell").is_ok());
+    }
+
+    #[test]
+    fn require_permission_in_dir_denies_undeclared_permission() {
+        use super::require_extension_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        std::fs::write(
+            dir.path().join(super::EXTENSION_MANIFEST_FILE),
+            r#"{ "permissions": ["commands", "fs.read"] }"#,
+        )
+        .expect("write manifest");
+
+        let error = require_extension_permission_in_dir(dir.path(), "test.ext", "shell")
+            .expect_err("missing shell permission must be denied");
+        assert!(error.contains("missing the required permission"));
+        assert!(error.contains("shell"));
+    }
+
+    #[test]
+    fn require_permission_in_dir_denies_when_manifest_missing() {
+        use super::require_extension_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        let error = require_extension_permission_in_dir(dir.path(), "test.ext", "shell")
+            .expect_err("missing manifest must be denied");
+        assert!(error.contains("not found"));
+    }
+
+    #[test]
+    fn rejects_permission_when_permissions_not_array() {
+        let manifest = json!({ "permissions": "shell" });
+        assert!(!extension_declares_permission(&manifest, "shell"));
+    }
+
+    #[test]
+    fn shell_permission_gate_allows_matching_caller_with_declared_permission() {
+        use super::require_extension_shell_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        std::fs::write(
+            dir.path().join(super::EXTENSION_MANIFEST_FILE),
+            r#"{ "permissions": ["commands", "shell"] }"#,
+        )
+        .expect("write manifest");
+
+        assert!(require_extension_shell_permission_in_dir(
+            dir.path(),
+            "test.ext",
+            Some("test.ext")
+        )
+        .is_ok());
+    }
+
+    #[test]
+    fn shell_permission_gate_denies_mismatched_caller() {
+        use super::require_extension_shell_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        std::fs::write(
+            dir.path().join(super::EXTENSION_MANIFEST_FILE),
+            r#"{ "permissions": ["commands", "shell"] }"#,
+        )
+        .expect("write manifest");
+
+        let error = require_extension_shell_permission_in_dir(dir.path(), "test.ext", Some("other.ext"))
+            .expect_err("mismatched caller must be denied");
+        assert!(error.contains("caller extension does not match"), "{error}");
+    }
+
+    #[test]
+    fn shell_permission_gate_denies_missing_caller() {
+        use super::require_extension_shell_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        std::fs::write(
+            dir.path().join(super::EXTENSION_MANIFEST_FILE),
+            r#"{ "permissions": ["commands", "shell"] }"#,
+        )
+        .expect("write manifest");
+
+        let error = require_extension_shell_permission_in_dir(dir.path(), "test.ext", None)
+            .expect_err("missing caller must be denied");
+        assert!(error.contains("missing caller extension identity"), "{error}");
+    }
+
+    #[test]
+    fn shell_permission_gate_denies_undeclared_permission() {
+        use super::require_extension_shell_permission_in_dir;
+        let dir = tempfile::tempdir().expect("temp dir");
+        std::fs::write(
+            dir.path().join(super::EXTENSION_MANIFEST_FILE),
+            r#"{ "permissions": ["commands", "fs.read"] }"#,
+        )
+        .expect("write manifest");
+
+        let error = require_extension_shell_permission_in_dir(dir.path(), "test.ext", Some("test.ext"))
+            .expect_err("undeclared shell permission must be denied");
+        assert!(error.contains("missing the required permission"), "{error}");
+    }
 
     #[test]
     fn rejects_plain_http_permission_string() {

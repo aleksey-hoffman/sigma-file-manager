@@ -307,7 +307,19 @@ pub async fn cancel_all_extension_commands(
 }
 
 #[tauri::command]
-pub async fn rename_part_files_to_ts(directory: String) -> Result<u32, String> {
+pub async fn rename_part_files_to_ts(
+    app_handle: tauri::AppHandle,
+    extension_id: String,
+    directory: String,
+    caller_extension_id: Option<String>,
+) -> Result<u32, String> {
+    // 主机侧门禁：这个命令按扩展的指示批量改文件名，权限必须由磁盘上的
+    // manifest 说了算，不能只看 IPC 调用方自称的身份。
+    super::manifest_permissions::require_extension_shell_permission(
+        &app_handle,
+        &extension_id,
+        caller_extension_id.as_deref(),
+    )?;
     misc::rename_part_files_to_ts(directory).await
 }
 

@@ -291,6 +291,7 @@ pub async fn run_extension_command(
     caller_extension_id: Option<String>,
 ) -> Result<ExtensionCommandResult, String> {
     authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    super::manifest_permissions::require_extension_permission(&app_handle, &extension_id, "shell")?;
     let resolved_command = resolve_extension_command(&app_handle, &extension_id, &command_path)?;
 
     let command_path_clone = resolved_command.command_path.clone();
@@ -336,6 +337,7 @@ pub async fn start_extension_command(
     caller_extension_id: Option<String>,
 ) -> Result<String, String> {
     authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    super::manifest_permissions::require_extension_permission(&app_handle, &extension_id, "shell")?;
     let resolved_command = resolve_extension_command(&app_handle, &extension_id, &command_path)?;
 
     let enhanced_path = if resolved_command.is_system_command {

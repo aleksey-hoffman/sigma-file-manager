@@ -46,25 +46,98 @@ pub fn require_integrity(integrity: &Option<String>, label: &str) -> Result<(), 
     }
 }
 
+pub const BLOCKED_TARGET_MESSAGE: &str = "Access denied: target host is not allowed";
+
+fn is_non_public_ipv4_address(ipv4: &std::net::Ipv4Addr) -> bool {
+    let [first, second, third, _] = ipv4.octets();
+
+    first == 0
+        || ipv4.is_private()
+        || ipv4.is_loopback()
+        || ipv4.is_link_local()
+        || ipv4.is_broadcast()
+        || ipv4.is_multicast()
+        || (first == 100 && (64..=127).contains(&second))
+        || (first == 192 && second == 0 && third == 0)
+        || (first == 192 && second == 0 && third == 2)
+        || (first == 198 && second == 51 && third == 100)
+        || (first == 203 && second == 0 && third == 113)
+        || first >= 240
+    // 198.18.0.0/15 is intentionally not blocked: fake-IP proxy/TUN tools
+    // (Clash, sing-box, Surge) hand out addresses from it for every public host.
+}
+
+fn embedded_ipv4_from_segments(high: u16, low: u16) -> std::net::Ipv4Addr {
+    let [a, b] = high.to_be_bytes();
+    let [c, d] = low.to_be_bytes();
+    std::net::Ipv4Addr::new(a, b, c, d)
+}
+
+fn is_non_public_ipv6_address(ipv6: &std::net::Ipv6Addr) -> bool {
+    if ipv6.is_loopback() || ipv6.is_unspecified() {
+        return true;
+    }
+
+    if let Some(mapped_ipv4) = ipv6.to_ipv4_mapped() {
+        return is_non_public_ipv4_address(&mapped_ipv4);
+    }
+
+    let segments = ipv6.segments();
+
+    // Deprecated IPv4-compatible addresses (::a.b.c.d).
+    if segments[..6].iter().all(|segment| *segment == 0) {
+        return is_non_public_ipv4_address(&embedded_ipv4_from_segments(segments[6], segments[7]));
+    }
+
+    // NAT64 well-known prefix 64:ff9b::/96 and local-use prefix 64:ff9b:1::/48.
+    if segments[0] == 0x0064 && segments[1] == 0xff9b {
+        if segments[2..6].iter().all(|segment| *segment == 0) {
+            return is_non_public_ipv4_address(&embedded_ipv4_from_segments(
+                segments[6],
+                segments[7],
+            ));
+        }
+        return segments[2] == 0x0001;
+    }
+
+    // 6to4 (2002::/16) embeds an IPv4 address in segments 1 and 2.
+    if segments[0] == 0x2002 {
+        return is_non_public_ipv4_address(&embedded_ipv4_from_segments(segments[1], segments[2]));
+    }
+
+    ipv6.is_unique_local()
+        || ipv6.is_unicast_link_local()
+        || ipv6.is_multicast()
+        || (segments[0] & 0xffc0) == 0xfec0
+        || (segments[0] == 0x2001 && segments[1] == 0x0000)
+        || (segments[0] == 0x2001 && segments[1] == 0x0db8)
+}
+
+/// Returns true for any address that is not a globally routable unicast
+/// address: loopback, private, link-local (including cloud metadata),
+/// CGNAT, multicast, reserved, documentation, and IPv6 forms that embed
+/// such an IPv4 address (IPv4-mapped, IPv4-compatible, NAT64, 6to4).
 pub fn is_private_ip_address(ip_address: &std::net::IpAddr) -> bool {
     match ip_address {
-        std::net::IpAddr::V4(ipv4) => {
-            ipv4.is_private()
-                || ipv4.is_loopback()
-                || ipv4.is_link_local()
-                || ipv4.is_broadcast()
-                || *ipv4 == std::net::Ipv4Addr::UNSPECIFIED
-                || *ipv4 == std::net::Ipv4Addr::new(169, 254, 169, 254)
-        }
-        std::net::IpAddr::V6(ipv6) => {
-            ipv6.is_loopback()
-                || ipv6.is_unspecified()
-                || ipv6.is_unique_local()
-                || ipv6.is_unicast_link_local()
-        }
+        std::net::IpAddr::V4(ipv4) => is_non_public_ipv4_address(ipv4),
+        std::net::IpAddr::V6(ipv6) => is_non_public_ipv6_address(ipv6),
     }
 }
 
+fn is_blocked_hostname(host: &str) -> bool {
+    let normalized_host = host.trim_end_matches('.').to_ascii_lowercase();
+
+    normalized_host.is_empty()
+        || normalized_host == "localhost"
+        || normalized_host.ends_with(".localhost")
+        || normalized_host == "metadata.google.internal"
+        || normalized_host == "metadata"
+        || normalized_host.ends_with(".local")
+}
+
+/// String-level check for extension download URLs. Hostnames are checked
+/// again at connect time by the resolver in `http::build_remote_http_client`,
+/// which also re-validates every redirect hop with this function.
 pub fn validate_remote_url(url: &str) -> Result<reqwest::Url, String> {
     let parsed_url =
         reqwest::Url::parse(url).map_err(|error| format!("Invalid URL '{}': {}", url, error))?;
@@ -76,21 +149,20 @@ pub fn validate_remote_url(url: &str) -> Result<reqwest::Url, String> {
 
     let host = parsed_url
         .host_str()
-        .ok_or_else(|| "URL host is required".to_string())?
-        .to_ascii_lowercase();
+        .ok_or_else(|| "URL host is required".to_string())?;
 
-    if host == "localhost"
-        || host == "metadata.google.internal"
-        || host == "metadata"
-        || host.ends_with(".local")
-    {
-        return Err("Access denied: target host is not allowed".to_string());
-    }
+    // `host_str()` keeps the brackets around IPv6 literals ("[::1]").
+    let unbracketed_host = host
+        .strip_prefix('[')
+        .and_then(|value| value.strip_suffix(']'))
+        .unwrap_or(host);
 
-    if let Ok(ip_address) = host.parse::<std::net::IpAddr>() {
+    if let Ok(ip_address) = unbracketed_host.parse::<std::net::IpAddr>() {
         if is_private_ip_address(&ip_address) {
-            return Err("Access denied: target host is not allowed".to_string());
+            return Err(BLOCKED_TARGET_MESSAGE.to_string());
         }
+    } else if is_blocked_hostname(unbracketed_host) {
+        return Err(BLOCKED_TARGET_MESSAGE.to_string());
     }
 
     Ok(parsed_url)
@@ -305,4 +377,116 @@ pub fn validate_binary_relative_path(value: &str, label: &str) -> Result<PathBuf
     }
 
     Ok(path)
+}
+
+#[cfg(test)]
+mod remote_url_tests {
+    use super::{is_private_ip_address, validate_remote_url};
+
+    #[test]
+    fn blocks_non_public_addresses() {
+        for address in [
+            "0.0.0.0",
+            "0.1.2.3",
+            "10.0.0.1",
+            "100.64.0.1",
+            "100.127.255.254",
+            "127.0.0.1",
+            "127.9.9.9",
+            "169.254.169.254",
+            "172.16.0.1",
+            "192.0.0.1",
+            "192.168.1.1",
+            "224.0.0.1",
+            "240.0.0.1",
+            "255.255.255.255",
+            "::",
+            "::1",
+            "::ffff:127.0.0.1",
+            "::ffff:169.254.169.254",
+            "::127.0.0.1",
+            "64:ff9b::7f00:1",
+            "64:ff9b::a9fe:a9fe",
+            "2002:7f00:1::",
+            "2002:a9fe:a9fe::",
+            "fd00:ec2::254",
+            "fc00::1",
+            "fe80::1",
+            "fec0::1",
+            "ff02::1",
+            "2001:db8::1",
+            "2001::1",
+        ] {
+            let parsed: std::net::IpAddr = address.parse().unwrap();
+            assert!(
+                is_private_ip_address(&parsed),
+                "{address} should be blocked"
+            );
+        }
+    }
+
+    #[test]
+    fn allows_public_addresses() {
+        for address in [
+            "1.1.1.1",
+            "8.8.8.8",
+            "140.82.112.3",
+            "198.18.0.1",
+            "100.128.0.1",
+            "2606:4700:4700::1111",
+            "2a00:1450:4001::200e",
+            "::ffff:8.8.8.8",
+            "64:ff9b::808:808",
+            "2002:808:808::",
+        ] {
+            let parsed: std::net::IpAddr = address.parse().unwrap();
+            assert!(
+                !is_private_ip_address(&parsed),
+                "{address} should be allowed"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_non_public_url_hosts() {
+        for url in [
+            "http://127.0.0.1/",
+            "http://2130706433/",
+            "http://0177.0.0.1/",
+            "http://0x7f.1/",
+            "http://0xa9fea9fe/latest/meta-data/",
+            "http://[::1]:8080/",
+            "http://[::ffff:127.0.0.1]/",
+            "http://[::ffff:a9fe:a9fe]/",
+            "http://[fd00:ec2::254]/",
+            "http://[fe80::1]/",
+            "http://100.64.0.1/",
+            "http://0.1.2.3/",
+            "http://localhost/",
+            "http://localhost./",
+            "http://LOCALHOST./",
+            "http://foo.localhost/",
+            "http://printer.local/",
+            "http://metadata.google.internal/",
+            "file:///etc/passwd",
+            "ftp://example.com/",
+        ] {
+            assert!(
+                validate_remote_url(url).is_err(),
+                "{url} should be rejected"
+            );
+        }
+    }
+
+    #[test]
+    fn accepts_public_url_hosts() {
+        for url in [
+            "https://github.com/owner/repo/archive/refs/tags/v1.0.0.zip",
+            "https://raw.githubusercontent.com/owner/repo/main/README.md",
+            "https://1.1.1.1/",
+            "https://[2606:4700:4700::1111]/",
+        ] {
+            assert!(validate_remote_url(url).is_ok(), "{url} should be accepted");
+        }
+    }
 }

@@ -12,7 +12,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::security::verify_integrity_sha256_digest;
+use super::security::{
+    is_private_ip_address, validate_remote_url, verify_integrity_sha256_digest,
+    BLOCKED_TARGET_MESSAGE,
+};
 use super::types::{FetchUrlResult, MAX_TEXT_FETCH_BYTES};
 
 const HTTP_TIMEOUT_SECS: u64 = 900;
@@ -22,12 +25,14 @@ const HTTP_TIMEOUT_SECS: u64 = 900;
 // 15s x retries x N probes was the entire 180s cold start. A reachable CDN or
 // GitHub connects in well under a second, so 5s costs nothing when the network
 // is fine and saves ~2/3 of the stall when it is not. See extensions.ts
-// `runStartupMarketplaceSync` for the other half of that fix.
+// unStartupMarketplaceSync for the other half of that fix.
 const HTTP_CONNECT_TIMEOUT_SECS: u64 = 5;
 const HTTP_POOL_IDLE_TIMEOUT_SECS: u64 = 30;
 const HTTP_TCP_KEEPALIVE_SECS: u64 = 30;
 const PROGRESS_EMIT_INTERVAL_BYTES: u64 = 256 * 1024;
 const MAX_RETRY_AFTER_SECS: u64 = 60;
+const DNS_RESOLVE_TIMEOUT_SECS: u64 = 10;
+const MAX_REMOTE_REDIRECTS: usize = 10;
 
 pub const HTTP_USER_AGENT: &str = concat!(
     "sigma-file-manager/",
@@ -35,15 +40,122 @@ pub const HTTP_USER_AGENT: &str = concat!(
     " (+https://github.com/aleksey-hoffman/sigma-file-manager)"
 );
 
-pub fn build_http_client() -> Result<reqwest::Client, String> {
+fn base_http_client_builder() -> reqwest::ClientBuilder {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(HTTP_TIMEOUT_SECS))
         .connect_timeout(Duration::from_secs(HTTP_CONNECT_TIMEOUT_SECS))
         .pool_idle_timeout(Duration::from_secs(HTTP_POOL_IDLE_TIMEOUT_SECS))
         .tcp_keepalive(Duration::from_secs(HTTP_TCP_KEEPALIVE_SECS))
         .user_agent(HTTP_USER_AGENT)
+}
+
+/// Client for fixed, app-chosen hosts only. Use `build_remote_http_client`
+/// for any URL that comes from an extension, manifest, or registry entry.
+pub fn build_http_client() -> Result<reqwest::Client, String> {
+    base_http_client_builder()
         .build()
         .map_err(|error| format!("Failed to create HTTP client: {}", error))
+}
+
+#[derive(Debug)]
+pub(crate) struct BlockedTargetError;
+
+impl std::fmt::Display for BlockedTargetError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(BLOCKED_TARGET_MESSAGE)
+    }
+}
+
+impl std::error::Error for BlockedTargetError {}
+
+fn ensure_public_socket_addrs(addrs: &[std::net::SocketAddr]) -> Result<(), BlockedTargetError> {
+    if addrs.iter().any(|addr| is_private_ip_address(&addr.ip())) {
+        return Err(BlockedTargetError);
+    }
+
+    Ok(())
+}
+
+/// Resolves hostnames for remote download clients and refuses to hand any
+/// address to the connector unless every resolved address is public. Since
+/// the check runs inside the resolver, the address that gets connected to is
+/// always the address that was checked: on the first request, on every
+/// redirect hop, on retries, and on fallback URLs.
+///
+/// IP-literal hosts never reach a resolver; those are covered by
+/// `validate_remote_url` and by `remote_redirect_policy`.
+#[derive(Debug, Default, Clone, Copy)]
+struct PublicOnlyResolver;
+
+impl reqwest::dns::Resolve for PublicOnlyResolver {
+    fn resolve(&self, name: reqwest::dns::Name) -> reqwest::dns::Resolving {
+        let host = name.as_str().to_string();
+
+        Box::pin(async move {
+            let lookup = tokio::time::timeout(
+                Duration::from_secs(DNS_RESOLVE_TIMEOUT_SECS),
+                tokio::net::lookup_host((host.as_str(), 0)),
+            )
+            .await
+            .map_err(|_| -> Box<dyn std::error::Error + Send + Sync> {
+                format!("Timed out resolving host '{}'", host).into()
+            })??;
+
+            let addrs: Vec<std::net::SocketAddr> = lookup.collect();
+            ensure_public_socket_addrs(&addrs)?;
+
+            let resolved: reqwest::dns::Addrs = Box::new(addrs.into_iter());
+            Ok(resolved)
+        })
+    }
+}
+
+fn remote_redirect_policy() -> reqwest::redirect::Policy {
+    reqwest::redirect::Policy::custom(|attempt| {
+        if attempt.previous().len() >= MAX_REMOTE_REDIRECTS {
+            return attempt.error("too many redirects");
+        }
+
+        if validate_remote_url(attempt.url().as_str()).is_err() {
+            return attempt.error(BlockedTargetError);
+        }
+
+        attempt.follow()
+    })
+}
+
+fn build_remote_http_client_with_resolver<R>(resolver: R) -> Result<reqwest::Client, String>
+where
+    R: reqwest::dns::Resolve + 'static,
+{
+    base_http_client_builder()
+        .dns_resolver(Arc::new(resolver))
+        .redirect(remote_redirect_policy())
+        .build()
+        .map_err(|error| format!("Failed to create HTTP client: {}", error))
+}
+
+/// Client for URLs supplied by extensions, manifests, or registry entries.
+/// Blocks connections to non-public addresses at connect time and validates
+/// every redirect target.
+///
+/// If the user has HTTP(S)_PROXY set, the proxy resolves the hostname and
+/// this check only applies to the proxy address itself.
+pub fn build_remote_http_client() -> Result<reqwest::Client, String> {
+    build_remote_http_client_with_resolver(PublicOnlyResolver)
+}
+
+fn is_blocked_target_error(error: &reqwest::Error) -> bool {
+    let mut source = std::error::Error::source(error);
+
+    while let Some(inner_error) = source {
+        if inner_error.is::<BlockedTargetError>() {
+            return true;
+        }
+        source = inner_error.source();
+    }
+
+    false
 }
 
 #[derive(Debug)]
@@ -113,6 +225,10 @@ impl RetryConfig {
 }
 
 pub fn classify_reqwest_error(prefix: &str, error: reqwest::Error) -> HttpRetryError {
+    if is_blocked_target_error(&error) {
+        return HttpRetryError::Permanent(format!("{}: {}", prefix, BLOCKED_TARGET_MESSAGE));
+    }
+
     let detail = if error.is_timeout() {
         format!("network timeout: {}", error)
     } else if error.is_connect() {
@@ -779,7 +895,7 @@ pub async fn download_url_bytes(
 ) -> Result<Vec<u8>, String> {
     let parsed_url =
         reqwest::Url::parse(url).map_err(|error| format!("Invalid URL '{}': {}", url, error))?;
-    let client = build_http_client()?;
+    let client = build_remote_http_client()?;
     let operation_label = request_error_label.to_string();
     let read_error_label = read_error_label.to_string();
     let config = RetryConfig::default();
@@ -1202,5 +1318,130 @@ mod tests {
                 elapsed
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod remote_client_tests {
+    use super::*;
+    use std::io::Read as _;
+
+    fn spawn_http_server(response: String) -> u16 {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind");
+        let port = listener.local_addr().unwrap().port();
+        std::thread::spawn(move || {
+            for mut stream in listener.incoming().flatten() {
+                let mut buffer = [0_u8; 4096];
+                let _ = stream.read(&mut buffer);
+                let _ = stream.write_all(response.as_bytes());
+            }
+        });
+        port
+    }
+
+    fn ok_response(body: &str) -> String {
+        format!(
+            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            body.len(),
+            body
+        )
+    }
+
+    fn redirect_response(location: &str) -> String {
+        format!(
+            "HTTP/1.1 302 Found\r\nLocation: {}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+            location
+        )
+    }
+
+    /// Test resolver: "public.test" pretends to be a public host but points at
+    /// a local test server; every other name goes through the real guard.
+    #[derive(Clone, Copy)]
+    struct TestResolver {
+        public_test_port: u16,
+    }
+
+    impl reqwest::dns::Resolve for TestResolver {
+        fn resolve(&self, name: reqwest::dns::Name) -> reqwest::dns::Resolving {
+            if name.as_str() == "public.test" {
+                let addr: std::net::SocketAddr = format!("127.0.0.1:{}", self.public_test_port)
+                    .parse()
+                    .unwrap();
+                return Box::pin(async move {
+                    let resolved: reqwest::dns::Addrs = Box::new(std::iter::once(addr));
+                    Ok(resolved)
+                });
+            }
+            PublicOnlyResolver.resolve(name)
+        }
+    }
+
+    #[test]
+    fn resolver_guard_rejects_any_non_public_address() {
+        let public: std::net::SocketAddr = "1.1.1.1:443".parse().unwrap();
+        let loopback: std::net::SocketAddr = "127.0.0.1:443".parse().unwrap();
+        let mapped: std::net::SocketAddr = "[::ffff:169.254.169.254]:80".parse().unwrap();
+        assert!(ensure_public_socket_addrs(&[public]).is_ok());
+        assert!(ensure_public_socket_addrs(&[public, loopback]).is_err());
+        assert!(ensure_public_socket_addrs(&[mapped]).is_err());
+    }
+
+    #[tokio::test]
+    async fn remote_client_blocks_redirect_to_ip_literal() {
+        let internal_port = spawn_http_server(ok_response("INTERNAL-DATA"));
+        let public_port = spawn_http_server(redirect_response(&format!(
+            "http://127.0.0.1:{}/",
+            internal_port
+        )));
+        let client = build_remote_http_client_with_resolver(TestResolver {
+            public_test_port: public_port,
+        })
+        .unwrap();
+
+        let error = client
+            .get(format!("http://public.test:{}/", public_port))
+            .send()
+            .await
+            .expect_err("redirect to loopback must be blocked");
+        assert!(is_blocked_target_error(&error), "unexpected error: {error}");
+        assert!(matches!(
+            classify_reqwest_error("download", error),
+            HttpRetryError::Permanent(message) if message.contains(BLOCKED_TARGET_MESSAGE)
+        ));
+    }
+
+    #[tokio::test]
+    async fn remote_client_blocks_redirect_to_ipv6_literal() {
+        let public_port = spawn_http_server(redirect_response("http://[::ffff:127.0.0.1]:9/"));
+        let client = build_remote_http_client_with_resolver(TestResolver {
+            public_test_port: public_port,
+        })
+        .unwrap();
+
+        let error = client
+            .get(format!("http://public.test:{}/", public_port))
+            .send()
+            .await
+            .expect_err("redirect to mapped loopback must be blocked");
+        assert!(is_blocked_target_error(&error), "unexpected error: {error}");
+    }
+
+    #[tokio::test]
+    async fn remote_client_follows_redirect_between_public_hosts() {
+        let public_port = spawn_http_server(ok_response("PUBLIC-DATA"));
+        let client = build_remote_http_client_with_resolver(TestResolver {
+            public_test_port: public_port,
+        })
+        .unwrap();
+
+        let body = client
+            .get(format!("http://public.test:{}/", public_port))
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
+        assert_eq!(body, "PUBLIC-DATA");
     }
 }

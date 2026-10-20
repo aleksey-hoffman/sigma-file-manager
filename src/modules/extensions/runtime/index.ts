@@ -11,9 +11,10 @@ export {
   type LoadedExtensionRuntime,
 } from './loader';
 
+// 假沙箱（createSandbox / createSandboxedFunction）已删除：它们与宿主共用同一
+// realm 的内建对象，挡不住 `Object['con' + 'structor']` 这类绕法，留着只给
+// 虚假的安全感。真正的隔离边界是 Web Worker 与 sandboxed iframe。
 export {
-  createSandbox,
-  createSandboxedFunction,
   validateExtensionCode,
   freezeObject,
   type ExtensionSandbox,

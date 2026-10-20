@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.2.13-beta] - October 2026
+
+**Summary:** Extensions are now much harder to steer somewhere they should not reach. A download that turns out to land on a private network is refused, even when it gets there through a redirect. An extension can no longer run a program unless its own description file asked for that. And the "sandbox" that only appeared to contain extension code is gone, because it never really did.
+
+### What changed
+
+**Fixed: an extension download could be aimed at a computer on your own network.** When Alpha File Manager fetches an extension, it now checks the address it actually connects to -- not just the name that was written down. If that address turns out to be on a private network, on this computer, or in a reserved range, the download is refused and the refusal is reported. The check happens at the moment of connecting, so it holds for the first request, for a retry, for a fallback mirror, and for every redirect along the way. Previously only the name was checked, and only at the start, so a name that resolved to an internal address -- or a redirect that pointed somewhere else -- slipped through.
+
+**Fixed: an extension could run a program without having asked permission to.** Whether an extension may run a program is now decided by its own description file, read from disk by the application, before the program is allowed to start. Asking on behalf of a different extension, or asking without asking at all, is refused. The command that renames files in bulk had no such check at all; it does now.
+
+**Fixed: the "sandbox" for extension code was not one.** It ran extension code in the same place as the application and hid a list of names from it, but the code could reach around that list in a single step. It is gone. Extension code already runs somewhere else entirely -- its own worker, or a sandboxed frame -- and that is where the separation genuinely comes from.
+
+**Changed: the extension code check catches two more shapes of escape.** Reaching for `constructor` or `__proto__` through square brackets rather than a dot is now refused as well. The check also keeps the behaviour it already had of ignoring ordinary English in comments, which is what lets a normal extension load in the first place -- and it now catches the `constructor` escape it was supposed to catch but was not, because the text it inspects no longer contained the quoted word it looks for.
+
+**Added: the extension lifecycle is covered by tests.** Installing, activating, tearing down, and the permission checks around them now have regression tests that run on every build, so a change that quietly loosens one of them turns the build red instead of shipping.
+
+### This is a beta
+
+**An extension that runs a program now has to say so.** If an extension used the shell without listing the `shell` permission in its description file, it will be refused until it does. The two extensions bundled with Alpha File Manager do not use the shell and are unaffected.
+
+**A download that is redirected has to land somewhere public.** An extension hosted on a service that redirects elsewhere is fine as long as that destination is an ordinary public address. A redirect into a private network is refused, and the refusal is reported rather than tried again.
+
 ## [3.2.12-beta] - October 2026
 
 **Summary:** Remote directories can now be written to, not just read. A folder can be created on the server, and a remote file or folder can be renamed in place. "New file" stays out of a remote folder entirely -- and the shortcut that used to open it anyway now says so, instead of letting you fill in a form that could never work.

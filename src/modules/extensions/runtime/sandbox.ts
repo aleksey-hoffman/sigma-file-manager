@@ -2,202 +2,34 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import type { SigmaExtensionAPI } from '@/modules/extensions/api';
+// Extension isolation note:
+//
+// `api`-mode extensions execute inside a dedicated module Web Worker
+// (`extension-worker.ts`), and `iframe`-mode extensions execute inside a
+// cross-origin sandboxed iframe. Those are the real isolation boundaries:
+// extension code runs in a separate realm that does not expose the host
+// `window`, the Tauri IPC bridge (`__TAURI_INTERNALS__`), or the host DOM.
+//
+// This module intentionally does NOT provide an in-process "sandbox" that
+// shares the host realm's intrinsics. A denylist/proxy over the real globals is
+// not a security boundary: computed member access (for example
+// `Object['con' + 'structor']('return globalThis')()`) trivially walks back to
+// the host realm, so such a helper would give a false sense of containment.
+//
+// What remains here is a best-effort static screen (`validateExtensionCode`),
+// used only as defence in depth before a module is handed to the worker, and
+// `freezeObject`, used to deep-freeze the API surface exposed to extensions.
+//
+// 本仓相对上游多保留了一层：`validateExtensionCode` 扫的是**剥掉注释与字符串
+// 字面量之后**的代码（见 `strip-non-code.ts`）。注释和字面量里的 "self"、
+// "window." 之类都是惰性的，按原文匹配会误杀正常扩展。
+
 import { stripCommentsAndLiterals } from '@/modules/extensions/runtime/strip-non-code';
 
 export type ExtensionSandbox = {
   extensionId: string;
-  globalContext: Record<string, unknown>;
-  console: Console;
-  evaluate: (code: string) => Record<string, unknown>;
   destroy: () => void;
 };
-
-const BLOCKED_GLOBALS = [
-  'eval',
-  'Function',
-  'fetch',
-  'XMLHttpRequest',
-  'WebSocket',
-  'localStorage',
-  'sessionStorage',
-  'indexedDB',
-  'document',
-  'window',
-  'globalThis',
-  'parent',
-  'top',
-  'frames',
-  'opener',
-  'self',
-];
-
-const ALLOWED_GLOBALS = [
-  'console',
-  'Math',
-  'Date',
-  'JSON',
-  'Array',
-  'Object',
-  'String',
-  'Number',
-  'Boolean',
-  'Symbol',
-  'Map',
-  'Set',
-  'WeakMap',
-  'WeakSet',
-  'Promise',
-  'Proxy',
-  'Reflect',
-  'Error',
-  'TypeError',
-  'RangeError',
-  'SyntaxError',
-  'ReferenceError',
-  'URIError',
-  'EvalError',
-  'parseInt',
-  'parseFloat',
-  'isNaN',
-  'isFinite',
-  'encodeURI',
-  'decodeURI',
-  'encodeURIComponent',
-  'decodeURIComponent',
-  'setTimeout',
-  'clearTimeout',
-  'setInterval',
-  'clearInterval',
-  'queueMicrotask',
-  'atob',
-  'btoa',
-  'TextEncoder',
-  'TextDecoder',
-  'URL',
-  'URLSearchParams',
-  'Blob',
-  'File',
-  'FileReader',
-  'AbortController',
-  'AbortSignal',
-  'crypto',
-  'performance',
-  'structuredClone',
-];
-
-const HOST_BOUND_FUNCTIONS = new Set([
-  'setTimeout',
-  'clearTimeout',
-  'setInterval',
-  'clearInterval',
-  'queueMicrotask',
-  'atob',
-  'btoa',
-  'structuredClone',
-]);
-
-export function createSandbox(
-  extensionId: string,
-  api: SigmaExtensionAPI,
-): ExtensionSandbox {
-  const globalContext: Record<string, unknown> = {};
-
-  for (const name of ALLOWED_GLOBALS) {
-    const globalValue = (globalThis as Record<string, unknown>)[name];
-
-    if (globalValue !== undefined) {
-      if (HOST_BOUND_FUNCTIONS.has(name) && typeof globalValue === 'function') {
-        globalContext[name] = (globalValue as (...args: unknown[]) => unknown).bind(globalThis);
-      }
-      else {
-        globalContext[name] = globalValue;
-      }
-    }
-  }
-
-  globalContext.sigma = Object.freeze(api);
-
-  for (const name of BLOCKED_GLOBALS) {
-    globalContext[name] = undefined;
-  }
-
-  const proxyHandler: ProxyHandler<Record<string, unknown>> = {
-    get(target, prop: string) {
-      if (BLOCKED_GLOBALS.includes(prop)) {
-        console.warn(`Extension ${extensionId} attempted to access blocked global: ${prop}`);
-        return undefined;
-      }
-
-      if (prop === 'sigma') {
-        return target.sigma;
-      }
-
-      return target[prop];
-    },
-    set(target, prop: string, value) {
-      if (prop === 'sigma' || BLOCKED_GLOBALS.includes(prop)) {
-        console.warn(`Extension ${extensionId} attempted to modify protected property: ${prop}`);
-        return false;
-      }
-
-      target[prop] = value;
-      return true;
-    },
-    has(target, prop: string) {
-      if (BLOCKED_GLOBALS.includes(prop)) {
-        return true;
-      }
-
-      return prop in target;
-    },
-  };
-
-  const sandboxedContext = new Proxy(globalContext, proxyHandler);
-
-  const sandboxedConsole = {
-    log: (...args: unknown[]) => console.log(`[Extension ${extensionId}]`, ...args),
-    warn: (...args: unknown[]) => console.warn(`[Extension ${extensionId}]`, ...args),
-    error: (...args: unknown[]) => console.error(`[Extension ${extensionId}]`, ...args),
-    info: (...args: unknown[]) => console.info(`[Extension ${extensionId}]`, ...args),
-    debug: (...args: unknown[]) => console.debug(`[Extension ${extensionId}]`, ...args),
-  } as Console;
-  globalContext.console = sandboxedConsole;
-
-  function evaluate(code: string): Record<string, unknown> {
-    const executor = new Function(
-      'globalContext',
-      `
-      with (globalContext) {
-        const module = { exports: {} };
-        const exports = module.exports;
-        ${code}
-        return module.exports;
-      }
-      `,
-    );
-    const result = executor(sandboxedContext);
-    return (result && typeof result === 'object') ? result as Record<string, unknown> : {};
-  }
-
-  return {
-    extensionId,
-    globalContext: sandboxedContext,
-    console: sandboxedConsole,
-    evaluate,
-    destroy: () => {
-      for (const key of Object.keys(globalContext)) {
-        delete globalContext[key];
-      }
-    },
-  };
-}
-
-export function createSandboxedFunction(): () => Promise<void> {
-  return async () => {
-    console.warn('Sandboxed function execution is limited in this version');
-  };
-}
 
 export function validateExtensionCode(code: string): {
   valid: boolean;
@@ -205,7 +37,12 @@ export function validateExtensionCode(code: string): {
 } {
   const errors: string[] = [];
 
-  const dangerousPatterns = [
+  const dangerousPatterns: Array<{
+    pattern: RegExp;
+    message: string;
+    /** true = 必须扫原文（规则要抓的就是字符串字面量本身）；缺省 = 扫剥除后的代码。 */
+    literal?: boolean;
+  }> = [
     {
       pattern: /\beval\s*\(/g,
       message: 'eval() is not allowed',
@@ -215,8 +52,21 @@ export function validateExtensionCode(code: string): {
       message: 'new Function() is not allowed',
     },
     {
+      // 这两条要找的**就是**那个字符串字面量，所以必须扫原文（见下面的
+      // `literal: true`）。剥掉字面量后它们会永远匹配不到 —— 本仓上一版
+      // 就是这么把 `.constructor` 这条规则悄悄弄失效的。
       pattern: /\.constructor\s*\(\s*['"`]/g,
       message: 'Dynamic code construction via .constructor() is not allowed',
+      literal: true,
+    },
+    {
+      // Computed access to constructor/prototype internals, e.g.
+      // obj['constructor'] or obj["__proto__"]. This does not catch runtime
+      // string concatenation by design (a static denylist cannot); the Web
+      // Worker / iframe realm is the actual boundary.
+      pattern: /\[\s*(['"`])(?:constructor|__proto__|prototype)\1\s*\]/g,
+      message: 'Computed access to constructor/prototype internals is not allowed',
+      literal: true,
     },
     {
       pattern: /\bdocument\s*\./g,
@@ -289,8 +139,13 @@ export function validateExtensionCode(code: string): {
   // English comment tripping the `self` rule below.
   const scannable = stripCommentsAndLiterals(code);
 
-  for (const { pattern, message } of dangerousPatterns) {
-    if (pattern.test(scannable)) {
+  for (const { pattern, message, literal } of dangerousPatterns) {
+    // `literal: true` 的规则要抓的正是字符串字面量本身（`.constructor("x")`、
+    // `["__proto__"]`），所以只能扫原文；其余规则扫剥除后的代码，避免把
+    // 注释和字面量里的字样当成真代码。
+    const target = literal ? code : scannable;
+
+    if (pattern.test(target)) {
       errors.push(message);
     }
   }

@@ -3,9 +3,9 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use super::http::{
-    build_http_client, build_jsdelivr_fallback_url, check_response_status, classify_reqwest_error,
-    fetch_text_across_urls_with_retry, read_response_bytes_with_limit, run_with_retry,
-    HttpRetryError, RetryConfig, UrlCandidates,
+    build_http_client, build_jsdelivr_fallback_url, build_remote_http_client,
+    check_response_status, classify_reqwest_error, fetch_text_across_urls_with_retry,
+    read_response_bytes_with_limit, run_with_retry, HttpRetryError, RetryConfig, UrlCandidates,
 };
 use super::security::validate_remote_url;
 use super::types::{FetchUrlResult, MAX_TEXT_FETCH_BYTES};
@@ -114,6 +114,6 @@ pub async fn fetch_url_text(url: String) -> Result<FetchUrlResult, String> {
     let candidates = UrlCandidates::new(validated_url.clone())
         .with_fallback(build_jsdelivr_fallback_url(&validated_url));
 
-    let client = build_http_client()?;
+    let client = build_remote_http_client()?;
     fetch_text_across_urls_with_retry(&client, candidates, MAX_TEXT_FETCH_BYTES, "fetch URL").await
 }

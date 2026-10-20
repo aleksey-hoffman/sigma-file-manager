@@ -186,7 +186,12 @@ export function createShellAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      return invokeAsExtension<number>(context.extensionId, 'rename_part_files_to_ts', { directory });
+      // extensionId / callerExtensionId 都要传给主机侧：Rust 端要靠它们
+      // 确认「调用者就是它自己」并且「它的 manifest 真的声明了 shell」。
+      return invokeAsExtension<number>(context.extensionId, 'rename_part_files_to_ts', {
+        extensionId: context.extensionId,
+        directory,
+      });
     },
   };
 }
