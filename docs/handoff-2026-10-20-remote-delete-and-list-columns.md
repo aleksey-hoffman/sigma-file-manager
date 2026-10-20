@@ -7,6 +7,8 @@
   53 files changed / 2038 insertions / 103 deletions）
 - 上一轮交接：[handoff-2026-10-19-remote-phase-3-transfer-permissions.md](handoff-2026-10-19-remote-phase-3-transfer-permissions.md)
 - 工作区状态：**干净**（本轮已全部提交）
+- **追加一轮**：同日 12:00 之后用户又报了一条（传输完成后对面那一格不刷新），
+  实现在 **§11**，提交 `见 §11.5`。§1–§10 的内容与结论仍然有效。
 
 ---
 
@@ -21,6 +23,7 @@
 | 3 | 导航器「位置」页去掉「修改时间」列 | ✅ 已做 | ✅ 真机 |
 | 4 | 非分区目录不添加「可用空间」列 | ✅ 已做 | ✅ 真机 |
 | 5 | 列表表头「大小」出现重复的「大小 ⓘ大小」，去掉后面那个 | ✅ 已修 | ✅ 真机 |
+| 6（追加） | 传输完成后，**收到东西的那一格**不自动刷新 | ✅ 已修 | ✅ 真机（build13，§11） |
 
 > ⚠️ **本轮验收过程中出过一次事故**：为了验「权限不足」那条分支，我在真实的
 > WordPress 站点上删掉了一个**用户资产**文件（`index.php`），而且是**删成功了**。
@@ -398,3 +401,100 @@ ssh -i 'E:\Users\Duanyi\.ssh\id_ed25519' -o BatchMode=yes duanyi@192.168.1.9 'ls
 
 > 提交信息一律用 `write` 工具落到 `.superpowers/sdd/*.txt`，再 `git commit -F <file>`。
 > **不要**用 `node -e` 内联生成提交信息（PowerShell 会先于 node 解析引号）。
+
+---
+
+## 11. 追加一轮：传输完成后，收到东西的那一格自动刷新
+
+### 11.1 用户反馈
+
+> 「远程文件，点击下载到本地，资源管理器没有立即显示新下载的文件，应该在下载成功后，
+> 自动刷新显示新文件。上传文件或目录，也应该是同样逻辑。」
+
+**现象**：分屏 [本地 | 远程]。在远程那一格点「下载到本地」，文件确实下载到了本地目录，
+但**本地那一格**（用户说的「资源管理器」）的列表还是老样子 —— 新文件要等用户手动刷新才出现。
+上传方向同理：远程那一格不刷新。
+
+### 11.2 根因
+
+传输执行完（`uploadEntries` / `downloadEntries`）**只弹了一个 toast**，没有任何一侧的列表重新读目录。
+两侧的列表都是各自 `readDir` 出来的快照 —— 没人重新读，列表就永远停在传输前的样子。
+
+### 11.3 改法：「通知 + 各自认领」
+
+执行传输的那一格是**源**。它知道对面**在哪儿**（`remote-transfer-targets.ts` 里的路径登记表），
+但**不知道对面是哪一格** —— 也没有它的刷新函数。
+
+所以不去建「路径 → 刷新函数」的映射（那份映射会随窗格重新挂载而失效，存进去的是旧组件实例的方法），
+改成**广播一个信号，让每一格自己认领**：
+
+| 文件 | 作用 |
+|---|---|
+| `src/modules/remote/utils/remote-transfer-refresh.ts`（新） | 通知 / 订阅 + 两个纯判定函数 |
+| `src/modules/navigator/.../composables/use-remote-transfer-refresh.ts`（新） | 「这一格」对通知的反应（拆出来是为了能测） |
+| `src/modules/navigator/.../composables/use-file-browser-actions.ts` | 传输结束后发通知 |
+| `src/modules/navigator/.../composables/use-file-browser.ts` | 挂载时订阅、卸载时退订 |
+
+判定用**字符串全等**：路径的两端来自同一处 —— 传输目标取自 `paneRefsMap` 里的窗格实时路径
+（`setRemoteTransferTargets` 登记的同一个值），订阅方比对的也是自己窗格的 `currentPath`。
+两边逐字相同，**不需要**再叠一层路径归一化（多一层就多一处能写错的地方）。
+
+**只有「目标目录的内容可能变了」才通知**（`shouldRefreshTargetPane`）：
+
+- 传过去了东西（文件 / 目录）→ 刷；
+- 传的过程中失败了 → 刷（目录上传是**递归**的，可能已经写进去一部分）；
+- 目标已存在同名文件而跳过 → **不刷**（目录内容根本没变，刷新只是白读一次盘）。
+
+**用户在这期间把目标那一格导航到别处去了 → 不刷**。刷了会读到跟当前目录不搭的内容，比不刷更糟。
+
+### 11.4 单测与注入验证
+
+新增 20 条用例（3 个文件）：
+
+- `src/modules/remote/utils/__tests__/remote-transfer-refresh.test.ts`（11 条）——
+  通知 / 订阅 / 退订 / 一个订阅者抛异常不连累其它订阅者 / 两个纯判定函数；
+- `.../composables/__tests__/use-remote-transfer-refresh.test.ts`（4 条）——
+  路径对得上就刷、对不上不刷、这一格还没导航过去不刷；
+- `.../composables/__tests__/use-file-browser-actions-transfer.test.ts`（5 条）——
+  **接线**：下载 → 通知本地目录；上传 → 通知远程目录；目录同样通知；
+  跳过不通知；失败仍通知。
+
+**注入验证（阳性对照，三处，都已复原）**：
+
+| 注入 | 转红的用例 |
+|---|---|
+| `notifyTargetPane(aggregate, '')`（断掉通知） | 4 条转红（「跳过不通知」那条仍绿 —— 符合预期） |
+| `handleTransferCompleted` 去掉路径判定 | 2 条转红 |
+| `shouldRefreshTargetPane` 恒返回 true | 2 条转红 |
+
+### 11.5 门禁与真机
+
+门禁：`vitest` **211 文件 / 1893 用例全过**（上轮 208/1873）；
+`vue-tsc` 0 error；`eslint src` **170 = 基线**；`cargo test --lib` 本轮未动 Rust，**651/0** 沿用上轮。
+
+打包（build13）：`release\Alpha File Manager_3.2.11-beta_x64-setup.exe`，
+20,240,871 字节，SHA256 `E930A857671E5AB41C6B816A60B1447A6E0BA010A1254EB17BE7DAE4858E9D0F`。
+装机 exe SHA256 `AE892305964F50863FBA2F684909272F927C1CF1B5162C6D06ABD43E6446E63A`。
+
+**真机（分屏：左 = `C:\Users\Duanyi\afm-acceptance`，右 = 远程 `…/wp_root/upgrade`）**：
+
+| 动作 | 观察 | 结论 |
+|---|---|---|
+| 右格远程文件 →「下载到本地」 | 左格**自动**出现 `afm-download-probe`（30 B），条目数 2 → **3** | ✅ 未做手动刷新 |
+| 左格本地文件 →「上传到远程」 | 右格条目数 17 → **18**，列表里出现 `remote-delete-prob…`（SSH 复核 52 B 落地） | ✅ |
+| 左格本地**目录** →「上传到远程」 | 右格条目数 18 → **19**，列表**第一行**出现 `afm-upload-dir`（SSH 复核 `afm-upload-dir/inside.txt` 36 B） | ✅ |
+
+> 夹具全是我自己造的：远端放在**我属主的** `upgrade` 目录里，
+> 本地放在专用的 `C:\Users\Duanyi\afm-acceptance` 目录里。
+> 验收后远端三个夹具已清干净，目录条目数回到 16（与验收前一致），
+> WordPress 站点 `http://192.168.1.9:8081/` → **200 / 114748 字节**。
+
+### 11.6 还没做的
+
+- **FTP / FTPS 通道**同样走这条路（`remote-transfer.ts` 的 `uploadToRemote` / `downloadFromRemote`
+  是协议无关的），但**没有真机 FTP 服务器**可验；SFTP 已在真机验过。
+- **目录树**没有跟着刷。理由：分屏时目录树跟着**当前格**走，而传输的目标是**对面那一格** ——
+  目标目录当时根本不在树里。要等用户切到那一格，树才会跟着走。
+  如果将来发现「传输完切过去，树里还是旧的」，再补 `folderTreeStore.markTreeStale([targetPath])`。
+- **传完之后「对面那一格是不是当前格」**没有做处理。当前实现里刷新用的是 `silentRefresh` ——
+  不插加载圈，但内容照常更新。

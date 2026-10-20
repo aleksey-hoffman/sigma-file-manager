@@ -45,6 +45,9 @@ import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
 import { useFileBrowserBoxSelection } from './use-file-browser-box-selection';
 import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
+// FORK-MODIFICATION 2026-10-20：传输完成后目标那一格要刷新。
+import { subscribeRemoteTransferCompleted } from '@/modules/remote/utils/remote-transfer-refresh';
+import { useRemoteTransferRefresh } from './use-remote-transfer-refresh';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import {
   getNavigatorSortSettingsForLayout,
@@ -586,7 +589,25 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     applyFilteredFirstEntrySelection(entries, () => isCancelled);
   });
 
+  // FORK-MODIFICATION 2026-10-20：这一格对「传输完成」通知的反应。
+  //
+  // 用 silentRefresh：这一格此刻多半不是当前格，插一个加载圈反而吓人，
+  // 而内容该更新还是要更新。
+  const transferRefresh = useRemoteTransferRefresh({
+    currentPath: () => dataSource.currentPath.value,
+    refresh: dataSource.silentRefresh,
+  });
+
   if (!isExternalMode) {
+    // FORK-MODIFICATION 2026-10-20：订阅「传输完成」通知。
+    //
+    // 上传到远程 / 下载到本地之后，**对面那一格**要重新读一次目录，
+    // 否则新传过去的文件要等用户手动刷新才出现（用户 2026-10-20 反馈）。
+    //
+    // 通知里只有目标目录的路径；这一格自己判断「这是不是我现在所在的目录」——
+    // 是才刷。判定在 `remote-transfer-refresh.ts` 里，理由也写在那儿。
+    let unsubscribeTransferRefresh: (() => void) | null = null;
+
     onMounted(() => {
       registerNavigationProvider({
         getCurrentPath: () => dataSource.currentPath.value || null,
@@ -595,6 +616,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
       registerNavigateToPath(dataSource.navigateToPath);
       registerOpenNavigatorFile(dataSource.openFile);
+
+      unsubscribeTransferRefresh = subscribeRemoteTransferCompleted(
+        transferRefresh.handleTransferCompleted,
+      );
     });
 
     onUnmounted(() => {
@@ -603,6 +628,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       unregisterNavigationProvider();
       unregisterNavigateToPath();
       unregisterOpenNavigatorFile();
+      unsubscribeTransferRefresh?.();
+      unsubscribeTransferRefresh = null;
     });
 
     watch(dataSource.currentPath, (newPath) => {

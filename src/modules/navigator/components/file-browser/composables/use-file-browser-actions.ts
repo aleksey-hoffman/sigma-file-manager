@@ -22,6 +22,15 @@ import {
   type RemoteTransferReport,
 } from '@/modules/remote/utils/remote-transfer';
 import { useRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
+// FORK-MODIFICATION 2026-10-20：传输完成后请「目标那一格」刷新。
+//
+// 用户反馈：下载到本地后本地那一格不出现新文件，上传后远程那一格也不刷新。
+// 通知的**内容**只有目标目录路径 —— 目标那一格自己判断「这是不是我现在所在的
+// 目录」，是就重新读一次。详见 `remote-transfer-refresh.ts` 顶部的说明。
+import {
+  notifyRemoteTransferCompleted,
+  shouldRefreshTargetPane,
+} from '@/modules/remote/utils/remote-transfer-refresh';
 import { openRemotePermissionsDialog } from '@/modules/remote/utils/remote-permissions-dialog-state';
 // FORK-MODIFICATION 2026-10-20：远程错误解包。
 //
@@ -127,6 +136,27 @@ export function useFileBrowserActions(options: {
   }
 
   /**
+   * 传输结束后的收尾：目标那一格要重新读一次目录。
+   *
+   * 只有「目标目录的内容可能变了」才通知 ——
+   * 见 `shouldRefreshTargetPane` 的三种情况说明。
+   */
+  function notifyTargetPane(aggregate: AggregatedTransfer, targetPath: string) {
+    const shouldRefresh = shouldRefreshTargetPane({
+      transferredFiles: aggregate.files,
+      transferredDirs: aggregate.dirs,
+      skippedCount: aggregate.skipped.length,
+      failureCount: aggregate.failures.length,
+    });
+
+    if (!shouldRefresh) {
+      return;
+    }
+
+    notifyRemoteTransferCompleted(targetPath);
+  }
+
+  /**
    * 逐个上传。**顺序执行**，不并发 ——
    * 并发开多条连接会打满服务器的并发连接数，而用户一次通常也就选几个条目。
    */
@@ -147,6 +177,8 @@ export function useFileBrowserActions(options: {
       'remote.transfer.uploadSucceeded',
       'remote.transfer.uploadFailed',
     );
+
+    notifyTargetPane(aggregate, remoteDir);
   }
 
   async function downloadEntries(entries: DirEntry[], localDir: string) {
@@ -166,6 +198,8 @@ export function useFileBrowserActions(options: {
       'remote.transfer.downloadSucceeded',
       'remote.transfer.downloadFailed',
     );
+
+    notifyTargetPane(aggregate, localDir);
   }
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
