@@ -112,24 +112,47 @@ locale code 是 `ch` 不是 `zh`）是**完整翻译**的。
 **放在功能表之后、「What's new in 3.2.11」之前** —— 落地页先讲「为什么用我们」，
 再讲「这一版有什么」。
 
-表格 5 列（图标 / 能力 / AFM / SFM / 资源管理器）14 行，符号约定：
-`✅` 有 · `➖` 这个项目里没有 · `⚠️` 有但有前提 · `❌` 做不到。
+表格 5 列（图标 / 能力 / AFM / SFM / 资源管理器）**12 行**，
+符号约定：`✅` 有 · `➖` 这个项目里没有 · `❌` 做不到。
 
 **事实核对**（每一行都查过代码或上游 changelog，不是印象）：
 
 | 行 | 依据 |
 |---|---|
 | SFM 没有目录树 | 本仓 README 自己的声明（「Everything below is ours. Nothing in this section exists upstream.」） |
-| SFM 有分屏 | 上游 2.2.0 的 Summary 明写 *linked split view* |
-| SFM 有框选 | 同上，*box selection* |
-| SFM 的批量改名会静默覆盖 | 上游 3.0.1 段：「a rename could silently overwrite a file the rules left unchanged」 |
+| SFM 有分屏，但没有左右互换 | 上游 2.2.0 有 `Linked` / `Split` 两种模式，**模式切换在导航器选项菜单里**；左右互换是 fork 3.2.4 才加的 |
+| SFM **没有批量改名** | 上游 changelog 里根本没有这个功能；「Adds batch rename」是 **fork 的 3.0.0**。3.0.1 修的是它自己的静默覆盖 bug |
 | SFM 没有四档缩略图 | 「Four thumbnail sizes | 3.1.0」是 fork 的版本号 → 上游没有 |
+| SFM 收藏没有分类 | 「Favourites ask for a category | 3.1.3」「Dashboard favourites grouped by category | 3.1.2」都是 fork 的版本号 |
 | SFM 与 AFM 都支持 Linux | 本仓 README 首句：*A modern file manager for Windows and Linux*（AFM 是 SFM 的构建） |
 
 表格下面有一段「**该选哪个**」的说明，**如实写出资源管理器的强项**
 （Shell 扩展、预览处理器、编解码器、网络共享、EFS、压缩、跳转列表、UAC），
 再说明 AFM 的强项（本地与远程并排、助手可驱动、目录树跟着走）。
 **不写「资源管理器做不到这些」这种假话** —— 写得诚实才可信。
+
+### 3.2.1 用户反馈后的收紧（2026-10-20 晚）
+
+用户看完第一版对比表后提了四条，都已改（中英文同步）：
+
+1. **两格并排**要写实「同步浏览」这个功能名，并明确 **SFM 没有左右互换、也没有工具栏上的同步浏览开关**。
+2. **批量改名**要指出 **SFM 根本没有这个功能**，AFM 的优势是查找替换、大小写转换、模板与编号这些更灵活的规则。
+3. **左侧导航 + 收藏夹分类**要单独说明「更便捷访问常用文件夹」。
+4. **去掉三行**：安装与升级、框选、与 Windows 外壳的集成。
+
+同时在功能表里也体现了这些改动：新增「同步浏览」行（3.2.6）、
+「批量改名」从「数据丢失修复 3.0.1」改成功能本身（3.0.0）、
+「目录树侧边栏」改成「左侧目录树」、中文表补齐英文表本来就有的六行。
+
+> ⚠️ 顺带修掉中文表里「四档缩略图尺寸」的**陈旧数值**：
+> 24/32/48/54 → **32/48/64/80**。2026-10-15 的验收反馈改过档位
+> （「小」不再是更小的排版，而是把「中」整体上移一档），
+> 唯一度量来源是 `src/modules/navigator/components/file-browser/utils/file-browser-thumbnail-sizes.ts`。
+> **凡是 README 里写着具体数值的行，都要回代码里核一遍** —— 文档比代码活得久。
+
+**校验**：`.superpowers/sdd/verify-readme-tables.cjs` 断言中英文五张表**逐行对齐**
+（图标、列数、加粗），且图例里出现的符号与表里用到的符号完全一致。
+**阳性对照做过**：故意把中文表一个图标改错 → 校验转红；还原后转绿。
 
 ### 3.3 新增「What's new in 3.2.11」章节
 
