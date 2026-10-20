@@ -23,6 +23,13 @@ Everything below is ours. Nothing in this section exists upstream.
 
 | | Feature | Since |
 |---|---|---|
+| 🌐 | **Browse remote servers for real** — SFTP, FTP and FTPS, with host keys and certificates pinned | **3.2.11** |
+| 🌲 | **The folder tree follows the pane you are in**, local or remote | **3.2.11** |
+| ⬆️⬇️ | **Upload and download** to and from a remote server — and the receiving pane refreshes itself | **3.2.11** |
+| 🗑️ | **Remote files can be deleted** — one entry, no pretend recycle bin, the server's refusal reported as it is | **3.2.11** |
+| 🔐 | **Remote permissions from a list** — pick the mode instead of typing the octal | **3.2.11** |
+| 🏠 | **A new tab opens on your drives**, and the drives page shows how full each one is | **3.2.11** |
+| 🧹 | **The delete options are a real menu** — they used to be a tooltip you could not click | **3.2.11** |
 | ⌨️ | **The address bar behaves like Explorer's** — select-all on open, paste a path and press Enter to go there | **3.2.4** |
 | ↔️ | **Swap the two split-view panes** — one button beside the search box | **3.2.4** |
 | 📐 | **Thumbnail size in the narrow-window menu** — it used to disappear below 600px | **3.2.4** |
@@ -44,6 +51,145 @@ Everything below is ours. Nothing in this section exists upstream.
 | ✅ | **Box selection on by default** | 3.0.2 |
 | 🧠 | **Batch-rename data-loss fix** — no more silent overwrites | 3.0.1 |
 | 📦 | One-step installer, in-place upgrade, complete uninstall | 3.0.0 |
+
+---
+
+## ⚖️ Alpha File Manager vs Sigma File Manager vs Windows Explorer
+
+Three different tools, three different jobs. Here is the honest version of how
+they compare.
+
+| | | Alpha File Manager | Sigma File Manager | Windows Explorer |
+|---|---|---|---|---|
+| 🖥️ | **Where it runs** | Windows + Linux | Windows + Linux | Windows only |
+| 🌲 | **Folder tree** | ✅ a persistent tree that follows the active pane — and becomes the remote tree | ➖ none | ✅ in the navigation pane |
+| ⚡ | **File dialogs in other apps** | ✅ **Focus Sync** — every dialog opens in the folder you are browsing | ➖ | ❌ |
+| 🤖 | **Driven by an AI assistant** | ✅ built-in MCP server, one-click setup for six assistants | ❌ | ❌ |
+| 🔐 | **Remote servers** | ✅ SFTP · FTP · FTPS, host keys and certificates pinned | ❌ | ➖ SMB / WebDAV / OneDrive, and no SFTP at all |
+| 📤 | **Working on remote files** | ✅ upload, download, delete, set permissions | ❌ | ➖ shares only |
+| ↔️ | **Two panes** | ✅ side by side, swappable, and they can browse together | ✅ | ➖ tabs, not panes |
+| 📊 | **Which columns to show** | ✅ chosen per location — the drives page drops the columns that have nothing to say | ➖ one set for every folder | ➖ one set for every folder |
+| 💾 | **How full a drive is** | ✅ filled on the card, plus a Free space column | ➖ | ✅ |
+| 🖼️ | **Thumbnail size** | ✅ four sizes | ➖ | ➖ the system size |
+| 🧠 | **Batch rename** | ✅ a collision is blocked in the preview | ⚠️ could overwrite silently | ✅ asks first |
+| ⬚ | **Box selection** | ✅ on by default | ✅ available, but off by default | ✅ rubber-band drag |
+| 📦 | **Installing and upgrading** | ✅ one-step installer, in-place upgrade, complete uninstall | ➖ | ➖ ships with Windows |
+| 🔌 | **Windows shell integration** | ➖ no shell extensions, no preview handlers | ➖ none | ✅ shell extensions, preview handlers, codecs, EFS, compression, jump lists, UAC |
+
+✅ has it · ➖ not part of that project · ⚠️ has it, with a caveat · ❌ cannot
+
+> **If you want the file manager that is part of Windows** — with the shell
+> extensions, the codecs, the network shares, the EFS encryption and the "it
+> works with everything" factor — use Explorer. No third-party file manager
+> replaces that, and we are not going to pretend otherwise.
+>
+> **If you want one window in which a local disk and a remote server sit side by
+> side**, with an assistant able to read your drives over a standard interface
+> and a tree that follows you into either of them — that is what Alpha File
+> Manager is. Explorer ships no SFTP client at all, and no way to let an
+> assistant see your files without a third-party bridge.
+>
+> **Sigma File Manager** is the base application we build on. Take it if you
+> want the upstream project itself, its own release cadence and its community.
+> Alpha File Manager is an independent fork of it and tracks upstream.
+
+---
+
+## 🆕 What's new in 3.2.11
+
+**3.2.11 is the first build of the 3.2 line that can browse a remote server for
+real.** Seven rounds of work landed in it: SFTP, FTP and FTPS connections that
+actually list a remote directory, a folder tree that follows you into it, two
+panes that can browse together, uploading, downloading and deleting — and a
+long list of local fixes on top.
+
+### 🌐 Remote servers, for real
+
+Three protocols, one code path each: **SFTP**, **FTP** and **FTPS**. A saved
+connection is no longer a bookmark — opening one lists the remote directory,
+with its files, its sizes and its dates.
+
+The first time you reach a machine you get a prompt showing its fingerprint
+before anything is trusted. SSH public keys and X.509 certificates are stored as
+separate records for the same host and port, so trusting one never implies the
+other, and a certificate that changes is reported as a change rather than as a
+network error. Every remembered host is listed under **Settings → Trusted
+hosts**, and any of them can be revoked from there.
+
+### 🌲 The tree follows you into the remote folder
+
+The tree is not just a list of local drives any more. Switch to a remote pane
+and it becomes the remote tree, rooted at the folder you configured for that
+connection and labelled with the connection's name. It expands down to the
+directory you are in, scrolls that row into view, and it follows the pane you
+are actually working in — the other one cannot steal the selection while the
+remote machine is still connecting.
+
+### 🔗 Two panes, one browsing session
+
+Give a connection a starting path and it opens there instead of at the remote
+root. Turn on **synchronized browsing** and the two panes walk together:
+entering `wp-content` on the local side opens `wp-content` on the remote side,
+and going up a level takes the other pane with you.
+
+### ⬆️⬇️ Upload, download — and the pane that refreshes itself
+
+Send a file or a whole folder to the remote side, or pull one back. When the
+transfer finishes, **the pane that received the files re-reads its own
+directory**, so the new file is there immediately instead of after you press
+refresh by hand. It refreshes itself, and only while it is still showing the
+directory that received them.
+
+### 🗑️ Deleting a remote file
+
+A remote file used to have no delete entry at all. It has one now — one
+**Delete**, not a "Move to recycle bin" that could not work, because a remote
+server has no recycle bin. It says so before you commit, and if your account is
+not allowed to delete, the server's refusal is reported as it is. The menu
+entry is never hidden, because the front end cannot know whether you are the
+owner, in the group, or "other" on the server.
+
+### 🔐 Permissions from a list
+
+Setting permissions on a remote file used to mean typing the octal digits,
+where one wrong digit quietly widens or narrows someone else's access. It is a
+list of the usual modes now, each shown in its `rwxr-xr-x` form. The mode the
+file already has is always in the list, so opening the dialog and applying
+without changing anything leaves it exactly as it was.
+
+### 🏠 A new tab opens on your drives, and you can see how full they are
+
+Clicking **+** used to open your home folder. It opens the **locations** page
+now. Every drive card is filled in proportion to how much of it is used, in
+three strengths, and the list view has a **Free space** column next to Size. On
+the locations page the **modified** and **created** columns are gone — a drive
+has neither, so they were a column of dashes saying nothing. Everywhere else
+the free space column is gone instead, for exactly the same reason.
+
+### 🧹 Small ones worth knowing
+
+- The trash icon in the toolbar used to show a *tooltip* with two options you
+  could not click. It is a real menu now, with the keyboard shortcut next to
+  each entry.
+- The list of saved connections is read at startup, before the window is shown.
+  Before, the **Permissions** entry and the connection name in the tree could
+  silently do nothing until you happened to open a screen that loaded it.
+- The tree scrolls to the directory you are in, and keeps a single root instead
+  of sprouting extra ones.
+
+### 🧪 What is not in this build
+
+- **Copying into a remote location is not implemented.** Upload and download
+  are entries of their own and they work; cross-boundary copy / cut / paste,
+  renaming a remote entry and creating a new one there are not there yet.
+- **FTPS file contents are not encrypted yet.** The control channel is pinned,
+  but the data channel still uses the server's default — plaintext contents in
+  transit. `PBSZ` / `PROT P` is not sent.
+- **FTPS has never been run against a real server.** SFTP has.
+
+The full list — including exactly which parts were verified on an installed
+build and which were covered by tests — is in the
+[changelog](https://github.com/kizemo/alpha-file-manager/blob/main/CHANGELOG.md).
 
 ---
 
