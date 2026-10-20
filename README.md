@@ -32,13 +32,14 @@ Everything below is ours. Nothing in this section exists upstream.
 | 🧹 | **The delete options are a real menu** — they used to be a tooltip you could not click | **3.2.11** |
 | ⌨️ | **The address bar behaves like Explorer's** — select-all on open, paste a path and press Enter to go there | **3.2.4** |
 | ↔️ | **Swap the two split-view panes** — one button beside the search box | **3.2.4** |
+| 🔗 | **Synchronized browsing** — a toggle right beside the swap button; enter a folder and the other pane follows, even going up a level | **3.2.6** |
 | 📐 | **Thumbnail size in the narrow-window menu** — it used to disappear below 600px | **3.2.4** |
 | 🤖 | **Built-in MCP server** — let an AI assistant read drives, folders, and search results over a standard interface | **3.2.1-beta** |
 | ⚡ | **One-click setup for six assistants** — Codex, Cursor, Claude Code, Claude Desktop, OpenClaw, Minimax Code | **3.2.1-beta** |
 | 🔎 | **Directory search genuinely recurses** — the walk stops on *matches*, not on entries scanned | **3.1.3** |
 | 🎚️ | **Search options sit above the results**, with typo tolerance that actually does something | **3.1.3** |
 | 🏷️ | **Favourites ask for a category** on add — pick an existing one or create one | **3.1.3** |
-| 🗂️ | **Folder tree sidebar** — persistent, tracks the active pane | 2.2.x |
+| 🗂️ | **Folder tree in the left sidebar** — permanent, follows the pane you are in, and becomes the remote tree | 2.2.x |
 | ⚡ | **Focus Sync** — every file dialog follows the folder you're browsing | 2.2.x |
 | 🧱 | **Directory & non-media rows keep a fixed height** as thumbnail size changes | **3.1.2** |
 | ↕️ | **List columns vertically centred** — item / modified / created / type / link status | **3.1.2** |
@@ -49,7 +50,7 @@ Everything below is ours. Nothing in this section exists upstream.
 | 🧹 | **Thumbnail cache usage + one-click clear** | 3.0.2 |
 | 🔀 | **Mixed-folder sorting toggle** | 3.0.2 |
 | ✅ | **Box selection on by default** | 3.0.2 |
-| 🧠 | **Batch-rename data-loss fix** — no more silent overwrites | 3.0.1 |
+| 🧠 | **Batch rename** — find-and-replace, case conversion, templates and numbering, with a live preview, conflicts blocked instead of silently overwriting, and undo | **3.0.0** |
 | 📦 | One-step installer, in-place upgrade, complete uninstall | 3.0.0 |
 
 ---
@@ -62,21 +63,19 @@ they compare.
 | | | Alpha File Manager | Sigma File Manager | Windows Explorer |
 |---|---|---|---|---|
 | 🖥️ | **Where it runs** | Windows + Linux | Windows + Linux | Windows only |
-| 🌲 | **Folder tree** | ✅ a persistent tree that follows the active pane — and becomes the remote tree | ➖ none | ✅ in the navigation pane |
+| 🌲 | **Folder tree in the left sidebar** | ✅ a permanent tree that follows the pane you are in — and becomes the remote tree | ➖ none | ✅ in the navigation pane |
+| ⭐ | **Getting to the folders you use daily** | ✅ favourites grouped by category and editable — adding one asks which category it belongs to, so your working set is one click away | ➖ no categories, and adding one never asks | ➖ pinned to Quick access, no categories |
 | ⚡ | **File dialogs in other apps** | ✅ **Focus Sync** — every dialog opens in the folder you are browsing | ➖ | ❌ |
 | 🤖 | **Driven by an AI assistant** | ✅ built-in MCP server, one-click setup for six assistants | ❌ | ❌ |
 | 🔐 | **Remote servers** | ✅ SFTP · FTP · FTPS, host keys and certificates pinned | ❌ | ➖ SMB / WebDAV / OneDrive, and no SFTP at all |
 | 📤 | **Working on remote files** | ✅ upload, download, delete, set permissions | ❌ | ➖ shares only |
-| ↔️ | **Two panes** | ✅ side by side, swappable, and they can browse together | ✅ | ➖ tabs, not panes |
+| ↔️ | **Two panes, used together** | ✅ **swap them with one button**, and a **synchronized browsing** toggle right beside it — enter a folder and the other pane follows, going up a level takes it along too | ➖ **no pane swap**; linked browsing exists but is a buried option in the navigator menu | ➖ tabs, not panes |
 | 📊 | **Which columns to show** | ✅ chosen per location — the drives page drops the columns that have nothing to say | ➖ one set for every folder | ➖ one set for every folder |
 | 💾 | **How full a drive is** | ✅ filled on the card, plus a Free space column | ➖ | ✅ |
 | 🖼️ | **Thumbnail size** | ✅ four sizes | ➖ | ➖ the system size |
-| 🧠 | **Batch rename** | ✅ a collision is blocked in the preview | ⚠️ could overwrite silently | ✅ asks first |
-| ⬚ | **Box selection** | ✅ on by default | ✅ available, but off by default | ✅ rubber-band drag |
-| 📦 | **Installing and upgrading** | ✅ one-step installer, in-place upgrade, complete uninstall | ➖ | ➖ ships with Windows |
-| 🔌 | **Windows shell integration** | ➖ no shell extensions, no preview handlers | ➖ none | ✅ shell extensions, preview handlers, codecs, EFS, compression, jump lists, UAC |
+| 🧠 | **Batch rename** | ✅ find-and-replace, case conversion, templates and numbering — with a live preview, conflicts blocked instead of silently overwriting, and undo | ❌ not in Sigma at all | ✅ find-and-replace, with a preview |
 
-✅ has it · ➖ not part of that project · ⚠️ has it, with a caveat · ❌ cannot
+✅ has it · ➖ not part of that project · ❌ cannot
 
 > **If you want the file manager that is part of Windows** — with the shell
 > extensions, the codecs, the network shares, the EFS encryption and the "it
