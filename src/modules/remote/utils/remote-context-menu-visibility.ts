@@ -25,6 +25,19 @@ export const REMOTE_TRANSFER_MENU_ACTIONS: readonly RemoteTransferMenuAction[] =
   'remote-permissions',
 ];
 
+/**
+ * FORK-MODIFICATION 2026-10-20：远程删除。
+ *
+ * 它**不是**传输动作（对面没有另一格），但同样不进
+ * `context-menu-action-visibility.ts` 的 `CONTEXT_MENU_ITEMS` 表 ——
+ * 那张表管的是「条目本身允不允许做这件事」，而远程删除的前提是
+ * 「选中的**全是**远程条目」。
+ */
+export type RemoteDeleteMenuAction = 'remote-delete';
+
+/** 远程专属的右键菜单动作。 */
+export type RemoteContextMenuAction = RemoteTransferMenuAction | RemoteDeleteMenuAction;
+
 /** 只有 SFTP 能改权限。FTP / FTPS 没有可靠的权限位，菜单项要**置灰/隐藏**而不是报错。 */
 export function protocolSupportsPermissions(protocol: RemoteProtocol | undefined): boolean {
   return protocol === 'sftp';
@@ -127,4 +140,23 @@ export function isRemoteTransferActionVisible(
   return entries.length === 1
     && areAllRemoteEntries(entries)
     && protocolSupportsPermissions(options.selectionProtocol);
+}
+
+/**
+ * 远程删除入口该不该出现。
+ *
+ * **只看「选中的全是远程条目」这一条**，权限够不够**不在这里判**：
+ *
+ * - 当前登录用户属于 owner / group / other 里的哪一组，后端没有给出可靠答案
+ *   （`remote_get_permissions` 只给权限位，不给「我是谁」）。猜错的后果是
+ *   **能删的菜单被置灰**，用户怎么点都没反应 —— 比「点了报错」糟糕得多。
+ *   所以菜单**一律显示**，真没权限时点下去由后端如实报错
+ *   （SFTP 给 `kind = 'permission'`）。
+ * - 混选（本地 + 远程）不显示：一条命令只吃一个路径，
+ *   界面若写着「删除」却只删掉远程那部分，用户只会以为程序坏了。
+ *
+ * 多选**允许**：前端按顺序逐个删，失败的那几个单独报出来。
+ */
+export function isRemoteDeleteActionVisible(entries: DirEntry[]): boolean {
+  return entries.length > 0 && areAllRemoteEntries(entries);
 }

@@ -26,6 +26,8 @@ import {
   useFileBrowserVisibleListColumns,
   type FileBrowserVisibleOptionalListColumn,
 } from './composables/use-file-browser-visible-list-columns';
+// FORK-MODIFICATION 2026-10-20：按当前路径算「实际可见性」。
+import { useFileBrowserListColumnVisibility } from './composables/use-file-browser-list-column-visibility';
 import FileBrowserListViewColumnCell from './file-browser-list-view-column-cell.vue';
 import type { FileBrowserListVirtualRow } from './composables/use-file-browser-virtual-layout';
 import type { ItemTag } from '@/types/user-stats';
@@ -115,7 +117,7 @@ const { clipboardItems, clipboardType, showClipboardUi } = storeToRefs(clipboard
 const { t, locale } = useI18n();
 const activeTagSelectorPath = ref<string | null>(null);
 
-const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
+const columnVisibility = useFileBrowserListColumnVisibility();
 const { visibleOptionalListColumns, visibleListColumnOrderKey } = useFileBrowserVisibleListColumns();
 const visibleListColumns = computed(() => {
   return getVisibleListColumnDefinitions(

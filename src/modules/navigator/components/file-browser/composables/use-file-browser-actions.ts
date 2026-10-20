@@ -23,6 +23,12 @@ import {
 } from '@/modules/remote/utils/remote-transfer';
 import { useRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
 import { openRemotePermissionsDialog } from '@/modules/remote/utils/remote-permissions-dialog-state';
+// FORK-MODIFICATION 2026-10-20：远程错误解包。
+//
+// Tauri 把后端的 `RemoteError` **原样 reject 过来**（`{ kind, message }` 对象，
+// 不是 `Error` 实例）。`error instanceof Error ? error.message : String(error)`
+// 在这里会得到 "[object Object]" —— 用户看到的是一句毫无信息量的提示。
+import { describeRemoteError } from '@/utils/remote-directory';
 
 type ContextMenuState = {
   targetEntry: DirEntry | null;
@@ -132,8 +138,7 @@ export function useFileBrowserActions(options: {
         mergeReport(aggregate, await uploadToRemote(entry.path, remoteDir));
       }
       catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        aggregate.failures.push(`${entry.path}: ${message}`);
+        aggregate.failures.push(`${entry.path}: ${describeRemoteError(error)}`);
       }
     }
 
@@ -152,8 +157,7 @@ export function useFileBrowserActions(options: {
         mergeReport(aggregate, await downloadFromRemote(entry.path, localDir));
       }
       catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        aggregate.failures.push(`${entry.path}: ${message}`);
+        aggregate.failures.push(`${entry.path}: ${describeRemoteError(error)}`);
       }
     }
 

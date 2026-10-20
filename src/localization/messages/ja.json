@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "削除",
+      "title": "リモート項目を削除",
+      "descriptionSingle": "{path} は完全に削除されます。この操作は元に戻せません。",
+      "description": "この操作により、リモートサーバー上の {count} 個の項目が完全に削除されます。元に戻せません。",
+      "noTrashHint": "リモートサーバーにはゴミ箱がないため、削除した項目は復元できません。",
+      "connectionHint": "接続: {name}",
+      "confirm": "削除",
+      "success": "リモート項目を {count} 個削除しました。",
+      "failed": "削除できませんでした",
+      "permissionDenied": "権限がありません"
     }
   }
 }

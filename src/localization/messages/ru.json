@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Удалить",
+      "title": "Удаление удалённых элементов",
+      "descriptionSingle": "{path} будет удалён безвозвратно. Это действие нельзя отменить.",
+      "description": "Это действие безвозвратно удалит {count} элем. с удалённого сервера. Отменить его нельзя.",
+      "noTrashHint": "На удалённом сервере нет корзины, поэтому удалённые элементы нельзя восстановить.",
+      "connectionHint": "Подключение: {name}",
+      "confirm": "Удалить",
+      "success": "Удалено удалённых элементов: {count}.",
+      "failed": "Не удалось удалить",
+      "permissionDenied": "Отказано в доступе"
     }
   }
 }

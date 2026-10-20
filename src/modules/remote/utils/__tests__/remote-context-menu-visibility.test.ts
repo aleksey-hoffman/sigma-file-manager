@@ -8,6 +8,7 @@ import type { RemoteProtocol } from '@/types/remote';
 import {
   areAllLocalEntries,
   areAllRemoteEntries,
+  isRemoteDeleteActionVisible,
   isRemoteTransferActionVisible,
   protocolSupportsPermissions,
   resolveSelectionProtocol,
@@ -182,6 +183,53 @@ describe('isRemoteTransferActionVisible', () => {
     expect(isRemoteTransferActionVisible('upload-to-remote', [], options)).toBe(false);
     expect(isRemoteTransferActionVisible('download-to-local', [], options)).toBe(false);
     expect(isRemoteTransferActionVisible('remote-permissions', [], options)).toBe(false);
+  });
+});
+
+describe('isRemoteDeleteActionVisible', () => {
+  it('远程条目 —— 删除入口出现', () => {
+    expect(isRemoteDeleteActionVisible([REMOTE_FILE])).toBe(true);
+  });
+
+  it('多选远程条目 —— 仍然出现（前端逐个删，失败的那个单独报）', () => {
+    expect(isRemoteDeleteActionVisible([REMOTE_FILE, REMOTE_DIR])).toBe(true);
+  });
+
+  it('本地条目 —— 不出现', () => {
+    expect(isRemoteDeleteActionVisible([LOCAL_FILE])).toBe(false);
+  });
+
+  it('本地与远程混选 —— 不出现（一条命令只吃一个路径）', () => {
+    expect(isRemoteDeleteActionVisible([LOCAL_FILE, REMOTE_FILE])).toBe(false);
+  });
+
+  it('空选区 —— 不出现', () => {
+    expect(isRemoteDeleteActionVisible([])).toBe(false);
+  });
+
+  /**
+   * **阳性对照**：这条锁住「菜单项不因为权限不足而消失」。
+   *
+   * 可见性判定里**没有**任何权限相关的分支 —— 当前登录用户属于
+   * owner/group/other 哪一组，后端给不出可靠答案，猜错就会把
+   * 「能删的」置灰。所以判定只认「选中的全是远程条目」这一条。
+   *
+   * 下面这条断言用「改掉条目的**其它**属性（大小、隐藏标记、软链）」当对照：
+   * 只要判定函数真的读了别的字段，结论就会变。它没变，
+   * 说明判定确实只看路径 —— 也就说明**权限位根本没有进到判定里**。
+   */
+  it('判定只看路径 —— 条目的其它属性不影响结论', () => {
+    const plain = makeEntry('sfm://remote/conn-1/locked.txt');
+    const decorated: DirEntry = {
+      ...plain,
+      size: 999_999,
+      is_hidden: true,
+      is_symlink: true,
+      hard_link_count: 7,
+    };
+
+    expect(isRemoteDeleteActionVisible([plain])).toBe(true);
+    expect(isRemoteDeleteActionVisible([decorated])).toBe(true);
   });
 });
 

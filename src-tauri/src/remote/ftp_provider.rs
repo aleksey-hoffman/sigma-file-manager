@@ -483,6 +483,50 @@ where
 
     Ok(())
 }
+/// 在**已经建好并登录过**的通道上删掉一个文件或目录（`DELE` / `RMD`）。
+///
+/// 目录**必须为空**：FTP 没有递归删除，服务器对非空目录回 `550`。
+/// 而 `550` 在 [`map_ftp_reply_code`] 里是「路径不可用」——
+/// 对非空目录来说这句话不算错，但它没有告诉用户「要先清空」。
+/// 所以这里在失败之后**再列一次父目录**，确认目标还在、且它是个目录时，
+/// 补一句能照着做的话。
+///
+/// ⚠️ `550` 既是「目录非空」也可能是「没有权限」，FTP 这一层分不开。
+/// 目录非空的判定靠**列出目录里还有没有东西**，权限不足只能如实报「路径不可用」。
+pub(crate) async fn remove_via_control<S>(
+    control: &mut FtpControl<S>,
+    remote_path: &str,
+    is_dir: bool,
+) -> Result<(), RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    let (parent, name) = super::path::split_remote_parent_and_name(remote_path)?;
+    enter_parent(control, &parent).await?;
+
+    let verb = if is_dir { "RMD" } else { "DELE" };
+
+    match control.command(&format!("{verb} {name}"), &[250]).await {
+        Ok(_) => Ok(()),
+        Err(error) => {
+            if is_dir && error.kind == RemoteErrorKind::NotFound {
+                let still_there = list_via_control(control, &parent)
+                    .await
+                    .map(|records| records.iter().any(|record| record.name == name))
+                    .unwrap_or(false);
+
+                if still_there {
+                    return Err(RemoteError::protocol(format!(
+                        "这个远端目录不是空的，FTP 不支持递归删除：{remote_path}"
+                    )));
+                }
+            }
+
+            Err(error)
+        }
+    }
+}
+
 /// 控制通道需要的读写能力。`AsyncRead` 与 `AsyncWrite` 分开写，
 /// 是为了不依赖 `tokio::io::AsyncReadWrite` 的具体形态。
 pub trait AsyncReadWrite: tokio::io::AsyncRead + tokio::io::AsyncWrite {}
@@ -769,6 +813,32 @@ impl FtpRemoteProvider {
             ))),
         }
     }
+
+    /// 删除一个远程文件或目录。
+    pub async fn remove_path(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        is_dir: bool,
+    ) -> Result<(), RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+
+        let run = async {
+            let mut control = Self::login(resolved).await?;
+            let outcome = remove_via_control(&mut control, normalized, is_dir).await;
+            let _ = control.command("QUIT", &[221, 226]).await;
+
+            outcome
+        };
+
+        match tokio::time::timeout(self.timeout, run).await {
+            Ok(result) => result,
+            Err(_) => Err(RemoteError::disconnected(format!(
+                "删除 FTP 条目超过 {} 秒仍未完成，已放弃这次操作",
+                self.timeout.as_secs()
+            ))),
+        }
+    }
 }
 
 #[async_trait]
@@ -863,6 +933,24 @@ impl RemoteProvider for FtpRemoteProvider {
         _remote_path: &str,
     ) -> Result<Option<u32>, RemoteError> {
         Ok(None)
+    }
+
+    async fn remove_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        is_dir: bool,
+    ) -> Result<(), RemoteError> {
+        let normalized = super::path::normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved = super::registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        self.remove_path(&resolved, &normalized, is_dir).await
     }
 }
 

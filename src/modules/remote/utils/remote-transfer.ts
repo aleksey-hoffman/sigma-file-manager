@@ -108,6 +108,27 @@ export function getRemotePermissions(remotePath: string): Promise<number | null>
   });
 }
 
+/**
+ * 删除一个远程文件或目录。
+ *
+ * ⚠️ 参数名是 `remotePath` / `isDir` —— Rust 侧是 `remote_path` / `is_dir`，
+ * Tauri 按「Rust 参数名的 camelCase 形式」匹配 JS 传进来的键。
+ * 传 `path` 会换算成 `path`，与 Rust 的 `remote_path` 对不上，命令直接报
+ * 「unknown field」。
+ *
+ * **目录不做递归删除**：SFTP 的 `rmdir` 与 FTP 的 `RMD` 都不递归，
+ * 非空目录会被服务器拒绝，后端把错误翻译成「目录不是空的」再带回来。
+ *
+ * **权限不足时 reject 的是 `{ kind: 'permission', message }`**
+ * （SFTP 能分清；FTP 的 `550` 分不清「没权限」与「目录非空」，按 `not_found` 报）。
+ */
+export function removeRemotePath(remotePath: string, isDir: boolean): Promise<void> {
+  return invoke<void>('remote_remove_path', {
+    remotePath,
+    isDir,
+  });
+}
+
 /** 传输结果里有没有需要用户知道的问题。 */
 export function hasTransferProblems(report: RemoteTransferReport): boolean {
   return report.skipped.length > 0 || report.failures.length > 0;

@@ -42,6 +42,11 @@ const SYSTEM_MOUNT_ROOT_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
  * 阶段 3（新建目录 / 重命名 / 删除）与阶段 7（跨边界拖拽 / 复制粘贴）
  * 会**逐条从这里移出去** —— 每移一条，同步更新
  * `entry-action-policy.test.ts` 里那条「阶段 0 只放行导航」的断言。
+ *
+ * FORK-MODIFICATION 2026-10-20：远程**删除**走的是另一个动作
+ * `remote-delete`，它**不在**这个集合里，所以远程条目可以有删除入口。
+ * 本地的 `delete` / `delete-permanently` 继续对远程屏蔽 ——
+ * 远程没有回收箱，「移至垃圾箱」在远程是假选项。
  */
 const REMOTE_PHASE0_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'rename',

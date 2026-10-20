@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Xóa",
+      "title": "Xóa mục từ xa",
+      "descriptionSingle": "{path} sẽ bị xóa vĩnh viễn. Không thể hoàn tác thao tác này.",
+      "description": "Thao tác này sẽ xóa vĩnh viễn {count} mục khỏi máy chủ từ xa. Không thể hoàn tác.",
+      "noTrashHint": "Máy chủ từ xa không có thùng rác, nên các mục đã xóa không thể khôi phục.",
+      "connectionHint": "Kết nối: {name}",
+      "confirm": "Xóa",
+      "success": "Đã xóa {count} mục từ xa.",
+      "failed": "Không thể xóa",
+      "permissionDenied": "Không có quyền"
     }
   }
 }

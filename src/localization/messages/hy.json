@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Ջնջել",
+      "title": "Ջնջել հեռակա տարրերը",
+      "descriptionSingle": "{path}-ը մշտականությամբ կջնջվել է։ Դա հետ բերել հնարավոր չէ։",
+      "description": "Այս գործողությունը մշտականությամբ կջնջել է հեռակա սերվերից {count} տարր։ Դա հետ բերել հնարավոր չէ։",
+      "noTrashHint": "Հեռակա սերվերում ոչ կա աղբյուռ, ուստի ջնջված տարրերը հետ բերել հնարավոր չէ։",
+      "connectionHint": "Կապ: {name}",
+      "confirm": "Ջնջել",
+      "success": "Ջնջվեց {count} հեռակա տարր։",
+      "failed": "Ջնջելը ձախողվեց",
+      "permissionDenied": "Առաքմություն չկա"
     }
   }
 }

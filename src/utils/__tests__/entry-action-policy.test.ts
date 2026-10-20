@@ -105,5 +105,21 @@ describe('entry-action-policy', () => {
       expect(getEntryActionPolicy('C:/Users', 'windows')).toBe('normal');
       expect(isActionBlockedByEntryPolicy('copy', [createEntry('C:/Users')], 'windows')).toBe(false);
     });
+
+    /**
+     * FORK-MODIFICATION 2026-10-20：远程删除走独立动作 `remote-delete`，
+     * **不在**阶段 0 的屏蔽集合里，所以远程条目可以有删除入口。
+     *
+     * 上面那条用例断言本地的 `delete` 仍然对远程屏蔽 —— 两条合起来才是
+     * 完整的事实：**远程能删，但走的不是「移至垃圾箱」那条路**。
+     */
+    it('lets the dedicated remote-delete action through on remote paths', () => {
+      const entries = [createEntry('sfm://remote/conn-a/pub')];
+
+      expect(isActionBlockedByEntryPolicy('remote-delete', entries, 'windows')).toBe(false);
+      // 本地的两个删除动作仍然屏蔽：远程没有回收箱。
+      expect(isActionBlockedByEntryPolicy('delete', entries, 'windows')).toBe(true);
+      expect(isActionBlockedByEntryPolicy('delete-permanently', entries, 'windows')).toBe(true);
+    });
   });
 });

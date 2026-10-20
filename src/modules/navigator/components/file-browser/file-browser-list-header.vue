@@ -30,6 +30,8 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { useFileBrowserVisibleListColumns } from './composables/use-file-browser-visible-list-columns';
+// FORK-MODIFICATION 2026-10-20：按当前路径算「实际可见性」。
+import { useFileBrowserListColumnVisibility } from './composables/use-file-browser-list-column-visibility';
 import { measureHeaderColumnWidths } from './utils/file-browser-list-columns';
 import FileBrowserListHeaderCell from './file-browser-list-header-cell.vue';
 import FileBrowserListSortableColumn from './file-browser-list-sortable-column.vue';
@@ -49,7 +51,7 @@ const appliedFolderSettings = computed(() => resolveNavigatorFolderSettings(
   userSettingsStore.userSettings.navigator,
   ctx.currentPath.value,
 ));
-const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
+const columnVisibility = useFileBrowserListColumnVisibility();
 const listColumnFillWidth = computed(() => userSettingsStore.userSettings.navigator.listColumnFillWidth);
 const listSortColumn = computed(() => appliedFolderSettings.value.listSortColumn);
 const listSortDirection = computed(() => appliedFolderSettings.value.listSortDirection);

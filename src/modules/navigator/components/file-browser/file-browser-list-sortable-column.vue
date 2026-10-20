@@ -39,61 +39,76 @@ function getColumnLabel() {
 
 <template>
   <FileBrowserListHeaderCell :column-id="props.columnId">
-    <Tooltip v-if="props.columnId === 'size'">
-      <TooltipTrigger as-child>
-        <button
-          type="button"
-          class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-size file-browser-list-view__header-size--with-info"
-          @click="emit('sort', props.columnId)"
+    <!--
+      FORK-MODIFICATION 2026-10-20（用户指出）：「大小」这一格的标题原本渲染了**两遍**。
+
+      根因是 `v-if` / `v-else` 的**配对关系**：
+      最后那个 `<button v-else>` 配的是**上面 `<span v-if="availableSpace">`**，
+      而不是包着提示图标的 `<Tooltip v-if="size">` ——
+      于是「大小」列既渲染了 Tooltip 里那个按钮（标题 + ⓘ），
+      又渲染了 v-else 那个按钮（又一份标题），
+      看上去就成了「大小 ⓘ大小」。
+
+      改用 `<template v-if>` / `<span v-else-if>` / `<button v-else>` 的三分支，
+      三者才真的互斥。
+    -->
+    <template v-if="props.columnId === 'size'">
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <button
+            type="button"
+            class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-size file-browser-list-view__header-size--with-info"
+            @click="emit('sort', props.columnId)"
+          >
+            {{ getColumnLabel() }}
+            <InfoIcon
+              :size="12"
+              class="file-browser-list-view__header-info-icon"
+            />
+            <ArrowUpIcon
+              v-if="props.listSortColumn === props.columnId && props.listSortDirection === 'asc'"
+              :size="12"
+              class="file-browser-list-view__header-sort-icon"
+            />
+            <ArrowDownIcon
+              v-else-if="props.listSortColumn === props.columnId && props.listSortDirection === 'desc'"
+              :size="12"
+              class="file-browser-list-view__header-sort-icon"
+            />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent
+          side="bottom"
+          :side-offset="8"
+          class="file-browser-list-view__size-tooltip"
         >
-          {{ getColumnLabel() }}
-          <InfoIcon
-            :size="12"
-            class="file-browser-list-view__header-info-icon"
-          />
-          <ArrowUpIcon
-            v-if="props.listSortColumn === props.columnId && props.listSortDirection === 'asc'"
-            :size="12"
-            class="file-browser-list-view__header-sort-icon"
-          />
-          <ArrowDownIcon
-            v-else-if="props.listSortColumn === props.columnId && props.listSortDirection === 'desc'"
-            :size="12"
-            class="file-browser-list-view__header-sort-icon"
-          />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent
-        side="bottom"
-        :side-offset="8"
-        class="file-browser-list-view__size-tooltip"
-      >
-        <div class="file-browser-list-view__size-tooltip-content">
-          <div class="file-browser-list-view__size-tooltip-title">
-            {{ t('fileBrowser.sizeTooltip.title') }}
-          </div>
-          <div class="file-browser-list-view__size-tooltip-body">
-            <div class="file-browser-list-view__size-tooltip-item">
-              <span class="file-browser-list-view__size-tooltip-label">{{ legendSizeText }}</span>
-              <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.exact') }}</span>
+          <div class="file-browser-list-view__size-tooltip-content">
+            <div class="file-browser-list-view__size-tooltip-title">
+              {{ t('fileBrowser.sizeTooltip.title') }}
             </div>
-            <div class="file-browser-list-view__size-tooltip-item">
-              <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--loading">
-                <Skeleton class="file-browser-list-view__size-tooltip-skeleton" />
-              </span>
-              <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.loading') }}</span>
+            <div class="file-browser-list-view__size-tooltip-body">
+              <div class="file-browser-list-view__size-tooltip-item">
+                <span class="file-browser-list-view__size-tooltip-label">{{ legendSizeText }}</span>
+                <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.exact') }}</span>
+              </div>
+              <div class="file-browser-list-view__size-tooltip-item">
+                <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--loading">
+                  <Skeleton class="file-browser-list-view__size-tooltip-skeleton" />
+                </span>
+                <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.loading') }}</span>
+              </div>
+              <div class="file-browser-list-view__size-tooltip-item">
+                <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--empty">—</span>
+                <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.notCalculated') }}</span>
+              </div>
             </div>
-            <div class="file-browser-list-view__size-tooltip-item">
-              <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--empty">—</span>
-              <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.notCalculated') }}</span>
+            <div class="file-browser-list-view__size-tooltip-note">
+              {{ t('fileBrowser.sizeTooltip.note') }}
             </div>
           </div>
-          <div class="file-browser-list-view__size-tooltip-note">
-            {{ t('fileBrowser.sizeTooltip.note') }}
-          </div>
-        </div>
-      </TooltipContent>
-    </Tooltip>
+        </TooltipContent>
+      </Tooltip>
+    </template>
     <!--
       FORK-MODIFICATION 2026-10-20：新增「可用空间」列（用户 2026-10-20 要求）。
       它**没有排序实现**，所以这一格刻意**不渲染成 button** ——
@@ -102,7 +117,7 @@ function getColumnLabel() {
       看上去就是「这一列坏了、点不动」。
     -->
     <span
-      v-if="props.columnId === 'availableSpace'"
+      v-else-if="props.columnId === 'availableSpace'"
       class="file-browser-list-view__header-item file-browser-list-view__header-availableSpace"
     >
       {{ getColumnLabel() }}

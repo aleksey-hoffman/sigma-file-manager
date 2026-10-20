@@ -9,6 +9,7 @@ import type {
   ListColumnWidths,
   ListReorderableColumnId,
 } from '@/types/user-settings';
+import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 
 export type FileBrowserListColumnId
   = | 'name'
@@ -116,6 +117,78 @@ const DEFAULT_LIST_COLUMN_FLEX_WEIGHTS: Record<FileBrowserListColumnId, number> 
 };
 
 const REORDERABLE_COLUMN_ID_SET = new Set<string>(FILE_BROWSER_LIST_REORDERABLE_COLUMN_IDS);
+
+/**
+ * FORK-MODIFICATION 2026-10-20（用户附图要求）：某些列只在**它有意义的地方**出现。
+ *
+ * - 「位置」页列的是**磁盘**：磁盘既没有修改时间也没有创建时间，
+ *   那两列整列都是 `-`，占着宽度却什么都不说。
+ * - **别的目录里没有磁盘**：「可用空间」整列都是 `—`，同样占着宽度不说话。
+ *
+ * 所以两边的规则是**互补**的：位置页显示「可用空间」、不显示日期；
+ * 普通目录显示日期、不显示「可用空间」。
+ *
+ * 刻意**只动这一页**：`listColumnVisibility` 是全局偏好，
+ * 这里算出来的是「**这一页**实际显示哪些列」，全局偏好一点没动。
+ */
+const LOCATIONS_HIDDEN_LIST_COLUMN_IDS: ReadonlySet<ListReorderableColumnId> = new Set([
+  'modified',
+  'created',
+]);
+
+/** 非「位置」页：没有磁盘条目，「可用空间」整列都是 `—`。 */
+const NON_LOCATIONS_HIDDEN_LIST_COLUMN_IDS: ReadonlySet<ListReorderableColumnId> = new Set([
+  'availableSpace',
+]);
+
+/**
+ * 当前路径下**不显示**的列表列。
+ *
+ * 抽成纯函数是为了能单测：这条规则一旦写进模板里，
+ * 「位置页少一列」就变成一件只能靠肉眼看的事。
+ */
+export function getListColumnIdsHiddenForPath(path: string): ReadonlySet<ListReorderableColumnId> {
+  if (isVirtualLocationPath(path)) {
+    return LOCATIONS_HIDDEN_LIST_COLUMN_IDS;
+  }
+
+  return NON_LOCATIONS_HIDDEN_LIST_COLUMN_IDS;
+}
+
+/**
+ * 把「这一页不显示的列」从可见性里去掉。
+ *
+ * 返回**新对象**，绝不就地改传入的那个 —— 它来自 store，
+ * 就地改会把全局偏好一起改掉（换个文件夹就再也回不来了）。
+ */
+export function applyListColumnVisibilityForPath(
+  columnVisibility: ListColumnVisibility,
+  path: string,
+): ListColumnVisibility {
+  const hiddenColumnIds = getListColumnIdsHiddenForPath(path);
+
+  if (hiddenColumnIds.size === 0) {
+    return columnVisibility;
+  }
+
+  let nextVisibility = columnVisibility;
+
+  for (const columnId of hiddenColumnIds) {
+    const definition = FILE_BROWSER_LIST_COLUMN_DEFINITIONS.find(entry => entry.id === columnId);
+    const visibilityKey = definition?.visibilityKey;
+
+    if (!visibilityKey || !nextVisibility[visibilityKey]) {
+      continue;
+    }
+
+    nextVisibility = {
+      ...nextVisibility,
+      [visibilityKey]: false,
+    };
+  }
+
+  return nextVisibility;
+}
 
 export interface ListColumnsGridTemplateOptions {
   fillWidth: boolean;

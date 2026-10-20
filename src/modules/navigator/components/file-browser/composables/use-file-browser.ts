@@ -699,6 +699,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleTopLevelNameConflictMerge: selection.handleTopLevelNameConflictMerge,
     handleTopLevelNameConflictCancel: selection.handleTopLevelNameConflictCancel,
     permanentDeleteConfirm: selection.permanentDeleteConfirm,
+    // FORK-MODIFICATION 2026-10-20：远程删除的确认框状态。
+    remoteDeleteConfirm: selection.remoteDeleteConfirm,
 
     getImageThumbnail: imageThumbnails.getImageThumbnail,
     getImageThumbnailPlaceholder: imageThumbnails.getImageThumbnailPlaceholder,

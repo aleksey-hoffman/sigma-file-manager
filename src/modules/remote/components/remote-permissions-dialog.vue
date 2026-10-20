@@ -37,6 +37,7 @@ import {
   type PermissionTriple,
 } from '@/modules/remote/utils/remote-permissions';
 import { getRemotePermissions, setRemotePermissions } from '@/modules/remote/utils/remote-transfer';
+import { describeRemoteError } from '@/utils/remote-directory';
 import type { RemotePermissionsTarget } from '@/modules/remote/utils/remote-permissions-dialog-state';
 
 const props = defineProps<{
@@ -169,8 +170,10 @@ async function handleSubmit() {
     }
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    toast.error(t('remote.permissions.failed', { message }));
+    // FORK-MODIFICATION 2026-10-20：远程错误是 `{ kind, message }` 对象，
+    // 不是 `Error` 实例。`String(error)` 会得到 "[object Object]"，
+    // 用户看到的是一句毫无信息量的提示。
+    toast.error(t('remote.permissions.failed', { message: describeRemoteError(error) }));
   }
   finally {
     isSubmitting.value = false;

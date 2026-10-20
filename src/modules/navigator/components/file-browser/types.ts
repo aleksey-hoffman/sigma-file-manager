@@ -45,13 +45,19 @@ export interface GroupedEntries {
 }
 
 // FORK-MODIFICATION: `upload-to-remote` / `download-to-local` / `remote-permissions`
-// 是「本地 ↔ 远程传输」这三个动作。
+// 是「本地 ↔ 远程传输」这三个动作，`remote-delete` 是第四个远程专属动作。
 //
 // 它们**不**进 `context-menu-action-visibility.ts` 的 `CONTEXT_MENU_ITEMS` 表：
-// 那张表只管「条目本身允不允许做这件事」，而这三个动作的前提是
-// **对面还有一格**（上传要远程格、下载要本地格），跟选中的是不是远程条目无关。
+// 那张表只管「条目本身允不允许做这件事」，而这几个动作的前提是
+// **对面还有一格**（上传要远程格、下载要本地格）或者
+// **选中的全是远程条目**（远程删除），跟条目自身的类别无关。
 // 可见性判定在 `src/modules/remote/utils/remote-context-menu-visibility.ts`。
-export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory' | 'open-containing-directory-in-app' | 'upload-to-remote' | 'download-to-local' | 'remote-permissions';
+//
+// `remote-delete` **刻意不复用**本地的 `delete`：
+// 远程服务器上没有回收箱，「移至垃圾箱」在远程是**假选项**。
+// 所以远程条目只出一个「删除」，本地的 `delete` / `delete-permanently`
+// 继续对远程保持屏蔽（见 `entry-action-policy.ts`）。
+export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory' | 'open-containing-directory-in-app' | 'upload-to-remote' | 'download-to-local' | 'remote-permissions' | 'remote-delete';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "حذف",
+      "title": "حذف موارد راه دور",
+      "descriptionSingle": "{path} برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.",
+      "description": "این کار {count} مورد را به‌طور دائمی از سرور راه دور حذف می‌کند. این کار قابل بازگشت نیست.",
+      "noTrashHint": "سرور راه دور سطل بازیافت ندارد، بنابراین موارد حذف‌شده قابل بازیابی نیستند.",
+      "connectionHint": "اتصال: {name}",
+      "confirm": "حذف",
+      "success": "{count} مورد راه دور حذف شد.",
+      "failed": "حذف انجام نشد",
+      "permissionDenied": "دسترسی مجاز نیست"
     }
   }
 }

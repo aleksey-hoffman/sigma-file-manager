@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Löschen",
+      "title": "Entferne Elemente auf dem Server",
+      "descriptionSingle": "{path} wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      "description": "Dadurch werden {count} Element(e) auf dem Remoteserver dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+      "noTrashHint": "Auf dem Remoteserver gibt es keinen Papierkorb, gelöschte Elemente können nicht wiederhergestellt werden.",
+      "connectionHint": "Verbindung: {name}",
+      "confirm": "Löschen",
+      "success": "{count} entfernte Elemente gelöscht.",
+      "failed": "Löschen fehlgeschlagen",
+      "permissionDenied": "Keine Berechtigung"
     }
   }
 }

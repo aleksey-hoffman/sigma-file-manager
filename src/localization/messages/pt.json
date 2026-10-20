@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Excluir",
+      "title": "Excluir itens remotos",
+      "descriptionSingle": "{path} será excluído permanentemente. Esta ação não pode ser desfeita.",
+      "description": "Esta ação excluirá permanentemente {count} item(ns) do servidor remoto. Não pode ser desfeita.",
+      "noTrashHint": "O servidor remoto não tem lixeira, portanto os itens excluídos não podem ser recuperados.",
+      "connectionHint": "Conexão: {name}",
+      "confirm": "Excluir",
+      "success": "{count} item(ns) remoto(s) excluído(s).",
+      "failed": "Não foi possível excluir",
+      "permissionDenied": "Permissão negada"
     }
   }
 }

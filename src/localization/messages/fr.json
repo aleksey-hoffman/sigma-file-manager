@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Supprimer",
+      "title": "Supprimer des éléments distants",
+      "descriptionSingle": "{path} sera supprimé définitivement. Cette action est irréversible.",
+      "description": "Cette action supprime définitivement {count} élément(s) du serveur distant. Elle est irréversible.",
+      "noTrashHint": "Le serveur distant n'a pas de corbeille : les éléments supprimés ne peuvent pas être récupérés.",
+      "connectionHint": "Connexion : {name}",
+      "confirm": "Supprimer",
+      "success": "{count} élément(s) distant(s) supprimé(s).",
+      "failed": "Échec de la suppression",
+      "permissionDenied": "Autorisation refusée"
     }
   }
 }

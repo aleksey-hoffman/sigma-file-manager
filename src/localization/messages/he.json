@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "מחיקה",
+      "title": "מחיקת פריטים מרוחקים",
+      "descriptionSingle": "{path} יימחק לצמיתות. לא ניתן לבטל פעולה זו.",
+      "description": "פעולה זו תמחק {count} פריטים מהשרת המרוחק. לא ניתן לבטל אותה.",
+      "noTrashHint": "אין בשרת המרוחק סל מחזור, ולכן אי אפשר לשחזר פריטים שנמחקו.",
+      "connectionHint": "חיבור: {name}",
+      "confirm": "מחיקה",
+      "success": "נמחקו {count} פריטים מרוחקים.",
+      "failed": "המחיקה נכשלה",
+      "permissionDenied": "הרשאה חסרה"
     }
   }
 }

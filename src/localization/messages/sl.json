@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Izbriši",
+      "title": "Brisanje oddaljenih elementov",
+      "descriptionSingle": "{path} bo trajno izbrisan. Tega ni mogoče razveljaviti.",
+      "description": "Ta dejanje bo trajno izbrisalo {count} elementov z oddaljenega strežnika. Tega ni mogoče razveljaviti.",
+      "noTrashHint": "Oddaljeni strežnik nima koša, zato izbrisanih elementov ni mogoče obnoviti.",
+      "connectionHint": "Povezava: {name}",
+      "confirm": "Izbriši",
+      "success": "Izbrisani oddaljeni elementi: {count}.",
+      "failed": "Brisanje ni uspelo",
+      "permissionDenied": "Dovoljenje zavrnjeno"
     }
   }
 }

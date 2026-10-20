@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Eliminar",
+      "title": "Eliminar elementos remotos",
+      "descriptionSingle": "{path} se eliminará de forma permanente. Esta acción no se puede deshacer.",
+      "description": "Se eliminarán de forma permanente {count} elemento(s) del servidor remoto. Esta acción no se puede deshacer.",
+      "noTrashHint": "El servidor remoto no tiene papelera, así que los elementos eliminados no se pueden recuperar.",
+      "connectionHint": "Conexión: {name}",
+      "confirm": "Eliminar",
+      "success": "Se eliminaron {count} elemento(s) remoto(s).",
+      "failed": "No se pudo eliminar",
+      "permissionDenied": "Permiso denegado"
     }
   }
 }

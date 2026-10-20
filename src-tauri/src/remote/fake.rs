@@ -299,6 +299,79 @@ impl RemoteProvider for FakeRemoteProvider {
             .get(&(connection_id.to_string(), normalized))
             .copied())
     }
+
+    /// 删掉一个条目。
+    ///
+    /// 目录**必须为空** —— 与真实 SFTP / FTP 一致。
+    /// 这里必须**真的失败**，而不是悄悄把整棵子树抹掉：
+    /// 假 provider 一旦比真实服务器宽松，递归编排的失败路径就永远测不到，
+    /// 而那正是「删了一半」这种最坏结果最可能出现的地方。
+    async fn remove_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        is_dir: bool,
+    ) -> Result<(), RemoteError> {
+        let normalized = self.lookup(connection_id, remote_path)?;
+        let mut tree = self.tree.lock().map_err(|_| poisoned("目录树"))?;
+
+        let Some(directories) = tree.get_mut(connection_id) else {
+            return Err(RemoteError::not_found(format!(
+                "未知的远程连接: {connection_id}"
+            )));
+        };
+
+        let (parent, name) = normalized.rsplit_once('/').expect("路径恒以 / 开头");
+        let parent = if parent.is_empty() { "/" } else { parent };
+
+        // **不可变借用阶段**：先找位置、判空。
+        // 顺序有硬约束：`directories.get_mut(parent)` 拿到的借用会一直活到
+        // 函数结束，在它之后再 `directories.get(..)` / `directories.remove(..)`
+        // 就是同时可变与不可变借用同一个 map —— 编译不过。
+        let (position, has_children) = {
+            let Some(siblings) = directories.get(parent) else {
+                return Err(RemoteError::not_found(format!(
+                    "远程路径不存在: {connection_id}{normalized}"
+                )));
+            };
+
+            let Some(position) = siblings.iter().position(|entry| entry.name == name) else {
+                return Err(RemoteError::not_found(format!(
+                    "远程路径不存在: {connection_id}{normalized}"
+                )));
+            };
+
+            let has_children = directories
+                .get(&normalized)
+                .is_some_and(|children| !children.is_empty());
+
+            (position, has_children)
+        };
+
+        if is_dir && has_children {
+            return Err(RemoteError::protocol(format!(
+                "这个远端目录不是空的，SFTP 不支持递归删除：{normalized}"
+            )));
+        }
+
+        // **可变借用阶段**：从目录表里摘掉这个条目。
+        if is_dir {
+            directories.remove(&normalized);
+        }
+
+        if let Some(siblings) = directories.get_mut(parent) {
+            siblings.remove(position);
+        }
+
+        // 文件内容也一并清掉：留着的话「删了之后再读」会读到已删的文件，
+        // 那是一条只在假 provider 上才成立的假象。
+        let mut files = self.files.lock().map_err(|_| poisoned("文件表"))?;
+        if let Some(per_connection) = files.get_mut(connection_id) {
+            per_connection.remove(&normalized);
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -414,6 +487,114 @@ mod tests {
 
         let error = provider
             .read_file("conn-missing", "/pub/readme.txt")
+            .await
+            .expect_err("unknown connection");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    // ---- 删除 -------------------------------------------------------------
+
+    /// 目录里的直接子项名字。断言「还在不在」用这个最省事。
+    async fn child_names(provider: &FakeRemoteProvider, path: &str) -> Vec<String> {
+        let mut names: Vec<String> = provider
+            .read_dir("conn-a", path)
+            .await
+            .expect("list")
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect();
+
+        names.sort();
+
+        names
+    }
+
+    #[tokio::test]
+    async fn a_removed_file_disappears_from_its_directory() {
+        let provider = FakeRemoteProvider::sample();
+
+        provider
+            .remove_path("conn-a", "/pub/readme.txt", false)
+            .await
+            .expect("remove");
+
+        assert_eq!(child_names(&provider, "/pub").await, Vec::<String>::new());
+    }
+
+    #[tokio::test]
+    async fn a_removed_file_can_no_longer_be_read() {
+        // 内容表必须一起清掉：留着的话「删了之后再读」还能读到内容，
+        // 那是一条只在假 provider 上才成立的假象。
+        let provider = FakeRemoteProvider::sample();
+
+        provider
+            .remove_path("conn-a", "/pub/readme.txt", false)
+            .await
+            .expect("remove");
+
+        let error = provider
+            .read_file("conn-a", "/pub/readme.txt")
+            .await
+            .expect_err("the file was removed");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    #[tokio::test]
+    async fn a_non_empty_directory_refuses_to_be_removed_and_stays_where_it_was() {
+        // **必须真的失败**，不能悄悄把整棵子树抹掉：
+        // 假 provider 一旦比真实服务器宽松，「目录非空」这条失败路径
+        // 在产品代码里就永远测不到。
+        let provider = FakeRemoteProvider::sample();
+
+        let error = provider
+            .remove_path("conn-a", "/pub", true)
+            .await
+            .expect_err("the directory is not empty");
+
+        assert_eq!(error.kind, RemoteErrorKind::Protocol);
+        assert!(error.message.contains("不是空的"), "{}", error.message);
+        // 失败之后目录必须还在原地。
+        assert_eq!(
+            child_names(&provider, "/").await,
+            vec!["empty".to_string(), "pub".to_string()]
+        );
+    }
+
+    #[tokio::test]
+    async fn an_empty_directory_can_be_removed() {
+        let provider = FakeRemoteProvider::sample();
+
+        provider
+            .remove_path("conn-a", "/empty", true)
+            .await
+            .expect("remove");
+
+        assert_eq!(
+            child_names(&provider, "/").await,
+            vec!["pub".to_string()]
+        );
+    }
+
+    #[tokio::test]
+    async fn removing_a_path_that_is_not_there_is_reported_as_not_found() {
+        let provider = FakeRemoteProvider::sample();
+
+        let error = provider
+            .remove_path("conn-a", "/pub/nope.txt", false)
+            .await
+            .expect_err("nothing to remove");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    #[tokio::test]
+    async fn removing_from_an_unknown_connection_is_reported_as_not_found() {
+        let provider = FakeRemoteProvider::sample();
+
+        let error = provider
+            .remove_path("conn-missing", "/pub/readme.txt", false)
             .await
             .expect_err("unknown connection");
 

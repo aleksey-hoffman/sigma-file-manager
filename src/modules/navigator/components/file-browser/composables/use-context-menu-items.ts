@@ -10,10 +10,12 @@ import {
   getContextMenuSelectionStats,
   isContextMenuActionVisible,
 } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
-// FORK-MODIFICATION: 传输类动作（上传 / 下载 / 权限设置）的可见性判定。
+// FORK-MODIFICATION: 传输类动作（上传 / 下载 / 权限设置）与远程删除的可见性判定。
 import {
+  isRemoteDeleteActionVisible,
   isRemoteTransferActionVisible,
   resolveSelectionProtocol,
+  type RemoteContextMenuAction,
   type RemoteTransferMenuAction,
 } from '@/modules/remote/utils/remote-context-menu-visibility';
 import { useRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
@@ -58,8 +60,18 @@ export function useContextMenuItems(
       || action === 'remote-permissions';
   }
 
+  function isRemoteContextMenuAction(action: ContextMenuAction): action is RemoteContextMenuAction {
+    return isRemoteTransferAction(action) || action === 'remote-delete';
+  }
+
   function isActionVisible(action: ContextMenuAction): boolean {
-    if (isRemoteTransferAction(action)) {
+    if (isRemoteContextMenuAction(action)) {
+      // FORK-MODIFICATION：远程删除的判定只看「选中的全是远程条目」，
+      // 不需要「对面那一格」的上下文，所以单独走一支。
+      if (action === 'remote-delete') {
+        return isRemoteDeleteActionVisible(selectedEntries.value);
+      }
+
       return isRemoteTransferActionVisible(action, selectedEntries.value, remoteTransferContext.value);
     }
 

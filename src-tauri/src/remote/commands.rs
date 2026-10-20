@@ -505,6 +505,37 @@ pub async fn remote_get_permissions(
     }
 }
 
+/// 删除一个远程文件或目录。
+///
+/// `is_dir` 决定走哪条命令（SFTP 的 `remove` / `rmdir`；FTP 的 `DELE` / `RMD`）。
+///
+/// **目录必须为空** —— 两种协议都没有递归删除。目录非空时服务器会拒绝，
+/// 这里把错误原样带回去，前端据此提示「先清空这个目录」。
+///
+/// **权限不足时返回 `Err(kind = "permission")`**（SFTP 能分清；
+/// FTP 的 `550` 分不清「没权限」与「目录非空」，按 `not_found` 报）。
+/// 前端据此显示「这个账户没有删除权限」—— **菜单项本身保留**，
+/// 不因为「现在删不了」就把入口藏起来。
+#[tauri::command]
+pub async fn remote_remove_path(
+    app: tauri::AppHandle,
+    remote_path: String,
+    is_dir: bool,
+) -> Result<(), RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&remote_path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let provider =
+        provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
+
+    provider.remove_path(&connection_id, &remote_path, is_dir).await
+}
+
 #[cfg(test)]
 mod tests {
     /// 阶段 1 的远程 command。**改这个数组必须同步改 `lib.rs` 的
@@ -524,6 +555,7 @@ mod tests {
         "remote_download_path",
         "remote_chmod",
         "remote_get_permissions",
+        "remote_remove_path",
     ];
 
     /// 抽出 `lib.rs` 里 `generate_handler![ ... ]` 的那一段。

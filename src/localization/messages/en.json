@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Delete",
+      "title": "Delete remote items",
+      "descriptionSingle": "{path} will be deleted permanently. This cannot be undone.",
+      "description": "This will permanently delete {count} item(s) on the remote server. This cannot be undone.",
+      "noTrashHint": "There is no recycle bin on the remote server, so deleted items cannot be recovered.",
+      "connectionHint": "Connection: {name}",
+      "confirm": "Delete",
+      "success": "Deleted {count} remote item(s).",
+      "failed": "Could not delete",
+      "permissionDenied": "Permission denied"
     }
   }
 }

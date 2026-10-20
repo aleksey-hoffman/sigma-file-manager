@@ -5,12 +5,14 @@
 import { describe, expect, it } from 'vitest';
 import type { ListColumnVisibility } from '@/types/user-settings';
 import {
+  applyListColumnVisibilityForPath,
   buildCompactListColumnWidths,
   buildListColumnsGridTemplate,
   clampListColumnWidth,
   convertWidthsToFlexWeights,
   getListColumnFlexGridTrack,
   getListColumnGridTrack,
+  getListColumnIdsHiddenForPath,
   getVisibleListColumnDefinitions,
   normalizeListColumnOrder,
   redistributeListColumnWidths,
@@ -303,6 +305,100 @@ describe('file-browser-list-columns', () => {
     )).toEqual({
       name: 220,
       size: 5,
+    });
+  });
+
+  // FORK-MODIFICATION 2026-10-20（用户附图要求）：列只在它有意义的地方出现。
+  describe('按路径隐藏的列表列', () => {
+    it('位置页把「修改时间」「创建时间」都藏起来', () => {
+      // 位置页列的是磁盘，磁盘既没有修改时间也没有创建时间，
+      // 那一列整列都是 `-`。
+      const hidden = getListColumnIdsHiddenForPath('sfm://locations');
+
+      expect(hidden.size).toBeGreaterThan(0);
+      expect(hidden.has('modified')).toBe(true);
+      expect(hidden.has('created')).toBe(true);
+    });
+
+    it('位置页保留「可用空间」', () => {
+      expect(getListColumnIdsHiddenForPath('sfm://locations').has('availableSpace')).toBe(false);
+    });
+
+    it('普通目录把「可用空间」藏起来', () => {
+      // 普通目录里没有磁盘条目，那一列整列都是 `—`。
+      const hidden = getListColumnIdsHiddenForPath('C:/Users');
+
+      expect(hidden.size).toBeGreaterThan(0);
+      expect(hidden.has('availableSpace')).toBe(true);
+    });
+
+    it('普通目录保留日期列', () => {
+      const hidden = getListColumnIdsHiddenForPath('C:/Users');
+
+      expect(hidden.has('modified')).toBe(false);
+      expect(hidden.has('created')).toBe(false);
+    });
+
+    it('位置页算出来的可见性里没有日期列，其它列照旧', () => {
+      const visibility = applyListColumnVisibilityForPath(defaultVisibility, 'sfm://locations');
+
+      expect(visibility.modified).toBe(false);
+      expect(visibility.created).toBe(false);
+      expect(visibility.items).toBe(true);
+      expect(visibility.size).toBe(true);
+      expect(visibility.availableSpace).toBe(true);
+      expect(visibility.kind).toBe(true);
+    });
+
+    it('普通目录算出来的可见性里没有「可用空间」，日期列照旧', () => {
+      const visibility = applyListColumnVisibilityForPath(defaultVisibility, 'C:/Users');
+
+      expect(visibility.availableSpace).toBe(false);
+      expect(visibility.modified).toBe(true);
+      expect(visibility.created).toBe(false);
+      expect(visibility.items).toBe(true);
+      expect(visibility.size).toBe(true);
+    });
+
+    it('不修改传进来的那一份 —— 全局偏好不能被这一页改掉', () => {
+      // 就地改的话，用户在位置页关掉一次「修改时间」，
+      // 换个普通文件夹就再也回不来了。
+      const visibility = applyListColumnVisibilityForPath(defaultVisibility, 'sfm://locations');
+
+      expect(visibility).not.toBe(defaultVisibility);
+      expect(defaultVisibility.modified).toBe(true);
+      expect(defaultVisibility.availableSpace).toBe(true);
+    });
+
+    it('用户自己关掉的列不受影响（已经是 false 就不要再动）', () => {
+      const hiddenAlready: ListColumnVisibility = {
+        ...defaultVisibility,
+        modified: false,
+      };
+
+      const visibility = applyListColumnVisibilityForPath(hiddenAlready, 'sfm://locations');
+
+      expect(visibility.modified).toBe(false);
+      expect(visibility.created).toBe(false);
+    });
+
+    it('位置页的可见列里真的没有「修改时间」，却有「可用空间」', () => {
+      // 前面几条只验了规则本身；这一条验「规则接上去之后列真的不见了」。
+      const visibility = applyListColumnVisibilityForPath(defaultVisibility, 'sfm://locations');
+      const columnIds = getVisibleListColumnDefinitions(visibility).map(definition => definition.id);
+
+      expect(columnIds).not.toContain('modified');
+      expect(columnIds).toContain('size');
+      expect(columnIds).toContain('availableSpace');
+    });
+
+    it('普通目录的可见列里没有「可用空间」，却有「修改时间」', () => {
+      const visibility = applyListColumnVisibilityForPath(defaultVisibility, 'C:/Users');
+      const columnIds = getVisibleListColumnDefinitions(visibility).map(definition => definition.id);
+
+      expect(columnIds).not.toContain('availableSpace');
+      expect(columnIds).toContain('modified');
+      expect(columnIds).toContain('size');
     });
   });
 });

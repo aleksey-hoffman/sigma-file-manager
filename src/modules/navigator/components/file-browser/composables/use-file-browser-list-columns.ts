@@ -30,6 +30,9 @@ import {
   refreshScrollAreaHorizontalMetrics,
   resolveScrollAreaViewportElement,
 } from '../utils/refresh-scroll-area-horizontal';
+// FORK-MODIFICATION 2026-10-20：按当前路径算「实际可见性」
+// （「位置」页不显示日期列）。
+import { useFileBrowserListColumnVisibility } from './use-file-browser-list-column-visibility';
 
 export interface FileBrowserListColumnsContext {
   listColumnsTemplate: Ref<string>;
@@ -47,7 +50,10 @@ export interface FileBrowserListColumnsContext {
   cancelColumnResize: () => void;
 }
 
-const FILE_BROWSER_LIST_COLUMNS_KEY: InjectionKey<FileBrowserListColumnsContext> = Symbol('fileBrowserListColumns');
+// FORK-MODIFICATION 2026-10-20：导出注入键，供组件测试提供桩上下文。
+// 之前它是模块私有的，测试只能靠「整条 provide 链」才能把组件挂起来，
+// 于是「表头标题渲染了两遍」这种缺陷没人能自动抓到。
+export const FILE_BROWSER_LIST_COLUMNS_KEY: InjectionKey<FileBrowserListColumnsContext> = Symbol('fileBrowserListColumns');
 
 export function provideFileBrowserListColumns(): FileBrowserListColumnsContext {
   const userSettingsStore = useUserSettingsStore();
@@ -59,7 +65,7 @@ export function provideFileBrowserListColumns(): FileBrowserListColumnsContext {
   const headerGridElementRef = ref<HTMLElement | null>(null);
   const scrollViewportElementRef = ref<HTMLElement | null>(null);
 
-  const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
+  const columnVisibility = useFileBrowserListColumnVisibility();
   const listColumnFillWidth = computed(() => userSettingsStore.userSettings.navigator.listColumnFillWidth);
   const listColumnOrder = computed(() => userSettingsStore.userSettings.navigator.listColumnOrder);
 

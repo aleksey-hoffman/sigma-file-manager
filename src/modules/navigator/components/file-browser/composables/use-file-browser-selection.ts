@@ -32,6 +32,10 @@ import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+// FORK-MODIFICATION 2026-10-20：远程删除。
+import { useRemoteDeleteConfirm } from '@/modules/remote/utils/remote-delete-confirm';
+import { deleteRemoteEntries } from '@/modules/remote/utils/remote-delete';
+import { isRemotePath } from '@/utils/remote-paths';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { applyBackgroundContextMenu } from '@/modules/navigator/components/file-browser/utils/file-browser-background-context-menu';
@@ -72,6 +76,9 @@ export function useFileBrowserSelection(
   const folderTreeStore = useFolderTreeStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
+  // FORK-MODIFICATION 2026-10-20：远程删除的确认框。**每个 FileBrowser 实例一份**，
+  // 与本地的 `permanentDeleteConfirm` 同款 —— 左右双屏时两格不能共用一份待确认条目。
+  const remoteDeleteConfirm = useRemoteDeleteConfirm();
   const {
     performCopyMoveWithConflicts,
     conflictDialogState,
@@ -981,6 +988,17 @@ export function useFileBrowserSelection(
         }
 
         break;
+      // FORK-MODIFICATION 2026-10-20：远程删除。
+      //
+      // 刻意**不复用**上面的 `delete` / `delete-permanently`：
+      // 那两个走的是本地通道（回收箱 / 本地永久删除），对 `sfm://remote/...` 路径
+      // 只会得到一个「路径不存在」。远程只有一个「删除」动作。
+      case 'remote-delete':
+        if (entries.length > 0) {
+          void deleteRemoteItems(entries);
+        }
+
+        break;
       case 'open-in-new-tab':
         if (entries.length > 0) {
           openEntriesInNewTabs(entries);
@@ -1138,6 +1156,69 @@ export function useFileBrowserSelection(
     }
   }
 
+  /**
+   * FORK-MODIFICATION 2026-10-20：删除远程条目。
+   *
+   * 与本地的 `deleteItems` 有三处**刻意**不同：
+   *
+   * 1. **没有回收箱**，所以一定要先确认。远程删除不可撤销，
+   *    误操作的代价远高于本地。
+   * 2. **不走 `deleteJobsStore`**。那个 store 走的是本地文件操作通道
+   *    （`trash` / 永久删除），它的进度与「已删除路径」回调都是本地的；
+   *    远程条目塞进去只会得到一个永远转不出来的进度条。
+   * 3. **失败要逐条报**。后端一条命令只吃一个路径，多选是前端循环，
+   *    循环里第 3 个失败不该让前 2 个的成功显示不出来。
+   */
+  async function deleteRemoteItems(entries: DirEntry[]): Promise<boolean> {
+    const remoteEntries = entries.filter(entry => isRemotePath(entry.path));
+
+    if (remoteEntries.length === 0) {
+      return false;
+    }
+
+    const confirmed = await remoteDeleteConfirm.requestConfirm(remoteEntries);
+
+    if (!confirmed) {
+      return false;
+    }
+
+    const report = await deleteRemoteEntries(remoteEntries);
+
+    if (report.failures.length > 0) {
+      const denied = report.failures.some(failure => failure.kind === 'permission');
+
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: denied
+              ? t('remote.delete.permissionDenied')
+              : t('remote.delete.failed'),
+            description: report.failures
+              .map(failure => `${failure.path}: ${failure.message}`)
+              .join('\n'),
+          },
+        },
+        duration: 6000,
+      });
+    }
+
+    if (report.deleted.length > 0) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('remote.delete.success', { count: report.deleted.length }),
+            description: '',
+          },
+        },
+      });
+
+      clearSelection();
+      onRefresh();
+    }
+
+    return report.deleted.length > 0;
+  }
+
   function performSelectionAction(action: ContextMenuAction) {
     const entries = selectedEntries.value;
 
@@ -1197,6 +1278,8 @@ export function useFileBrowserSelection(
     handleTopLevelNameConflictMerge,
     handleTopLevelNameConflictCancel,
     permanentDeleteConfirm,
+    // FORK-MODIFICATION 2026-10-20：远程删除的确认框状态。
+    remoteDeleteConfirm,
     setOpenBatchRenameDialogHandler(handler: (entries: DirEntry[]) => void) {
       openBatchRenameDialogForSelection = handler;
     },

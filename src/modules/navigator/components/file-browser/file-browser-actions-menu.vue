@@ -15,7 +15,6 @@ import {
   FolderInputIcon,
   ClipboardPasteIcon,
   Trash2Icon,
-  ShredderIcon,
   EyeIcon,
   PrinterIcon,
   Share2Icon,
@@ -54,6 +53,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
@@ -170,11 +170,11 @@ const canPasteToSelectedDirectory = computed(() => {
 
 const isShiftHeld = ref(false);
 
-const trashTooltipKey = computed(() => props.isCurrentDirectoryContext
+const moveToTrashLabelKey = computed(() => props.isCurrentDirectoryContext
   ? 'shortcuts.moveCurrentDirectoryToTrash'
   : 'shortcuts.moveSelectedItemsToTrash');
 
-const deleteTooltipKey = computed(() => props.isCurrentDirectoryContext
+const deleteFromDriveLabelKey = computed(() => props.isCurrentDirectoryContext
   ? 'shortcuts.deleteCurrentDirectoryFromDrive'
   : 'shortcuts.deleteSelectedItemsFromDrive');
 
@@ -199,10 +199,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('keyup', handleKeyUp);
 });
-
-function handleDeleteClick() {
-  emitAction(isShiftHeld.value ? 'delete-permanently' : 'delete');
-}
 
 function handleCreateLink(linkKind: LinkCreationKind) {
   emit('createLink', linkKind);
@@ -344,37 +340,65 @@ function handleCreateLink(linkKind: LinkCreationKind) {
         </div>
       </TooltipContent>
     </Tooltip>
-    <Tooltip
-      v-if="isActionVisible('delete')"
-    >
-      <TooltipTrigger as-child>
+    <!--
+      FORK-MODIFICATION 2026-10-20（用户附图）：删除入口从「悬停提示」改成
+      **真正可点的下拉菜单**。
+
+      原来这里挂的是 Tooltip：鼠标停在垃圾桶图标上时浮出「移至垃圾箱 /
+      从驱动器中删除」两行字，但那只是**提示**——点不动。用户看到的就是一个
+      「看得见、点不着的子菜单」，只能靠 Shift+点击垃圾桶图标去猜。
+
+      现在换成 DropdownMenu：两个操作各占一项，各自带快捷键提示。
+      Del / Shift+Del 这两个**全局快捷键**不受影响，行为不变。
+
+      图标不再跟着 Shift 变色（ShredderIcon）：按下 Shift 也不再有
+      「点下去就是永久删除」这个含义了，菜单里已经写得很清楚。
+    -->
+    <DropdownMenu v-if="isActionVisible('delete')">
+      <DropdownMenuTrigger as-child>
         <Button
           variant="ghost"
           size="xs"
           class="file-browser-actions-menu__action--danger"
-          @click="handleDeleteClick"
         >
-          <ShredderIcon
-            v-if="isShiftHeld"
-            :size="16"
-          />
-          <Trash2Icon
-            v-else
-            :size="16"
-          />
+          <Trash2Icon :size="16" />
         </Button>
-      </TooltipTrigger>
-      <TooltipContent class="file-browser-actions-menu__tooltip">
-        <div class="file-browser-actions-menu__tooltip-row">
-          {{ t(trashTooltipKey) }}
-          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('delete') }}</ContextMenuShortcut>
-        </div>
-        <div class="file-browser-actions-menu__tooltip-row">
-          {{ t(deleteTooltipKey) }}
-          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('deletePermanently') }}</ContextMenuShortcut>
-        </div>
-      </TooltipContent>
-    </Tooltip>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        side="bottom"
+        class="file-browser-actions-menu__delete-dropdown"
+      >
+        <DropdownMenuItem @select="emitAction('delete')">
+          <span>{{ t(moveToTrashLabelKey) }}</span>
+          <DropdownMenuShortcut>{{ shortcutsStore.getShortcutLabel('delete') }}</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem @select="emitAction('delete-permanently')">
+          <span>{{ t(deleteFromDriveLabelKey) }}</span>
+          <DropdownMenuShortcut>{{ shortcutsStore.getShortcutLabel('deletePermanently') }}</DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <!--
+      FORK-MODIFICATION 2026-10-20：远程条目的删除入口。
+
+      远程**没有回收箱**，所以只有「删除」一个动作，不做下拉 ——
+      摆一个「移至垃圾箱」在远程是假选项（远程删除根本不走本地回收站）。
+
+      权限不够时**不隐藏**：能不能删取决于服务器上那个账户属于
+      owner/group/other 哪一组，前端判不准；判错的后果是「能删的菜单被置灰」。
+      所以一律显示，点了没权限由后端如实报错。
+    -->
+    <Button
+      v-if="isActionVisible('remote-delete')"
+      variant="ghost"
+      size="xs"
+      class="file-browser-actions-menu__action--danger"
+      :title="t('remote.delete.menuItem')"
+      @click="emitAction('remote-delete')"
+    >
+      <Trash2Icon :size="16" />
+    </Button>
   </div>
   <component :is="menuSeparatorComponent" />
   <FileBrowserOpenWithSubmenu
@@ -478,6 +502,16 @@ function handleCreateLink(linkKind: LinkCreationKind) {
     <ShieldIcon :size="16" />
     <span>{{ t('remote.permissions.menuItem') }}</span>
   </component>
+  <!-- FORK-MODIFICATION 2026-10-20：远程删除。菜单项**始终保留**，
+       权限不足时点下去由后端报错（用户原话：「可以设置为灰色，但要保留菜单」）。 -->
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('remote-delete')"
+    @select="emitAction('remote-delete')"
+  >
+    <Trash2Icon :size="16" />
+    <span>{{ t('remote.delete.menuItem') }}</span>
+  </component>
   <FileBrowserNewSubmenu
     v-if="selectionStats.hasDirectories && !hasVirtualLocationSelection"
     @action="emitAction"
@@ -546,6 +580,18 @@ function handleCreateLink(linkKind: LinkCreationKind) {
 
 .file-browser-actions-menu__link-dropdown {
   min-width: 160px;
+}
+
+/* FORK-MODIFICATION 2026-10-20：删除下拉。宽度要容得下
+   「从驱动器中删除」+ 快捷键提示两列，否则文字会被挤到换行。 */
+.file-browser-actions-menu__delete-dropdown {
+  min-width: 220px;
+}
+
+.file-browser-actions-menu__delete-dropdown .sigma-ui-dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .file-browser-actions-menu__action--danger:hover {

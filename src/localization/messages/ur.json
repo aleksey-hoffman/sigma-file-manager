@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "حذف کریں",
+      "title": "دوری کے اشیاء حذف کریں",
+      "descriptionSingle": "{path} مستقل طور پر حذف کر دیا جائے گا۔ اسے واپس نہیں کیا جا سکتا۔",
+      "description": "یہ عمل دوری سرور پر {count} اشیاء کو مستقل طور پر حذف کر دے گا۔ اسے واپس نہیں کیا جا سکتا۔",
+      "noTrashHint": "دوری سرور میں کوئی ری سائیکل بین نہیں ہے، اس لیے حذف شدہ اشیاء بحال نہیں کی جا سکتیں۔",
+      "connectionHint": "کنکشن: {name}",
+      "confirm": "حذف کریں",
+      "success": "{count} دوری اشیاء حذف ہو گئیں۔",
+      "failed": "حذف نہیں ہو سکا",
+      "permissionDenied": "اجازت نہیں ہے"
     }
   }
 }

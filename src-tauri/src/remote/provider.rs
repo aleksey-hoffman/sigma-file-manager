@@ -100,6 +100,23 @@ pub trait RemoteProvider: Send + Sync {
         connection_id: &str,
         remote_path: &str,
     ) -> Result<Option<u32>, RemoteError>;
+
+    /// 删除远程文件或目录。
+    ///
+    /// `is_dir` 决定走哪条命令（SFTP 的 `remove` / `rmdir`；FTP 的 `DELE` / `RMD`）。
+    ///
+    /// **目录必须为空**：SFTP 与 FTP 都没有递归删除，目录里还有东西时服务器会
+    /// 拒绝。失败必须**如实报出来** —— 悄悄删掉一半是最坏的结果。
+    ///
+    /// **刻意不给默认实现**，理由与 [`Self::set_permissions`] 完全一样：
+    /// 有默认实现的话，新加一个 provider 时「忘了写」会变成编译通过、
+    /// 用户点了没反应、报告还显示成功。宁可让编译器逼每个实现方表态。
+    async fn remove_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        is_dir: bool,
+    ) -> Result<(), RemoteError>;
 }
 
 #[cfg(test)]

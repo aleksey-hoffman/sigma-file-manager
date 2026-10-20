@@ -585,6 +585,57 @@ impl SftpRemoteProvider {
 
         with_timeout(self.timeout, "读取远程权限", work).await
     }
+
+    /// 删除一个远程文件或目录。
+    ///
+    /// 目录**必须为空**：SFTP 的 `rmdir` 不递归，服务器对非空目录回
+    /// `SSH_FX_FAILURE`。那个码在通用映射里是「无法归类的失败」——
+    /// 对用户毫无用处，所以这里在失败之后**再列一次目录**，
+    /// 确认「不为空」时给一句能照着做的话（「先清空这个目录」）。
+    /// 这一步只在失败路径上多花一次往返，成功路径不付这个代价。
+    ///
+    /// 符号链接按**链接本身**删：`remove` 删的是那个目录项，
+    /// 不会跟进链接把目标也删掉 —— 这正是用户点「删除链接」时的预期。
+    pub async fn remove_path(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        is_dir: bool,
+    ) -> Result<(), RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            let outcome = if is_dir {
+                sftp.remove_dir(normalized.to_string()).await
+            } else {
+                sftp.remove_file(normalized.to_string()).await
+            };
+
+            match outcome {
+                Ok(()) => Ok(()),
+                Err(error) => {
+                    let mapped = map_sftp_error(error);
+
+                    if is_dir && mapped.kind == RemoteErrorKind::Protocol {
+                        // `read_dir` 回的是**迭代器**（不是集合），所以只能问
+                        // 「有没有至少一项」，不能问 `is_empty()`。
+                        if let Ok(listing) = sftp.read_dir(normalized.to_string()).await {
+                            if listing.count() > 0 {
+                                return Err(RemoteError::protocol(format!(
+                                    "这个远端目录不是空的，SFTP 不支持递归删除：{normalized}"
+                                )));
+                            }
+                        }
+                    }
+
+                    Err(mapped)
+                }
+            }
+        };
+
+        with_timeout(self.timeout, "删除远程条目", work).await
+    }
 }
 
 #[async_trait]
@@ -646,6 +697,16 @@ impl RemoteProvider for SftpRemoteProvider {
     ) -> Result<Option<u32>, RemoteError> {
         let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
         self.get_permissions(&resolved, &normalized).await
+    }
+
+    async fn remove_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        is_dir: bool,
+    ) -> Result<(), RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.remove_path(&resolved, &normalized, is_dir).await
     }
 }
 

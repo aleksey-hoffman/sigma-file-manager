@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "हटाएँ",
+      "title": "दूरस्थ आइटम हटाएँ",
+      "descriptionSingle": "{path} स्थायी रूप से हटा दिया जाएगा। इसे वापस नहीं लाया जा सकता।",
+      "description": "यह क्रिया दूरस्थ सर्वर से {count} आइटम स्थायी रूप से हटा देगी। इसे वापस नहीं लाया जा सकता।",
+      "noTrashHint": "दूरस्थ सर्वर पर रीसायकल बिन नहीं है, इसलिए हटाए गए आइटम वापस नहीं लाए जा सकते।",
+      "connectionHint": "कनेक्शन: {name}",
+      "confirm": "हटाएँ",
+      "success": "{count} दूरस्थ आइटम हटाए गए।",
+      "failed": "हटाना विफल",
+      "permissionDenied": "अनुमति नहीं मिली"
     }
   }
 }

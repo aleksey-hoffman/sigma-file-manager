@@ -10,6 +10,9 @@ import {
   normalizeListColumnOrder,
   type FileBrowserListColumnDefinition,
 } from '../utils/file-browser-list-columns';
+// FORK-MODIFICATION 2026-10-20：按当前路径算「实际可见性」
+// （「位置」页不显示日期列）。
+import { useFileBrowserListColumnVisibility } from './use-file-browser-list-column-visibility';
 
 export type FileBrowserVisibleOptionalListColumn = FileBrowserListColumnDefinition & {
   id: ListReorderableColumnId;
@@ -17,12 +20,13 @@ export type FileBrowserVisibleOptionalListColumn = FileBrowserListColumnDefiniti
 
 export function useFileBrowserVisibleListColumns() {
   const userSettingsStore = useUserSettingsStore();
+  const columnVisibility = useFileBrowserListColumnVisibility();
 
   const visibleOptionalListColumns = computed<FileBrowserVisibleOptionalListColumn[]>(() => {
-    const columnVisibility = userSettingsStore.userSettings.navigator.listColumnVisibility;
+    const visibility = columnVisibility.value;
 
     return normalizeListColumnOrder(userSettingsStore.userSettings.navigator.listColumnOrder)
-      .filter(columnId => columnVisibility[columnId])
+      .filter(columnId => visibility[columnId])
       .map(columnId => getListColumnDefinition(columnId) as FileBrowserVisibleOptionalListColumn);
   });
 

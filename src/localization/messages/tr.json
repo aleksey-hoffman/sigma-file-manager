@@ -1674,6 +1674,18 @@
         "notOctal": "Only the digits 0-7 are allowed.",
         "unknown": "This permission value could not be recognized."
       }
+    },
+    "delete": {
+      "menuItem": "Sil",
+      "title": "Uzak öğeleri sil",
+      "descriptionSingle": "{path} kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+      "description": "Bu işlem uzak sunucudaki {count} öğeyi kalıcı olarak siler. Geri alınamaz.",
+      "noTrashHint": "Uzak sunucuda geri dönüşüm kutusu yok, bu yüzden silinen öğeler geri getirilemez.",
+      "connectionHint": "Bağlantı: {name}",
+      "confirm": "Sil",
+      "success": "{count} uzak öğe silindi.",
+      "failed": "Silinemedi",
+      "permissionDenied": "İzin yok"
     }
   }
 }
