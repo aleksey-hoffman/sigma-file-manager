@@ -56,6 +56,8 @@ function createNavigatorSettings(overrides: Partial<UserSettingsNavigator> = {})
       linkStatus: false,
       items: true,
       size: true,
+      // FORK-MODIFICATION 2026-10-20
+      availableSpace: true,
       modified: true,
       created: false,
       tags: false,

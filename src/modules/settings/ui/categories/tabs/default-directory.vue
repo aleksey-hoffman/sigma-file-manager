@@ -28,6 +28,7 @@ import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { DefaultDirectoryKind } from '@/types/user-settings';
 import normalizePath from '@/utils/normalize-path';
+import { DEFAULT_DIRECTORY_KIND } from '@/utils/resolve-default-directory';
 
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();
@@ -52,7 +53,11 @@ const kindOptions: {
 
 const selectedKind = computed({
   get: () => {
-    const value = userSettingsStore.userSettings.navigator?.defaultDirectory?.kind ?? 'userHome';
+    // FORK-MODIFICATION 2026-10-20：默认值从 userHome 改成 locations，
+    // 兜底跟着 `DEFAULT_DIRECTORY_KIND` 走，别再写一个字面量 ——
+    // 三处各写一个默认值，其中一处漏改的现象就是「改了设置却没反应」。
+    const value = userSettingsStore.userSettings.navigator?.defaultDirectory?.kind
+      ?? DEFAULT_DIRECTORY_KIND;
     return kindOptions.find(option => option.value === value) ?? kindOptions[0];
   },
   set: (option) => {

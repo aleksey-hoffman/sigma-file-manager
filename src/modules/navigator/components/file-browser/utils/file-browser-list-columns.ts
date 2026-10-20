@@ -25,6 +25,10 @@ export interface FileBrowserListColumnDefinition {
 export const FILE_BROWSER_LIST_REORDERABLE_COLUMN_IDS: readonly ListReorderableColumnId[] = [
   'items',
   'size',
+  // FORK-MODIFICATION 2026-10-20（用户 2026-10-20 00:05 附图要求）：
+  // 「可用空间」紧跟在「大小」右侧。写在这个位置而不是追加到末尾，
+  // 是因为默认顺序**就是**用户看到的顺序；追加会让它跑到日期列后面。
+  'availableSpace',
   'modified',
   'created',
   'tags',
@@ -50,6 +54,13 @@ export const FILE_BROWSER_LIST_COLUMN_DEFINITIONS: readonly FileBrowserListColum
   {
     id: 'size',
     visibilityKey: 'size',
+    defaultMin: 50,
+    defaultMax: 100,
+  },
+  {
+    // FORK-MODIFICATION 2026-10-20：可用空间列，宽度与「大小」一致。
+    id: 'availableSpace',
+    visibilityKey: 'availableSpace',
     defaultMin: 50,
     defaultMax: 100,
   },
@@ -95,6 +106,7 @@ const DEFAULT_LIST_COLUMN_FLEX_WEIGHTS: Record<FileBrowserListColumnId, number> 
   name: 4,
   items: 1,
   size: 1,
+  availableSpace: 1,
   modified: 1,
   created: 1,
   tags: 1,

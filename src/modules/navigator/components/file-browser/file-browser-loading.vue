@@ -14,6 +14,8 @@ const { visibleOptionalListColumns } = useFileBrowserVisibleListColumns();
 const columnSkeletonClassMap: Record<ListReorderableColumnId, string> = {
   items: 'file-browser-loading__items',
   size: 'file-browser-loading__size',
+  // FORK-MODIFICATION 2026-10-20：可用空间列的加载骨架，宽度与「大小」一致。
+  availableSpace: 'file-browser-loading__size',
   modified: 'file-browser-loading__modified',
   created: 'file-browser-loading__created',
   tags: 'file-browser-loading__tags',

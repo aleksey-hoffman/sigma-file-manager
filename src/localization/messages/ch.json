@@ -1096,6 +1096,7 @@
     },
     "name": "名称",
     "size": "大小",
+    "availableSpace": "可用空间",
     "modified": "修改时间",
     "listModifiedDate": {
       "todayAt": "今天 {time}",
@@ -1653,7 +1654,7 @@
       "title": "权限设置",
       "modeLabel": "权限（八进制）",
       "modeHint": "例如 0754 表示所有者可读、可写、可执行，组可读、可执行，其他可读。",
-      "unknownMode": "读不到当前权限，请手动填写。",
+      "unknownMode": "读不到当前权限，请从列表中选择。",
       "owner": "所有者",
       "group": "组",
       "others": "其他",

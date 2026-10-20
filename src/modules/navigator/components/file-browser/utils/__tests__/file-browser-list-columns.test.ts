@@ -23,6 +23,8 @@ const defaultVisibility: ListColumnVisibility = {
   linkStatus: false,
   items: true,
   size: true,
+  // FORK-MODIFICATION 2026-10-20：与产品默认值一致 —— 「可用空间」默认可见。
+  availableSpace: true,
   modified: true,
   created: false,
   tags: false,
@@ -120,9 +122,14 @@ describe('file-browser-list-columns', () => {
 
   it('normalizes saved column order and appends missing columns', () => {
     expect(normalizeListColumnOrder(['tags', 'size', 'tags', 'unknown'])).toEqual([
+      // 先保留已保存的（去重、丢弃 unknown），再按
+      // FILE_BROWSER_LIST_REORDERABLE_COLUMN_IDS 的顺序补齐缺失列。
       'tags',
       'size',
       'items',
+      // FORK-MODIFICATION 2026-10-20：可用空间紧跟「大小」，
+      // 而「大小」本身在声明顺序里排第二，所以补齐时落在 items 之后。
+      'availableSpace',
       'modified',
       'created',
       'kind',
@@ -147,6 +154,9 @@ describe('file-browser-list-columns', () => {
       'minmax(70px, 90px)',
       'minmax(120px, 160px)',
       'minmax(90px, 130px)',
+      // FORK-MODIFICATION 2026-10-20：availableSpace 没有保存宽度，走区间轨道；
+      // 它排在 kind 之后是因为用户给的 order 里没写它，normalize 按声明顺序补在末尾。
+      'minmax(50px, 100px)',
     ].join(' '));
   });
 
@@ -170,6 +180,8 @@ describe('file-browser-list-columns', () => {
       'minmax(200px, 6fr)',
       'minmax(70px, 1fr)',
       'minmax(50px, 2fr)',
+      // FORK-MODIFICATION 2026-10-20：可用空间列的默认 flex 权重是 1。
+      'minmax(50px, 1fr)',
       'minmax(120px, 1fr)',
       'minmax(90px, 1fr)',
     ].join(' '));
@@ -198,19 +210,23 @@ describe('file-browser-list-columns', () => {
       'minmax(200px, 220fr)',
       'minmax(70px, 1fr)',
       'minmax(50px, 5fr)',
+      // FORK-MODIFICATION 2026-10-20：预览权重里没有 availableSpace，落到默认 1fr。
+      'minmax(50px, 1fr)',
       'minmax(120px, 1fr)',
       'minmax(90px, 1fr)',
     ].join(' '));
   });
 
   it('builds one track per visible column', () => {
-    const allVisible = {
+    const allVisible: ListColumnVisibility = {
       kind: true,
       links: true,
       linkTarget: true,
       linkStatus: true,
       items: true,
       size: true,
+      // FORK-MODIFICATION 2026-10-20
+      availableSpace: true,
       modified: true,
       created: true,
       tags: true,
@@ -219,7 +235,8 @@ describe('file-browser-list-columns', () => {
     const template = buildListColumnsGridTemplate(allVisible, defaultTemplateOptions);
     const tracks = visibleColumns.map(definition => getListColumnGridTrack(definition, undefined));
 
-    expect(visibleColumns).toHaveLength(9);
+    // 名称列 + 9 个可选列（8 个原有 + 可用空间）。
+    expect(visibleColumns).toHaveLength(10);
     expect(tracks).toHaveLength(visibleColumns.length);
     expect(template).toBe(tracks.join(' '));
   });
@@ -229,6 +246,8 @@ describe('file-browser-list-columns', () => {
       name: 200,
       kind: 90,
       size: 50,
+      // FORK-MODIFICATION 2026-10-20
+      availableSpace: 50,
       items: 70,
       modified: 120,
     });
@@ -240,6 +259,9 @@ describe('file-browser-list-columns', () => {
       'kind',
       'size',
       'items',
+      // FORK-MODIFICATION 2026-10-20：order 里没写 availableSpace，
+      // normalize 补在末尾，所以它排在 modified 前面而不是 size 后面。
+      'availableSpace',
       'modified',
     ]);
   });
@@ -252,6 +274,9 @@ describe('file-browser-list-columns', () => {
         name: 400,
         items: 80,
         size: 60,
+        // FORK-MODIFICATION 2026-10-20：把可用空间也放进初始宽度，
+        // 这样这条用例能顺带证明新列参与重分配，而不是躺在旁边不动的乘客。
+        availableSpace: 70,
         modified: 140,
         kind: 100,
       },
@@ -259,12 +284,13 @@ describe('file-browser-list-columns', () => {
       460,
     );
 
-    expect(redistributed.name).toBe(450);
+    expect(redistributed.name).toBe(460);
     expect(redistributed.items).toBeLessThan(80);
     expect(redistributed.size).toBeLessThan(60);
+    expect(redistributed.availableSpace).toBeLessThan(70);
     expect(
       Object.values(redistributed).reduce((sum, width) => sum + (width ?? 0), 0),
-    ).toBe(780);
+    ).toBe(850);
   });
 
   it('converts widths to flex weights from the space above minimums', () => {

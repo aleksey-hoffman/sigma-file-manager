@@ -84,6 +84,8 @@ const headerMeasurementSignature = computed(() => {
     locale.value,
     visibility.items,
     visibility.size,
+    // FORK-MODIFICATION 2026-10-20：新列必须进签名，否则切换它的可见性时表头不重算宽度。
+    visibility.availableSpace,
     visibility.modified,
     visibility.created,
     visibility.tags,
@@ -93,6 +95,8 @@ const headerMeasurementSignature = computed(() => {
     userSettingsStore.userSettings.navigator.listColumnWidths.name,
     userSettingsStore.userSettings.navigator.listColumnWidths.items,
     userSettingsStore.userSettings.navigator.listColumnWidths.size,
+    // FORK-MODIFICATION 2026-10-20：同上，新列的宽度也要进签名。
+    userSettingsStore.userSettings.navigator.listColumnWidths.availableSpace,
     userSettingsStore.userSettings.navigator.listColumnWidths.modified,
     userSettingsStore.userSettings.navigator.listColumnWidths.created,
     userSettingsStore.userSettings.navigator.listColumnWidths.tags,

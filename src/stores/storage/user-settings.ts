@@ -106,7 +106,13 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     navigator: {
       lastTabCloseBehavior: 'createDefaultTab',
       defaultDirectory: {
-        kind: 'userHome',
+        // FORK-MODIFICATION 2026-10-20（用户 2026-10-20 00:05 附图要求）：
+        // 新标签页默认打开「位置」，不是用户文件夹。
+        //
+        // ⚠️ 这里才是**真正生效**的那一处：设置没落盘时读的是本默认值，
+        // 只改 `resolve-default-directory.ts` 里的兜底是没用的 ——
+        // 那一层拿到的是本对象里已经填好的 `kind`。
+        kind: 'locations',
         customPath: '',
       },
       boldActiveTabTitle: false,
@@ -148,6 +154,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         linkStatus: false,
         items: true,
         size: true,
+        // FORK-MODIFICATION 2026-10-20：新增「可用空间」列，默认打开
+        // （用户 2026-10-20 明确要求列位于「大小」右侧）。
+        availableSpace: true,
         modified: true,
         created: false,
         tags: false,
@@ -155,7 +164,17 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       listColumnFillWidth: true,
       listColumnWidths: {},
       listColumnFlexWeights: {},
-      listColumnOrder: ['items', 'size', 'modified', 'created', 'tags', 'kind', 'links', 'linkStatus'],
+      listColumnOrder: [
+        'items',
+        'size',
+        'availableSpace',
+        'modified',
+        'created',
+        'tags',
+        'kind',
+        'links',
+        'linkStatus',
+      ],
       listSortColumn: null,
       listSortDirection: 'asc',
       // FORK-MODIFICATION: 可关闭的文件夹优先排序（上游 #529/#481/#482）

@@ -21,7 +21,7 @@ import FileBrowserListEntryThumbnail from './file-browser-list-entry-thumbnail.v
 import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserTags } from './composables/use-file-browser-tags';
-import { getDriveEntryVolumeSizeBytes } from '@/utils/drive-icon';
+import { getDriveEntryVolumeSizeBytes, getDriveEntryAvailableSpaceBytes } from '@/utils/drive-icon';
 import {
   useFileBrowserVisibleListColumns,
   type FileBrowserVisibleOptionalListColumn,
@@ -67,6 +67,8 @@ interface FileBrowserListDisplayRow extends FileBrowserListVirtualRow {
   clipboardType: string | undefined;
   itemsDisplay: string;
   sizeDisplay: string | null;
+  /** FORK-MODIFICATION 2026-10-20：磁盘的可用空间；非磁盘为 `null`。 */
+  availableSpaceDisplay: string | null;
   isDirLoadingWithProgress: boolean;
   isSizeSkeletonVisible: boolean;
   modifiedDate: FileBrowserListDateDisplay;
@@ -177,6 +179,19 @@ const clipboardPathsMap = computed(() => {
 
   return map;
 });
+
+/**
+ * FORK-MODIFICATION 2026-10-20：磁盘的可用空间（用户 2026-10-20 00:05 附图要求）。
+ *
+ * 只有磁盘条目有值。`getDriveEntryAvailableSpaceBytes` 内部已经处理了
+ * 「老数据没有 available_space → 回落到 size」的情况，
+ * 所以这里不需要再判断一次是磁盘还是不是磁盘。
+ */
+function getEntryAvailableSpaceDisplay(entry: DirEntry): string | null {
+  const available = getDriveEntryAvailableSpaceBytes(entry);
+
+  return available === null ? null : formatBytes(available);
+}
 
 function getEntrySizeDisplay(entry: DirEntry): FileBrowserListSizeDisplay {
   if (entry.is_file) {
@@ -334,6 +349,7 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
   const visible = columnVisibility.value;
   const entry = itemCountsStore.mergeEntry(linkMetadataStore.mergeEntry(row.entry));
   const sizeDisplay = visible.size ? getEntrySizeDisplay(entry) : emptySizeDisplay;
+  const availableSpaceDisplay = visible.availableSpace ? getEntryAvailableSpaceDisplay(entry) : null;
   const selectedTagIds = visible.tags ? getEntryTagIds(entry) : [];
   const selectedTags = visible.tags ? getEntryTags(entry) : [];
   const tagBadges = selectedTags.map(createTagBadge);
@@ -369,6 +385,7 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
     sizeDisplay.display ?? '',
     sizeDisplay.isLoadingWithProgress ? 'loading-size' : '',
     sizeDisplay.isSkeletonVisible ? 'size-skeleton' : '',
+    availableSpaceDisplay ?? '',
     modifiedDate.primary,
     modifiedDate.absolute,
     createdDate.primary,
@@ -393,6 +410,7 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
     clipboardType: clipboardPathType,
     itemsDisplay,
     sizeDisplay: sizeDisplay.display,
+    availableSpaceDisplay,
     isDirLoadingWithProgress: sizeDisplay.isLoadingWithProgress,
     isSizeSkeletonVisible: sizeDisplay.isSkeletonVisible,
     modifiedDate,

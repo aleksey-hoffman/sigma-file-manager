@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 import {
   MAX_PERMISSION_OCTAL_DIGITS,
   PERMISSION_BIT_MASK,
+  PERMISSION_MODE_PRESETS,
+  buildPermissionModeOptions,
   describePermissionTriples,
   formatOctalMode,
   formatPermissionTriple,
@@ -197,5 +199,94 @@ describe('permissionModeValidationKey', () => {
   it('未知原因兜底到 unknown，而不是返回 undefined', () => {
     expect(permissionModeValidationKey('???')).toBe('remote.permissions.error.unknown');
     expect(permissionModeValidationKey('')).toBe('remote.permissions.error.unknown');
+  });
+});
+
+// FORK-MODIFICATION 2026-10-19（用户 2026-10-19 23:58 附图要求）：
+// 八进制从自由输入框改成下拉。预设表与「当前值补进去」的行为都必须钉住 ——
+// 预设表写错一个数字，界面上就会推荐一个**收紧或放宽**了他人权限的模式。
+describe('PERMISSION_MODE_PRESETS', () => {
+  it('每一项都是合法、且恰好四位的八进制权限', () => {
+    expect(PERMISSION_MODE_PRESETS.length).toBeGreaterThan(0);
+
+    for (const preset of PERMISSION_MODE_PRESETS) {
+      expect(
+        preset.length,
+        `预设 ${preset} 不是四位八进制，界面上会和 formatOctalMode 的输出对不上`,
+      ).toBe(MAX_PERMISSION_OCTAL_DIGITS);
+      expect(validatePermissionMode(preset), `预设 ${preset} 非法`).toBeNull();
+    }
+  });
+
+  it('没有重复项，且按数值升序（扫读顺序）', () => {
+    expect(new Set(PERMISSION_MODE_PRESETS).size).toBe(PERMISSION_MODE_PRESETS.length);
+
+    const values = PERMISSION_MODE_PRESETS.map(p => Number.parseInt(p, 8));
+
+    for (let i = 1; i < values.length; i += 1) {
+      expect(values[i], `第 ${i} 项没有比前一项大`).toBeGreaterThan(values[i - 1]);
+    }
+  });
+
+  it('用户点名的两个值必须在里面（644 / 755）', () => {
+    expect(PERMISSION_MODE_PRESETS).toContain('0644');
+    expect(PERMISSION_MODE_PRESETS).toContain('0755');
+  });
+
+  it('每一位预设展开后的 rwx 都与八进制对得上', () => {
+    for (const preset of PERMISSION_MODE_PRESETS) {
+      const symbolic = describePermissionTriples(parseOctalMode(preset) as number).symbolic;
+
+      // 每三位八进制一位：4=r、2=w、1=x，缺位是 -。
+      const expected = [6, 3, 0]
+        .map((shift) => {
+          const bits = (Number.parseInt(preset, 8) >> shift) & 0o7;
+
+          return `${bits & 0o4 ? 'r' : '-'}${bits & 0o2 ? 'w' : '-'}${bits & 0o1 ? 'x' : '-'}`;
+        })
+        .join('');
+
+      expect(symbolic, `${preset} 的 rwx 展开与八进制对不上`).toBe(expected);
+    }
+  });
+});
+
+describe('buildPermissionModeOptions', () => {
+  it('当前值在预设里时，选项就是预设本身（不重复）', () => {
+    expect(buildPermissionModeOptions('0644')).toEqual([...PERMISSION_MODE_PRESETS]);
+  });
+
+  it('当前值不在预设里时补进去，并保持升序', () => {
+    const options = buildPermissionModeOptions('0751');
+
+    expect(options, '预设外的当前值必须出现在下拉里').toContain('0751');
+    expect(options.length).toBe(PERMISSION_MODE_PRESETS.length + 1);
+
+    const values = options.map(o => Number.parseInt(o, 8));
+
+    for (let i = 1; i < values.length; i += 1) {
+      expect(values[i], '补进去之后顺序乱了').toBeGreaterThan(values[i - 1]);
+    }
+  });
+
+  it('三位写法归一到四位再补（界面上不会出现 751 这种三种宽度的写法）', () => {
+    const options = buildPermissionModeOptions('751');
+
+    expect(options).toContain('0751');
+    expect(options).not.toContain('751');
+  });
+
+  it('特殊位原样保留，不被截成低 12 位', () => {
+    const options = buildPermissionModeOptions('4755');
+
+    expect(options).toContain('4755');
+  });
+
+  it('空值 / 非法值不产生选项（读不到权限时列表仍是完整预设）', () => {
+    expect(buildPermissionModeOptions('')).toEqual([...PERMISSION_MODE_PRESETS]);
+    expect(buildPermissionModeOptions(null)).toEqual([...PERMISSION_MODE_PRESETS]);
+    expect(buildPermissionModeOptions(undefined)).toEqual([...PERMISSION_MODE_PRESETS]);
+    expect(buildPermissionModeOptions('0999')).toEqual([...PERMISSION_MODE_PRESETS]);
+    expect(buildPermissionModeOptions('abcd')).toEqual([...PERMISSION_MODE_PRESETS]);
   });
 });

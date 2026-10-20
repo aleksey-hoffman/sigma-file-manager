@@ -15,12 +15,20 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/toaster';
 import {
+  buildPermissionModeOptions,
   describePermissionTriples,
   formatOctalMode,
   parseOctalMode,
@@ -57,6 +65,19 @@ const validationError = computed(() => {
 });
 
 const parsedMode = computed(() => parseOctalMode(modeText.value));
+
+/**
+ * FORK-MODIFICATION 2026-10-19（用户 2026-10-19 23:58 附图要求）：
+ * 八进制从自由输入框改成**下拉**。九成场景是「挑一个常用的」，
+ * 而输错一位就是放宽或收紧了他人的权限。
+ *
+ * 列表 = 常用预设 + **当前文件真实的那个值**（预设里没有时补进去，
+ * 理由见 `buildPermissionModeOptions`）。所以打开对话框就一定对得上当前值。
+ *
+ * 选项同时带上 `rwxr-xr-x`，不是为了好看：列表里全是三位八进制，
+ * 只看数字要靠下面的明细才知道差别，而明细要选中之后才显示。
+ */
+const modeOptions = computed(() => buildPermissionModeOptions(modeText.value));
 
 const description = computed(() => {
   if (parsedMode.value === null) {
@@ -173,12 +194,32 @@ async function handleSubmit() {
           <Label for="remote-permissions-mode">
             {{ t('remote.permissions.modeLabel') }}
           </Label>
-          <Input
-            id="remote-permissions-mode"
+          <Select
             v-model="modeText"
-            :placeholder="'0754'"
-            :class="{ 'remote-permissions-dialog__input--error': validationError }"
-          />
+            :disabled="isLoading"
+          >
+            <SelectTrigger
+              id="remote-permissions-mode"
+              class="remote-permissions-dialog__select"
+              :class="{ 'remote-permissions-dialog__input--error': validationError }"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem
+                  v-for="option in modeOptions"
+                  :key="option"
+                  :value="option"
+                >
+                  <span class="remote-permissions-dialog__option-mode">{{ option }}</span>
+                  <span class="remote-permissions-dialog__option-symbolic">
+                    {{ describePermissionTriples(parseOctalMode(option) ?? 0).symbolic }}
+                  </span>
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <p
             v-if="validationError"
             class="remote-permissions-dialog__error"
@@ -291,6 +332,24 @@ async function handleSubmit() {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* 下拉与输入框同宽，否则 460px 的对话框里两栏宽度不一致。 */
+.remote-permissions-dialog__select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.remote-permissions-dialog__option-mode {
+  min-width: 3.5em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.remote-permissions-dialog__option-symbolic {
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
 }
 
 .remote-permissions-dialog__input--error {

@@ -32,7 +32,17 @@ export const FILE_BROWSER_SORT_COLUMN_LABEL_KEYS: Record<ListSortColumn, string>
   linkStatus: 'fileBrowser.linkStatus',
 };
 
-export type FileBrowserListColumnLabelId = ListSortColumn | 'linkTarget';
+// FORK-MODIFICATION 2026-10-20：新增「可用空间」列（用户 2026-10-20 00:05 附图要求）。
+//
+// ⭐ 它**不在** `FILE_BROWSER_SORT_COLUMNS` 里：那一列是「可排序的列」，
+// 而 `availableSpace` 没有排序实现。把它塞进去的后果是表头渲染出一个
+// 点了会 `emit('sort', 'availableSpace')` 的按钮 —— 那个值不是合法
+// `ListSortColumn`，点了要么被类型系统骂、要么排序不生效。
+// 所以这里只把它登记为**有表头的列**（`FileBrowserListColumnLabelId`），
+// 表头那一格渲染成不可点的纯文字。
+export const FILE_BROWSER_AVAILABLE_SPACE_LABEL_KEY = 'fileBrowser.availableSpace';
+
+export type FileBrowserListColumnLabelId = ListSortColumn | 'linkTarget' | 'availableSpace';
 
 export type NavigatorSortLayout = 'list' | 'grid' | 'compact-list' | 'tree' | undefined;
 
@@ -72,6 +82,10 @@ export function isLinkMetadataSortColumn(column: ListSortColumn | null): boolean
 export function getFileBrowserListColumnLabelKey(columnId: FileBrowserListColumnLabelId): string {
   if (columnId === 'linkTarget') {
     return 'fileBrowser.linkTarget';
+  }
+
+  if (columnId === 'availableSpace') {
+    return FILE_BROWSER_AVAILABLE_SPACE_LABEL_KEY;
   }
 
   return FILE_BROWSER_SORT_COLUMN_LABEL_KEYS[columnId];

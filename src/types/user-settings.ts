@@ -273,6 +273,7 @@ export type ListColumnVisibility = {
   linkStatus: boolean;
   items: boolean;
   size: boolean;
+  availableSpace: boolean;
   modified: boolean;
   created: boolean;
   tags: boolean;
@@ -282,6 +283,7 @@ export type ListColumnWidths = {
   name?: number;
   items?: number;
   size?: number;
+  availableSpace?: number;
   modified?: number;
   created?: number;
   tags?: number;
@@ -294,6 +296,7 @@ export type ListColumnFlexWeights = {
   name?: number;
   items?: number;
   size?: number;
+  availableSpace?: number;
   modified?: number;
   created?: number;
   tags?: number;
@@ -305,6 +308,9 @@ export type ListColumnFlexWeights = {
 export type ListReorderableColumnId
   = | 'items'
     | 'size'
+    // FORK-MODIFICATION 2026-10-20（用户 2026-10-20 00:05 附图要求）：
+    // 列表视图在「大小」右侧加一列「可用空间」。
+    | 'availableSpace'
     | 'modified'
     | 'created'
     | 'tags'

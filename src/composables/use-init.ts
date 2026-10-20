@@ -7,6 +7,8 @@ import { useRouter } from 'vue-router';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
+// FORK-MODIFICATION 2026-10-20：启动序列要加载远程连接（见 init 里的说明）。
+import { useRemoteConnectionsStore } from '@/stores/storage/remote-connections';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
@@ -63,6 +65,7 @@ export function useInit() {
   const userSettingsStore = useUserSettingsStore();
   const userStatsStore = useUserStatsStore();
   const workspacesStore = useWorkspacesStore();
+  const remoteConnectionsStore = useRemoteConnectionsStore();
   const userPathsStore = useUserPathsStore();
   const platformStore = usePlatformStore();
   const globalSearchStore = useGlobalSearchStore();
@@ -338,6 +341,23 @@ export function useInit() {
     await traceInitStep(
       'workspacesStore.init',
       () => workspacesStore.init(undefined, { loadInitialTabGroup: false }),
+    );
+
+    // FORK-MODIFICATION 2026-10-20：远程连接 store **必须**在启动序列里，
+    // 不能只靠「哪个组件先挂载」来触发。
+    //
+    // 真实故障（打包版实测，探针读数 n=1 remote=1 conn=ok proto=undefined）：
+    // 这个 store 原本只有侧栏远程面板和设置页远程分类在 onMounted 里 init()。
+    // 于是「直接进导航器、没点过侧栏和设置」的那条路径上，`connections` 一直是空数组，
+    // 而导航器本身依赖它：
+    //   · 右键菜单的「权限设置」按 `selectionProtocol === 'sftp'` 判定，
+    //     协议查不到 → 菜单项整个消失；
+    //   · 目录树根的标签按连接名显示，查不到就回落成 32 位连接 id。
+    // 两处都不报错，只是「功能凭空没了」，排查成本极高。
+    // 组件级的 onMounted init 是**显示需要**，不是数据就绪保证。
+    await traceInitStep(
+      'remoteConnectionsStore.init',
+      () => remoteConnectionsStore.init(),
     );
 
     if (isMainWindow) {

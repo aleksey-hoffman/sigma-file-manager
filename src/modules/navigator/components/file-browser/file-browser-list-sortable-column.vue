@@ -94,6 +94,19 @@ function getColumnLabel() {
         </div>
       </TooltipContent>
     </Tooltip>
+    <!--
+      FORK-MODIFICATION 2026-10-20：新增「可用空间」列（用户 2026-10-20 要求）。
+      它**没有排序实现**，所以这一格刻意**不渲染成 button** ——
+      渲染成可点的表头会 `emit('sort', 'availableSpace')`，
+      而 `availableSpace` 不是合法的 `ListSortColumn`，点了没有任何效果，
+      看上去就是「这一列坏了、点不动」。
+    -->
+    <span
+      v-if="props.columnId === 'availableSpace'"
+      class="file-browser-list-view__header-item file-browser-list-view__header-availableSpace"
+    >
+      {{ getColumnLabel() }}
+    </span>
     <button
       v-else
       type="button"

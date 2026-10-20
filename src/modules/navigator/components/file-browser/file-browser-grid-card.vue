@@ -23,6 +23,7 @@ import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-
 import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
 import { getImageSrc } from './utils';
 import { getDriveEntryVolumeSizeBytes, getDriveEntryAvailableSpaceBytes } from '@/utils/drive-icon';
+import { getDriveFillLevel, getUsedSpacePercent } from '@/modules/navigator/utils/drive-usage';
 
 const DEFAULT_GRID_THUMBNAIL_SIZE = {
   width: 340,
@@ -220,6 +221,19 @@ function cancelPreviewThumbnail(): void {
   }
 }
 
+// FORK-MODIFICATION 2026-10-20：磁盘条目的占用比例与配色档位（用户 2026-10-20 要求）。
+//
+// 非磁盘条目（普通目录、图片、视频…）一律是 `null` —— 模板用 `v-if` 跳过填充，
+// 所以文件多了也不会给它们画一条「占用 0%」的色带。
+const driveUsedPercent = computed(() => {
+  const available = getDriveEntryAvailableSpaceBytes(props.entry);
+  const total = getDriveEntryVolumeSizeBytes(props.entry);
+
+  return getUsedSpacePercent(available, total);
+});
+
+const driveFillLevel = computed(() => getDriveFillLevel(driveUsedPercent.value));
+
 function getDirSizeDisplay(entry: DirEntry): string | null {
   // FORK-MODIFICATION: 验收反馈 2026-10-13 — 磁盘条目（locations 视图）显示
   // "空余空间 / 总空间"。前一轮只显示空余空间,用户要求两个一起看。
@@ -349,6 +363,20 @@ watch(imagePreviewPlaceholderSrc, () => {
     @keydown="handleEntryKeydown"
   >
     <div class="file-browser-grid-card__overlay-container">
+      <!--
+        FORK-MODIFICATION 2026-10-20（用户 2026-10-20 00:05 附图要求）：
+        磁盘条目用背景色填充表示**已用空间的比例**，可用 < 20% 走浅红。
+
+        放在 overlay 容器里、且排在 selected/clipboard/hover **之前** ——
+        选中、剪贴板、悬停这三层都是半透明遮罩，叠在上面才对；
+        放在它们下面会被选中态整块盖住，用户一选中就看不到占用比例了。
+      -->
+      <div
+        v-if="driveUsedPercent !== null"
+        class="file-browser-grid-card__overlay file-browser-grid-card__overlay--drive-usage"
+        :class="`file-browser-grid-card__overlay--drive-usage-${driveFillLevel}`"
+        :style="{ '--afm-drive-used': `${driveUsedPercent}%` }"
+      />
       <div class="file-browser-grid-card__overlay file-browser-grid-card__overlay--selected" />
       <div class="file-browser-grid-card__overlay file-browser-grid-card__overlay--clipboard" />
       <div class="file-browser-grid-card__overlay file-browser-grid-card__overlay--hover" />
@@ -705,6 +733,42 @@ watch(imagePreviewPlaceholderSrc, () => {
   background-color: hsl(var(--primary) / 20%);
   box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
   opacity: 0;
+}
+
+/*
+  FORK-MODIFICATION 2026-10-20：磁盘占用的背景填充（用户 2026-10-20 00:05 附图要求）。
+
+  配色三档、透明度都很低，用户明确要求「配色不要太突兀」：
+  · calm   —— 6%   几乎只是「这张卡有数据」的一点提示
+  · notice —— 10%  开始看得见
+  · low    —— 14%  浅红，饱和度刻意压低（不用 --destructive 的满饱和红）
+
+  填充用 `linear-gradient(to right, 颜色 0 var(--afm-drive-used), 透明 …)`：
+  从左边按比例铺满。**不用** `background-color` + 宽度百分比，那是整块染色，
+  看不出「占了多少」；也不用 conic-gradient（会变成饼图，和文字抢注意力）。
+*/
+.file-browser-grid-card__overlay--drive-usage {
+  background-image: linear-gradient(
+    to right,
+    hsl(var(--muted-foreground) / 6%) 0 var(--afm-drive-used),
+    transparent var(--afm-drive-used) 100%
+  );
+}
+
+.file-browser-grid-card__overlay--drive-usage-notice {
+  background-image: linear-gradient(
+    to right,
+    hsl(var(--muted-foreground) / 10%) 0 var(--afm-drive-used),
+    transparent var(--afm-drive-used) 100%
+  );
+}
+
+.file-browser-grid-card__overlay--drive-usage-low {
+  background-image: linear-gradient(
+    to right,
+    hsl(0 55% 62% / 14%) 0 var(--afm-drive-used),
+    transparent var(--afm-drive-used) 100%
+  );
 }
 
 .file-browser-grid-card[data-selected] .file-browser-grid-card__overlay--selected {

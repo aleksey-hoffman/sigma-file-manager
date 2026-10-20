@@ -28,6 +28,8 @@ interface FileBrowserListViewColumnRow {
   entry: DirEntry;
   itemsDisplay: string;
   sizeDisplay: string | null;
+  /** FORK-MODIFICATION 2026-10-20：磁盘的可用空间；非磁盘为 `null`。 */
+  availableSpaceDisplay: string | null;
   isDirLoadingWithProgress: boolean;
   isSizeSkeletonVisible: boolean;
   modifiedDate: FileBrowserListDateDisplay;
@@ -96,6 +98,14 @@ const tagsColumnInteractionAttrs = computed(() => {
         v-else
         class="file-browser-list-view__column-value"
       >{{ props.row.sizeDisplay }}</span>
+    </template>
+    <template v-else-if="props.columnId === 'availableSpace'">
+      <!--
+        FORK-MODIFICATION 2026-10-20：可用空间列（用户 2026-10-20 00:05 附图要求）。
+        非磁盘条目是 `null` —— 渲染成 `—` 而不是 `0 B`：
+        「没有这个概念」和「可用 0 字节」是两件事，混起来就是在骗人。
+      -->
+      <span class="file-browser-list-view__column-value">{{ props.row.availableSpaceDisplay ?? '—' }}</span>
     </template>
     <template v-else-if="props.columnId === 'modified'">
       <span

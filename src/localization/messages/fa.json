@@ -1089,6 +1089,7 @@
     },
     "name": "نام",
     "size": "اندازه",
+    "availableSpace": "فضای در دسترس",
     "modified": "تغییر یافته",
     "listModifiedDate": {
       "todayAt": "امروز، {time}",
@@ -1653,7 +1654,7 @@
       "title": "Set permissions",
       "modeLabel": "Permissions (octal)",
       "modeHint": "For example 0754 means the owner may read, write and execute; the group may read and execute; others may read.",
-      "unknownMode": "The current permissions could not be read. Enter them manually.",
+      "unknownMode": "The current permissions could not be read. Pick one from the list.",
       "owner": "Owner",
       "group": "Group",
       "others": "Others",

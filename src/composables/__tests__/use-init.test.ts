@@ -26,6 +26,7 @@ const {
   platformInitMock,
   quickViewEnsureMainWindowDisplayedPathListenerMock,
   removeAppSplashMock,
+  remoteConnectionsInitMock,
   resolveLaunchTargetsFromArgsMock,
   routerPushMock,
   setFocusMock,
@@ -61,6 +62,7 @@ const {
   platformInitMock: vi.fn(),
   quickViewEnsureMainWindowDisplayedPathListenerMock: vi.fn(),
   removeAppSplashMock: vi.fn(),
+  remoteConnectionsInitMock: vi.fn(),
   resolveLaunchTargetsFromArgsMock: vi.fn(),
   routerPushMock: vi.fn(),
   setFocusMock: vi.fn(),
@@ -170,6 +172,12 @@ vi.mock('@/stores/storage/workspaces', () => ({
     openOrFocusTabGroup: openOrFocusTabGroupMock,
     getDirEntry: getDirEntryMock,
     setPendingLaunchReveal: setPendingLaunchRevealMock,
+  }),
+}));
+
+vi.mock('@/stores/storage/remote-connections', () => ({
+  useRemoteConnectionsStore: () => ({
+    init: remoteConnectionsInitMock,
   }),
 }));
 
@@ -354,6 +362,7 @@ describe('useInit startup restoration', () => {
     platformInitMock.mockReset().mockResolvedValue(undefined);
     quickViewEnsureMainWindowDisplayedPathListenerMock.mockReset().mockResolvedValue(undefined);
     removeAppSplashMock.mockReset();
+    remoteConnectionsInitMock.mockReset().mockResolvedValue(undefined);
     resolveLaunchTargetsFromArgsMock.mockReset().mockResolvedValue([]);
     routerPushMock.mockReset().mockResolvedValue(undefined);
     setFocusMock.mockReset().mockResolvedValue(undefined);
@@ -475,6 +484,48 @@ describe('useInit startup restoration', () => {
     expect(showWindowMock).toHaveBeenCalledTimes(1);
     expect(callOrder.indexOf('loadCurrentTabGroup')).toBeLessThan(callOrder.indexOf('showMainWindow'));
     expect(callOrder.indexOf('openOrFocusTabGroup:C:/Launch')).toBeLessThan(
+      callOrder.indexOf('showMainWindow'),
+    );
+  });
+
+  /**
+   * FORK-MODIFICATION 2026-10-20：远程连接必须在**启动序列**里加载，不能靠组件
+   * 各自 onMounted。
+   *
+   * 打包版实测到的故障：直接进导航器、没打开过侧栏远程面板和设置页时，
+   * `connections` 一直是空的，于是右键菜单的「权限设置」按协议判定整个消失，
+   * 目录树根的标签也从连接名回落成 32 位连接 id —— 两处都不报错，
+   * 只是功能「凭空没了」。
+   *
+   * 断言的是**在窗口第一次显示之前**就加载完：用户能看见界面时，
+   * 数据必须已经在那里，不能靠「哪个组件先挂载」。
+   */
+  it('loads remote connections before the main window is shown', async () => {
+    const callOrder: string[] = [];
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    remoteConnectionsInitMock.mockImplementation(async () => {
+      callOrder.push('remoteConnectionsInit');
+    });
+
+    showWindowMock.mockImplementation(async () => {
+      callOrder.push('showMainWindow');
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+
+    await completeInit(init);
+
+    expect(remoteConnectionsInitMock).toHaveBeenCalledTimes(1);
+    expect(callOrder.indexOf('remoteConnectionsInit')).toBeLessThan(
       callOrder.indexOf('showMainWindow'),
     );
   });
