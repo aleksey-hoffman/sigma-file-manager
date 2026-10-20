@@ -1686,6 +1686,10 @@
       "success": "Izbrisani oddaljeni elementi: {count}.",
       "failed": "Brisanje ni uspelo",
       "permissionDenied": "Dovoljenje zavrnjeno"
+    },
+    "write": {
+      "fileCreationNotSupported": "Oddaljene mape ne podobajo ustvarjanja praznih datotek.",
+      "fileCreationNotSupportedTitle": "Datoteke ni mogoče ustvariti"
     }
   }
 }

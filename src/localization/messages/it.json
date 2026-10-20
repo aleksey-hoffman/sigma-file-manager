@@ -1686,6 +1686,10 @@
       "success": "Eliminati {count} elementi remoti.",
       "failed": "Eliminazione non riuscita",
       "permissionDenied": "Permesso negato"
+    },
+    "write": {
+      "fileCreationNotSupported": "Le directory remote non supportano la creazione di file vuoti.",
+      "fileCreationNotSupportedTitle": "Impossibile creare il file"
     }
   }
 }

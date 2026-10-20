@@ -3,7 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::remote::error::RemoteError;
-use crate::remote::path::{build_remote_path, normalize_remote_path};
+use crate::remote::path::{
+    build_remote_path, join_remote_parent_and_name, normalize_remote_path,
+    split_remote_parent_and_name, validate_remote_entry_name,
+};
 use crate::remote::provider::{RemoteEntry, RemoteProvider};
 use async_trait::async_trait;
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -372,6 +375,161 @@ impl RemoteProvider for FakeRemoteProvider {
 
         Ok(())
     }
+
+    /// 在**原目录内**把条目改名。
+    ///
+    /// 假 provider 必须**真的改名**，而不是回一个 `Ok` ——
+    /// 「改完名之后按新名字能读到、按旧名字读不到」这件事，
+    /// 只有真改名才测得到。只回 `Ok` 的话，
+    /// 「改名有没有真的生效」这条断言就永远是空的。
+    async fn rename_path(
+        &self,
+        connection_id: &str,
+        from_path: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        let normalized = self.lookup(connection_id, from_path)?;
+        validate_remote_entry_name(new_name)?;
+
+        let (parent, old_name) = split_remote_parent_and_name(&normalized)?;
+
+        // 目标**恒在源目录内** —— 「改名」不是「移动」。
+        let target = join_remote_parent_and_name(&parent, new_name);
+
+        if target == normalized {
+            return Ok(());
+        }
+
+        let mut tree = self.tree.lock().map_err(|_| poisoned("目录树"))?;
+
+        let Some(directories) = tree.get_mut(connection_id) else {
+            return Err(RemoteError::not_found(format!(
+                "未知的远程连接: {connection_id}"
+            )));
+        };
+
+        let was_dir = {
+            let Some(siblings) = directories.get_mut(&parent) else {
+                return Err(RemoteError::not_found(format!(
+                    "远程路径不存在: {connection_id}{normalized}"
+                )));
+            };
+
+            // 撞名必须失败。真实的远端上这会失败（或覆盖），
+            // 假 provider 一旦宽松，「改名撞名」这条分支就永远测不到。
+            if siblings.iter().any(|entry| entry.name == new_name) {
+                return Err(RemoteError::protocol(format!(
+                    "远端目录里已经有同名的条目，改不了名: {target}"
+                )));
+            }
+
+            let Some(entry) = siblings.iter_mut().find(|entry| entry.name == old_name) else {
+                return Err(RemoteError::not_found(format!(
+                    "远程路径不存在: {connection_id}{normalized}"
+                )));
+            };
+
+            entry.name = new_name.to_string();
+            entry.path = build_remote_path(connection_id, &target).expect("valid connection id");
+
+            entry.is_dir
+        };
+
+        if was_dir {
+            // 目录改名 ⇒ **整棵子树**的键都要跟着换。
+            // 只改目录自己那一层的话，「改名之后进得去子目录」就测不到，
+            // 而那正是目录改名最容易出错的地方。
+            //
+            // 目录**自己**那一层的子项也要改 `path` ——
+            // 它们住在 `directories["/pub/sub"]` 这张表里，键换了、
+            // 但每一条的 `path` 还指着旧目录，前端拿它拼地址栏就会跳错地方。
+            //
+            // 注意是「**新目录路径 + 自己的名字**」，不是光新目录路径 ——
+            // 少了名字那一段，条目自己的路径就不是「它所在的那个条目」了。
+            if let Some(mut value) = directories.remove(&normalized) {
+                for entry in value.iter_mut() {
+                    let child_path = join_remote_parent_and_name(&target, &entry.name);
+
+                    entry.path =
+                        build_remote_path(connection_id, &child_path).expect("valid connection id");
+                }
+
+                directories.insert(target.clone(), value);
+            }
+
+            let old_prefix = format!("{normalized}/");
+            let new_prefix = format!("{target}/");
+
+            let subtree_keys: Vec<String> = directories
+                .keys()
+                .filter(|key| key.starts_with(&old_prefix))
+                .cloned()
+                .collect();
+
+            for key in subtree_keys {
+                let Some(mut value) = directories.remove(&key) else {
+                    continue;
+                };
+
+                let new_key = format!("{new_prefix}{}", &key[old_prefix.len()..]);
+
+                // 与上面同理：子项的路径是「新目录 + 自己的名字」。
+                for entry in value.iter_mut() {
+                    let child_path = join_remote_parent_and_name(&new_key, &entry.name);
+
+                    entry.path =
+                        build_remote_path(connection_id, &child_path).expect("valid connection id");
+                }
+
+                directories.insert(new_key, value);
+            }
+        }
+
+        drop(tree);
+
+        // 文件内容表跟着改名：改名之后按新名字要能读到**同一份内容**。
+        //
+        // 目录改名时**子孙文件的内容**也要换键 —— 真实服务器上
+        // 目录改名是原子的，整棵子树一起搬过去；假 provider 只搬表头的话，
+        // 「改名之后还能读到子文件的内容」就测不到。
+        {
+            let mut files = self.files.lock().map_err(|_| poisoned("文件表"))?;
+
+            if let Some(per_connection) = files.get_mut(connection_id) {
+                if let Some(content) = per_connection.remove(&normalized) {
+                    per_connection.insert(target.clone(), content);
+                }
+
+                let old_prefix = format!("{normalized}/");
+                let new_prefix = format!("{target}/");
+
+                let file_keys: Vec<String> = per_connection
+                    .keys()
+                    .filter(|key| key.starts_with(&old_prefix))
+                    .cloned()
+                    .collect();
+
+                for key in file_keys {
+                    if let Some(content) = per_connection.remove(&key) {
+                        let new_key = format!("{new_prefix}{}", &key[old_prefix.len()..]);
+                        per_connection.insert(new_key, content);
+                    }
+                }
+            }
+        }
+
+        // 权限表同样跟着改名。
+        {
+            let mut modes = self.modes.lock().map_err(|_| poisoned("权限表"))?;
+            let old_key = (connection_id.to_string(), normalized.clone());
+
+            if let Some(mode) = modes.remove(&old_key) {
+                modes.insert((connection_id.to_string(), target.clone()), mode);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -446,6 +604,201 @@ mod tests {
                 .count(),
             1
         );
+    }
+
+    #[tokio::test]
+    async fn renaming_an_entry_makes_the_old_name_disappear() {
+        let provider = FakeRemoteProvider::sample();
+
+        provider
+            .rename_path("conn-a", "/pub/readme.txt", "说明.txt")
+            .await
+            .expect("rename");
+
+        let names: Vec<String> = provider
+            .read_dir("conn-a", "/pub")
+            .await
+            .expect("list")
+            .iter()
+            .map(|entry| entry.name.clone())
+            .collect();
+
+        assert_eq!(
+            names,
+            vec!["说明.txt".to_string()],
+            "改完名之后父目录里必须只剩新名字；旧名字还在就等于没改名"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_renamed_entry_keeps_its_path_and_content_in_sync() {
+        let provider = FakeRemoteProvider::sample();
+
+        provider
+            .rename_path("conn-a", "/pub/readme.txt", "说明.txt")
+            .await
+            .expect("rename");
+
+        // 内容要能按**新名字**读到 —— 假 provider 只改名字不搬内容的话，
+        // 这条永远是错的，而真实服务器上内容是跟着走的。
+        assert_eq!(
+            provider
+                .read_file("conn-a", "/pub/说明.txt")
+                .await
+                .expect("read under the new name"),
+            b"hello remote".to_vec()
+        );
+
+        // 旧名字要**读不到** —— 否则等于复制了一份而不是改名。
+        assert_eq!(
+            provider
+                .read_file("conn-a", "/pub/readme.txt")
+                .await
+                .expect_err("the old name must be gone")
+                .kind,
+            RemoteErrorKind::NotFound
+        );
+
+        // 条目自己的 `path` 字段也要跟着改 ——
+        // 前端拿它拼地址栏，路径没改的话点进去会 404。
+        let entry = &provider
+            .read_dir("conn-a", "/pub")
+            .await
+            .expect("list")
+            .into_iter()
+            .next()
+            .expect("one entry");
+
+        assert_eq!(entry.path, "sfm://remote/conn-a/pub/说明.txt");
+    }
+
+    #[tokio::test]
+    async fn renaming_a_directory_carries_its_children_along() {
+        let provider = FakeRemoteProvider::sample();
+
+        // 造一个带子项的目录。
+        provider.make_dir("conn-a", "/pub/sub").await.expect("mkdir");
+        provider
+            .write_file("conn-a", "/pub/sub/inner.txt", b"inner".to_vec())
+            .await
+            .expect("write");
+
+        provider
+            .rename_path("conn-a", "/pub/sub", "改名后")
+            .await
+            .expect("rename");
+
+        // 目录本身换了名字。
+        let root_names: Vec<String> = provider
+            .read_dir("conn-a", "/pub")
+            .await
+            .expect("list")
+            .iter()
+            .map(|entry| entry.name.clone())
+            .collect();
+        assert_eq!(
+            root_names,
+            vec!["readme.txt".to_string(), "改名后".to_string()],
+            "改名之后旧名字不该再出现在父目录里"
+        );
+
+        // **子项也跟着换了目录** —— 只改目录自己那一层的话，
+        // 「改名之后进得去子目录」就测不到，而那正是目录改名最容易错的地方。
+        let children = provider
+            .read_dir("conn-a", "/pub/改名后")
+            .await
+            .expect("list the renamed directory")
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect::<Vec<_>>();
+        assert_eq!(children, vec!["inner.txt".to_string()]);
+
+        // 子项的 `path` 也要指向新目录。
+        let child = provider
+            .read_dir("conn-a", "/pub/改名后")
+            .await
+            .expect("list")
+            .into_iter()
+            .next()
+            .expect("one child");
+        assert_eq!(child.path, "sfm://remote/conn-a/pub/改名后/inner.txt");
+
+        // 内容也要能按新路径读到。
+        assert_eq!(
+            provider
+                .read_file("conn-a", "/pub/改名后/inner.txt")
+                .await
+                .expect("read under the new path"),
+            b"inner".to_vec()
+        );
+    }
+
+    #[tokio::test]
+    async fn renaming_onto_an_existing_name_fails() {
+        let provider = FakeRemoteProvider::sample();
+
+        provider.make_dir("conn-a", "/pub/other").await.expect("mkdir");
+
+        let error = provider
+            .rename_path("conn-a", "/pub/readme.txt", "other")
+            .await
+            .expect_err("colliding with an existing name must fail");
+
+        assert_eq!(error.kind, RemoteErrorKind::Protocol);
+
+        // 失败之后**原来的名字必须还在** ——
+        // 「改名撞名」把源文件弄丢了是本项目最不能出的错。
+        let names: Vec<String> = provider
+            .read_dir("conn-a", "/pub")
+            .await
+            .expect("list")
+            .iter()
+            .map(|entry| entry.name.clone())
+            .collect();
+        assert_eq!(
+            names,
+            vec!["readme.txt".to_string(), "other".to_string()]
+        );
+    }
+
+    #[tokio::test]
+    async fn renaming_a_missing_entry_fails_with_not_found() {
+        let provider = FakeRemoteProvider::sample();
+
+        let error = provider
+            .rename_path("conn-a", "/pub/nope.txt", "other.txt")
+            .await
+            .expect_err("renaming a missing entry must fail");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    #[tokio::test]
+    async fn a_name_that_is_not_a_single_segment_is_rejected() {
+        let provider = FakeRemoteProvider::sample();
+
+        for name in ["", "a/b", "..", ".", "a\\b", "a\r\nQUIT"] {
+            let error = provider
+                .rename_path("conn-a", "/pub/readme.txt", name)
+                .await
+                .expect_err("an illegal name must be rejected");
+
+            assert_eq!(
+                error.kind,
+                RemoteErrorKind::Protocol,
+                "{name:?} 应该被拒"
+            );
+        }
+
+        // 名字非法**不能**改动原条目。
+        let names: Vec<String> = provider
+            .read_dir("conn-a", "/pub")
+            .await
+            .expect("list")
+            .iter()
+            .map(|entry| entry.name.clone())
+            .collect();
+        assert_eq!(names, vec!["readme.txt".to_string()]);
     }
 
     #[tokio::test]

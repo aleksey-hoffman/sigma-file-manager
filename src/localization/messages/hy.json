@@ -1686,6 +1686,10 @@
       "success": "Ջնջվեց {count} հեռակա տարր։",
       "failed": "Ջնջելը ձախողվեց",
       "permissionDenied": "Առաքմություն չկա"
+    },
+    "write": {
+      "fileCreationNotSupported": "Հեռահետ տեղացույցները չեն աջակցում դատարկ ֆայլերի ստեղծմանը։",
+      "fileCreationNotSupportedTitle": "Ֆայլը ստեղծել հնարավոր չէ"
     }
   }
 }

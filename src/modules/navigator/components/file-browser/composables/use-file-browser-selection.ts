@@ -35,6 +35,8 @@ import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-co
 // FORK-MODIFICATION 2026-10-20：远程删除。
 import { useRemoteDeleteConfirm } from '@/modules/remote/utils/remote-delete-confirm';
 import { deleteRemoteEntries } from '@/modules/remote/utils/remote-delete';
+// FORK-MODIFICATION 2026-10-20：远程写操作（新建目录 / 重命名）。
+import { createRemoteDirectory, hasRemoteTarget, renameRemoteEntry } from '@/modules/remote/utils/remote-write';
 import { isRemotePath } from '@/utils/remote-paths';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
@@ -767,6 +769,53 @@ export function useFileBrowserSelection(
     };
   }
 
+  /**
+   * 远程条目的改名。
+   *
+   * 单独一个函数而不是在 `confirmRename` 里塞一段：
+   * 本地改名与远程改名的**后续动作不一样** ——
+   * 本地要更新 `workspaces` / `userStats` / `userSettings` / `folderTree` 四本账，
+   * 而远程条目**不在这些账里**（它们记的是本地路径）。
+   * 混在一起写会出现「远程改名之后去更新本地收藏夹」这种莫名其妙的事。
+   */
+  async function confirmRemoteRename(entry: DirEntry, trimmedName: string): Promise<boolean> {
+    const result = await renameRemoteEntry(entry, trimmedName);
+
+    if (!result.ok) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.failedToRenameItem'),
+            description: result.message,
+          },
+        },
+      });
+
+      return false;
+    }
+
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('notifications.renamed'),
+          description: '',
+        },
+      },
+    });
+
+    // 远程改名**不会**改动本地那几本账 ——
+    // 收藏夹、标签页、设置里记的都是本地路径。
+    // 但目录树的缓存要知道「这一层变了」，否则树里还显示着旧名字。
+    const parentDir = entry.path.substring(0, entry.path.lastIndexOf('/'));
+    folderTreeStore.markTreeStale([parentDir]);
+
+    cancelRename();
+    clearSelection();
+    onRefresh();
+
+    return true;
+  }
+
   async function confirmRename(newName: string): Promise<boolean> {
     if (!renameState.value.entry || !newName.trim()) {
       cancelRename();
@@ -779,6 +828,14 @@ export function useFileBrowserSelection(
     if (trimmedName === entry.name) {
       cancelRename();
       return true;
+    }
+
+    // FORK-MODIFICATION 2026-10-20：远程条目走**远程**改名通道。
+    //
+    // 本地的 `rename_item` 对 `sfm://remote/...` 只会得到一个「路径不存在」——
+    // 那不是「功能没做」，是**接错了通道**。
+    if (isRemotePath(entry.path)) {
+      return confirmRemoteRename(entry, trimmedName);
     }
 
     try {
@@ -842,6 +899,68 @@ export function useFileBrowserSelection(
     }
   }
 
+  /**
+   * 在一批远程目录里新建同名目录。
+   *
+   * 与本地那套一样是**逐个**建、失败不影响其余 ——
+   * 但远端目标**通常只有一个**（当前目录，或右键选中的那个远程目录）。
+   */
+  async function createRemoteDirectoryIn(
+    trimmedName: string,
+    directoryPaths: string[],
+  ): Promise<boolean> {
+    let successCount = 0;
+    let lastError: string | null = null;
+    const changedDirs: string[] = [];
+
+    for (const directoryPath of directoryPaths) {
+      const result = await createRemoteDirectory(trimmedName, directoryPath);
+
+      if (result.ok) {
+        successCount++;
+        changedDirs.push(directoryPath);
+
+        if (directoryPath === currentPathRef.value) {
+          pendingFocusRequest.value = {
+            type: 'path',
+            targetPath: currentPathRef.value,
+            path: `${currentPathRef.value}/${trimmedName}`,
+          };
+        }
+      }
+      else {
+        lastError = result.message;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('dialogs.newDirItemDialog.newDirectoryCreated'),
+            description: '',
+          },
+        },
+      });
+
+      folderTreeStore.markTreeStale(changedDirs);
+      onRefresh();
+
+      return true;
+    }
+
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('dialogs.newDirItemDialog.failedToCreateNewDirectory'),
+          description: lastError || '',
+        },
+      },
+    });
+
+    return false;
+  }
+
   async function createNewItem(
     name: string,
     itemType: 'directory' | 'file',
@@ -869,6 +988,31 @@ export function useFileBrowserSelection(
 
     if (directoryPaths.some(directoryPath => isVirtualLocationPath(directoryPath))) {
       return false;
+    }
+
+    // FORK-MODIFICATION 2026-10-20：远程目标走**远程**通道。
+    //
+    // 本地的 `create_item` 拿 `sfm://remote/...` 去问文件系统引擎，
+    // 只会得到一句 `Directory does not exist: sfm://remote/...` ——
+    // 那是「接错了通道」，不是「远程不支持建目录」。
+    //
+    // **「新建文件」在远程侧是永久非目标**（规格 §1），所以这里要明确报错，
+    // 而不是静默失败：静默失败会让用户以为是自己名字打错了。
+    if (hasRemoteTarget(directoryPaths)) {
+      if (itemType === 'file') {
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+              description: t('remote.write.fileCreationNotSupported'),
+            },
+          },
+        });
+
+        return false;
+      }
+
+      return createRemoteDirectoryIn(trimmedName, directoryPaths);
     }
 
     let successCount = 0;

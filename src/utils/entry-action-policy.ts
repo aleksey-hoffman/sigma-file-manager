@@ -47,9 +47,17 @@ const SYSTEM_MOUNT_ROOT_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
  * `remote-delete`，它**不在**这个集合里，所以远程条目可以有删除入口。
  * 本地的 `delete` / `delete-permanently` 继续对远程屏蔽 ——
  * 远程没有回收箱，「移至垃圾箱」在远程是假选项。
+ *
+ * FORK-MODIFICATION 2026-10-20（阶段 3 收尾）：两条改动 ——
+ *
+ * - **`rename` 移出**：远程重命名已实现（规格 §5「重命名 ✅」）。
+ *   `batch-rename` **留在**集合里：批量改名是另一件事，阶段 6/7 再议。
+ * - **`create-file` 移入**：规格 §1 把「在远程目录里新建空文件」列为
+ *   **永久非目标** —— SFTP 没有 `CREATE`，FTP 的 `STOR` 需要先有本地文件。
+ *   所以这一条**不是「暂时没做」，是「永远不做」**。
+ *   `create-directory` **不在**这个集合里：阶段 3 已实现远程新建目录。
  */
 const REMOTE_PHASE0_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
-  'rename',
   'batch-rename',
   'copy',
   'cut',
@@ -57,6 +65,7 @@ const REMOTE_PHASE0_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'paste',
   'delete',
   'delete-permanently',
+  'create-file',
   'open-with',
   'properties',
   'quick-view',

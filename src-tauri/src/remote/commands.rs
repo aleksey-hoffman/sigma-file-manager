@@ -536,6 +536,80 @@ pub async fn remote_remove_path(
     provider.remove_path(&connection_id, &remote_path, is_dir).await
 }
 
+/// 在远程目录里**新建一个目录**。
+///
+/// `remote_path` 是**要创建的目录的完整路径**（`sfm://remote/<连接id>/<父目录>/<新名字>`）。
+///
+/// 「已存在视为成功」是 `RemoteProvider::make_dir` 的约定 —— 但实现方必须
+/// **真的确认过**（FTP 侧是失败之后列一次父目录，SFTP 侧是 `try_exists`），
+/// 不是把 `550` 当成成功。
+///
+/// **只支持建目录，不支持建空文件** —— 规格 §1：SFTP 没有 `CREATE`，
+/// FTP 的 `STOR` 需要先有本地文件，强行实现会得到一个行为不可预期的功能。
+#[tauri::command]
+pub async fn remote_make_dir(
+    app: tauri::AppHandle,
+    remote_path: String,
+) -> Result<(), RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&remote_path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    // 父目录必须已存在、名字必须是单个路径段 —— 这两条在**开连接之前**判。
+    let (parent, name) = super::path::split_remote_parent_and_name(&remote_path)?;
+    super::path::validate_remote_entry_name(&name)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let provider =
+        provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
+
+    // 拼回完整路径再交给 provider：provider 拿到的一律是规范化过的完整路径。
+    let target = super::path::join_remote_parent_and_name(&parent, &name);
+
+    provider.make_dir(&connection_id, &target).await
+}
+
+/// 把一个远程条目**在原目录内**改名。
+///
+/// `from_path` 是被改名的条目（完整 `sfm://remote/...` 路径），
+/// `new_name` 是**新名字**（不是完整路径）。
+///
+/// 传「名字」而不是「目标路径」是有意的：改名就是**在原目录内换个名字**，
+/// 不是移动。目标路径由后端从 `from_path` 的父目录推导，
+/// 这样「跨目录移动」这个后果更重的操作在协议层就不可能被误触发。
+///
+/// **断线时不自动重放**（规格 §6.2）：写操作失败即停，把控制权交回用户。
+///
+/// **权限不足时返回 `Err(kind = "permission")`**（SFTP 能分清；
+/// FTP 的 `550` 分不清「没权限」与「已存在」，按 `not_found` 报）。
+#[tauri::command]
+pub async fn remote_rename_path(
+    app: tauri::AppHandle,
+    from_path: String,
+    new_name: String,
+) -> Result<(), RemoteError> {
+    let (connection_id, remote_path) = split_remote_path(&from_path)?;
+    let app_data_dir = app_data_dir(&app)?;
+    let user_data_dir = user_data_dir(&app)?;
+
+    // 名字非法是本地判定 —— 一秒都不该花在网络上。
+    super::path::validate_remote_entry_name(&new_name)?;
+
+    let resolved =
+        resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
+            .await?;
+
+    let provider =
+        provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
+
+    provider
+        .rename_path(&connection_id, &remote_path, &new_name)
+        .await
+}
+
 #[cfg(test)]
 mod tests {
     /// 阶段 1 的远程 command。**改这个数组必须同步改 `lib.rs` 的
@@ -556,6 +630,8 @@ mod tests {
         "remote_chmod",
         "remote_get_permissions",
         "remote_remove_path",
+        "remote_make_dir",
+        "remote_rename_path",
     ];
 
     /// 抽出 `lib.rs` 里 `generate_handler![ ... ]` 的那一段。

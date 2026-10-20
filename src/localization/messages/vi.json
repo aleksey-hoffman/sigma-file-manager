@@ -1686,6 +1686,10 @@
       "success": "Đã xóa {count} mục từ xa.",
       "failed": "Không thể xóa",
       "permissionDenied": "Không có quyền"
+    },
+    "write": {
+      "fileCreationNotSupported": "Các thư mục từ xa không hỗ trợ tạo tệp trống.",
+      "fileCreationNotSupportedTitle": "Không thể tạo tệp"
     }
   }
 }

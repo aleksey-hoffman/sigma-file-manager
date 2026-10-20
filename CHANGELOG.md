@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.2.12-beta] - October 2026
+
+**Summary:** Remote directories can now be written to, not just read. A folder can be created on the server, and a remote file or folder can be renamed in place. "New file" stays out of a remote folder entirely -- and the shortcut that used to open it anyway now says so, instead of letting you fill in a form that could never work.
+
+### What changed
+
+**Added: folders can be created on a remote server.** "New folder" and its shortcut now work in a remote pane as well as a local one, and the new folder shows up in the list as soon as the server confirms it. If the server refuses -- the account cannot write there, or something of that name is already there -- the refusal is reported as it is, and the dialog stays open so the name can be corrected.
+
+**Added: remote files and folders can be renamed.** Select a remote entry and press F2, or use "Rename" in the right-click menu, and the name becomes editable. The new name applies **within the same folder**; moving an entry to another folder is a different thing and is not part of this. SFTP renames with the standard SSH rename, which fails when the target name is already taken rather than quietly replacing what was there; FTP and FTPS rename over the control connection. A renamed directory keeps its contents.
+
+**Fixed: "New file" could still be reached in a remote folder.** Every visible entry for it is hidden in a remote folder -- the toolbar's "＋", the right-click "New" submenu, and the "⋯" menu -- but the keyboard shortcut went straight past all of them, so a remote pane still opened a "New file" dialog -- one that could not possibly succeed, because creating an empty file on a remote server is not something these protocols can do. Nothing looked wrong until the form was filled in and "Create" pressed, which is a bad way to find out. The shortcut now says straight away that remote folders do not support it, and no dialog opens at all.
+
+### This is a beta
+
+**A remote write that loses its connection is not repeated.** If the connection drops while a folder is being created or a name is being changed, the operation fails and is reported. It is not retried on a fresh connection, because a retry cannot tell "the server never got it" from "the server did it and the answer was lost" -- and creating a second folder under the same name, or renaming something twice, is worse than an error message.
+
+**Renaming stays inside one folder.** A remote entry can be given a new name, but not moved elsewhere. That is a separate operation with rules of its own, and it is not here yet.
+
+**Creating an empty file on a remote server is never going to happen.** SFTP has no `CREATE`, and FTP's `STOR` needs a local file to send. This is a decision rather than a gap, and the entry is gone from a remote folder for good.
+
 ## [3.2.11] - October 2026
 
 **Summary:** Alpha File Manager can browse remote servers for real. SFTP, FTP and FTPS connections open a remote folder tree you can walk, the two panes can be told to browse together, files and folders can be uploaded and downloaded, and remote files can be deleted. On top of that, seven rounds of local work landed: a new tab opens on your drives, the drives page shows how full each drive is, columns that have nothing to say were dropped, the remote tree follows the pane you are working in, the delete options became a real menu, and the pane that receives a transfer now shows the result straight away.

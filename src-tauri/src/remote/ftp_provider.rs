@@ -527,6 +527,43 @@ where
     }
 }
 
+/// 在**已经建好并登录过**的通道上把一个条目改名（`RNFR` + `RNTO`）。
+///
+/// FTP 的改名是**两条命令**，不是一条：
+///
+/// 1. `RNFR <旧名>` —— 指名要改谁。服务器回 `350`（Requested file action pending
+///    further information）表示「这个名字我记住了，你给新名字」；
+/// 2. `RNTO <新名>` —— 给新名字。回 `250` 表示改成了。
+///
+/// **中间断了就是没改成**：只发 `RNFR` 不发 `RNTO`，服务器那边什么都没发生。
+/// 所以这两步必须**都成功**才算成功 —— 第一步失败就返回错误，
+/// 绝不能「`RNFR` 成功就算成了」。
+///
+/// `RNFR` 只接受**名字**（先 `CWD` 到父目录），与 `DELE` / `MKD` 同一条规矩。
+///
+/// ⚠️ **目标已存在时各服务器行为不同**：有的回 `550` 拒绝，有的直接覆盖。
+/// 本层**不做统一语义**，如实把服务器的回应带回去 ——
+/// 悄悄覆盖掉一个同名文件是本项目最不能出的错（规格 §6）。
+pub(crate) async fn rename_via_control<S>(
+    control: &mut FtpControl<S>,
+    remote_path: &str,
+    new_name: &str,
+) -> Result<(), RemoteError>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
+{
+    let (parent, old_name) = super::path::split_remote_parent_and_name(remote_path)?;
+    enter_parent(control, &parent).await?;
+
+    // `350` = 「已记住这个名字，请给新名字」。
+    control.command(&format!("RNFR {old_name}"), &[350]).await?;
+
+    // `250` = 改名成功。
+    control.command(&format!("RNTO {new_name}"), &[250]).await?;
+
+    Ok(())
+}
+
 /// 控制通道需要的读写能力。`AsyncRead` 与 `AsyncWrite` 分开写，
 /// 是为了不依赖 `tokio::io::AsyncReadWrite` 的具体形态。
 pub trait AsyncReadWrite: tokio::io::AsyncRead + tokio::io::AsyncWrite {}
@@ -839,6 +876,33 @@ impl FtpRemoteProvider {
             ))),
         }
     }
+
+    /// 把一个远程条目**在原目录内**改名（`RNFR` + `RNTO`）。
+    pub async fn rename_path(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+        super::path::validate_remote_entry_name(new_name)?;
+
+        let run = async {
+            let mut control = Self::login(resolved).await?;
+            let outcome = rename_via_control(&mut control, normalized, new_name).await;
+            let _ = control.command("QUIT", &[221, 226]).await;
+
+            outcome
+        };
+
+        match tokio::time::timeout(self.timeout, run).await {
+            Ok(result) => result,
+            Err(_) => Err(RemoteError::disconnected(format!(
+                "重命名 FTP 条目超过 {} 秒仍未完成，已放弃这次操作",
+                self.timeout.as_secs()
+            ))),
+        }
+    }
 }
 
 #[async_trait]
@@ -952,6 +1016,24 @@ impl RemoteProvider for FtpRemoteProvider {
 
         self.remove_path(&resolved, &normalized, is_dir).await
     }
+
+    async fn rename_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        let normalized = super::path::normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved = super::registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        self.rename_path(&resolved, &normalized, new_name).await
+    }
 }
 
 #[cfg(test)]
@@ -987,6 +1069,35 @@ mod tests {
     fn spawn_stub_ftp_with(
         listing: &'static str,
         completion_reply: &'static str,
+        log: StubLog,
+    ) -> u16 {
+        spawn_stub_ftp_full(
+            listing,
+            completion_reply,
+            "350 ready for new name",
+            "250 renamed",
+            log,
+        )
+    }
+
+    /// 与 [`spawn_stub_ftp_with`] 相同，但**改名的两条命令各给一条指定回复**。
+    ///
+    /// 单独拆一个入口是因为「`RNFR` 失败时不该再发 `RNTO`」这条断言
+    /// 需要一个会失败的桩，而既有的桩对改名一律回成功 ——
+    /// 那样的话失败路径永远测不到。
+    fn spawn_stub_ftp_with_rename_replies(
+        rnfr_reply: &'static str,
+        rnto_reply: &'static str,
+        log: StubLog,
+    ) -> u16 {
+        spawn_stub_ftp_full("type=file;size=1; a.txt\n", "226 transfer complete", rnfr_reply, rnto_reply, log)
+    }
+
+    fn spawn_stub_ftp_full(
+        listing: &'static str,
+        completion_reply: &'static str,
+        rnfr_reply: &'static str,
+        rnto_reply: &'static str,
         log: StubLog,
     ) -> u16 {
         use std::io::{BufRead, BufReader, Write};
@@ -1052,6 +1163,8 @@ mod tests {
                     "PASS" => writeln!(writer, "230 logged in"),
                     "TYPE" => writeln!(writer, "200 ok"),
                     "CWD" => writeln!(writer, "250 ok"),
+                    "RNFR" => writeln!(writer, "{rnfr_reply}"),
+                    "RNTO" => writeln!(writer, "{rnto_reply}"),
                     _ => writeln!(writer, "500 unknown command"),
                 };
 
@@ -1186,6 +1299,117 @@ mod tests {
             .expect_err("a 550 completion reply must not look like success");
 
         assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    #[tokio::test]
+    async fn the_rename_sequence_is_the_one_ftp_demands() {
+        // FTP 的改名是**两条命令**：`RNFR` 指名要改谁（回 `350`），
+        // `RNTO` 给新名字（回 `250`）。顺序反了或者只发一条，服务器都不会改。
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_with_rename_replies(
+            "350 ready for new name",
+            "250 renamed",
+            log.clone(),
+        );
+
+        provider()
+            .rename_path(&resolved(port, Some("pw")), "/pub/old.txt", "new.txt")
+            .await
+            .expect("stub rename");
+
+        let commands = log.commands();
+
+        let index_of = |verb: &str| commands.iter().position(|c| c.starts_with(verb));
+        let rnfr = index_of("RNFR").expect("RNFR must be sent");
+        let rnto = index_of("RNTO").expect("RNTO must be sent");
+
+        assert!(rnfr < rnto, "RNFR must precede RNTO: {commands:?}");
+
+        // 两条命令都只带**名字**，不带路径 ——
+        // `RNFR` 是相对当前工作目录的，所以必须先 `CWD` 到父目录。
+        assert_eq!(commands[rnfr], "RNFR old.txt");
+        assert_eq!(commands[rnto], "RNTO new.txt");
+
+        let cwd = index_of("CWD").expect("CWD must be sent for a non-root path");
+        assert!(cwd < rnfr, "CWD must precede RNFR: {commands:?}");
+
+        // 每条命令只发一次 —— 控制通道不是幂等的，重发等于改两次。
+        assert_eq!(commands.iter().filter(|c| c.starts_with("RNFR")).count(), 1);
+        assert_eq!(commands.iter().filter(|c| c.starts_with("RNTO")).count(), 1);
+    }
+
+    #[tokio::test]
+    async fn a_failed_rnfr_stops_before_rnto() {
+        // `RNFR` 失败（源不存在 / 没权限）之后**不能再发 `RNTO`** ——
+        // 服务器那边没有待改名的对象，发过去只会被当成一条非法命令。
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_with_rename_replies(
+            "550 no such file",
+            "250 renamed",
+            log.clone(),
+        );
+
+        let error = provider()
+            .rename_path(&resolved(port, Some("pw")), "/pub/old.txt", "new.txt")
+            .await
+            .expect_err("a failed RNFR must not look like success");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+
+        let commands = log.commands();
+        assert!(
+            !commands.iter().any(|c| c.starts_with("RNTO")),
+            "RNTO must not be sent after RNFR failed: {commands:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_failed_rnto_is_reported_as_an_error() {
+        // 阳性对照：与上一条配对。`RNFR` 成功但 `RNTO` 失败时，
+        // 这次改名**没有发生**，必须报错而不是报成功。
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_with_rename_replies(
+            "350 ready for new name",
+            "550 name already exists",
+            log.clone(),
+        );
+
+        let error = provider()
+            .rename_path(&resolved(port, Some("pw")), "/pub/old.txt", "new.txt")
+            .await
+            .expect_err("a failed RNTO must not look like success");
+
+        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+    }
+
+    #[tokio::test]
+    async fn an_illegal_new_name_is_rejected_before_any_connection_is_made() {
+        // 名字非法是**本地**判定 —— 一秒都不该花在网络上。
+        //
+        // 用一个**真的桩**来证：桩会把收到的每条命令记进日志。
+        // 如果客户端先开了连接，日志里必然出现 `USER` / `PASS` ——
+        // 于是「没发任何命令」这条断言就不是同义反复。
+        let log = StubLog::default();
+        let port = spawn_stub_ftp_with_rename_replies(
+            "350 ready for new name",
+            "250 renamed",
+            log.clone(),
+        );
+
+        for name in ["", "a/b", "..", "a\\b", "a\r\nQUIT"] {
+            let error = provider()
+                .rename_path(&resolved(port, Some("pw")), "/pub/old.txt", name)
+                .await
+                .expect_err("an illegal name must be rejected");
+
+            assert_eq!(error.kind, RemoteErrorKind::Protocol, "{name:?} 应该被拒");
+        }
+
+        assert!(
+            log.commands().is_empty(),
+            "名字非法时不该发出任何 FTP 命令: {:?}",
+            log.commands()
+        );
     }
 
     #[tokio::test]

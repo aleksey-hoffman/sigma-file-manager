@@ -1686,6 +1686,10 @@
       "success": "{count} دوری اشیاء حذف ہو گئیں۔",
       "failed": "حذف نہیں ہو سکا",
       "permissionDenied": "اجازت نہیں ہے"
+    },
+    "write": {
+      "fileCreationNotSupported": "ریموٹ ڈائریکٹریاں خالی فائلیں بنانے کی سہولت فراہم نہیں کرتیں۔",
+      "fileCreationNotSupportedTitle": "فائل بنانا ناممکن ہے"
     }
   }
 }

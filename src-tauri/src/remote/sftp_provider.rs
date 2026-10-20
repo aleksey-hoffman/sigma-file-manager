@@ -40,7 +40,10 @@ use tokio::io::AsyncWriteExt;
 use super::connection_test::{classify_ssh_handshake_error, read_ssh_banner, BannerCheck};
 use super::error::{RemoteError, RemoteErrorKind};
 use super::known_hosts::{self, HostKeyDecision, KnownHostEntry, TrustKind};
-use super::path::{build_remote_path, normalize_remote_path, reject_path_control_characters};
+use super::path::{
+    build_remote_path, join_remote_parent_and_name, normalize_remote_path,
+    reject_path_control_characters, split_remote_parent_and_name, validate_remote_entry_name,
+};
 use super::provider::{RemoteEntry, RemoteProvider};
 use super::registry::{self, ResolvedConnection};
 use super::transport::{self, Socks5CommandKind};
@@ -636,6 +639,37 @@ impl SftpRemoteProvider {
 
         with_timeout(self.timeout, "删除远程条目", work).await
     }
+
+    /// 把一个远程条目**在原目录内**改名。
+    ///
+    /// 用的是**标准** `SSH_FXP_RENAME`，不是 `posix-rename@openssh.com` 扩展：
+    /// 标准 rename 在目标已存在时**失败**，而 posix 扩展会**覆盖**。
+    /// 悄悄覆盖掉一个同名文件是本项目最不能出的错（规格 §6），
+    /// 所以宁可让用户看到「已经有同名条目」也要保住那个文件。
+    ///
+    /// 目标路径由**源路径的父目录**推导 —— 「改名」在协议层就不可能是「移动」。
+    pub async fn rename_path(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        validate_remote_entry_name(new_name)?;
+
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            let (parent, _old_name) = split_remote_parent_and_name(normalized)?;
+            let target = join_remote_parent_and_name(&parent, new_name);
+
+            sftp.rename(normalized.to_string(), target)
+                .await
+                .map_err(map_sftp_error)
+        };
+
+        with_timeout(self.timeout, "重命名远程条目", work).await
+    }
 }
 
 #[async_trait]
@@ -707,6 +741,16 @@ impl RemoteProvider for SftpRemoteProvider {
     ) -> Result<(), RemoteError> {
         let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
         self.remove_path(&resolved, &normalized, is_dir).await
+    }
+
+    async fn rename_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.rename_path(&resolved, &normalized, new_name).await
     }
 }
 

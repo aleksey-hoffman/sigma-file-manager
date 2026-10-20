@@ -1686,6 +1686,10 @@
       "success": "{count} दूरस्थ आइटम हटाए गए।",
       "failed": "हटाना विफल",
       "permissionDenied": "अनुमति नहीं मिली"
+    },
+    "write": {
+      "fileCreationNotSupported": "रिमोट निर्देशिकाएँ खाली फ़ाइलें बनाने का समर्थन नहीं करतीं।",
+      "fileCreationNotSupportedTitle": "फ़ाइल नहीं बनाई जा सकती"
     }
   }
 }

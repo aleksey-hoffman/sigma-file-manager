@@ -1686,6 +1686,10 @@
       "success": "נמחקו {count} פריטים מרוחקים.",
       "failed": "המחיקה נכשלה",
       "permissionDenied": "הרשאה חסרה"
+    },
+    "write": {
+      "fileCreationNotSupported": "תיקיות מרוחקים אינם תומכים ביצירת קבצים ריקים.",
+      "fileCreationNotSupportedTitle": "לא ניתן ליצור את הקובץ"
     }
   }
 }

@@ -425,6 +425,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     cancelRename: selection.cancelRename,
     confirmRename: selection.confirmRename,
     createNewItem: selection.createNewItem,
+    // FORK-MODIFICATION 2026-10-20：远程「新建空文件」是永久非目标，
+    // 守卫要靠这一格当前所在目录判断目标是远程还是本地。
+    currentPath: dataSource.currentPath,
   });
 
   // selection 必须早于 dialogs 创建（dialogs 依赖 selection 的 renameState），

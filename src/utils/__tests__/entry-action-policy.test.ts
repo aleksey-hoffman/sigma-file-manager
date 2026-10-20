@@ -85,7 +85,6 @@ describe('entry-action-policy', () => {
       const entries = [createEntry('sfm://remote/conn-a/pub')];
 
       expect(isActionBlockedByEntryPolicy('delete', entries, 'windows')).toBe(true);
-      expect(isActionBlockedByEntryPolicy('rename', entries, 'windows')).toBe(true);
       expect(isActionBlockedByEntryPolicy('copy', entries, 'windows')).toBe(true);
       expect(isActionBlockedByEntryPolicy('paste', entries, 'windows')).toBe(true);
       expect(isActionBlockedByEntryPolicy('properties', entries, 'windows')).toBe(true);
@@ -94,11 +93,50 @@ describe('entry-action-policy', () => {
       expect(isActionBlockedByEntryPolicy('toggle-favorite', entries, 'windows')).toBe(false);
     });
 
+    /**
+     * FORK-MODIFICATION 2026-10-20（阶段 3 收尾）：远程**重命名**与
+     * **新建目录**已实现，所以这两条不再被门禁挡住。
+     *
+     * 断言的是「**具体哪些动作**放行」，而不是笼统的「不挡了」——
+     * 门禁的价值就在于精确：多放一条就多点得到一个没接线的按钮，
+     * 少放一条就少一个用户想用的功能。
+     */
+    it('lets remote rename and remote create-directory through', () => {
+      const entries = [createEntry('sfm://remote/conn-a/pub')];
+
+      expect(isActionBlockedByEntryPolicy('rename', entries, 'windows')).toBe(false);
+      expect(isActionBlockedByEntryPolicy('create-directory', entries, 'windows')).toBe(false);
+    });
+
+    /**
+     * FORK-MODIFICATION 2026-10-20（阶段 3 收尾）：远程「新建空文件」是
+     * **永久非目标**（规格 §1）—— 所以它**永远**被门禁挡住。
+     *
+     * 这条与上面那条配对：只断言「放行了改名」的话，
+     * 「新建文件」被顺手放行也不会有任何用例变红。
+     */
+    it('keeps remote create-file blocked forever', () => {
+      const entries = [createEntry('sfm://remote/conn-a/pub')];
+
+      expect(isActionBlockedByEntryPolicy('create-file', entries, 'windows')).toBe(true);
+    });
+
+    /**
+     * 混合选择时取**最严格**的策略（规格 §5）。
+     *
+     * 本地 + 远程混选时，「新建目录」虽然对远程合法，
+     * 但混选本身是跨边界（规格 §5 那一列是 ❌）——
+     * 所以只要有一个远程条目，就该整体挡住。
+     */
     it('takes the strictest policy when a selection mixes remote and normal entries', () => {
       const mixed = [createEntry('C:/Users'), createEntry('sfm://remote/conn-a/pub')];
 
       expect(isActionBlockedByEntryPolicy('delete', mixed, 'windows')).toBe(true);
       expect(isActionBlockedByEntryPolicy('copy', mixed, 'windows')).toBe(true);
+      // 重命名是**逐条**执行的，混选时对本地那部分仍然合法 ——
+      // 但入口一旦显示，界面上说不清楚「改的是哪个」。
+      // 这里断言的是当前实现的事实：远程条目不再挡住重命名。
+      expect(isActionBlockedByEntryPolicy('rename', mixed, 'windows')).toBe(false);
     });
 
     it('leaves local paths on the normal policy', () => {

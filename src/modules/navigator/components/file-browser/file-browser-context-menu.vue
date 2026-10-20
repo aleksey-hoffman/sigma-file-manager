@@ -16,6 +16,8 @@ import type { ContextMenuItemRegistration } from '@/types/extension';
 import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
+// FORK-MODIFICATION 2026-10-20：创建类动作要过门禁（交接文档 §7.1）。
+import { isActionBlockedByEntryPolicy } from '@/utils/entry-action-policy';
 import type { LinkCreationKind } from '@/utils/link-operations';
 
 const ctx = useFileBrowserContext();
@@ -30,9 +32,24 @@ const isCurrentDirectoryContext = computed(() => {
 
 function handleAction(action: Parameters<typeof ctx.onContextMenuAction>[0]) {
   if (action === 'create-file' || action === 'create-directory') {
-    const targetPaths = ctx.contextMenu.value.selectedEntries
+    const selectedEntries = ctx.contextMenu.value.selectedEntries;
+    const targetPaths = selectedEntries
       .filter(entry => entry.is_dir)
       .map(entry => entry.path);
+
+    // FORK-MODIFICATION 2026-10-20：创建类动作**必须**过门禁。
+    //
+    // 之前这三个调用点（这里、状态栏、目录树的条目菜单）都直接 emit，
+    // `isActionBlockedByEntryPolicy` 压根没被调用 ——
+    // 于是「新建文件」在远程目录里照常出现，点下去得到一句
+    // `Directory does not exist: sfm://remote/...`（交接文档 §7.1）。
+    //
+    // 平台传 `null` 是安全的：远程策略在 `getEntryActionPolicy` 里**排第一**，
+    // 根本轮不到 `isProtectedSystemPath` 去用平台。
+    if (isActionBlockedByEntryPolicy(action, selectedEntries, null)) {
+      return;
+    }
+
     ctx.openNewItemDialog(action === 'create-file' ? 'file' : 'directory', targetPaths);
     return;
   }

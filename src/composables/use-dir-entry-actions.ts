@@ -17,6 +17,10 @@ import {
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
+// FORK-MODIFICATION 2026-10-20：远程写操作（新建目录 / 重命名）。
+import { useFolderTreeStore } from '@/stores/runtime/folder-tree';
+import { createRemoteDirectory, hasRemoteTarget, renameRemoteEntry } from '@/modules/remote/utils/remote-write';
+import { isRemotePath } from '@/utils/remote-paths';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
@@ -43,6 +47,7 @@ export function useDirEntryActions() {
   const dirSizesStore = useDirSizesStore();
   const deleteJobsStore = useDeleteJobsStore();
   const quickViewStore = useQuickViewStore();
+  const folderTreeStore = useFolderTreeStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
   const {
@@ -245,6 +250,40 @@ export function useDirEntryActions() {
       return false;
     }
 
+    // FORK-MODIFICATION 2026-10-20：远程条目走**远程**改名通道。
+    // 本地的 `rename_item` 对 `sfm://remote/...` 只会得到一句「路径不存在」。
+    if (isRemotePath(entry.path)) {
+      const result = await renameRemoteEntry(entry, trimmedName);
+
+      if (!result.ok) {
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: t('notifications.failedToRenameItem'),
+              description: result.message,
+            },
+          },
+        });
+
+        return false;
+      }
+
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.renamed'),
+            description: '',
+          },
+        },
+      });
+
+      // 远程条目**不在**本地那几本账里（收藏夹、设置记的都是本地路径），
+      // 所以只让目录树知道「这一层变了」。
+      folderTreeStore.markTreeStale([getParentDirectory(entry.path)]);
+
+      return true;
+    }
+
     try {
       const result = await invoke<FileOperationResult>('rename_item', {
         sourcePath: entry.path,
@@ -316,6 +355,67 @@ export function useDirEntryActions() {
     }
 
     if (trimmedName === '.' || trimmedName === '..') {
+      return false;
+    }
+
+    // FORK-MODIFICATION 2026-10-20：远程目标走**远程**通道。
+    // 本地的 `create_item` 拿 `sfm://remote/...` 去问文件系统引擎，
+    // 只会得到一句 `Directory does not exist: sfm://remote/...`。
+    //
+    // **「新建文件」在远程侧是永久非目标**（规格 §1）——
+    // 这里必须明确报错，而不是静默失败。
+    if (hasRemoteTarget(targetPaths)) {
+      if (itemType === 'file') {
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+              description: t('remote.write.fileCreationNotSupported'),
+            },
+          },
+        });
+
+        return false;
+      }
+
+      let remoteSuccessCount = 0;
+      let remoteLastError: string | null = null;
+
+      for (const directoryPath of targetPaths) {
+        const result = await createRemoteDirectory(trimmedName, directoryPath);
+
+        if (result.ok) {
+          remoteSuccessCount++;
+        }
+        else {
+          remoteLastError = result.message;
+        }
+      }
+
+      if (remoteSuccessCount > 0) {
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: t('dialogs.newDirItemDialog.newDirectoryCreated'),
+              description: '',
+            },
+          },
+        });
+
+        folderTreeStore.markTreeStale(targetPaths);
+
+        return true;
+      }
+
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('dialogs.newDirItemDialog.failedToCreateNewDirectory'),
+            description: remoteLastError || '',
+          },
+        },
+      });
+
       return false;
     }
 

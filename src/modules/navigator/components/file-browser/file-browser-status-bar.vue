@@ -43,6 +43,8 @@ import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { formatBytes } from './utils';
 import type { LinkCreationKind } from '@/utils/link-operations';
 import { useMcpStore } from '@/stores/runtime/mcp';
+// FORK-MODIFICATION 2026-10-20：创建类动作要过门禁（交接文档 §7.1）。
+import { isActionBlockedByEntryPolicy } from '@/utils/entry-action-policy';
 
 const MAX_VISIBLE_ITEMS = 100;
 
@@ -276,9 +278,17 @@ function handleAction(action: ContextMenuAction) {
   applyContextMenuState();
 
   if (action === 'create-file' || action === 'create-directory') {
-    const targetPaths = selectedEntriesArray.value
+    const selectedEntries = selectedEntriesArray.value;
+    const targetPaths = selectedEntries
       .filter(entry => entry.is_dir)
       .map(entry => entry.path);
+
+    // FORK-MODIFICATION 2026-10-20：创建类动作**必须**过门禁
+    // （交接文档 §7.1：之前这三个调用点直接 emit，门禁压根没被调用）。
+    if (isActionBlockedByEntryPolicy(action, selectedEntries, null)) {
+      return;
+    }
+
     ctx.openNewItemDialog(action === 'create-file' ? 'file' : 'directory', targetPaths);
     return;
   }

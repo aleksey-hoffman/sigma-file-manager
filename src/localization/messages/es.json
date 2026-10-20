@@ -1686,6 +1686,10 @@
       "success": "Se eliminaron {count} elemento(s) remoto(s).",
       "failed": "No se pudo eliminar",
       "permissionDenied": "Permiso denegado"
+    },
+    "write": {
+      "fileCreationNotSupported": "Los directorios remotos no admiten la creación de archivos vacíos.",
+      "fileCreationNotSupportedTitle": "No se puede crear el archivo"
     }
   }
 }

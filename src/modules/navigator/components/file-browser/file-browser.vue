@@ -373,6 +373,7 @@ defineExpose({
       :is-loading="fb.isLoading.value || fb.isRefreshing.value"
       :is-split-view="props.isSplitView"
       :current-layout="currentLayout"
+      :current-path="fb.currentPath.value"
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"

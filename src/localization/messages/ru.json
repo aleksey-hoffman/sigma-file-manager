@@ -1686,6 +1686,10 @@
       "success": "Удалено удалённых элементов: {count}.",
       "failed": "Не удалось удалить",
       "permissionDenied": "Отказано в доступе"
+    },
+    "write": {
+      "fileCreationNotSupported": "Удалённые каталоги не поддерживают создание пустых файлов.",
+      "fileCreationNotSupportedTitle": "Не удалось создать файл"
     }
   }
 }

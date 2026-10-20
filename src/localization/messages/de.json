@@ -1686,6 +1686,10 @@
       "success": "{count} entfernte Elemente gelöscht.",
       "failed": "Löschen fehlgeschlagen",
       "permissionDenied": "Keine Berechtigung"
+    },
+    "write": {
+      "fileCreationNotSupported": "Remote-Verzeichnisse unterstützen das Erstellen leerer Dateien nicht.",
+      "fileCreationNotSupportedTitle": "Datei kann nicht erstellt werden"
     }
   }
 }

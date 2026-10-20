@@ -1686,6 +1686,10 @@
       "success": "{count} élément(s) distant(s) supprimé(s).",
       "failed": "Échec de la suppression",
       "permissionDenied": "Autorisation refusée"
+    },
+    "write": {
+      "fileCreationNotSupported": "Les répertoires distants ne permettent pas de créer des fichiers vides.",
+      "fileCreationNotSupportedTitle": "Impossible de créer le fichier"
     }
   }
 }

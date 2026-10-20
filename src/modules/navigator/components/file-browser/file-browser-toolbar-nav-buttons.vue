@@ -46,6 +46,14 @@ const props = defineProps<{
   isLoading: boolean;
   // FORK-MODIFICATION: layout toggle moved here from window toolbar (issue TBD)
   currentLayout: 'list' | 'grid';
+  /**
+   * FORK-MODIFICATION 2026-10-20：当前目录能不能「新建空文件」。远程一律不行。
+   *
+   * 这个「⋯」下拉是**第三个**渲染「新建文件」的地方（另两个是工具栏的「＋」
+   * 下拉和右键「新建」子菜单）。三处都要各自接门禁 —— 少接一处，
+   * 远程目录里就还留着一个能点到的入口。
+   */
+  canCreateFile: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -305,6 +313,7 @@ function openThumbnailSizeDialog() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           class="file-browser-toolbar-nav-buttons__menu-item-with-shortcut"
+          data-test="create-new-directory-menu-item"
           @click="emit('createNewDirectory')"
         >
           <FolderPlusIcon :size="14" />
@@ -314,7 +323,9 @@ function openThumbnailSizeDialog() {
           </ContextMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuItem
+          v-if="props.canCreateFile"
           class="file-browser-toolbar-nav-buttons__menu-item-with-shortcut"
+          data-test="create-new-file-menu-item"
           @click="emit('createNewFile')"
         >
           <FilePlusIcon :size="14" />

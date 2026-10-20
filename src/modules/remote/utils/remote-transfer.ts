@@ -129,6 +129,43 @@ export function removeRemotePath(remotePath: string, isDir: boolean): Promise<vo
   });
 }
 
+/**
+ * 在远程目录里新建一个目录。
+ *
+ * ⚠️ 参数名是 `remotePath` —— Rust 侧是 `remote_path`，
+ * Tauri 按「Rust 参数名的 camelCase 形式」匹配 JS 传进来的键。
+ * 传 `path` 会被换算成 `path`，与 Rust 的 `remote_path` 对不上，
+ * 命令直接报「unknown field」。
+ *
+ * `remotePath` 是**要创建的目录的完整路径**（含新名字），
+ * 不是父目录 —— 父目录与名字在后端拼好之后才发给协议层。
+ *
+ * **只支持建目录，不支持建空文件**（规格 §1：新建空文件是永久非目标）。
+ */
+export function makeRemoteDirectory(remotePath: string): Promise<void> {
+  return invoke<void>('remote_make_dir', {
+    remotePath,
+  });
+}
+
+/**
+ * 把一个远程条目**在原目录内**改名。
+ *
+ * ⚠️ 参数名是 `fromPath` / `newName` —— Rust 侧是 `from_path` / `new_name`。
+ * 传 `path` 给 `from_path` 会被换算成 `path`，与 `from_path` 对不上，
+ * 命令直接报「unknown field」。
+ *
+ * 第二 个参数是**新名字**，不是完整路径：改名就是**在原目录内换个名字**，
+ * 不是移动。目标路径由后端从源路径的父目录推导，
+ * 这样「跨目录移动」在协议层就不可能被误触发。
+ */
+export function renameRemotePath(fromPath: string, newName: string): Promise<void> {
+  return invoke<void>('remote_rename_path', {
+    fromPath,
+    newName,
+  });
+}
+
 /** 传输结果里有没有需要用户知道的问题。 */
 export function hasTransferProblems(report: RemoteTransferReport): boolean {
   return report.skipped.length > 0 || report.failures.length > 0;

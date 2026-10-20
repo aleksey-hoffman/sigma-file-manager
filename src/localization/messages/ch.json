@@ -1686,6 +1686,10 @@
       "success": "已删除 {count} 个远程项目。",
       "failed": "删除失败",
       "permissionDenied": "权限不足，无法删除"
+    },
+    "write": {
+      "fileCreationNotSupported": "远程目录不支持新建空文件。",
+      "fileCreationNotSupportedTitle": "无法新建文件"
     }
   }
 }

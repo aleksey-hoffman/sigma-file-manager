@@ -1686,6 +1686,10 @@
       "success": "{count} uzak öğe silindi.",
       "failed": "Silinemedi",
       "permissionDenied": "İzin yok"
+    },
+    "write": {
+      "fileCreationNotSupported": "Uzak dizinler boş dosya oluşturmayı desteklemez.",
+      "fileCreationNotSupportedTitle": "Dosya oluşturulamadı"
     }
   }
 }

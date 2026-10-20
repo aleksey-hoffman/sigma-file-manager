@@ -175,6 +175,49 @@ pub fn reject_path_control_characters(path: &str) -> Result<(), RemoteError> {
     Ok(())
 }
 
+/// 校验一个**条目名**（不是完整路径）。
+///
+/// 阶段 3 的「远程重命名」与「远程新建目录」都要用到：两者最终都是把
+/// **一个名字**交给服务器，而不是一条路径。这个函数是那道闸。
+///
+/// 逐条拒绝的理由：
+///
+/// - 空串：服务器多半会回「参数无效」，但那是个没法照着做的错误。
+/// - 含 `/`：那就不是名字而是路径了。放进「改名」里会让一次改名变成
+///   **跨目录移动**（后果比改名重得多），放进「新建目录」里会建到别处去。
+/// - 含 `\`：Windows 上是分隔符。远端是 POSIX 语义，但前端与用户都跑在
+///   Windows 上，让 `a\b` 原样过去只会在两端产生不同的解释。
+/// - `.` / `..`：词法逃逸。`normalize_remote_path` 挡的是路径里的这两段，
+///   这里挡的是**名字本身**就是这两段的情形。
+/// - 控制字符：FTP 是行文本协议，一个含 `\r\n` 的名字会变成两条命令。
+///
+/// **在开连接之前**调 —— 名字不合法是本地判定，一秒都不该花在网络上。
+pub fn validate_remote_entry_name(name: &str) -> Result<(), RemoteError> {
+    if name.is_empty() {
+        return Err(RemoteError::protocol("条目名不能为空"));
+    }
+
+    if name == "." || name == ".." {
+        return Err(RemoteError::protocol(format!(
+            "「{name}」不是一个可用的条目名"
+        )));
+    }
+
+    if name.contains('/') || name.contains('\\') {
+        return Err(RemoteError::protocol(format!(
+            "条目名里不能包含路径分隔符：{name:?}"
+        )));
+    }
+
+    if contains_control_characters(name) {
+        return Err(RemoteError::protocol(format!(
+            "条目名里出现了控制字符，已拒绝发送：{name:?}"
+        )));
+    }
+
+    Ok(())
+}
+
 /// 规范化远端路径 → `(父目录, 条目名)`。
 ///
 /// `/pub/a.txt` → `("/pub", "a.txt")`，`/a.txt` → `("/", "a.txt")`。
@@ -201,6 +244,21 @@ pub fn split_remote_parent_and_name(remote_path: &str) -> Result<(String, String
     };
 
     Ok((parent, name))
+}
+
+/// `split_remote_parent_and_name` 的逆运算：把父目录与条目名拼回一条完整路径。
+///
+/// 根目录拼出来是 `/name`（不是 `//name`）。
+///
+/// 阶段 3 的「远程重命名」用它算目标路径：目标**必须在源目录内**，
+/// 所以父目录取自源路径，而不是由调用方另传 —— 这样「改名」在协议层
+/// 就不可能是「移动」。
+pub fn join_remote_parent_and_name(parent: &str, name: &str) -> String {
+    if parent == "/" {
+        format!("/{name}")
+    } else {
+        format!("{parent}/{name}")
+    }
 }
 
 #[cfg(test)]
@@ -385,5 +443,65 @@ mod tests {
     fn the_remote_root_has_no_name_to_split_off() {
         assert!(split_remote_parent_and_name("/").is_err());
         assert!(split_remote_parent_and_name("/pub/../etc").is_err());
+    }
+
+    #[test]
+    fn joins_a_parent_and_a_name_back_into_a_path() {
+        assert_eq!(join_remote_parent_and_name("/pub", "a.txt"), "/pub/a.txt");
+        // 根目录拼出来是 `/name`，不是 `//name`。
+        assert_eq!(join_remote_parent_and_name("/", "a.txt"), "/a.txt");
+        assert_eq!(
+            join_remote_parent_and_name("/pub/docs", "中文 1.txt"),
+            "/pub/docs/中文 1.txt"
+        );
+    }
+
+    #[test]
+    fn joins_and_splits_are_inverses() {
+        for (parent, name) in [
+            ("/pub", "a.txt"),
+            ("/", "a.txt"),
+            ("/pub/docs", "中文 1.txt"),
+        ] {
+            let joined = join_remote_parent_and_name(parent, name);
+            assert_eq!(
+                split_remote_parent_and_name(&joined).expect("valid"),
+                (parent.to_string(), name.to_string())
+            );
+        }
+    }
+
+    #[test]
+    fn accepts_ordinary_entry_names() {
+        // 阳性对照：正常的名字不能被误伤 ——
+        // 中文、空格、点开头的文件（`.gitignore`）都是合法的远端条目名。
+        for name in ["a.txt", "中文目录", "文档 1.txt", ".gitignore", "..hidden"] {
+            assert!(
+                validate_remote_entry_name(name).is_ok(),
+                "{name:?} 是一个合法的条目名"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_entry_names_that_are_not_a_single_segment() {
+        // 空名：服务器多半回「参数无效」，那是个没法照着做的错误。
+        assert!(validate_remote_entry_name("").is_err());
+
+        // 含斜杠：那就不是名字而是路径了 ——
+        // 放进「改名」里会让一次改名变成跨目录移动。
+        assert!(validate_remote_entry_name("a/b").is_err());
+        assert!(validate_remote_entry_name("/a").is_err());
+
+        // 反斜杠：Windows 上是分隔符。
+        assert!(validate_remote_entry_name("a\\b").is_err());
+
+        // `.` 与 `..`：词法逃逸。
+        assert!(validate_remote_entry_name(".").is_err());
+        assert!(validate_remote_entry_name("..").is_err());
+
+        // 控制字符：FTP 是行文本协议，含 `\r\n` 的名字会变成两条命令。
+        assert!(validate_remote_entry_name("a\r\nRNTO /secret").is_err());
+        assert!(validate_remote_entry_name("a\0").is_err());
     }
 }

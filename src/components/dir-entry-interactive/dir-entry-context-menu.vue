@@ -17,6 +17,8 @@ import type { ContextMenuAction } from '@/modules/navigator/components/file-brow
 import type { ContextMenuItemRegistration } from '@/types/extension';
 import type { DirEntry } from '@/types/dir-entry';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
+// FORK-MODIFICATION 2026-10-20：创建类动作要过门禁（交接文档 §7.1）。
+import { isActionBlockedByEntryPolicy } from '@/utils/entry-action-policy';
 
 const props = withDefaults(defineProps<{
   entries: DirEntry[];
@@ -66,6 +68,15 @@ function handleAction(action: ContextMenuAction) {
     const targetPaths = props.entries
       .filter(entry => entry.is_dir)
       .map(entry => entry.path);
+
+    // FORK-MODIFICATION 2026-10-20：创建类动作**必须**过门禁
+    // （交接文档 §7.1：之前这三个调用点直接 emit，门禁压根没被调用）。
+    // 平台传 `null` 是安全的：远程策略在 `getEntryActionPolicy` 里排第一。
+    if (isActionBlockedByEntryPolicy(action, props.entries, null)) {
+      closeContextMenuAfterAction();
+      return;
+    }
+
     emit('createNewItem', action === 'create-file' ? 'file' : 'directory', targetPaths);
     closeContextMenuAfterAction();
     return;

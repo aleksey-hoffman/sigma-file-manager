@@ -1686,6 +1686,10 @@
       "success": "リモート項目を {count} 個削除しました。",
       "failed": "削除できませんでした",
       "permissionDenied": "権限がありません"
+    },
+    "write": {
+      "fileCreationNotSupported": "リモートディレクトリでは空のファイルを作成できません。",
+      "fileCreationNotSupportedTitle": "ファイルを作成できません"
     }
   }
 }

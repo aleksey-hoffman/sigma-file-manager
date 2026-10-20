@@ -10,8 +10,11 @@ import FileBrowserToolbarCreateButton from './file-browser-toolbar-create-button
 import FileBrowserToolbarFilter from './file-browser-toolbar-filter.vue';
 import FileBrowserToolbarSwapPanesButton from './file-browser-toolbar-swap-panes-button.vue';
 import FileBrowserToolbarSyncBrowsingButton from './file-browser-toolbar-sync-browsing-button.vue';
+// FORK-MODIFICATION 2026-10-20：远程「新建文件」是永久非目标（规格 §1）。
+import { canCreateFileIn } from '@/modules/remote/utils/remote-write';
+import { computed } from 'vue';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   pathInput: string;
   filterQuery: string;
   canGoBack: boolean;
@@ -23,10 +26,21 @@ withDefaults(defineProps<{
   isSplitView?: boolean;
   // FORK-MODIFICATION: 需求反馈 2 —— layout toggle forwarded from file-browser.vue
   currentLayout: 'list' | 'grid';
+  /**
+   * FORK-MODIFICATION 2026-10-20：当前目录的路径。
+   *
+   * 单独传而不用 `pathInput`：地址栏里的文字在用户打字时是**未提交**的，
+   * 用它判断「能不能新建文件」会在打字过程中忽然把菜单项藏掉。
+   */
+  currentPath?: string;
 }>(), {
   isSplitView: false,
   currentLayout: 'list',
+  currentPath: '',
 });
+
+/** 目标目录能不能「新建空文件」。远程一律不行。 */
+const canCreateFile = computed(() => canCreateFileIn(props.currentPath || props.pathInput));
 
 const emit = defineEmits<{
   (event: 'update:pathInput', value: string): void;
@@ -66,6 +80,7 @@ function handleAddressBarNavigate(path: string) {
         :can-go-up="canGoUp"
         :is-loading="isLoading"
         :current-layout="currentLayout"
+        :can-create-file="canCreateFile"
         @go-back="emit('goBack')"
         @go-forward="emit('goForward')"
         @go-up="emit('goUp')"
@@ -87,6 +102,7 @@ function handleAddressBarNavigate(path: string) {
       <div class="file-browser-toolbar__actions">
         <div class="file-browser-toolbar__create-button">
           <FileBrowserToolbarCreateButton
+            :can-create-file="canCreateFile"
             @create-new-directory="emit('createNewDirectory')"
             @create-new-file="emit('createNewFile')"
           />

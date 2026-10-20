@@ -1686,6 +1686,10 @@
       "success": "Deleted {count} remote item(s).",
       "failed": "Could not delete",
       "permissionDenied": "Permission denied"
+    },
+    "write": {
+      "fileCreationNotSupported": "Remote directories do not support creating empty files.",
+      "fileCreationNotSupportedTitle": "Cannot create file"
     }
   }
 }

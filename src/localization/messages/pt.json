@@ -1686,6 +1686,10 @@
       "success": "{count} item(ns) remoto(s) excluído(s).",
       "failed": "Não foi possível excluir",
       "permissionDenied": "Permissão negada"
+    },
+    "write": {
+      "fileCreationNotSupported": "Diretórios remotos não oferecem suporte à criação de arquivos vazios.",
+      "fileCreationNotSupportedTitle": "Não é possível criar o arquivo"
     }
   }
 }

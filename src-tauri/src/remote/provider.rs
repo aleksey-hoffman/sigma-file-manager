@@ -117,6 +117,36 @@ pub trait RemoteProvider: Send + Sync {
         remote_path: &str,
         is_dir: bool,
     ) -> Result<(), RemoteError>;
+
+    /// 把 `from_path` 指向的条目**在原目录内**改名为 `new_name`。
+    ///
+    /// ## 为什么签名是 `(from_path, new_name)` 而不是 `(from_path, to_path)`
+    ///
+    /// 「改名」在语义上就是**在原目录内换个名字**，不是「移动」。
+    /// 若让调用方传完整的目标路径，就等于把「跨目录移动」这个**后果更重的操作**
+    /// 混进一个改名动作里 —— 前端一旦把父目录算错，一次改名就变成一次远程移动。
+    /// 所以目标路径由实现方从 `from_path` 的父目录推导，三种协议行为一致。
+    ///
+    /// ## 目标已存在时怎么办
+    ///
+    /// **各服务器不一样**：有的直接覆盖，有的回 `550`。
+    /// 本层**不做统一语义**，如实把服务器的回应带回去 ——
+    /// 悄悄覆盖掉一个同名文件是本项目最不能出的错（规格 §6）。
+    ///
+    /// ## 断线时不自动重放
+    ///
+    /// 规格 §6.2：写操作失败即停，把控制权交回用户。
+    /// 重放一次改名可能作用在状态已变的对象上。
+    ///
+    /// **刻意不给默认实现**，理由与 [`Self::remove_path`] 完全一样：
+    /// 有默认实现的话，新加一个 provider 时「忘了写」会变成编译通过、
+    /// 用户点了没反应、报告还显示成功。宁可让编译器逼每个实现方表态。
+    async fn rename_path(
+        &self,
+        connection_id: &str,
+        from_path: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError>;
 }
 
 #[cfg(test)]
@@ -236,6 +266,28 @@ mod tests {
             provider.get_permissions("conn-a", "/pub/sub").await.expect("mode"),
             Some(0o750)
         );
+    }
+
+    /// 阶段 3 收尾加的 `rename_path` 同样要能被 dyn 调用。
+    #[tokio::test]
+    async fn the_rename_method_is_usable_through_a_trait_object() {
+        let provider: Box<dyn RemoteProvider> =
+            Box::new(FakeRemoteProvider::sample_with_writable_files(vec![]));
+
+        provider
+            .rename_path("conn-a", "/pub/readme.txt", "说明.txt")
+            .await
+            .expect("rename");
+
+        let names: Vec<String> = provider
+            .read_dir("conn-a", "/pub")
+            .await
+            .expect("list")
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect();
+
+        assert_eq!(names, vec!["说明.txt".to_string()]);
     }
 
     #[test]

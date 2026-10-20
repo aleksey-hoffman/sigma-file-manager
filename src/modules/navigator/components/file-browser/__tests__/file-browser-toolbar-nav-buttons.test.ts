@@ -89,6 +89,8 @@ function mountNavButtons(props: Record<string, unknown> = {}) {
       canGoUp: false,
       isLoading: false,
       currentLayout: 'list' as const,
+      // FORK-MODIFICATION 2026-10-20：默认「本地目录」语义。
+      canCreateFile: true,
       ...props,
     },
     global: {
@@ -209,5 +211,34 @@ describe('file-browser-toolbar-nav-buttons · thumbnail size parity', () => {
     // 明确要求它挂在两个容器之外。
     const expandedContainer = wrapper.find('.file-browser-toolbar-nav-buttons--expanded');
     expect(expandedContainer.element.contains(dialog.element)).toBe(false);
+  });
+});
+
+// FORK-MODIFICATION 2026-10-20：远程「新建空文件」是永久非目标（规格 §1）。
+//
+// 这个「⋯」下拉是渲染「新建文件」的**第三个**地方。另两个（工具栏「＋」下拉、
+// 右键「新建」子菜单）都接了门禁 —— 真机验收时发现这个漏了，
+// 远程格的下拉里还明晃晃摆着一项「新建文件」。
+describe('file-browser-toolbar-nav-buttons · 「新建文件」入口', () => {
+  it('canCreateFile=false 时不渲染「新建文件」', () => {
+    const wrapper = mountNavButtons({ canCreateFile: false });
+
+    expect(wrapper.find('[data-test="create-new-file-menu-item"]').exists()).toBe(false);
+  });
+
+  it('canCreateFile=false 时「新建目录」照旧在（阳性对照：没把正常功能一起挡掉）', () => {
+    const wrapper = mountNavButtons({ canCreateFile: false });
+
+    expect(wrapper.find('[data-test="create-new-directory-menu-item"]').exists()).toBe(true);
+  });
+
+  it('canCreateFile=true 时「新建文件」在，且点了会发事件（阳性对照：本地没被误伤）', async () => {
+    const wrapper = mountNavButtons({ canCreateFile: true });
+
+    const item = wrapper.find('[data-test="create-new-file-menu-item"]');
+    expect(item.exists()).toBe(true);
+
+    await item.trigger('click');
+    expect(wrapper.emitted('createNewFile')).toHaveLength(1);
   });
 });

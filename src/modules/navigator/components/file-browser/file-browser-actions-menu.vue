@@ -63,6 +63,8 @@ import {
 } from '@/utils/link-operations';
 import { useTextDirection } from '@/composables/use-text-direction';
 import { isSelectionVirtualLocation } from '@/utils/entry-action-policy';
+// FORK-MODIFICATION 2026-10-20：远程「新建文件」是永久非目标（规格 §1）。
+import { hasRemoteTarget } from '@/modules/remote/utils/remote-write';
 
 const props = withDefaults(defineProps<{
   selectedEntries: DirEntry[];
@@ -158,6 +160,22 @@ const selectedDirectory = computed(() => {
 
 const hasVirtualLocationSelection = computed(() => {
   return isSelectionVirtualLocation(props.selectedEntries);
+});
+
+/**
+ * FORK-MODIFICATION 2026-10-20：目标目录能不能「新建空文件」。
+ *
+ * 目标就是**选中的那些目录**（右键菜单的「新建」建在选中目录里），
+ * 没有选中目录时菜单本身不出现（`selectionStats.hasDirectories`）。
+ *
+ * **远程一律不行** —— 规格 §1 的永久非目标。
+ */
+const canCreateFile = computed(() => {
+  const targets = props.selectedEntries
+    .filter(entry => entry.is_dir)
+    .map(entry => entry.path);
+
+  return !hasRemoteTarget(targets);
 });
 
 const canPasteToSelectedDirectory = computed(() => {
@@ -514,6 +532,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   </component>
   <FileBrowserNewSubmenu
     v-if="selectionStats.hasDirectories && !hasVirtualLocationSelection"
+    :can-create-file="canCreateFile"
     @action="emitAction"
   />
   <component

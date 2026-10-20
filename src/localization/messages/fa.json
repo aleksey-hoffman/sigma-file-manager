@@ -1686,6 +1686,10 @@
       "success": "{count} مورد راه دور حذف شد.",
       "failed": "حذف انجام نشد",
       "permissionDenied": "دسترسی مجاز نیست"
+    },
+    "write": {
+      "fileCreationNotSupported": "پوشه‌های راه دور از ساخت فایل خالی پشتیبانی نمی‌کنند.",
+      "fileCreationNotSupportedTitle": "امکان ایجاد فایل وجود ندارد"
     }
   }
 }

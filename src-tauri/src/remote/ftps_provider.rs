@@ -512,6 +512,25 @@ impl FtpsRemoteProvider {
         outcome
     }
 
+    /// 把一个远程条目**在原目录内**改名。
+    ///
+    /// 协议部分（`RNFR` / `RNTO`）与明文 FTP **逐字共用** ——
+    /// 复制一份的后果是明文 FTP 修好了、FTPS 还留着同一个 bug。
+    pub async fn rename_path(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        super::path::validate_remote_entry_name(new_name)?;
+
+        let mut control = self.session(resolved, normalized).await?;
+        let outcome = super::ftp_provider::rename_via_control(&mut control, normalized, new_name).await;
+        let _ = control.command("QUIT", &[221, 226]).await;
+
+        outcome
+    }
+
     /// 入参处理 + 建好一条已登录的控制通道。
     ///
     /// 与明文 FTP 的差别只有「通道是在 [`Self::open`] 里开好的」这一点，
@@ -625,6 +644,21 @@ impl RemoteProvider for FtpsRemoteProvider {
             registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
 
         self.remove_path(&resolved, &normalized, is_dir).await
+    }
+
+    async fn rename_path(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        new_name: &str,
+    ) -> Result<(), RemoteError> {
+        let normalized = normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved =
+            registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
+
+        self.rename_path(&resolved, &normalized, new_name).await
     }
 }
 
