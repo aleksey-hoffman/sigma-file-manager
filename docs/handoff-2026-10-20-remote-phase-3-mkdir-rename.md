@@ -2,6 +2,9 @@
 
 - 日期：2026-10-20
 - 分支：`main`
+- 本轮提交：`6c1e4bc9`
+  （`feat(remote): 远程新建目录 + 远程重命名 —— 阶段 3 收尾`，
+  55 files changed / 3075 insertions / 16 deletions）
 - 版本：**3.2.12-beta**（3.2.11 已公开发布，同号换内容会让「哪个包是哪个」分不清）
 - 上一棒：`docs/handoff-2026-10-20-release-3.2.11.md` §11「下一棒从哪开始」
 - 规格：`docs/superpowers/specs/2026-10-17-ftp-sftp-remote-space-design.md`
