@@ -200,6 +200,36 @@ locale code 是 `ch` 不是 `zh`）是**完整翻译**的。
 > ⚠️ **门禁不要与重构建并行跑。** 本轮是先跑完门禁，再启动 `tauri build`。
 > `vitest` 与 `tauri build` 抢 CPU 会让两边都变慢，且 cargo 的构建锁会让并发行为不可预期。
 
+### 5.3 装机冒烟：更新弹窗确实显示 3.2.11 的说明
+
+发版不是「传上去就完事」。`use-changelog.ts` 的查找逻辑是
+`releases.find(r => r.version === appVersion) || releases[0]` ——
+**找不到就静默回退到文件里最旧的一条，不报错、不告警**（见 `verify-changelog.mjs`
+顶部的注释）。所以「门禁绿」只说明版本号对得上，**不等于用户看得见**。
+
+实测（`release/Alpha File Manager_3.2.11_x64-setup.exe` 静默安装后）：
+
+```
+installed: D:\Program Files\Alpha File Manager\alpha-file-manager.exe
+ProductVersion = 3.2.11        ← 已装 exe 的版本号
+```
+
+打开「设置 → 左上角第二个图标（Sparkles）→ 新功能」，弹窗里：
+
+- 左侧版本列表第一项是 **3.2.11**，带「当前」徽标；下面是 3.2.4 / 3.2.1-beta / 3.1.3 ……
+  （七个 beta 段已合并，列表里不再有 3.2.5-beta ～ 3.2.11-beta）
+- 主区标题 **3.2.11　2026 年 10 月**，「摘要」是合并后的那段
+- 「改了什么」正文全部渲染正常，加粗与行内代码（`v-if` / `v-else` / `<span v-if>`）都对
+- **新加的两个小节也在**：**已知限制**（含 `PBSZ` / `PROT P` / `AUTH TLS` 行内代码）
+  与 **这一版是怎么验的**（含 `vol1` / `@team` / `study_platform` / `wp_root` / `wp-content`）
+
+> 取证手法备忘：
+> - 更新弹窗是 **DOM 里的模态**，所以 `PrintWindow` 能拍到（不需要屏幕 BitBlt）。
+> - 弹窗**内层滚动容器不吃鼠标滚轮**（滚轮只动外层），但**点击内容区后按 End 可以滚到底**。
+> - `app-wheel.ps1` 的方向语义是反的记法：**`Notches` 为正 = 向下滚**（发 `data=-120`）。
+> - 设置页的「更新日志」入口是左上角那一排图标里的**第二个**（Sparkles），
+>   不用滚到「常规」页底部找「新功能」。
+
 ---
 
 ## 6. 发版流水线（本批实际执行）
