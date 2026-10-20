@@ -1,0 +1,1 @@
+请先完整阅读交接文档 `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\handoff-2026-10-20-release-3.2.11.md`，再按其「下一棒从哪开始」指出的 `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\superpowers\specs\2026-10-17-ftp-sftp-remote-space-design.md` 与 `F:\soft\00selfmade\filemanager\sigma-file-manager\AGENTS.md` 补齐项目背景、目标、进度与下阶段计划，然后继续推进，过程中严格遵守 `AGENTS.md` 的真机验收与发版纪律。
