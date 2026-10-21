@@ -306,12 +306,21 @@ src/utils/__tests__/window-fullscreen.test.ts         (3，上游原样，B4)
 
 ### 7.1 验收环境
 
-- 产物：`release\Alpha File Manager_3.2.14-beta_x64-setup.exe`（3.2.14-beta，`npm run tauri:build` 打的包，**不是** `tauri dev`）
+- 产物：`release\Alpha File Manager_3.2.14-beta_x64-setup.exe`
+  - 20,362,006 字节，2026-10-21 09:30:09
+  - SHA256 `5E8C832A409FDF88636012E6141CB0F41B4B3E28B3CDD939DDA39469B3EEE7F6`
+  - 由 `npm run tauri:build` 打的包（**不是** `tauri dev`）
 - 装机：`D:\Program Files\Alpha File Manager\alpha-file-manager.exe`
+  - 55,287,296 字节，2026-10-21 09:29:42
+  - SHA256 `66655980F67685EA90300A6C8DA1A6C4A5954F1106AAD4084ED546FBE144132F`
 - 屏幕 2560×1440 物理 @150% 缩放
 - 夹具（**全部自造**，不拿用户资产当靶子）：
   - `C:\Users\Duanyi\afm-select-fixture`：a-alpha.txt ~ e-epsilon.txt 五个 16 B 的文件
   - `C:\Users\Duanyi\afm-unc-fixture` + SMB 共享 `AFMTest` + 映射盘 `Z:` → `\\localhost\AFMTest`（`GetDriveTypeW(Z:\) = 4` = DRIVE_REMOTE）
+
+> **最终产物复验**：上面这份安装包是**撤掉探针后**重新打的（中途有一版带 DOM 探针的包被误拷进
+> `release/`，已作废）。装完后重跑了一遍 B2：Shift+↓ ×2 → a、b、c 三行连续高亮 ✓。
+> `release/` 里的包与 `src-tauri/target/release/bundle/nsis/` 里的包逐字节同源。
 
 ### 7.2 B4：窗口状态 —— 通过
 
