@@ -1695,5 +1695,9 @@
       "fileCreationNotSupported": "Les répertoires distants ne permettent pas de créer des fichiers vides.",
       "fileCreationNotSupportedTitle": "Impossible de créer le fichier"
     }
-  }
+  },
+  "mapNetworkDrive": "Map network drive",
+  "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
+  "networkDriveLetter": "Drive letter",
+  "networkDriveLetterPlaceholder": "Auto"
 }

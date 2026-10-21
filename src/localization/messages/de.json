@@ -1695,5 +1695,9 @@
       "fileCreationNotSupported": "Remote-Verzeichnisse unterstützen das Erstellen leerer Dateien nicht.",
       "fileCreationNotSupportedTitle": "Datei kann nicht erstellt werden"
     }
-  }
+  },
+  "mapNetworkDrive": "Map network drive",
+  "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
+  "networkDriveLetter": "Drive letter",
+  "networkDriveLetterPlaceholder": "Auto"
 }

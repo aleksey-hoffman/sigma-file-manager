@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, watchEffect, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { HardDriveIcon, Loader2Icon, NetworkIcon } from '@lucide/vue';
@@ -17,22 +17,38 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import toReadableBytes from '@/utils/to-readable-bytes';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import type { MountableDevice } from '@/types/drive-info';
 
 type TabId = 'devices' | 'network';
 type Protocol = 'sshfs' | 'nfs' | 'smb';
+type MountDialogMode = 'all' | 'network';
 
 const props = defineProps<{
   open: boolean;
+  /**
+   * `all` = 原来的「可移动设备 + 网络」两页签（主页「驱动器」区用）。
+   *
+   * `network` = **只做网络驱动器映射**（侧边栏的「添加网络驱动器」用），
+   * 对应资源管理器「此电脑 → 映射网络驱动器」那条路径。
+   */
+  mode?: MountDialogMode;
 }>();
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
+  /**
+   * 挂载成功。
+   *
+   * Windows 上是映射到的盘符（`Z` 这种单字母），其它平台是挂载点目录路径。
+   */
+  'mounted': [result: string | null];
 }>();
 
 const { t } = useI18n();
+const platformStore = usePlatformStore();
 
-const activeTab = ref<TabId>('devices');
+const activeTab = ref<TabId>(props.mode === 'network' ? 'network' : 'devices');
 const devices = ref<MountableDevice[]>([]);
 const isScanning = ref(false);
 const mountingDevicePath = ref<string | null>(null);
@@ -44,10 +60,13 @@ const networkUsername = ref('');
 const networkPassword = ref('');
 const networkRemotePath = ref('');
 const networkMountName = ref('');
+const networkDriveLetter = ref('');
 const isConnecting = ref(false);
 const connectionError = ref<string | null>(null);
 
-const protocols: {
+const networkOnly = computed(() => props.mode === 'network');
+
+const allProtocols: {
   value: Protocol;
   label: string;
   defaultPort: string;
@@ -69,6 +88,17 @@ const protocols: {
   },
 ];
 
+/**
+ * Windows 上只有 SMB 能用 —— `sshfs` 要装 WinFSP，`nfs` 要开 Windows 的
+ * 「Services for NFS」功能，界面上摆出来点一下必然失败。
+ * 所以按平台过滤，不做「摆出来再说」。
+ */
+const protocols = computed(() => (
+  platformStore.isWindows
+    ? allProtocols.filter(protocol => protocol.value === 'smb')
+    : allProtocols
+));
+
 const badgeText = computed(() => 'Alpha preview');
 
 const showUsernameField = computed(() => selectedProtocol.value === 'sshfs' || selectedProtocol.value === 'smb');
@@ -76,6 +106,9 @@ const showUsernameField = computed(() => selectedProtocol.value === 'sshfs' || s
 const showPasswordField = computed(() => selectedProtocol.value === 'sshfs' || selectedProtocol.value === 'smb');
 
 const showPortField = computed(() => selectedProtocol.value === 'sshfs');
+
+/** Windows 上才有盘符这回事，其它平台的挂载点是目录。 */
+const showDriveLetterField = computed(() => platformStore.isWindows);
 
 const remotePathPlaceholder = computed(() => {
   if (selectedProtocol.value === 'sshfs') {
@@ -96,7 +129,7 @@ const canConnect = computed(() =>
 );
 
 watch(() => props.open, (isOpen) => {
-  if (isOpen && activeTab.value === 'devices') {
+  if (isOpen && activeTab.value === 'devices' && !networkOnly.value) {
     scanDevices();
   }
 });
@@ -104,6 +137,18 @@ watch(() => props.open, (isOpen) => {
 watch(activeTab, (tab) => {
   if (tab === 'devices') {
     scanDevices();
+  }
+});
+
+/**
+ * Windows 上协议列表只剩 SMB，但 `selectedProtocol` 的初值是 'sshfs'，
+ * 不改的话表单会显示「没有选中任何协议」而按钮却是可点的。
+ */
+watchEffect(() => {
+  const available = protocols.value;
+
+  if (available.length > 0 && !available.some(protocol => protocol.value === selectedProtocol.value)) {
+    selectedProtocol.value = available[0].value;
   }
 });
 
@@ -135,6 +180,7 @@ function resetNetworkForm() {
   networkPassword.value = '';
   networkRemotePath.value = '';
   networkMountName.value = '';
+  networkDriveLetter.value = '';
   connectionError.value = null;
 }
 
@@ -174,7 +220,7 @@ async function handleConnectNetwork() {
   connectionError.value = null;
 
   try {
-    await invoke<string>('mount_network_share', {
+    const driveLetter = await invoke<string>('mount_network_share', {
       params: {
         protocol: selectedProtocol.value,
         host: networkHost.value.trim(),
@@ -183,10 +229,14 @@ async function handleConnectNetwork() {
         password: networkPassword.value || null,
         remote_path: networkRemotePath.value.trim(),
         mount_name: networkMountName.value.trim(),
+        drive_letter: showDriveLetterField.value
+          ? (networkDriveLetter.value.trim() || null)
+          : null,
       },
     });
 
     resetNetworkForm();
+    emit('mounted', driveLetter || null);
     emit('update:open', false);
   }
   catch (connectError) {
@@ -210,11 +260,11 @@ function handleOpenChange(isOpen: boolean) {
     <DialogContent class="mount-dialog">
       <DialogHeader class="mount-dialog-header">
         <DialogTitle>
-          {{ t('mountableDevices') }}
+          {{ networkOnly ? t('mapNetworkDrive') : t('mountableDevices') }}
         </DialogTitle>
 
         <DialogDescription>
-          {{ t('mountableDevicesDescription') }}
+          {{ networkOnly ? t('mapNetworkDriveDescription') : t('mountableDevicesDescription') }}
         </DialogDescription>
       </DialogHeader>
       <div
@@ -229,6 +279,7 @@ function handleOpenChange(isOpen: boolean) {
       >
         <TabsList class="mount-dialog__tabs-list">
           <TabsTrigger
+            v-if="!networkOnly"
             value="devices"
             class="mount-dialog__tab-trigger"
           >
@@ -362,6 +413,21 @@ function handleOpenChange(isOpen: boolean) {
                   placeholder="22"
                 >
               </div>
+            </div>
+
+            <div
+              v-if="showDriveLetterField"
+              class="mount-dialog__field mount-dialog__field--port"
+            >
+              <label class="mount-dialog__label">{{ t('networkDriveLetter') }}</label>
+
+              <input
+                v-model="networkDriveLetter"
+                type="text"
+                maxlength="2"
+                class="mount-dialog__input"
+                :placeholder="t('networkDriveLetterPlaceholder')"
+              >
             </div>
 
             <div

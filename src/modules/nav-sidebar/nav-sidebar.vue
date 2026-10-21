@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, provide, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
   BlocksIcon, CloudIcon, HardDriveIcon, NetworkIcon, UsbIcon,
@@ -21,7 +22,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { openNavigatorPath, openNavigatorPathInNewTab } from '@/utils/open-navigator-directory';
 import { getDriveShortLabel as getDriveShortLabelFromMountPoint } from '@/utils/drive-short-label';
 import { useDrives } from '@/modules/home/composables';
-import { DriveCard } from '@/modules/home/components';
+import { DriveCard, MountDialog } from '@/modules/home/components';
 import { getLucideIcon } from '@/utils/lucide-icons';
 import {
   Tooltip,
@@ -54,6 +55,15 @@ const workspacesStore = useWorkspacesStore();
 const remoteConnectionsStore = useRemoteConnectionsStore();
 const { drives } = useDrives();
 const { inlineEndSide } = useTextDirection();
+const { t } = useI18n();
+
+/**
+ * 「添加网络驱动器」对话框的开关。
+ *
+ * 资源管理器把这条路径放在「此电脑 → 映射网络驱动器」，而用户最常找它的地方
+ * 就是左侧栏那一列盘符 —— 盘符多了、或者想临时挂一个共享时，从那儿点一下最顺。
+ */
+const showNetworkDriveDialog = ref(false);
 
 const quickAccessOnHover = computed(() => userSettingsStore.userSettings.quickAccessOnHover);
 // 全屏时侧栏头部不该是拖拽区 —— 全屏没有标题栏可拖。
@@ -397,7 +407,35 @@ async function handleRemoteEdit(connection: RemoteConnection) {
           <DriveCard :drive="drive" />
         </TooltipContent>
       </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            class="nav-sidebar-drive nav-sidebar-drive--add"
+            size="icon"
+            :aria-label="t('mapNetworkDrive')"
+            @click="showNetworkDriveDialog = true"
+          >
+            <NetworkIcon
+              :size="16"
+              class="nav-sidebar-drive-icon"
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent
+          :side="inlineEndSide"
+          :side-offset="12"
+          :collision-padding="6"
+        >
+          {{ t('mapNetworkDrive') }}
+        </TooltipContent>
+      </Tooltip>
     </div>
+
+    <MountDialog
+      v-model:open="showNetworkDriveDialog"
+      mode="network"
+    />
   </div>
 </template>
 
@@ -487,6 +525,19 @@ async function handleRemoteEdit(connection: RemoteConnection) {
 
 .nav-sidebar-drive:hover {
   background-color: hsl(var(--foreground) / 3%);
+}
+
+/*
+ * 「添加网络驱动器」按钮。
+ *
+ * 盘符按钮是 24x24 的方块（图标 + 绝对定位的盘符字标），
+ * 这个按钮没有盘符字标，图标居中即可，所以只多一个内缩，
+ * 让它和上面那一列盘符在视觉上对齐。
+ */
+.nav-sidebar-drive--add {
+  margin-top: 2px;
+  border: 1px dashed hsl(var(--border));
+  color: hsl(var(--muted-foreground));
 }
 
 .nav-sidebar-drive-icon {

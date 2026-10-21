@@ -1695,5 +1695,9 @@
       "fileCreationNotSupported": "Le directory remote non supportano la creazione di file vuoti.",
       "fileCreationNotSupportedTitle": "Impossibile creare il file"
     }
-  }
+  },
+  "mapNetworkDrive": "Map network drive",
+  "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
+  "networkDriveLetter": "Drive letter",
+  "networkDriveLetterPlaceholder": "Auto"
 }

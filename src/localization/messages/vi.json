@@ -1695,5 +1695,9 @@
       "fileCreationNotSupported": "Các thư mục từ xa không hỗ trợ tạo tệp trống.",
       "fileCreationNotSupportedTitle": "Không thể tạo tệp"
     }
-  }
+  },
+  "mapNetworkDrive": "Map network drive",
+  "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
+  "networkDriveLetter": "Drive letter",
+  "networkDriveLetterPlaceholder": "Auto"
 }

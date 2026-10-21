@@ -1043,6 +1043,10 @@
   "networkRemotePath": "远程路径",
   "networkMountName": "挂载为",
   "networkMountNamePlaceholder": "my_share",
+  "mapNetworkDrive": "添加网络驱动器",
+  "mapNetworkDriveDescription": "把一个网络共享映射成一个盘符。挂好之后它会出现在左侧的盘符列表里。",
+  "networkDriveLetter": "盘符",
+  "networkDriveLetterPlaceholder": "自动",
   "connect": "连接",
   "terminal": {
     "openInTerminal": "在终端中打开",

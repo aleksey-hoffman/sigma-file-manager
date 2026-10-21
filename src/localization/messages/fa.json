@@ -1695,5 +1695,9 @@
       "fileCreationNotSupported": "پوشه‌های راه دور از ساخت فایل خالی پشتیبانی نمی‌کنند.",
       "fileCreationNotSupportedTitle": "امکان ایجاد فایل وجود ندارد"
     }
-  }
+  },
+  "mapNetworkDrive": "Map network drive",
+  "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
+  "networkDriveLetter": "Drive letter",
+  "networkDriveLetterPlaceholder": "Auto"
 }

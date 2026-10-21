@@ -1074,6 +1074,10 @@
   "networkRemotePath": "Remote path",
   "networkMountName": "Mount as",
   "networkMountNamePlaceholder": "my_share",
+  "mapNetworkDrive": "Map network drive",
+  "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
+  "networkDriveLetter": "Drive letter",
+  "networkDriveLetterPlaceholder": "Auto",
   "connect": "Connect",
   "terminal": {
     "openInTerminal": "Open in terminal",

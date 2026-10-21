@@ -109,4 +109,12 @@ pub struct NetworkShareParams {
     pub password: Option<String>,
     pub remote_path: String,
     pub mount_name: String,
+    /// Windows 上要映射到的盘符（`"Z"` 或 `"Z:"`）。
+    ///
+    /// `None` 表示让 `net use *` 自动分配一个盘符（Windows 的惯例是从 Z 往下排）。
+    /// 资源管理器的「映射网络驱动器」允许手选盘符，所以这里留了口子。
+    ///
+    /// **只在 Windows 上有意义**：其它平台的挂载点是目录，不是盘符。
+    #[serde(default)]
+    pub drive_letter: Option<String>,
 }
