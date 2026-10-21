@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.2.16-beta] - October 2026
+
+**Summary:** You can now hold down a file in Alpha File Manager and drag it straight into another program -- WeChat, DingTalk, a browser -- without the window jumping to the front and covering the place you were trying to drop it.
+
+### What changed
+
+**Added: holding a file or folder starts a drag you can finish in another program.** Press and hold a file or folder for a moment and a real Windows drag begins; carry it to another program and let go. The same gesture still works inside Alpha File Manager, where dropping onto a folder moves the file as before.
+
+**Added: the window no longer comes to the front while you start that drag.** Windows normally brings a window forward the instant you click it, which meant that reaching for a file in a background window immediately covered the program you were about to drop into. Alpha File Manager now stays where it is while you press and hold, so the target stays visible and reachable.
+
+### This is a beta
+
+**An ordinary click still behaves exactly as before.** Clicking a file in a background window still brings the window forward and still gives it keyboard focus -- only the press-and-hold gesture holds the window back.
+
+**A hold has to be a hold.** Moving the pointer even a little while you press turns the gesture into an ordinary drag, so nothing changes for people who drag files the way they always have.
+
 ## [3.2.15-beta] - October 2026
 
 **Summary:** The background visual effect can now be blended the way Photoshop blends layers. Pick a mode from a grouped menu, watch it preview while you hover, and choose whether the background mixes with the interface or with a fill color of your own.

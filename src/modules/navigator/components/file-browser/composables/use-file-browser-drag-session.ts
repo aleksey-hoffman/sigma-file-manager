@@ -204,8 +204,21 @@ async function getDragIconPath(): Promise<string> {
 async function initiateOutboundDrag() {
   if (isOutboundDragActive || dragState.value.items.length === 0) return;
 
+  await startOutboundDragForEntries(dragState.value.items);
+}
+
+/**
+ * 按给定的条目起一次系统级出站拖拽（Windows 原生 OLE 拖拽）。
+ *
+ * 长按文件/目录时用：那时 webview 内自绘的拖拽会话还没开始，但出站拖拽
+ * 必须在**窗口仍然在后台**的时候起 —— 窗口一旦跳到前台就把目标程序盖住了，
+ * 用户就再也拖不过去。
+ */
+async function startOutboundDragForEntries(items: DirEntry[]) {
+  if (isOutboundDragActive || items.length === 0) return;
+
   isOutboundDragActive = true;
-  const filePaths = dragState.value.items.map(item => item.path);
+  const filePaths = items.map(item => item.path);
   const iconPath = await getDragIconPath();
 
   cancelDrag();
@@ -441,6 +454,7 @@ function isActiveForSource(sourcePaneId: number): boolean {
 export function useFileBrowserDragSession(): {
   dragState: Ref<DragState>;
   startDragSession: (options: DragSessionOptions) => void;
+  startOutboundDragForEntries: (items: DirEntry[]) => Promise<void>;
   markSourceDetached: (sourcePaneId: number) => void;
   dropOn: (destinationPath: string, operationType?: DragOperationType) => boolean;
   cancelDrag: () => void;
@@ -449,6 +463,7 @@ export function useFileBrowserDragSession(): {
   return {
     dragState,
     startDragSession,
+    startOutboundDragForEntries,
     markSourceDetached,
     dropOn,
     cancelDrag,

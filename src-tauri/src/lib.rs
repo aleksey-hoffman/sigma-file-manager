@@ -17,6 +17,7 @@ mod delete_job;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
+mod drag_no_activate;
 mod extensions;
 mod file_operations;
 mod global_search;
@@ -328,6 +329,14 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_dirs::get_app_dirs,
             configure_webview_hide_pdf_more_settings,
+            drag_no_activate::set_drag_no_activate,
+            drag_no_activate::clear_drag_no_activate,
+            drag_no_activate::focus_main_window,
+            drag_no_activate::drag_no_activate_status,
+            drag_no_activate::left_mouse_button_down,
+            drag_no_activate::drag_no_activate_trace,
+            drag_no_activate::capture_outbound_drag_target,
+            drag_no_activate::restore_outbound_drag_foreground,
             get_launch_context,
             startup_storage_bootstrap::get_startup_storage_bootstrap,
             remote::remote_save_credential,
@@ -618,6 +627,19 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         // 上游的修复：分三段恢复窗口状态，修「全屏 / 最大化 / 贴边之后
         // 窗口状态坏掉」。原因见 `main_window_state.rs` 顶部的说明。
         main_window_state::restore_main_window_state(&main_window);
+
+        // 「长按文件/目录拖出时不抢前台」的窗口子类。
+        //
+        // 必须在 UI 线程上装（setup 闭包就跑在 UI 线程），而且要在窗口建好
+        // 之后 —— 详见 drag_no_activate.rs 顶部的说明。
+        //
+        // 注意 `hwnd()` 返回的是 Tauri 自己那版 windows crate 的 HWND 类型
+        // （0.62），本仓用的是 0.58 —— 两个类型不同源，不能直接传，
+        // 所以只取裸指针当 isize 传过去。
+        #[cfg(windows)]
+        if let Ok(hwnd) = main_window.hwnd() {
+            drag_no_activate::setup(hwnd.0 as isize);
+        }
 
         if !should_hide_main_window_on_startup {
             // 启动默认最大化（2026-10-11）。

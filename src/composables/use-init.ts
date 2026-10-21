@@ -46,6 +46,7 @@ import {
   type LaunchContext,
 } from '@/utils/launch-directories';
 import { applyUiZoomStep } from '@/utils/ui-zoom';
+import { installBackgroundActivationFallback } from '@/utils/drag-no-activate';
 import { useClipboardFocusSync } from '@/composables/use-clipboard-focus-sync';
 import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 import { removeAppSplash } from '@/utils/app-splash';
@@ -526,6 +527,14 @@ export function useInit() {
     if (isMainWebviewWindow()) {
       registerShortcutHandlers();
       void registerAppLaunchArgsListener();
+
+      // FORK-MODIFICATION 2026-10-21：「长按拖出时不抢前台」的前端兜底。
+      //
+      // 后端抑制激活时，普通点击的激活时机从「按下」推迟到了「抬手」，
+      // 这里装上抬手补焦点的监听器 —— 否则「点一下后台窗口」会毫无反应。
+      //
+      // 只装主窗口：辅助窗口（快速查看等）抬手时不该把主窗口拽到前台。
+      installBackgroundActivationFallback();
     }
   });
 
