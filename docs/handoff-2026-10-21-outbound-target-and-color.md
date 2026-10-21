@@ -241,7 +241,7 @@ restore outbound drag foreground -> true ← 放完把前台还给目标
 | 门禁 | 结果 | 口径 |
 |---|---|---|
 | `cargo test --lib` | **702 passed / 0 failed** | 与基线逐字一致 |
-| `npx vitest run` | **229 文件 / 2029 用例** 全绿 | 基线 2028 + 新增 1（容器重排后重新实测） |
+| `npx vitest run` | **229 文件 / 2031 用例** 全绿 | 基线 2027 + 新增 4 |
 | `npx eslint src` | **170 errors / 0 warnings** | 与基线逐字一致 |
 | `npx vue-tsc --build` | **0** | — |
 
@@ -262,7 +262,7 @@ restore outbound drag foreground -> true ← 放完把前台还给目标
 |---|---|
 | `a5eb188c` | 上游背景混合模式分支（任务一） |
 | `9704a4a4` | 长按拖出不抢前台（任务二） |
-| 本轮提交 | 需求一 + 需求二 + 抑制令牌修复 |
+| `81c35225` | 本轮：需求一 + 需求二 + 抑制令牌修复 |
 
 **未推送**：沿用上一轮惯例 —— 提交保留在本地，推送等用户发话。
 
