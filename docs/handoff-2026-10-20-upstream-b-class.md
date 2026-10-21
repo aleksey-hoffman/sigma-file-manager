@@ -440,4 +440,33 @@ keydown key=ArrowDown  shift=TRUE   <- 正确
 
 ## 9. 提交
 
-（见 §9.2）
+### 9.1 内容
+
+| 提交 | 说明 |
+|---|---|
+| `9e880451` | `feat(navigator): 上游 B 类改动移植 —— 连选、回收站确认、窗口状态、e2e 隔离`（58 文件，+3678 / -286） |
+
+**尚未 push**：本轮只提交到本地 `main`，推送与否由用户决定。
+
+### 9.2 这次提交里有什么
+
+- **B4**：`src-tauri/src/main_window_state.rs`（新）、`lib.rs` 的插件接线与启动顺序、`src/utils/window-fullscreen.ts`、`src/stores/runtime/app-window.ts`、顶栏与侧栏的全屏处理
+- **B2**：`src/stores/runtime/shortcuts.ts`（整份取上游修好版本）、`use-file-browser-selection.ts`、`use-file-browser-keyboard-navigation.ts`、`use-file-browser.ts`、`navigator.vue`，外加 2 个新测试文件
+- **B3**：`src-tauri/src/utils.rs`（UNC / DRIVE_REMOTE 判定 + `recycle_bin_tests`）、`delete_job.rs`、`file_operations.rs`、`src/utils/recycle-bin-delete.ts`（上游原样）+ 契约门禁
+- **B1**：`src-tauri/src/app_dirs.rs`（新）、`registry.rs` / `extensions/paths.rs` / `extensions/registry_storage.rs` / `global_search/scan.rs`（取上游改后版）、`global_search/query.rs` / `image_thumbnails.rs` / `startup_storage_bootstrap.rs`（手工定点改）、`remote/commands.rs` / `mcp/commands.rs`（**超出上游**）、`src/utils/app-dirs.ts`（新）+ 契约门禁、e2e 三个文件
+- 版本：`package.json` 与 3 个 `Cargo.toml` → **3.2.14-beta**；`CHANGELOG.md` + `public/changelog/ch/changelog.md` 新增 3.2.14-beta 条目
+- 文档：本文件
+
+### 9.3 留在工作区外的状态（本轮在机器上留下的东西）
+
+| 东西 | 位置 | 怎么清 |
+|---|---|---|
+| SMB 共享 `AFMTest` | `C:\Users\Duanyi\afm-unc-fixture` | `Remove-SmbShare -Name AFMTest` |
+| 映射盘 `Z:` | → `\\localhost\AFMTest` | `Remove-PSDrive -Name Z -Force`（或 `net use Z: /delete`） |
+| 夹具目录 | `C:\Users\Duanyi\afm-select-fixture`、`C:\Users\Duanyi\afm-unc-fixture` | 直接删目录 |
+| e2e 覆盖探测目录 | `C:\Users\Duanyi\afm-e2e-override-probe`（空目录） | 直接删目录 |
+
+验收用的脚本都在 `.superpowers/sdd/`（git-ignored），关键几个：
+`app-sendkeys.ps1`（**能正确送组合键的那条通道**）、`app-key.ps1`、
+`accept-b2-sendkeys.ps1`、`accept-b3-unc.ps1`、`accept-b3-mapped.ps1`、
+`accept-b1-e2e-isolation.ps1`、`probe-shift-in-edge.ps1`（投递层探针）。
