@@ -11,6 +11,7 @@ mod background_sources;
 mod batch_rename;
 mod clipboard_source;
 mod clipboard_watcher;
+mod compare;
 mod copy_move_job;
 mod default_file_manager;
 mod delete_job;
@@ -357,6 +358,9 @@ pub fn run() {
             remote::remote_remove_path,
             remote::remote_make_dir,
             remote::remote_rename_path,
+            compare::commands::compare_directories,
+            compare::commands::start_compare_sync_job,
+            compare::commands::cancel_compare_sync_job,
             default_file_manager::default_file_manager_available,
             default_file_manager::is_default_file_manager,
             default_file_manager::set_default_file_manager,

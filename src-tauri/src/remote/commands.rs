@@ -379,7 +379,10 @@ pub async fn remote_forget_host(
 ///
 /// 刻意返回 `Box<dyn RemoteProvider>` 而不是逐协议分派：`transfer` 里的递归规则
 /// 三种协议完全一样（见该文件顶部），在这里分派一次就等于把那套规则复制三份。
-async fn provider_with_protocol(
+///
+/// `pub(crate)` 是为了给 `compare` 模块复用 —— 比较引擎也要按协议挑 provider，
+/// 两处各写一遍分派就等于同一个协议清单有两份，改一处漏一处。
+pub(crate) async fn provider_with_protocol(
     protocol: RemoteProtocol,
     user_data_dir: &Path,
     app_data_dir: &Path,

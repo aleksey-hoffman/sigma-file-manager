@@ -43,6 +43,9 @@ pub use connection::{
 // 具名再导出只搬函数本身，于是 `remote::__cmd__remote_save_credential` 找不到，
 // 编译报 E0433。`dir_reader` 同样用的是 glob。
 pub use commands::*;
+// `provider_with_protocol` 是 `pub(crate)`，glob 具名再导出**不会**带上它
+// （glob 只搬 `pub` 的项），所以这里单独放一行给 `compare` 模块用。
+pub(crate) use commands::provider_with_protocol;
 pub use connection_test::{
     parse_ftp_reply_code, ConnectionTestReport, ProbeOutcome, ProbeTarget,
 };
@@ -68,9 +71,9 @@ pub use known_hosts::{
 };
 pub use path::{
     build_remote_connection_path, build_remote_path, contains_control_characters,
-    get_remote_parent_path, is_remote_connection_root_path, is_remote_path, normalize_remote_path,
-    parse_remote_path, reject_path_control_characters, split_remote_parent_and_name, RemotePath,
-    REMOTE_SCHEME,
+    get_remote_parent_path, is_remote_connection_root_path, is_remote_path,
+    join_remote_parent_and_name, normalize_remote_path, parse_remote_path,
+    reject_path_control_characters, split_remote_parent_and_name, RemotePath, REMOTE_SCHEME,
 };
 pub use provider::{RemoteEntry, RemoteProvider};
 pub use registry::{
