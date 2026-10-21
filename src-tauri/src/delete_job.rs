@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use crate::utils::{format_trash_error, minimize_delete_paths, normalize_path};
+use crate::utils::{delete_path_to_trash, minimize_delete_paths, normalize_path};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
@@ -97,7 +97,9 @@ fn run_delete_blocking(
         }
 
         let result = if use_trash {
-            trash::delete(path).map_err(format_trash_error)
+            // FORK-MODIFICATION 2026-10-20：走 `delete_path_to_trash` 而不是裸 `trash::delete`。
+            // UNC / 网络盘没有回收站，这里会直接报错，**不会**退回永久删除。
+            delete_path_to_trash(path, &normalized)
         } else if path.is_dir() {
             fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {
@@ -129,6 +131,15 @@ fn run_delete_blocking(
         failed_count,
         last_error,
     }
+}
+
+// FORK-MODIFICATION 2026-10-20：移植上游 0ae258d6。
+//
+// 告诉前端「这批路径里哪些不能进回收站」，前端据此把它们拆成
+// 「本地进回收站」+「远程先确认再永久删除」两个作业。
+#[tauri::command]
+pub fn recycle_bin_unavailable_paths(paths: Vec<String>) -> Vec<String> {
+    crate::utils::recycle_bin_unavailable_paths(paths)
 }
 
 #[tauri::command]

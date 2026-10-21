@@ -312,6 +312,39 @@ describe('shortcuts store', () => {
     expect(upEvent.defaultPrevented).toBe(true);
   });
 
+  it('matches Shift+arrow file navigation so range selection can extend', async () => {
+    const shortcutsStore = useShortcutsStore();
+    const navigateUpHandler = vi.fn();
+    const navigateDownHandler = vi.fn();
+
+    shortcutsStore.registerHandler('navigateUp', navigateUpHandler);
+    shortcutsStore.registerHandler('navigateDown', navigateDownHandler);
+
+    const upEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowUp',
+      code: 'ArrowUp',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    const downEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(upEvent)).resolves.toBe(true);
+    await expect(shortcutsStore.handleKeydown(downEvent)).resolves.toBe(true);
+    expect(navigateUpHandler).toHaveBeenCalledTimes(1);
+    expect(navigateDownHandler).toHaveBeenCalledTimes(1);
+    expect(navigateUpHandler.mock.calls[0][0]).toBe(upEvent);
+    expect(navigateDownHandler.mock.calls[0][0]).toBe(downEvent);
+    expect(upEvent.defaultPrevented).toBe(true);
+    expect(downEvent.defaultPrevented).toBe(true);
+  });
+
   it('matches default mouse back and forward for directory history alongside Alt+arrow', async () => {
     const shortcutsStore = useShortcutsStore();
     const navigateHistoryBackHandler = vi.fn();

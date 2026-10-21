@@ -2,6 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+// FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+// e2e 隔离数据目录的唯一解析点（见 `app_dirs.rs` 顶部的说明）。
+mod app_dirs;
 mod app_updater;
 mod archive;
 mod background_sources;
@@ -21,6 +24,7 @@ mod image_thumbnails;
 mod input_simulation;
 mod lan_share;
 mod link_operations;
+mod main_window_state;
 // `pub` 是为了让 `examples/mcp-spike.rs` 能起同一个模块 —— Phase 0 的 spike
 // 与应用内跑的是同一份端点代码，不是另写一份。
 pub mod mcp;
@@ -223,6 +227,45 @@ fn get_launch_context() -> LaunchContext {
     }
 }
 
+// FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+//
+// 单实例的「第二个实例把启动参数交给第一个」这段逻辑抽成独立函数，
+// 是为了在 e2e 隔离模式下**整个不装**这个插件 —— 隔离实例不能把启动
+// 交接给一个正在用真实数据运行的已安装 SFM。
+fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String) {
+    #[cfg(windows)]
+    {
+        let filter_result = filter_shell_namespace_args(argv);
+        delegate_shell_namespace_paths(&filter_result.delegated_paths);
+        let has_filesystem_paths = filter_result.filtered_args.len() > 1;
+        let should_focus = has_filesystem_paths
+            || filter_result.had_absorbed_paths
+            || !filter_result.had_delegated_paths();
+
+        if should_focus {
+            system_tray::focus_main_window(app);
+        }
+
+        if has_filesystem_paths {
+            let had_delegated_shell_paths = filter_result.had_delegated_paths();
+            let launch_context = build_launch_context(
+                filter_result.filtered_args,
+                Some(cwd),
+                filter_result.had_absorbed_paths,
+                had_delegated_shell_paths,
+            );
+            let _ = app.emit("app-launch-args", launch_context);
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        system_tray::focus_main_window(app);
+        let launch_context = build_launch_context(argv, Some(cwd), false, false);
+        let _ = app.emit("app-launch-args", launch_context);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // 2026-10-10 启动崩溃 0xc0000005 的定位分界线。
@@ -236,49 +279,40 @@ pub fn run() {
     // builder_built 必须打在 .run() 之前：.run() 内部才真正创建窗口并加载 WebView2。
     startup_probe::mark("run: entering tauri builder");
 
-    tauri::Builder::default()
-        .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            #[cfg(windows)]
-            {
-                let filter_result = filter_shell_namespace_args(argv);
-                delegate_shell_namespace_paths(&filter_result.delegated_paths);
-                let has_filesystem_paths = filter_result.filtered_args.len() > 1;
-                let should_focus = has_filesystem_paths
-                    || filter_result.had_absorbed_paths
-                    || !filter_result.had_delegated_paths();
+    // FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+    //
+    // 必须在任何线程 / WebView 存在之前调用：它会把 WebView2 的 profile 目录
+    // 指到隔离目录，并在 debug 构建下创建那批隔离子目录。
+    // release 构建里这段是编译不进去的（`cfg!(debug_assertions)`），
+    // 所以对正式发布的包**零影响**。
+    app_dirs::prepare_isolated_environment();
 
-                if should_focus {
-                    system_tray::focus_main_window(app);
-                }
+    // 窗口状态文件：隔离模式下插件要把状态写到隔离目录的 config 下，
+    // 否则 e2e 会读到用户上次真实使用时的窗口位置。
+    let mut window_state_plugin = tauri_plugin_window_state::Builder::default()
+        .with_state_flags(main_window_state::state_flags())
+        .with_denylist(&["quick-view"])
+        // main 窗口的状态由 `main_window_state::restore_main_window_state`
+        // 手动、分段恢复（见那个文件里的原因）。插件自己那套自动恢复
+        // 发生在窗口还没就绪的时候，会把「上次全屏时保存的整屏尺寸」
+        // 生硬套上去，窗口比工作区还高，底部跑到屏幕外。
+        .skip_initial_state("main");
+    if let Some(window_state_file) = app_dirs::window_state_file_override() {
+        window_state_plugin = window_state_plugin.with_filename(window_state_file);
+    }
 
-                if has_filesystem_paths {
-                    let had_delegated_shell_paths = filter_result.had_delegated_paths();
-                    let launch_context = build_launch_context(
-                        filter_result.filtered_args,
-                        Some(cwd),
-                        filter_result.had_absorbed_paths,
-                        had_delegated_shell_paths,
-                    );
-                    let _ = app.emit("app-launch-args", launch_context);
-                }
-            }
+    let mut builder = tauri::Builder::default()
+        .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default());
 
-            #[cfg(not(windows))]
-            {
-                system_tray::focus_main_window(app);
-                let launch_context = build_launch_context(argv, Some(cwd), false, false);
-                let _ = app.emit("app-launch-args", launch_context);
-            }
-        }))
+    // 隔离的 e2e 实例不能把启动交接给（也不能去聚焦）一个正在用真实数据
+    // 运行的已安装 SFM，所以隔离模式下整个不装单实例插件。
+    if !app_dirs::is_isolated() {
+        builder = builder.plugin(tauri_plugin_single_instance::init(handle_second_instance));
+    }
+
+    builder
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin({
-            use tauri_plugin_window_state::StateFlags;
-            tauri_plugin_window_state::Builder::default()
-                .with_state_flags(StateFlags::all() & !StateFlags::VISIBLE)
-                .with_denylist(&["quick-view"])
-                .build()
-        })
+        .plugin(window_state_plugin.build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
@@ -292,6 +326,7 @@ pub fn run() {
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
+            app_dirs::get_app_dirs,
             configure_webview_hide_pdf_more_settings,
             get_launch_context,
             startup_storage_bootstrap::get_startup_storage_bootstrap,
@@ -359,6 +394,7 @@ pub fn run() {
             archive::encoding::check_archive,
             copy_move_job::start_copy_move_job,
             copy_move_job::cancel_copy_move_job,
+            delete_job::recycle_bin_unavailable_paths,
             delete_job::start_delete_job,
             delete_job::cancel_delete_job,
             global_search::global_search_init,
@@ -506,13 +542,24 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     // max file size is only 40 KB, which is too small to be useful after the
     // fact, so raise it. KeepOne keeps growth bounded (no unbounded rotated
     // history on end-user machines).
-    app.handle().plugin(
-        tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .max_file_size(2 * 1024 * 1024)
-            .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepOne)
-            .build(),
-    )?;
+    //
+    // FORK-MODIFICATION 2026-10-20：移植上游 8908e214 ——
+    // 隔离的 e2e 实例要把日志写进隔离目录，否则 CI 收不到失败现场，
+    // 而且真实用户目录里会多出一份测试日志。
+    let mut log_plugin = tauri_plugin_log::Builder::default()
+        .level(log::LevelFilter::Info)
+        .max_file_size(2 * 1024 * 1024)
+        .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepOne);
+    if let Some(log_dir) = app_dirs::log_dir_override() {
+        log_plugin = log_plugin.targets([
+            tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
+            tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Folder {
+                path: log_dir,
+                file_name: None,
+            }),
+        ]);
+    }
+    app.handle().plugin(log_plugin.build())?;
     log::info!(
         "setup_handler: app started, version={}, exe={}",
         app.package_info().version,
@@ -521,8 +568,16 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
+    // FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+    //
+    // 迁移会改写用户**真实**的默认文件管理器注册表集成 —— 那个东西住在
+    // app 目录之外，隔离目录管不到它。所以隔离的 e2e 实例整段跳过。
     #[cfg(windows)]
-    if let Err(error) = default_file_manager::migrate_legacy_default_file_manager(app.handle()) {
+    if app_dirs::is_isolated() {
+        log::info!("Isolated e2e data folder in use; skipping default file manager migration");
+    } else if let Err(error) =
+        default_file_manager::migrate_legacy_default_file_manager(app.handle())
+    {
         eprintln!("Failed to migrate legacy default file manager integration: {error}");
     }
     startup_storage_bootstrap::start_preload(
@@ -559,8 +614,12 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     #[cfg(not(windows))]
     let should_hide_main_window_on_startup = launched_from_autostart(&raw_args);
 
-    if !should_hide_main_window_on_startup {
-        if let Some(main_window) = app.get_webview_window("main") {
+    if let Some(main_window) = app.get_webview_window("main") {
+        // 上游的修复：分三段恢复窗口状态，修「全屏 / 最大化 / 贴边之后
+        // 窗口状态坏掉」。原因见 `main_window_state.rs` 顶部的说明。
+        main_window_state::restore_main_window_state(&main_window);
+
+        if !should_hide_main_window_on_startup {
             // 启动默认最大化（2026-10-11）。
             //
             // 为什么放在这里而不是 tauri.conf.json 里写 `"maximized": true`：
@@ -574,7 +633,11 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
             //
             // 幂等：窗口已经是最大化时再次调用不改变任何东西，
             // 因此自启动（窗口保持隐藏）路径不受影响。
-            let _ = main_window.maximize();
+            //
+            // 与上游的差别：上游是「恢复你上次离开时的状态」，本仓是「一律最大化」。
+            // 所以这里在最大化之前先退出全屏 —— 对全屏窗口调 maximize() 会得到
+            // 「既全屏又最大化」的怪状态（标题栏叠在任务栏上）。
+            main_window_state::apply_startup_maximized(&main_window);
             let _ = main_window.show();
         }
     }

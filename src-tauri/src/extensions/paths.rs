@@ -6,8 +6,6 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-use tauri::Manager;
-
 use super::security::validate_binary_path_component;
 
 pub fn ensure_app_data_subdir(
@@ -15,9 +13,7 @@ pub fn ensure_app_data_subdir(
     dir_name: &str,
     dir_label: &str,
 ) -> Result<PathBuf, String> {
-    let app_data_dir = app_handle
-        .path()
-        .app_data_dir()
+    let app_data_dir = crate::app_dirs::app_data_dir(app_handle)
         .map_err(|error| format!("Failed to get app data dir: {}", error))?;
 
     let directory = app_data_dir.join(dir_name);

@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { toggleMainWindowMaximized } from '@/utils/window-fullscreen';
 
 const { t } = useI18n();
 const appWindow = getCurrentWindow();
@@ -21,7 +22,11 @@ function minimizeWindow() {
 }
 
 function maximizeWindow() {
-  appWindow.toggleMaximize();
+  // 全屏状态下点「最大化」要先退出全屏 —— 直接 maximize 一个全屏窗口
+  // 会得到「既全屏又最大化」的怪状态（标题栏叠在任务栏上）。
+  toggleMainWindowMaximized().catch((error: unknown) => {
+    console.error('Failed to toggle window maximize:', error);
+  });
 }
 
 function closeWindow() {

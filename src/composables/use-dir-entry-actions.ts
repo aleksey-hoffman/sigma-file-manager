@@ -31,6 +31,8 @@ import { basenameFromPath } from '@/utils/source-display-name';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+// FORK-MODIFICATION 2026-10-20：移植上游 0ae258d6 —— 回收站不可用时先确认再永久删除。
+import { planDeleteJobs } from '@/utils/recycle-bin-delete';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
 import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
@@ -197,50 +199,65 @@ export function useDirEntryActions() {
       return false;
     }
 
-    if (!useTrash) {
-      const confirmed = await permanentDeleteConfirm.requestConfirm(entries);
+    // FORK-MODIFICATION 2026-10-20：移植上游 0ae258d6。
+    //
+    // UNC 路径与映射的网络驱动器没有回收站。这里的做法是**先问后做**：
+    // `planDeleteJobs` 问后端「这批路径里哪些不能进回收站」，
+    // 对那部分弹永久删除确认框（用户明确同意才删），其余照常进回收站。
+    // 确认被取消时，能进回收站的那部分**照常进回收站** —— 取消的是「永久删除」，
+    // 不是「整个删除操作」。
+    const jobs = await planDeleteJobs({
+      entries,
+      useTrash,
+      requestPermanentConfirm: pendingEntries => permanentDeleteConfirm.requestConfirm(pendingEntries),
+    });
 
-      if (!confirmed) {
-        return false;
-      }
-    }
-
-    const paths = entries.map(entry => entry.path);
-    const sharedParentDirectory = getSharedSourceDirectory(paths);
-    const displayPath = sharedParentDirectory
-      ? basenameFromPath(sharedParentDirectory)
-      : '';
-
-    try {
-      const result = await deleteJobsStore.startJob(paths, useTrash, {
-        label: useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
-        displayPath,
-      });
-
-      if (result.deletedPaths.length > 0) {
-        workspacesStore.handlePathsDeleted(result.deletedPaths);
-        userStatsStore.handlePathsDeleted(result.deletedPaths);
-        userSettingsStore.handlePathsDeleted(result.deletedPaths);
-        dirSizesStore.invalidate(result.deletedPaths);
-
-        const parentDirs = [...new Set(result.deletedPaths.map(path => getParentDirectory(path)))];
-        workspacesStore.handleDirectoryContentsChanged(parentDirs);
-      }
-
-      return result.success && !result.cancelled;
-    }
-    catch (error) {
-      toast.custom(markRaw(ToastStatic), {
-        componentProps: {
-          data: {
-            title: useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
-            description: String(error),
-          },
-        },
-      });
-
+    if (!jobs) {
       return false;
     }
+
+    let allSucceeded = true;
+
+    for (const job of jobs) {
+      const sharedParentDirectory = getSharedSourceDirectory(job.paths);
+      const displayPath = sharedParentDirectory
+        ? basenameFromPath(sharedParentDirectory)
+        : '';
+
+      try {
+        const result = await deleteJobsStore.startJob(job.paths, job.useTrash, {
+          label: job.useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
+          displayPath,
+        });
+
+        if (result.deletedPaths.length > 0) {
+          workspacesStore.handlePathsDeleted(result.deletedPaths);
+          userStatsStore.handlePathsDeleted(result.deletedPaths);
+          userSettingsStore.handlePathsDeleted(result.deletedPaths);
+          dirSizesStore.invalidate(result.deletedPaths);
+
+          const parentDirs = [...new Set(result.deletedPaths.map(path => getParentDirectory(path)))];
+          workspacesStore.handleDirectoryContentsChanged(parentDirs);
+        }
+
+        if (!result.success || result.cancelled) {
+          allSucceeded = false;
+        }
+      }
+      catch (error) {
+        allSucceeded = false;
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: job.useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
+              description: String(error),
+            },
+          },
+        });
+      }
+    }
+
+    return allSucceeded;
   }
 
   async function renameItem(entry: DirEntry, newName: string): Promise<boolean> {

@@ -3,11 +3,6 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
-  appCacheDir,
-  appConfigDir,
-  appDataDir,
-  appLocalDataDir,
-  appLogDir,
   audioDir,
   cacheDir,
   configDir,
@@ -26,6 +21,16 @@ import {
   templateDir,
   videoDir,
 } from '@tauri-apps/api/path';
+// FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+// app* 这几个目录改走后端统一解析（`get_app_dirs`），这样隔离的 e2e 实例
+// 不会读到用户真实的 app 数据目录。
+import {
+  appCacheDir,
+  appConfigDir,
+  appDataDir,
+  appLocalDataDir,
+  appLogDir,
+} from '@/utils/app-dirs';
 
 export interface UserPaths {
   appCacheDir: string;

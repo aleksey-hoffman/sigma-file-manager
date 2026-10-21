@@ -40,6 +40,7 @@ export type ShortcutDefinition = {
   scope: 'global' | 'navigator' | 'settings';
   conditions: ShortcutConditions;
   isReadOnly: boolean;
+  optionalShift?: boolean;
 };
 
 type BuiltinNavigationPageRouteName = 'home' | 'navigator' | 'dashboard' | 'settings' | 'extensions';
@@ -578,6 +579,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       dialogIsOpened: false,
     },
     isReadOnly: false,
+    optionalShift: true,
   },
   {
     id: 'navigateDown',
@@ -591,6 +593,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       dialogIsOpened: false,
     },
     isReadOnly: false,
+    optionalShift: true,
   },
   {
     id: 'navigateLeft',
@@ -604,6 +607,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       dialogIsOpened: false,
     },
     isReadOnly: false,
+    optionalShift: true,
   },
   {
     id: 'navigateRight',
@@ -617,6 +621,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       dialogIsOpened: false,
     },
     isReadOnly: false,
+    optionalShift: true,
   },
   {
     id: 'openSelected',
@@ -1138,7 +1143,11 @@ function modifiersMatch(event: KeyboardEvent | MouseEvent, keys: ShortcutKeys): 
   return true;
 }
 
-export function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
+export function matchesShortcut(
+  event: KeyboardEvent,
+  keys: ShortcutKeys,
+  matchOptions: { optionalShift?: boolean } = {},
+): boolean {
   if (!keys.key) return false;
   if (keys.key.startsWith('MouseButton')) return false;
 
@@ -1173,7 +1182,14 @@ export function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boole
     }
   }
 
-  if (event.shiftKey !== (keys.shift || false)) return false;
+  const shiftMatches = event.shiftKey === (keys.shift || false);
+  const extraShiftAllowed = Boolean(
+    matchOptions.optionalShift
+    && event.shiftKey
+    && !keys.shift,
+  );
+
+  if (!shiftMatches && !extraShiftAllowed) return false;
 
   if (expectedKey === ' ' && event.code === 'Space') return true;
 
@@ -1276,7 +1292,9 @@ export function getSelectedTextForCopy(): string | null {
   return text;
 }
 
-type ShortcutHandler = () => void | boolean | Promise<void | boolean>;
+type ShortcutHandler = (
+  event?: KeyboardEvent | MouseEvent,
+) => void | boolean | Promise<void | boolean>;
 type ShortcutHandlerResult = ReturnType<ShortcutHandler>;
 
 type HandlerRegistration = {
@@ -1705,7 +1723,10 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     isShortcutCaptureActive.value = isActive;
   }
 
-  function callShortcutHandler(shortcutId: ShortcutId): ShortcutHandlerResult | null {
+  function callShortcutHandler(
+    shortcutId: ShortcutId,
+    event?: KeyboardEvent | MouseEvent,
+  ): ShortcutHandlerResult | null {
     const definition = getShortcutDefinition(shortcutId);
     if (!definition) return null;
 
@@ -1716,7 +1737,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
       return null;
     }
 
-    return registration.handler();
+    return registration.handler(event);
   }
 
   async function executeShortcut(shortcutId: ShortcutId): Promise<boolean> {
@@ -1735,7 +1756,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     for (const definition of definitions.value) {
       const keys = resolveShortcutBindingKeys(definition);
 
-      if (matchesShortcut(event, keys)) {
+      if (matchesShortcut(event, keys, { optionalShift: definition.optionalShift })) {
         return definition.id;
       }
     }
@@ -1749,7 +1770,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     for (const definition of definitions.value) {
       const keys = resolveShortcutBindingKeys(definition);
 
-      if (matchesShortcut(event, keys)) {
+      if (matchesShortcut(event, keys, { optionalShift: definition.optionalShift })) {
         matchingShortcuts.push(definition.id);
       }
     }
@@ -1900,7 +1921,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     if (matchingShortcutIds.length === 0) return false;
 
     for (const shortcutId of matchingShortcutIds) {
-      const result = callShortcutHandler(shortcutId);
+      const result = callShortcutHandler(shortcutId, event);
       if (result === null) continue;
 
       const isHandled = result instanceof Promise
@@ -1930,7 +1951,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     if (matchingShortcutIds.length === 0) return false;
 
     for (const shortcutId of matchingShortcutIds) {
-      const result = callShortcutHandler(shortcutId);
+      const result = callShortcutHandler(shortcutId, event);
       if (result === null) continue;
 
       const isHandled = result instanceof Promise

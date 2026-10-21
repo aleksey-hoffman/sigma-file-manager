@@ -17,9 +17,10 @@ use super::server::{self, McpStatus};
 use super::tools::FavoriteCategory;
 use super::MCP_RUNTIME;
 
+/// FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+/// 走后端统一解析点，隔离的 e2e 实例才不会读到用户真实的 MCP 客户端配置。
 fn app_data_dir(app: &tauri::AppHandle) -> Result<std::path::PathBuf, String> {
-    app.path()
-        .app_data_dir()
+    crate::app_dirs::app_data_dir(app)
         .map_err(|error| format!("Failed to resolve app data directory: {error}"))
 }
 

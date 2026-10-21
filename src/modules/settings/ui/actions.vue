@@ -7,7 +7,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { appDataDir, appConfigDir, appLogDir } from '@tauri-apps/api/path';
+// FORK-MODIFICATION 2026-10-20：移植上游 8908e214 —— app 目录走后端统一解析。
+import { appDataDir, appConfigDir, appLogDir } from '@/utils/app-dirs';
 import {
   FolderIcon,
   ExternalLinkIcon,

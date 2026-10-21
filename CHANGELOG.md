@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.2.14-beta] - October 2026
+
+**Summary:** The file browser can now select a range with the keyboard. A file on a network drive is no longer deleted behind your back when it cannot go to the Recycle Bin. And the window stops losing track of whether it is maximized or in full screen.
+
+### What changed
+
+**Added: hold Shift and press an arrow key to select a range.** In a folder, the entry you start from becomes the anchor; every further Shift+arrow extends the selection from that anchor, and Shift+arrow back towards the anchor shrinks it again. A plain arrow key without Shift moves on to the next entry and selects only that one, as it always did.
+
+**Fixed: a file on a network drive could be deleted permanently without asking.** The Recycle Bin only exists on a local disk, so a file on a network share or a mapped drive has nowhere to go. Previously the attempt simply failed, and the file was removed for good -- without a word. Alpha File Manager now asks first, and only removes the file permanently if you say yes. Files that can go to the Recycle Bin are unaffected.
+
+**Fixed: the window could come back with its bottom edge off the screen.** The size and position of the window were restored in one step, from a size that may have been recorded while the window was in full screen. The frame is now restored in stages and then fitted to the work area, so it always comes back somewhere you can reach it.
+
+**Fixed: double-clicking the top bar did not maximize the window.** The blank part of the top bar was not a real drag region, so the double-click never reached the window manager. It is now, and the window maximizes and restores on a double-click as you would expect.
+
+**Fixed: the maximize button could leave the window in full screen and maximized at the same time.** The button now leaves full screen before it maximizes, and the top bar stops acting as a drag handle while the window is in full screen, where dragging it means nothing.
+
+### This is a beta
+
+**A range selection stays anchored to where it started.** Shift+arrow always extends from the anchor, not from wherever the cursor happens to be -- so a range that grows past the anchor and then shrinks back lands on the same entries it did before. Picking an entry with the mouse and then pressing Shift+arrow starts a new anchor at that entry.
+
+**A network file that cannot be recycled is never removed without a confirmation.** If you decline, the file stays where it is. If you picked a mix -- some that can go to the Recycle Bin and some that cannot -- the ones that can are still trashed, and the confirmation covers only the rest.
+
 ## [3.2.13-beta] - October 2026
 
 **Summary:** Extensions are now much harder to steer somewhere they should not reach. A download that turns out to land on a private network is refused, even when it gets there through a redirect. An extension can no longer run a program unless its own description file asked for that. And the "sandbox" that only appeared to contain extension code is gone, because it never really did.

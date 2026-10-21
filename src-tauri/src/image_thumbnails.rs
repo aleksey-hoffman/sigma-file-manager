@@ -17,7 +17,6 @@ use image::{imageops::FilterType, ImageDecoder, ImageReader, Limits};
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use tauri::Manager;
 
 const IMAGE_THUMBNAIL_CACHE_DIR: &str = "image-thumbnails";
 const THUMBNAIL_MAX_DIMENSION: u32 = 384;
@@ -135,9 +134,7 @@ fn thumbnail_cache_dir_in(app_data_dir: &Path) -> PathBuf {
 
 fn thumbnail_cache_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     Ok(thumbnail_cache_dir_in(
-        &app
-            .path()
-            .app_data_dir()
+        &crate::app_dirs::app_data_dir(app)
             .map_err(|error| format!("Failed to resolve app data directory: {error}"))?,
     ))
 }
@@ -675,9 +672,7 @@ pub async fn generate_image_thumbnail(
 pub async fn get_thumbnail_cache_stats(
     app: tauri::AppHandle,
 ) -> Result<ThumbnailCacheStats, String> {
-    let app_data_dir = app
-        .path()
-        .app_data_dir()
+    let app_data_dir = crate::app_dirs::app_data_dir(&app)
         .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
 
     tauri::async_runtime::spawn_blocking(move || {
@@ -689,9 +684,7 @@ pub async fn get_thumbnail_cache_stats(
 
 #[tauri::command]
 pub async fn clear_thumbnail_cache(app: tauri::AppHandle) -> Result<(), String> {
-    let app_data_dir = app
-        .path()
-        .app_data_dir()
+    let app_data_dir = crate::app_dirs::app_data_dir(&app)
         .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
 
     tauri::async_runtime::spawn_blocking(move || {

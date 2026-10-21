@@ -48,8 +48,11 @@ vi.mock('@tauri-apps/api/webview', () => ({
   }),
 }));
 
-vi.mock('@tauri-apps/api/path', () => ({
+// FORK-MODIFICATION 2026-10-20：移植上游 8908e214 —— appDataDir 改从
+// `@/utils/app-dirs` 取（后端统一解析目录），所以 mock 的目标也跟着换。
+vi.mock('@/utils/app-dirs', () => ({
   appDataDir: vi.fn(),
+  isIsolatedDataDir: vi.fn(async () => false),
 }));
 
 vi.mock('@/stores/storage/user-paths', () => ({

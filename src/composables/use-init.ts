@@ -34,6 +34,8 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
+// FORK-MODIFICATION 2026-10-20：移植上游 8908e214 —— 隔离的 e2e 实例不碰真实系统集成。
+import { isIsolatedDataDir } from '@/utils/app-dirs';
 import {
   prelaunchConfiguredAuxiliaryWindows,
   setupAuxiliaryWindowLifecycle,
@@ -437,7 +439,16 @@ export function useInit() {
 
     runInBackgroundWithTrace(
       'background:applyLaunchAtStartupPreference',
-      () => applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup),
+      async () => {
+        // FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+        // 隔离的 e2e 实例用的是默认设置，同步它们会改掉用户**真实**的
+        // 操作系统开机自启项 —— 那是 app 目录之外的东西，隔离目录管不到。
+        if (await isIsolatedDataDir()) {
+          return;
+        }
+
+        await applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup);
+      },
       'Failed to apply launch at startup preference:',
     );
     runInBackgroundWithTrace(

@@ -49,8 +49,11 @@ use super::transfer::{self, RemoteChmodReport, RemoteTransferReport};
 use super::transport::ProxyConfig;
 
 /// 凭据存档与 `mcp-access.json` 同级，都在 app-data 目录根，不在 `user-data/` 下。
+///
+/// FORK-MODIFICATION 2026-10-20：移植上游 8908e214。
+/// 走后端统一解析点，隔离的 e2e 实例才不会读到用户真实的远程凭据。
 fn app_data_dir(app: &tauri::AppHandle) -> Result<PathBuf, RemoteError> {
-    app.path().app_data_dir().map_err(|error| {
+    crate::app_dirs::app_data_dir(app).map_err(|error| {
         RemoteError::unknown(format!("解析应用数据目录失败: {error}"))
     })
 }

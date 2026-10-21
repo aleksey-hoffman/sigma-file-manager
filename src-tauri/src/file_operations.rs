@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    format_trash_error, minimize_delete_paths, normalize_path,
+    delete_path_to_trash, minimize_delete_paths, normalize_path,
     source_and_destination_same_directory, unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
@@ -1917,7 +1917,8 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
         }
 
         let result = if use_trash {
-            trash::delete(path).map_err(format_trash_error)
+            // FORK-MODIFICATION 2026-10-20：见 `utils.rs` 的「回收站可用性」区块。
+            delete_path_to_trash(path, path_str)
         } else if path.is_dir() {
             fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {

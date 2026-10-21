@@ -15,6 +15,7 @@ import { StatusCenterToolbarButton } from '@/modules/status-center';
 import CommandPaletteToolbarButton from '@/modules/extensions/components/command-palette-toolbar-button.vue';
 import { ProgressiveBlur, type ProgressiveBlurLayer } from '@/components/ui/progressive-blur';
 import { clearDocumentTextSelection } from '@/utils/document-selection';
+import { useAppWindowStore } from '@/stores/runtime/app-window';
 
 interface ToolbarDragSession {
   pointerId: number;
@@ -28,6 +29,7 @@ const WINDOW_DRAG_EXCLUDED_SELECTOR = '.tab-bar';
 
 const route = useRoute();
 const appWindow = getCurrentWindow();
+const appWindowStore = useAppWindowStore();
 
 let toolbarDragSession: ToolbarDragSession | null = null;
 let shouldSuppressNextToolbarClick = false;
@@ -118,6 +120,11 @@ function shouldSkipToolbarWindowDrag(event: PointerEvent) {
     return true;
   }
 
+  // 全屏时顶栏不该拖窗口 —— 全屏没有标题栏可拖，拖了反而像 bug。
+  if (appWindowStore.isMainWindowFullscreen) {
+    return true;
+  }
+
   if (!(event.target instanceof Element)) {
     return false;
   }
@@ -191,7 +198,8 @@ onBeforeUnmount(() => {
     class="window-toolbar"
     :class="{
       'window-toolbar--blurred': isBlurred,
-      'window-toolbar--absolute': isAbsolute
+      'window-toolbar--absolute': isAbsolute,
+      'window-toolbar--fullscreen': appWindowStore.isMainWindowFullscreen
     }"
   >
     <ProgressiveBlur
@@ -291,7 +299,11 @@ onBeforeUnmount(() => {
   inset-inline: 0;
 }
 
-.window-toolbar-spacer {
+/* 选择器要写成 `.window-toolbar-action-layer > .window-toolbar-spacer`：
+   下面那条 `.window-toolbar-action-layer :deep(*)` 同样是 (0,2,0) 且写在后面，
+   只写 `.window-toolbar-spacer` 会被它盖掉 —— 这一块就**不是**拖拽区了，
+   于是「双击顶栏切换最大化」没反应（原生拖拽区才认双击）。 */
+.window-toolbar-action-layer > .window-toolbar-spacer {
   z-index: 4;
   -webkit-app-region: drag;
 }
@@ -317,5 +329,11 @@ onBeforeUnmount(() => {
 
 .window-toolbar-action-layer > * {
   z-index: 6;
+}
+
+/* 全屏时顶栏整体不拖窗口：全屏没有标题栏，拖了反而像 bug。 */
+.window-toolbar--fullscreen .window-toolbar-action-layer > .window-toolbar-spacer,
+.window-toolbar--fullscreen .window-toolbar-action-layer {
+  -webkit-app-region: no-drag;
 }
 </style>

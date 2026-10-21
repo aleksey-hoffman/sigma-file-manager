@@ -32,6 +32,8 @@ import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+// FORK-MODIFICATION 2026-10-20：移植上游 0ae258d6 —— 回收站不可用时先确认再永久删除。
+import { planDeleteJobs } from '@/utils/recycle-bin-delete';
 // FORK-MODIFICATION 2026-10-20：远程删除。
 import { useRemoteDeleteConfirm } from '@/modules/remote/utils/remote-delete-confirm';
 import { deleteRemoteEntries } from '@/modules/remote/utils/remote-delete';
@@ -93,6 +95,9 @@ export function useFileBrowserSelection(
   } = useCopyMoveWithConflicts();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
+  // 「键盘焦点所在的那一条」—— 与「上一次被点中的那一条」不是一回事：
+  // 连选（Shift+方向键）时，锚点是 lastSelectedEntry，光标走的是 focusedEntry。
+  const focusedEntry = ref<DirEntry | null>(null);
 
   const contextMenu = ref({
     targetEntry: null as DirEntry | null,
@@ -175,6 +180,7 @@ export function useFileBrowserSelection(
   function clearSelection() {
     selectedEntries.value = [];
     lastSelectedEntry.value = null;
+    focusedEntry.value = null;
     onSelect([]);
     blurFocusedDirEntry();
   }
@@ -195,6 +201,13 @@ export function useFileBrowserSelection(
     }
 
     selectedEntries.value = applyRangeSelection(selectedEntries.value, rangeEntries, additive);
+
+    // 连选的锚点：第一次连选时锚点就是起点。
+    if (lastSelectedEntry.value == null) {
+      lastSelectedEntry.value = fromEntry;
+    }
+
+    focusedEntry.value = toEntry;
     onSelect(selectedEntries.value);
   }
 
@@ -202,6 +215,7 @@ export function useFileBrowserSelection(
     if (!isEntrySelected(entry)) {
       selectedEntries.value = [...selectedEntries.value, entry];
       lastSelectedEntry.value = entry;
+      focusedEntry.value = entry;
       onSelect(selectedEntries.value);
     }
   }
@@ -218,12 +232,17 @@ export function useFileBrowserSelection(
       lastSelectedEntry.value = lastEntry;
     }
 
+    if (focusedEntry.value?.path === entry.path) {
+      focusedEntry.value = lastSelectedEntry.value;
+    }
+
     onSelect(selectedEntries.value);
   }
 
   function replaceSelection(entry: DirEntry) {
     selectedEntries.value = [entry];
     lastSelectedEntry.value = entry;
+    focusedEntry.value = entry;
     onSelect(selectedEntries.value);
   }
 
@@ -233,6 +252,7 @@ export function useFileBrowserSelection(
       ? selectedEntries.value[selectedEntries.value.length - 1]
       : null;
     lastSelectedEntry.value = lastEntry;
+    focusedEntry.value = lastEntry;
     onSelect(selectedEntries.value);
 
     if (entries.length === 0) {
@@ -299,9 +319,14 @@ export function useFileBrowserSelection(
       return;
     }
 
-    if (selectedEntries.value.length !== 1 || !isEntrySelected(entry)) {
-      replaceSelection(entry);
+    if (isEntrySelected(entry)) {
+      // 已经选中的条目：只挪动键盘焦点，不清掉已有的选择 ——
+      // 否则点一下已选中的条目就会把整组选择清掉。
+      focusedEntry.value = entry;
+      return;
     }
+
+    replaceSelection(entry);
   }
 
   function handleEntryContextMenu(entry: DirEntry) {
@@ -1232,6 +1257,7 @@ export function useFileBrowserSelection(
       ? selectedEntries.value[selectedEntries.value.length - 1]
       : null;
     lastSelectedEntry.value = lastEntry;
+    focusedEntry.value = lastEntry;
     onSelect(selectedEntries.value);
   }
 
@@ -1246,58 +1272,75 @@ export function useFileBrowserSelection(
       return false;
     }
 
-    if (!useTrash) {
-      const confirmed = await permanentDeleteConfirm.requestConfirm(entries);
+    // FORK-MODIFICATION 2026-10-20：移植上游 0ae258d6。
+    //
+    // UNC 路径与映射的网络驱动器没有回收站。这里的做法是**先问后做**：
+    // `planDeleteJobs` 问后端「这批路径里哪些不能进回收站」，
+    // 对那部分弹永久删除确认框（用户明确同意才删），其余照常进回收站。
+    // 确认被取消时，能进回收站的那部分**照常进回收站**。
+    //
+    // 注意：这里的「远程」指**网络路径**（UNC / 映射盘），不是本仓 2026-10-20
+    // 引入的 SFTP/FTP 远程条目 —— 后者走的是完全另一条通道 `deleteRemoteItems`。
+    const jobs = await planDeleteJobs({
+      entries,
+      useTrash,
+      requestPermanentConfirm: pendingEntries => permanentDeleteConfirm.requestConfirm(pendingEntries),
+    });
 
-      if (!confirmed) {
-        return false;
-      }
-    }
-
-    const paths = entries.map(entry => entry.path);
-    const sharedParentDirectory = getSharedSourceDirectory(paths);
-    const displayPath = sharedParentDirectory
-      ? basenameFromPath(sharedParentDirectory)
-      : '';
-
-    try {
-      const result = await deleteJobsStore.startJob(paths, useTrash, {
-        label: useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
-        displayPath,
-      });
-
-      if (result.deletedPaths.length > 0) {
-        workspacesStore.handlePathsDeleted(result.deletedPaths);
-        userStatsStore.handlePathsDeleted(result.deletedPaths);
-        userSettingsStore.handlePathsDeleted(result.deletedPaths);
-
-        dirSizesStore.invalidate([currentPathRef.value, ...result.deletedPaths]);
-
-        // v6.5: the same dead child cache that hid newly created folders also
-        // kept deleted ones and stale rename targets on screen.
-        const changedParents = result.deletedPaths
-          .map(parentDirectoryPath)
-          .filter((p): p is string => p !== null);
-        folderTreeStore.markTreeStale(changedParents);
-
-        clearSelection();
-        onRefresh();
-      }
-
-      return result.success && !result.cancelled;
-    }
-    catch (error) {
-      toast.custom(markRaw(ToastStatic), {
-        componentProps: {
-          data: {
-            title: useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
-            description: String(error),
-          },
-        },
-      });
-
+    if (!jobs) {
       return false;
     }
+
+    let allSucceeded = true;
+
+    for (const job of jobs) {
+      const sharedParentDirectory = getSharedSourceDirectory(job.paths);
+      const displayPath = sharedParentDirectory
+        ? basenameFromPath(sharedParentDirectory)
+        : '';
+
+      try {
+        const result = await deleteJobsStore.startJob(job.paths, job.useTrash, {
+          label: job.useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
+          displayPath,
+        });
+
+        if (result.deletedPaths.length > 0) {
+          workspacesStore.handlePathsDeleted(result.deletedPaths);
+          userStatsStore.handlePathsDeleted(result.deletedPaths);
+          userSettingsStore.handlePathsDeleted(result.deletedPaths);
+
+          dirSizesStore.invalidate([currentPathRef.value, ...result.deletedPaths]);
+
+          // v6.5: the same dead child cache that hid newly created folders also
+          // kept deleted ones and stale rename targets on screen.
+          const changedParents = result.deletedPaths
+            .map(parentDirectoryPath)
+            .filter((p): p is string => p !== null);
+          folderTreeStore.markTreeStale(changedParents);
+
+          clearSelection();
+          onRefresh();
+        }
+
+        if (!result.success || result.cancelled) {
+          allSucceeded = false;
+        }
+      }
+      catch (error) {
+        allSucceeded = false;
+        toast.custom(markRaw(ToastStatic), {
+          componentProps: {
+            data: {
+              title: job.useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
+              description: String(error),
+            },
+          },
+        });
+      }
+    }
+
+    return allSucceeded;
   }
 
   /**
@@ -1380,6 +1423,7 @@ export function useFileBrowserSelection(
   return {
     selectedEntries,
     lastSelectedEntry,
+    focusedEntry,
     mouseDownState,
     contextMenu,
     renameState,
@@ -1397,6 +1441,7 @@ export function useFileBrowserSelection(
     performSelectionAction,
     resetMouseState,
     selectAll,
+    selectRange,
     selectEntryByPath,
     removeFromSelection,
     copyItems,

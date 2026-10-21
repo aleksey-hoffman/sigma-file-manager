@@ -8,6 +8,10 @@ export const FILE_BROWSER_ENTRIES_SELECTOR = '[data-e2e-root="file-browser-entri
 export const FILE_BROWSER_EMPTY_DIRECTORY_SELECTOR = '[data-e2e-root="file-browser-empty-directory"]';
 export const FILE_BROWSER_DIRECTORY_ENTRY_SELECTOR = '.file-browser-list-view__entry--dir[data-entry-path]';
 export const ADDRESS_BAR_PARENT_BREADCRUMB_SELECTOR = '.address-bar__part:not(.address-bar__part--last)';
+export const CHANGELOG_DIALOG_SELECTOR = '.changelog-dialog';
+export const DIALOG_OVERLAY_SELECTOR = '.sigma-ui-dialog-overlay';
+
+const CHANGELOG_DIALOG_APPEAR_TIMEOUT_MS = 5000;
 
 export async function focusWindowThatContainsMainSidebar() {
   await browser.waitUntil(async () => {
@@ -23,6 +27,33 @@ export async function focusWindowThatContainsMainSidebar() {
     timeout: 120000,
     interval: 250,
     timeoutMsg: 'Expected a window containing the main app sidebar (not the quick-view window)',
+  });
+
+  await dismissChangelogDialogIfShown();
+}
+
+// On the first launch with a fresh profile (as on CI), the app opens the
+// "What's new" changelog dialog in the background shortly after startup. Its
+// overlay blocks clicks, so close it the way a user would before a test starts.
+export async function dismissChangelogDialogIfShown() {
+  const changelogDialog = $(CHANGELOG_DIALOG_SELECTOR);
+  const appeared = await changelogDialog.waitForExist({
+    timeout: CHANGELOG_DIALOG_APPEAR_TIMEOUT_MS,
+    interval: 200,
+  }).catch(() => false);
+
+  if (!appeared) {
+    return;
+  }
+
+  await browser.keys('Escape');
+  await browser.waitUntil(async () => {
+    return !(await $(CHANGELOG_DIALOG_SELECTOR).isExisting())
+      && !(await $(DIALOG_OVERLAY_SELECTOR).isExisting());
+  }, {
+    timeout: 15000,
+    interval: 200,
+    timeoutMsg: 'Changelog dialog did not close',
   });
 }
 
