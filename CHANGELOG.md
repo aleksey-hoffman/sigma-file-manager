@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.2.15-beta] - October 2026
+
+**Summary:** The background visual effect can now be blended the way Photoshop blends layers. Pick a mode from a grouped menu, watch it preview while you hover, and choose whether the background mixes with the interface or with a fill color of your own.
+
+### What changed
+
+**Added: blend modes for the background visual effect.** The effect layer -- the blurred, grained wash that sits behind the app -- can now be combined with the interface using the familiar layer modes: Darken, Multiply, Color Burn, Lighten, Screen, Color Dodge, Linear Dodge (Add), Overlay, Soft Light, Hard Light, Difference, Exclusion, Color and Luminosity. The menu is grouped the way Photoshop groups them, and a mode the WebView cannot actually draw is hidden instead of offered and then ignored.
+
+**Added: blend the background with a fill color instead of the interface.** Every mode except Normal can be told what to mix with. Leave it on Interface and the effect blends with the window underneath, exactly as before. Switch it to Fill color and the effect blends with a color you choose -- eight ready-made swatches, or a custom color of your own.
+
+**Added: hover a mode to see it before you commit to it.** Moving the pointer down the menu previews the mode live on the page behind. Leaving the menu puts your saved mode back, so browsing costs you nothing.
+
+### This is a beta
+
+**Modes that are no longer on the menu are migrated, not lost.** Hue and Saturation used to be offered; with a fill color they flatten the picture to that color and look the same as Color, and over the interface they are almost invisible, so both have been dropped. If you had one of them saved, it is switched to Color. A mode that was saved but is not on the list at all falls back to Normal.
+
+**Nothing about the effect changes until you pick a mode.** Blend target and fill color are new settings that did not exist before, so they start on the interface with a blue fill -- the same picture you saw before. Your existing blur, opacity, noise and background are untouched.
+
 ## [3.2.14-beta] - October 2026
 
 **Summary:** The file browser can now select a range with the keyboard. A file on a network drive is no longer deleted behind your back when it cannot go to the Recycle Bin. And the window stops losing track of whether it is maximized or in full screen.

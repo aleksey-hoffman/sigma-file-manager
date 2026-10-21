@@ -48,6 +48,12 @@ import {
 } from '@/stores/schemas/user-settings';
 import { SEARCH_CONSTANTS } from '@/constants';
 import {
+  DEFAULT_INFUSION_BLEND_MODE,
+  DEFAULT_INFUSION_BLEND_TARGET,
+  DEFAULT_INFUSION_BLEND_TINT,
+  normalizeInfusionBlendSettings,
+} from '@/utils/infusion-blend';
+import {
   canUseStartupStorageFastPath,
   getStartupStorageFile,
   getStartupStorageRecord,
@@ -294,7 +300,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       opacity: 15,
       noise: 5,
       noiseScale: 0.5,
-      mixBlendMode: 'normal',
+      mixBlendMode: DEFAULT_INFUSION_BLEND_MODE,
+      blendTarget: DEFAULT_INFUSION_BLEND_TARGET,
+      blendTint: DEFAULT_INFUSION_BLEND_TINT,
       background,
     };
   }
@@ -309,7 +317,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       opacity: 5,
       noise: 5,
       noiseScale: 0.5,
-      mixBlendMode: 'normal',
+      mixBlendMode: DEFAULT_INFUSION_BLEND_MODE,
+      blendTarget: DEFAULT_INFUSION_BLEND_TARGET,
+      blendTint: DEFAULT_INFUSION_BLEND_TINT,
       background,
     };
   }
@@ -405,6 +415,24 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       }
 
       setNestedValue(userSettings.value as Record<string, unknown>, normalizedKey, value);
+    }
+
+    normalizeInfusionPagesBlendSettings();
+  }
+
+  function normalizeInfusionPagesBlendSettings() {
+    const pages = userSettings.value.infusion?.pages;
+
+    if (!pages) {
+      return;
+    }
+
+    for (const pageSettings of Object.values(pages)) {
+      if (!pageSettings || typeof pageSettings !== 'object') {
+        continue;
+      }
+
+      Object.assign(pageSettings, normalizeInfusionBlendSettings(pageSettings));
     }
   }
 

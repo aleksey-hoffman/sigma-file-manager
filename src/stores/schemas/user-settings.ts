@@ -15,9 +15,12 @@ import {
   legacyBackgroundStorageKeys,
 } from '@/modules/home/background-storage-keys';
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
+import { isInfusionBlendMode, normalizeInfusionBlendMode } from '@/utils/infusion-blend';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 32;
+// FORK-MODIFICATION 2026-10-21：移植上游 feature/background-blend-modes 时由 32 提到 33
+// （上游那份是 26→27，我们 fork 的 schema 已经走到 32，版本号不能倒退也不能复用）。
+export const USER_SETTINGS_SCHEMA_VERSION = 33;
 
 /**
  * 搜索深度默认值，同时也是 `global-search` 索引与目录内递归搜索共用的层数上限。
@@ -542,6 +545,14 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     }
   }
 
+  // FORK-MODIFICATION 2026-10-21：移植上游 feature/background-blend-modes ——
+  // 背景混合模式白名单迁移（Hue / Saturation → Color，其余不在白名单里的 → Normal）。
+  // 上游原本挂在 26→27；我们 fork 的 26→27 已经被 foldersFirst 占用，
+  // 所以这步顺延到 32→33。迁移是逐级调用的，已装机的 v32 用户会走到这一步。
+  if (fromVersion === 32 && toVersion === 33) {
+    await migrateInfusionBlendModes(storage);
+  }
+
   if (fromVersion === 6 && toVersion === 7) {
     const appData = await appDataDir();
     const mediaDir = `${appData.replace(/\\/g, '/')}/user-data/media`.replace(/\/+/g, '/');
@@ -564,6 +575,27 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   }
 
   void storage;
+}
+
+const INFUSION_STORAGE_PAGE_KEYS = ['global', 'home', 'navigator', 'dashboard', 'settings', 'extensions'];
+
+/**
+ * The blend mode menu now only offers modes from the allowlist (see INFUSION_BLEND_MODES). Saved Hue and
+ * Saturation become Color, anything else that is not in the allowlist becomes Normal. Modes that are
+ * still offered, and pages without a saved mode, are left alone. Blend target and fill color are new
+ * and fall back to their defaults (interface, #3b82f6), which renders the same as before.
+ */
+async function migrateInfusionBlendModes(storage: StorageAdapter) {
+  for (const pageKey of INFUSION_STORAGE_PAGE_KEYS) {
+    const storageKey = `infusion.pages.${pageKey}.mixBlendMode`;
+    const storedMode = await storage.get<unknown>(storageKey);
+
+    if (storedMode === undefined || isInfusionBlendMode(storedMode)) {
+      continue;
+    }
+
+    await storage.set(storageKey, normalizeInfusionBlendMode(storedMode));
+  }
 }
 
 async function addDefaultGlobalSearchIgnoredPaths(

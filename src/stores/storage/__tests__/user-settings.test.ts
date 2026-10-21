@@ -302,3 +302,87 @@ describe('user settings folder settings path lifecycle', () => {
     });
   });
 });
+
+describe('user settings infusion blend settings', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    emitMock.mockReset().mockResolvedValue(undefined);
+    listenMock.mockReset().mockResolvedValue(vi.fn());
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+      })),
+    });
+  });
+
+  function createBootstrap(data: Record<string, unknown>): StartupStorageFileBootstrap {
+    return {
+      path: '/tmp/user-data/user-settings.json',
+      status: 'ready',
+      data: {
+        __schemaVersion: USER_SETTINGS_SCHEMA_VERSION,
+        ...data,
+      },
+      schemaVersion: USER_SETTINGS_SCHEMA_VERSION,
+      error: null,
+    };
+  }
+
+  it('loads old settings without blend target and fill color unchanged', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    await userSettingsStore.init(createBootstrap({
+      'infusion.pages.global.mixBlendMode': 'overlay',
+      'infusion.pages.global.opacity': 25,
+      'infusion.pages.global.blur': 12,
+    }));
+
+    const globalPage = userSettingsStore.userSettings.infusion.pages[''];
+
+    expect(globalPage.mixBlendMode).toBe('overlay');
+    expect(globalPage.opacity).toBe(25);
+    expect(globalPage.blur).toBe(12);
+    expect(globalPage.blendTarget).toBe('ui');
+    expect(globalPage.blendTint).toBe('#3b82f6');
+    expect(userSettingsStore.userSettings.infusion.pages.home.mixBlendMode).toBe('normal');
+  });
+
+  it('loads saved blend target and fill color', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    await userSettingsStore.init(createBootstrap({
+      'infusion.pages.home.mixBlendMode': 'plus-lighter',
+      'infusion.pages.home.blendTarget': 'fill',
+      'infusion.pages.home.blendTint': '#EC4899',
+    }));
+
+    expect(userSettingsStore.userSettings.infusion.pages.home).toMatchObject({
+      mixBlendMode: 'plus-lighter',
+      blendTarget: 'fill',
+      blendTint: '#ec4899',
+    });
+  });
+
+  it('replaces invalid blend values with safe ones', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    await userSettingsStore.init(createBootstrap({
+      'infusion.pages.global.mixBlendMode': 'hue',
+      'infusion.pages.global.blendTarget': 'everything',
+      'infusion.pages.global.blendTint': 'url(javascript:alert(1))',
+      'infusion.pages.navigator.mixBlendMode': 'pigment',
+      'infusion.pages.navigator.blendTint': '#fff',
+    }));
+
+    expect(userSettingsStore.userSettings.infusion.pages['']).toMatchObject({
+      mixBlendMode: 'color',
+      blendTarget: 'ui',
+      blendTint: '#3b82f6',
+    });
+    expect(userSettingsStore.userSettings.infusion.pages.navigator).toMatchObject({
+      mixBlendMode: 'normal',
+      blendTarget: 'ui',
+      blendTint: '#3b82f6',
+    });
+  });
+});

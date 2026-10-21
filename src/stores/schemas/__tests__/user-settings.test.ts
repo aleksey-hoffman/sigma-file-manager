@@ -442,4 +442,42 @@ describe('migrateUserSettingsStorage', () => {
 
     expect(storage.values.get('navigator.thumbnailSize')).toBe('large');
   });
+
+  // FORK-MODIFICATION 2026-10-21：移植上游 feature/background-blend-modes。
+  // 上游把混合模式迁移挂在 26→27；我们 fork 的 26→27 已被 foldersFirst 占用，
+  // 这步顺延到 32→33，所以这里从 v32 起步，正好只跑混合模式那一步。
+  it('migrates saved infusion blend modes to the new allowlist', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 32,
+      'infusion.pages.global.mixBlendMode': 'hue',
+      'infusion.pages.home.mixBlendMode': 'saturation',
+      'infusion.pages.navigator.mixBlendMode': 'multiply',
+      'infusion.pages.dashboard.mixBlendMode': 'linear-burn',
+      'infusion.pages.settings.mixBlendMode': 42,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('infusion.pages.global.mixBlendMode')).toBe('color');
+    expect(storage.values.get('infusion.pages.home.mixBlendMode')).toBe('color');
+    expect(storage.values.get('infusion.pages.navigator.mixBlendMode')).toBe('multiply');
+    expect(storage.values.get('infusion.pages.dashboard.mixBlendMode')).toBe('normal');
+    expect(storage.values.get('infusion.pages.settings.mixBlendMode')).toBe('normal');
+    expect(storage.values.has('infusion.pages.extensions.mixBlendMode')).toBe(false);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+  });
+
+  it('does not add blend target or fill color keys to older settings files', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 32,
+      'infusion.pages.global.mixBlendMode': 'overlay',
+      'infusion.pages.global.opacity': 20,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('infusion.pages.global.mixBlendMode')).toBe('overlay');
+    expect(storage.values.get('infusion.pages.global.opacity')).toBe(20);
+    expect([...storage.values.keys()].filter(key => /blendTarget|blendTint/.test(key))).toEqual([]);
+  });
 });
