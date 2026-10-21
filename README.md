@@ -23,6 +23,11 @@ Everything below is ours. Nothing in this section exists upstream.
 
 | | Feature | Since |
 |---|---|---|
+| 🫳 | **Hold a file and drag it into another program** — WeChat, DingTalk, a browser — without your window jumping to the front and covering the target | **3.3.0** |
+| 👁️ | **The program you drag over comes to the front** — you can see where the file will land | **3.3.0** |
+| 🎨 | **Photoshop-style blend modes for the background effect**, with a fill colour of your own | **3.3.0** |
+| ⌨️ | **Hold Shift and press an arrow key to select a range** — anchored where you started | **3.3.0** |
+| 🔒 | **Extensions can no longer be steered onto a computer on your own network** | **3.3.0** |
 | 🌐 | **Browse remote servers for real** — SFTP, FTP and FTPS, with host keys and certificates pinned | **3.2.11** |
 | 🌲 | **The folder tree follows the pane you are in**, local or remote | **3.2.11** |
 | ⬆️⬇️ | **Upload and download** to and from a remote server — and the receiving pane refreshes itself | **3.2.11** |
@@ -74,6 +79,10 @@ they compare.
 | 💾 | **How full a drive is** | ✅ filled on the card, plus a Free space column | ➖ | ✅ |
 | 🖼️ | **Thumbnail size** | ✅ four sizes | ➖ | ➖ the system size |
 | 🧠 | **Batch rename** | ✅ find-and-replace, case conversion, templates and numbering — with a live preview, conflicts blocked instead of silently overwriting, and undo | ❌ not in Sigma at all | ✅ find-and-replace, with a preview |
+| 🫳 | **Dragging a file into another program** | ✅ **hold the file and drag** it into WeChat, DingTalk or a browser — the window you are dragging out of stays in the background | ➖ | ✅ |
+| 👁️ | **The program you drag over comes to the front** | ✅ the window under the pointer is brought forward while you carry the file, so you can see where it will land | ➖ | ➖ a Windows drag never raises the window under the pointer |
+| ⌨️ | **Keyboard range selection** | ✅ **Shift + arrow key** extends the selection from the anchor you started at | ➖ | ✅ Shift + arrow key extends the selection too |
+| 🎨 | **Blend modes for the background effect** | ✅ the Photoshop layer modes, plus a fill colour of your own | ➖ | ❌ |
 
 ✅ has it · ➖ not part of that project · ❌ cannot
 
@@ -91,6 +100,107 @@ they compare.
 > **Sigma File Manager** is the base application we build on. Take it if you
 > want the upstream project itself, its own release cadence and its community.
 > Alpha File Manager is an independent fork of it and tracks upstream.
+
+---
+
+## 🆕 What's new in 3.3.0
+
+**3.3.0 is the first stable release of the 3.3 line.** It gathers four beta rounds
+that were never published on their own — extension hardening, keyboard range
+selection, background blend modes, and the long-press drag — into one build.
+
+### 🫳 Drag a file into another program, without your window getting in the way
+
+Press and hold a file or folder for a moment and a real Windows drag begins.
+Carry it to WeChat, DingTalk, a browser — anything — and let go. The same gesture
+still works inside Alpha File Manager, where dropping onto a folder moves the file
+as before.
+
+Three things had to be true for that to be usable:
+
+- **Your window does not come to the front when you press.** Windows normally
+  raises a window the instant you click it, which meant that reaching for a file
+  in a background window immediately covered the program you were about to drop
+  into. While you press and hold, Alpha File Manager stays where it is.
+- **The program you drag over comes to the front.** While you are carrying the
+  file, whichever application the pointer is over is brought forward. The
+  conversation is on screen and you can see where the file is going to land.
+- **Letting go does not take the foreground back.** When the drag finishes, the
+  foreground stays where it is — the program you dropped into stays in front, and
+  you can carry on with it.
+
+An ordinary click is unchanged: click a file in a background window and it still
+comes forward and still takes keyboard focus. Only the press-and-hold gesture
+holds the window back, and moving the pointer even slightly while pressing turns
+the gesture into an ordinary drag — so nothing changes for people who drag files
+the way they always have.
+
+### 🎨 The background effect, blended like Photoshop
+
+The effect layer — the blurred, grained wash behind the app — can now be combined
+with the interface using the familiar layer modes: Darken, Multiply, Color Burn,
+Lighten, Screen, Color Dodge, Linear Dodge (Add), Overlay, Soft Light, Hard Light,
+Difference, Exclusion, Color and Luminosity. The menu is grouped the way
+Photoshop groups them, and a mode the WebView cannot actually draw is hidden
+instead of offered and then ignored.
+
+Every mode except Normal can also be told **what to mix with**. Leave it on
+Interface and the effect blends with the window underneath, exactly as before.
+Switch it to Fill color and the effect blends with a color you choose — eight
+ready-made swatches, or a custom color of your own.
+
+Moving the pointer down the menu previews the mode live on the page behind.
+Leaving the menu puts your saved mode back, so browsing costs you nothing.
+
+### ⌨️ Select a range with the keyboard
+
+In a folder, the entry you start from becomes the **anchor**; every further
+Shift+arrow extends the selection from that anchor, and Shift+arrow back towards
+the anchor shrinks it again. A plain arrow key without Shift moves on to the next
+entry and selects only that one, as it always did.
+
+### 🔒 Extensions can no longer be steered onto your own network
+
+When Alpha File Manager fetches an extension, it now checks the address it
+**actually connects to** — not just the name that was written down. If that
+address turns out to be on a private network, on this computer, or in a reserved
+range, the download is refused and the refusal is reported. The check happens at
+the moment of connecting, so it holds for the first request, for a retry, for a
+fallback mirror, and for every redirect along the way.
+
+Whether an extension may run a program is now decided by **its own description
+file**, read from disk by the application, before the program is allowed to
+start. Asking on behalf of a different extension, or asking without asking at all,
+is refused. And the "sandbox" that only appeared to contain extension code is
+gone, because it never really did: extension code already runs somewhere else
+entirely — its own worker, or a sandboxed frame — and that is where the genuine
+separation comes from.
+
+### 🩹 And the smaller fixes
+
+- **A network-drive file could be deleted permanently without asking.** The
+  Recycle Bin only exists on a local disk. Previously the attempt simply failed
+  and the file was removed for good — without a word. It now asks first, and only
+  removes the file permanently if you say yes.
+- **The window could come back with its bottom edge off the screen.** The frame
+  is now restored in stages and then fitted to the work area, so it always comes
+  back somewhere you can reach it.
+- **Double-clicking the top bar did not maximize the window.** The blank part of
+  the top bar was not a real drag region, so the double-click never reached the
+  window manager. It is now.
+- **The maximize button could leave the window in full screen and maximized at
+  the same time.** The button now leaves full screen before it maximizes.
+- **A long press could still bring the window to the front after the file list
+  re-sorted.** Whether the pointer is over a draggable entry is now decided by
+  where the pointer actually is, so a re-ordering list no longer changes the
+  answer.
+- **The colour picker in Appearance settings is no longer hidden.** Choosing
+  "Blend with fill colour" now always reveals the palette and the custom colour
+  input.
+
+> **Coming from 3.2.12-beta?** The four beta rounds in between were never
+> published on their own — this release contains all of them, plus the
+> beta-to-stable step. There is nothing to install twice.
 
 ---
 

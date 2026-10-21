@@ -1,5 +1,59 @@
 # Changelog
 
+## [3.3.0] - October 2026
+
+**Summary:** You can now hold down a file in Alpha File Manager and drag it straight into another program -- WeChat, DingTalk, a browser -- while the window you are dragging out of stays in the background and the program you are dragging into comes to the front. The background visual effect gained Photoshop-style blend modes and a fill colour of your own. Extensions can no longer be steered onto a computer on your own network. And the file browser learned to select a range with the keyboard.
+
+**3.3.0 is the first stable release of the 3.3 line.** It gathers four beta rounds that were never published on their own -- extension hardening, keyboard range selection, background blend modes, and the long-press drag -- into one build.
+
+### What changed
+
+**Added: holding a file or folder starts a drag you can finish in another program.** Press and hold a file or folder for a moment and a real Windows drag begins; carry it to another program and let go. The same gesture still works inside Alpha File Manager, where dropping onto a folder moves the file as before.
+
+**Added: the window no longer comes to the front while you start that drag.** Windows normally brings a window forward the instant you click it, which meant that reaching for a file in a background window immediately covered the program you were about to drop into. Alpha File Manager now stays where it is while you press and hold, so the target stays visible and reachable.
+
+**Added: the program you drag over comes to the front.** While you are carrying the file, whichever application the pointer is over is brought forward for you. Dropping an attachment into a chat in WeChat or DingTalk now shows you the conversation, and you can see where the file is going to land.
+
+**Added: letting go does not take the foreground back.** When the drag finishes, Alpha File Manager leaves the foreground where it is. The program you dropped into stays in front -- you can carry on with it immediately.
+
+**Added: blend modes for the background visual effect.** The effect layer -- the blurred, grained wash that sits behind the app -- can now be combined with the interface using the familiar layer modes: Darken, Multiply, Color Burn, Lighten, Screen, Color Dodge, Linear Dodge (Add), Overlay, Soft Light, Hard Light, Difference, Exclusion, Color and Luminosity. The menu is grouped the way Photoshop groups them, and a mode the WebView cannot actually draw is hidden instead of offered and then ignored.
+
+**Added: blend the background with a fill color instead of the interface.** Every mode except Normal can be told what to mix with. Leave it on Interface and the effect blends with the window underneath, exactly as before. Switch it to Fill color and the effect blends with a color you choose -- eight ready-made swatches, or a custom color of your own.
+
+**Added: hover a mode to see it before you commit to it.** Moving the pointer down the menu previews the mode live on the page behind. Leaving the menu puts your saved mode back, so browsing costs you nothing.
+
+**Added: hold Shift and press an arrow key to select a range.** In a folder, the entry you start from becomes the anchor; every further Shift+arrow extends the selection from that anchor, and Shift+arrow back towards the anchor shrinks it again. A plain arrow key without Shift moves on to the next entry and selects only that one, as it always did.
+
+**Added: the colour picker in Appearance settings is no longer hidden.** Choosing "Blend with fill colour" now always reveals the palette and the custom colour input, instead of only showing them once you had already picked a blending mode. The custom colour that was there is now findable.
+
+**Fixed: an extension download could be aimed at a computer on your own network.** When Alpha File Manager fetches an extension, it now checks the address it actually connects to -- not just the name that was written down. If that address turns out to be on a private network, on this computer, or in a reserved range, the download is refused and the refusal is reported. The check happens at the moment of connecting, so it holds for the first request, for a retry, for a fallback mirror, and for every redirect along the way.
+
+**Fixed: an extension could run a program without having asked permission to.** Whether an extension may run a program is now decided by its own description file, read from disk by the application, before the program is allowed to start. Asking on behalf of a different extension, or asking without asking at all, is refused. The command that renames files in bulk had no such check at all; it does now.
+
+**Fixed: the "sandbox" for extension code was not one.** It ran extension code in the same place as the application and hid a list of names from it, but the code could reach around that list in a single step. It is gone. Extension code already runs somewhere else entirely -- its own worker, or a sandboxed frame -- and that is where the separation genuinely comes from.
+
+**Fixed: a long press could still bring the window to the front after the file list re-sorted.** The gesture was judged by which element the mouse event happened to land on. When the list re-ordered, the browser delivered one more "mouse left" event for an entry that was still under the pointer, and the hold gesture lost its suppression -- the window jumped forward mid-gesture. Whether the pointer is over a draggable entry is now decided by where the pointer actually is, so re-ordering the list no longer changes the answer.
+
+**Fixed: a file on a network drive could be deleted permanently without asking.** The Recycle Bin only exists on a local disk, so a file on a network share or a mapped drive has nowhere to go. Previously the attempt simply failed, and the file was removed for good -- without a word. Alpha File Manager now asks first, and only removes the file permanently if you say yes. Files that can go to the Recycle Bin are unaffected.
+
+**Fixed: the window could come back with its bottom edge off the screen.** The size and position of the window were restored in one step, from a size that may have been recorded while the window was in full screen. The frame is now restored in stages and then fitted to the work area, so it always comes back somewhere you can reach it.
+
+**Fixed: double-clicking the top bar did not maximize the window.** The blank part of the top bar was not a real drag region, so the double-click never reached the window manager. It is now, and the window maximizes and restores on a double-click as you would expect.
+
+**Fixed: the maximize button could leave the window in full screen and maximized at the same time.** The button now leaves full screen before it maximizes, and the top bar stops acting as a drag handle while the window is in full screen, where dragging it means nothing.
+
+### Notes for people upgrading from 3.2.12-beta
+
+**The four beta rounds in between were never published on their own.** If you were on 3.2.12-beta, this release contains everything that was being prepared as 3.2.13, 3.2.14, 3.2.15 and 3.2.16, plus the beta-to-stable step itself. There is nothing to install twice and nothing to do in between.
+
+**Modes that are no longer on the blend menu are migrated, not lost.** Hue and Saturation used to be offered; with a fill colour they flatten the picture to that colour and look the same as Color, and over the interface they are almost invisible, so both have been dropped. If you had one of them saved, it is switched to Color. A mode that was saved but is not on the list at all falls back to Normal.
+
+**Nothing about the background effect changes until you pick a mode.** Blend target and fill colour are new settings that did not exist before, so they start on the interface with a blue fill -- the same picture you saw before. Your existing blur, opacity, noise and background are untouched.
+
+**An extension that runs a program now has to say so.** If an extension used the shell without listing the `shell` permission in its description file, it will be refused until it does. The two extensions bundled with Alpha File Manager do not use the shell and are unaffected.
+
+**An ordinary click still behaves exactly as before.** Clicking a file in a background window still brings the window forward and still gives it keyboard focus -- only the press-and-hold gesture holds the window back. Moving the pointer even a little while you press turns the gesture into an ordinary drag, so nothing changes for people who drag files the way they always have.
+
 ## [3.2.16-beta] - October 2026
 
 **Summary:** You can now hold down a file in Alpha File Manager and drag it straight into another program -- WeChat, DingTalk, a browser -- without the window jumping to the front and covering the place you were trying to drop it.

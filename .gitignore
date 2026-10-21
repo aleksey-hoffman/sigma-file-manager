@@ -72,3 +72,9 @@ flatpak/output/
 src-tauri/installer/_gen_block.txt
 src-tauri/installer/materialized-kill-app-tree.ps1
 src-tauri/installer/embed-kill-script.mjs.parts.json
+
+# --- graphify knowledge graph (added 2026-10-21) ---
+# `graphify extract . --code-only` writes the local AST knowledge graph here
+# (graph.json / GRAPH_REPORT.md / graph.html). It is a derived artifact, fully
+# regenerable with one command and zero API cost, so it never belongs in git.
+graphify-out/
