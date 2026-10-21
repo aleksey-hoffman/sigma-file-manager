@@ -10,7 +10,12 @@ export default defineConfigWithVueTs(
   // `_acceptance/**` 是真机验收的临时探针区（NSIS 探针工程、一次性 .mjs/.ps1 脚本）。
   // 它与 `.gitignore` 里的 `/_acceptance/` 是同一件事，但 eslint 不读 .gitignore ——
   // 少了这条规则，光探针脚本就会往门禁里灌进 600 多个错误，把真实问题淹掉。
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/e2e-webdriver/**', 'src-tauri/**', '_acceptance/**']),
+  //
+  // `.superpowers/**` 同理：那是本机的一次性脚本区（`.superpowers/sdd/.gitignore`
+  // 里是 `*`，整个目录不进版本库）。它只在工作副本里存在，干净检出里根本没有，
+  // 所以留着它 lint 会让 `eslint .` 的数字**不可复现** —— 同一份代码，在工作副本里
+  // 是 689 个错误，在干净检出里是 177 个。门禁必须量的是仓库里真正存在的那部分。
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/e2e-webdriver/**', 'src-tauri/**', '_acceptance/**', '.superpowers/**', 'graphify-out/**']),
   pluginVue.configs['flat/strongly-recommended'],
   vueTsConfigs.recommended,
   pluginStylistic.configs.customize({
