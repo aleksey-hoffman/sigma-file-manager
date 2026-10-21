@@ -359,6 +359,7 @@ pub fn run() {
             remote::remote_make_dir,
             remote::remote_rename_path,
             compare::commands::compare_directories,
+            compare::commands::preview_compare_sync,
             compare::commands::start_compare_sync_job,
             compare::commands::cancel_compare_sync_job,
             default_file_manager::default_file_manager_available,

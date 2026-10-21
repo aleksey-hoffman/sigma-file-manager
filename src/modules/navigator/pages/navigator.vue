@@ -50,6 +50,7 @@ import {
   useInfoPanelLayout,
 } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
+import CompareSyncDialog from '@/modules/navigator/components/compare-sync/compare-sync-dialog.vue';
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
@@ -316,6 +317,32 @@ const infoPanelEntry = computed(() => {
 const isSplitView = computed(() => {
   return (workspacesStore.currentTabGroup?.length ?? 0) > 1;
 });
+
+/**
+ * 「比较并同步」对话框的开关，以及左右两侧要比的路径。
+ *
+ * 路径取**窗格实例**的当前位置（`paneRefsMap`），不是 tab 上的路径 ——
+ * tab 的路径有写盘延迟，窗格在自己内部导航时它不会立刻更新，
+ * 拿旧路径去比较会得出「两个目录其实不一样」的结论。
+ */
+const showCompareSyncDialog = ref(false);
+
+function panePathAt(index: number): string {
+  const tab = workspacesStore.currentTabGroup?.[index];
+
+  if (!tab) {
+    return '';
+  }
+
+  return paneRefsMap.value.get(tab.id)?.currentPath || tab.path || '';
+}
+
+const compareSyncLeftPath = computed(() => panePathAt(0));
+const compareSyncRightPath = computed(() => panePathAt(1));
+
+function handleOpenCompareSync() {
+  showCompareSyncDialog.value = true;
+}
 
 const trackNavigatorRelativeTime = computed(() => !globalSearchStore.isOpen);
 
@@ -1624,6 +1651,12 @@ onUnmounted(() => {
     @toggle-split-view="handleToggleSplitView"
     @toggle-info-panel="handleToggleInfoPanel"
     @toggle-folder-tree="handleToggleFolderTree"
+    @open-compare-sync="handleOpenCompareSync"
+  />
+  <CompareSyncDialog
+    v-model:open="showCompareSyncDialog"
+    :left-path="compareSyncLeftPath"
+    :right-path="compareSyncRightPath"
   />
   <div class="navigator-page">
     <TabBar v-if="!isSmallScreen" />

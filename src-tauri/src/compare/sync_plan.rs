@@ -16,24 +16,29 @@ use super::location::LocationRef;
 use super::tree::{CompareNode, CompareTree, Direction};
 
 /// 一个同步动作。
+///
+/// 字段名是前端契约的一部分：内部标签是 `action`，其余字段一律 camelCase。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "action", rename_all = "snake_case")]
 pub enum SyncAction {
     /// 在目标侧建目录。
     CreateDir {
-        /// 相对根目录的路径（用 / 分隔），给界面显示用。
+        /// 相对根目录的路径（用 `/` 分隔），给界面显示用。
+        #[serde(rename = "relPath")]
         rel_path: String,
         target: LocationRef,
     },
     /// 传一个文件。
     TransferFile {
-        /// 相对根目录的路径（用 / 分隔），给界面显示用。
+        /// 相对根目录的路径（用 `/` 分隔），给界面显示用。
+        #[serde(rename = "relPath")]
         rel_path: String,
         source: LocationRef,
         target: LocationRef,
     },
     /// 跳过。**只用于方向待定的条目** —— 它们需要用户自己决定往哪边同步。
     Skip {
+        #[serde(rename = "relPath")]
         rel_path: String,
         reason: SkipReason,
     },

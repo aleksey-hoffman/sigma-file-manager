@@ -26,6 +26,7 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   FlipHorizontalIcon,
+  GitCompareArrowsIcon,
   PanelLeftRightDashedIcon,
   PanelRightOpenIcon,
   FolderTreeIcon,
@@ -58,6 +59,7 @@ const emit = defineEmits<{
   'toggle-split-view': [];
   'toggle-info-panel': [];
   'toggle-folder-tree': [];
+  'open-compare-sync': [];
 }>();
 
 const { t } = useI18n();
@@ -408,6 +410,30 @@ function handleSettingsScopeChange(value: string | number) {
             {{ t('splitView') }}
             <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleSplitView') }}</ContextMenuShortcut>
           </div>
+        </TooltipContent>
+      </Tooltip>
+      <!--
+        「比较并同步」只在**分屏**下才有意义 —— 没有左右两侧就没什么可比的。
+        全局搜索打开时也不给点：那会儿左右两格被搜索面板占着，
+        用户看到的路径和真正在比的路径对不上。
+      -->
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            variant="ghost"
+            size="icon"
+            :disabled="!props.isSplitView || props.isGlobalSearchOpen"
+            :aria-label="t('compareSync.title')"
+            @click="emit('open-compare-sync')"
+          >
+            <GitCompareArrowsIcon
+              :size="16"
+              class="navigator-toolbar-actions__icon"
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('compareSync.title') }}
         </TooltipContent>
       </Tooltip>
       <Tooltip>

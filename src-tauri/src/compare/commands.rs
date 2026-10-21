@@ -26,9 +26,9 @@ use crate::remote::{self, RemoteProvider};
 use super::compare::{collect_local_tree, collect_remote_tree, compare_trees, FlatTree};
 use super::criteria::CompareCriteria;
 use super::location::LocationRef;
-use super::sync_plan::build_sync_plan;
+use super::sync_plan::{build_sync_plan, SyncPlan};
 use super::sync_runner::{execute_plan, SyncProgress, SyncRunReport};
-use super::tree::CompareTree;
+use super::tree::{CompareStats, CompareTree};
 
 /// 比较请求。
 #[derive(Debug, Clone, Deserialize)]
@@ -65,6 +65,29 @@ pub struct CompareSyncJobRequest {
     #[serde(default)]
     pub selected: Option<Vec<String>>,
     pub job_id: String,
+}
+
+/// 预览同步计划的请求。
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComparePlanRequest {
+    pub left: LocationRef,
+    pub right: LocationRef,
+    #[serde(default)]
+    pub criteria: CompareCriteria,
+    /// 只同步这些相对路径；`None` = 全部。
+    #[serde(default)]
+    pub selected: Option<Vec<String>>,
+}
+
+/// 同步计划的预览。
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComparePlanResponse {
+    /// 动作清单。
+    pub plan: SyncPlan,
+    /// 差异统计。
+    pub stats: CompareStats,
 }
 
 /// 进度事件载荷。
@@ -107,6 +130,33 @@ pub async fn compare_directories(
         tree,
         left_label: request.left.display_label(),
         right_label: request.right.display_label(),
+    })
+}
+
+/// 预览同步计划：**只算，不动任何文件**。
+///
+/// 执行之前必须让用户看见「到底会做什么」——
+/// 一个不透明的「开始同步」按钮是本项目最不能出的那种界面。
+#[tauri::command]
+pub async fn preview_compare_sync(
+    app: AppHandle,
+    request: ComparePlanRequest,
+) -> Result<ComparePlanResponse, String> {
+    let left = collect_side(&app, &request.left, &request.criteria).await?;
+    let right = collect_side(&app, &request.right, &request.criteria).await?;
+
+    let tree = compare_trees(&left, &right, &request.criteria);
+
+    let selected: Option<BTreeSet<String>> = request
+        .selected
+        .as_ref()
+        .map(|items| items.iter().cloned().collect());
+
+    let plan = build_sync_plan(&tree, &request.left, &request.right, selected.as_ref());
+
+    Ok(ComparePlanResponse {
+        plan,
+        stats: tree.stats,
     })
 }
 
