@@ -244,3 +244,19 @@ DOM 收到抬手时走同一条收口路径（`handleButtonReleased`），
 - `src/modules/navigator/components/file-browser/composables/use-file-browser-drag-session.ts`
   —— 暴露「按给定条目起出站拖拽」的入口
 - `src/composables/use-init.ts` —— 装上抬手补焦点的兜底（只装主窗口）
+
+---
+
+## 9. 后续追加（同日第二轮）
+
+这一轮在同一套机制上又做了三件事，细节与证据在
+`docs/handoff-2026-10-21-outbound-target-and-color.md`：
+
+1. **拖拽期间把悬停到的目标窗口提到前面**（需求一）。
+   实测 Windows 的 OLE 拖放**不会**提升悬停目标，必须自己轮询
+   `GetCursorPos` → `WindowFromPoint` → `GetAncestor(GA_ROOT)` → `SetForegroundWindow`。
+2. **抑制令牌改按指针的真实位置判定**，不再按事件目标。
+   列表重排会换掉条目节点并让浏览器补发 `mouseleave`，
+   令牌一丢，下一次按下就会把窗口激活到前台（长按抢前台的另一个触发路径）。
+3. **外观设置里的颜色自定义**（需求二）——不是「没有」，
+   是被 `v-if="currentMixBlendMode !== 'normal'"` 藏住了，默认整块不渲染。

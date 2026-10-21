@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { mount } from '@vue/test-utils';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, nextTick, ref } from 'vue';
 import type { Ref } from 'vue';
 import {
   afterEach,
@@ -27,6 +27,8 @@ const mocks = vi.hoisted(() => ({
   isLeftMouseButtonDown: vi.fn(),
   captureOutboundDragTarget: vi.fn(),
   restoreOutboundDragForeground: vi.fn(),
+  beginOutboundDragActivationWatch: vi.fn(),
+  endOutboundDragActivationWatch: vi.fn(),
   traceDragNoActivate: vi.fn(),
 }));
 
@@ -38,6 +40,8 @@ vi.mock('@/utils/drag-no-activate', () => ({
   isLeftMouseButtonDown: mocks.isLeftMouseButtonDown,
   captureOutboundDragTarget: mocks.captureOutboundDragTarget,
   restoreOutboundDragForeground: mocks.restoreOutboundDragForeground,
+  beginOutboundDragActivationWatch: mocks.beginOutboundDragActivationWatch,
+  endOutboundDragActivationWatch: mocks.endOutboundDragActivationWatch,
   shouldStartOutboundDrag: (state: boolean | null) => state !== false,
   traceDragNoActivate: mocks.traceDragNoActivate,
 }));
@@ -83,6 +87,27 @@ function mouseEventAt(x: number, y: number) {
   } as unknown as MouseEvent;
 }
 
+/**
+ * 「某个坐标上现在是什么元素」。
+ *
+ * 抑制令牌改成按**指针的真实位置**判定之后，就得能回答
+ * 「那个位置上现在是什么元素」—— jsdom 不实现 `elementFromPoint`，
+ * 这里自己顶一个。
+ */
+const elementAt = new Map<string, Element | null>();
+
+function stubElementFromPoint() {
+  Object.defineProperty(document, 'elementFromPoint', {
+    configurable: true,
+    writable: true,
+    value: (x: number, y: number) => elementAt.get(`${x},${y}`) ?? null,
+  });
+}
+
+function restoreElementFromPoint() {
+  Reflect.deleteProperty(document, 'elementFromPoint');
+}
+
 function mountDragComposable(entriesContainerRef?: Ref<Element | null>) {
   const selectedEntries = ref<DirEntry[]>([entry]);
 
@@ -116,6 +141,8 @@ describe('长按拖出不抢前台', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    elementAt.clear();
+    stubElementFromPoint();
     // 默认「左键还按着」——绝大多数用例都是长按场景。
     mocks.isLeftMouseButtonDown.mockResolvedValue(true);
     // 出站拖拽是异步的：拖完（resolve）才会把前台还给拖拽目标。
@@ -124,6 +151,7 @@ describe('长按拖出不抢前台', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    restoreElementFromPoint();
   });
 
   it('长按到点起系统级出站拖拽，且不建内建拖拽会话', async () => {
@@ -186,6 +214,7 @@ describe('长按拖出不抢前台', () => {
     const row = document.createElement('div');
     row.setAttribute('data-entry-path', entry.path);
     container.appendChild(row);
+    elementAt.set('10,20', row);
 
     mountDragComposable(ref(container));
 
@@ -203,12 +232,61 @@ describe('长按拖出不抢前台', () => {
     const row = document.createElement('div');
     row.setAttribute('data-entry-path', entry.path);
     container.appendChild(row);
+    elementAt.set('10,20', row);
 
     mountDragComposable(ref(container));
 
+    // 先让指针落在条目上。
+    row.dispatchEvent(new MouseEvent('mouseover', {
+      clientX: 10,
+      clientY: 20,
+      bubbles: true,
+    }));
+    expect(mocks.armDragNoActivate).toHaveBeenCalled();
+
+    mocks.disarmDragNoActivate.mockClear();
+
+    // 指针已经不在条目上了 —— 这才是真的离开。
+    elementAt.delete('10,20');
     container.dispatchEvent(new MouseEvent('mouseleave'));
 
     expect(mocks.disarmDragNoActivate).toHaveBeenCalled();
+  });
+
+  it('容器被换掉时按新 DOM 重新实测：指针还停在条目上就继续抑制', async () => {
+    // 列表重排会把容器整个换掉，浏览器随之补发一次 mouseleave。
+    // 指针其实还停在同一个像素上的同一条目上 —— 这时候撤掉抑制令牌，
+    // 下一次按下就会把窗口激活到前台，长按拖拽又把目标程序盖住。
+    const container = document.createElement('div');
+    const row = document.createElement('div');
+    row.setAttribute('data-entry-path', entry.path);
+    container.appendChild(row);
+    elementAt.set('10,20', row);
+
+    const containerRef = ref<Element | null>(container);
+    mountDragComposable(containerRef);
+
+    row.dispatchEvent(new MouseEvent('mouseover', {
+      clientX: 10,
+      clientY: 20,
+      bubbles: true,
+    }));
+    expect(mocks.armDragNoActivate).toHaveBeenCalled();
+
+    mocks.disarmDragNoActivate.mockClear();
+    mocks.armDragNoActivate.mockClear();
+
+    // 重排：容器和条目节点都换了，但指针还在那个像素上。
+    const newContainer = document.createElement('div');
+    const newRow = document.createElement('div');
+    newRow.setAttribute('data-entry-path', entry.path);
+    newContainer.appendChild(newRow);
+    elementAt.set('10,20', newRow);
+    containerRef.value = newContainer;
+    await nextTick();
+
+    expect(mocks.disarmDragNoActivate).not.toHaveBeenCalled();
+    expect(mocks.armDragNoActivate).toHaveBeenCalled();
   });
 });
 
@@ -346,5 +424,27 @@ describe('出站拖拽收尾', () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(mocks.restoreOutboundDragForeground).toHaveBeenCalled();
+  });
+
+  it('拖拽期间盯着鼠标，把悬停到的目标窗口提到前面', async () => {
+    const deferred: { resolve?: () => void } = {};
+    mocks.startOutboundDragForEntries.mockImplementation(() => new Promise<void>((resolve) => {
+      deferred.resolve = resolve;
+    }));
+
+    const { handleDragMouseDown } = mountDragComposable();
+
+    handleDragMouseDown(entry, mouseEventAt(100, 200));
+    await vi.advanceTimersByTimeAsync(400);
+
+    // 拖拽期间必须盯着。
+    expect(mocks.beginOutboundDragActivationWatch).toHaveBeenCalled();
+    expect(mocks.endOutboundDragActivationWatch).not.toHaveBeenCalled();
+
+    deferred.resolve?.();
+    await vi.advanceTimersByTimeAsync(0);
+
+    // 拖完就撤掉。
+    expect(mocks.endOutboundDragActivationWatch).toHaveBeenCalled();
   });
 });

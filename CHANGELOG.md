@@ -10,6 +10,10 @@
 
 **Added: the window no longer comes to the front while you start that drag.** Windows normally brings a window forward the instant you click it, which meant that reaching for a file in a background window immediately covered the program you were about to drop into. Alpha File Manager now stays where it is while you press and hold, so the target stays visible and reachable.
 
+**Added: the program you drag over comes to the front.** While you are carrying the file, whichever application the pointer is over is brought forward for you. Dropping an attachment into a chat in WeChat or DingTalk now shows you the conversation, and you can see where the file is going to land.
+
+**Changed: the colour picker in Appearance settings is no longer hidden.** Choosing "Blend with fill colour" now always reveals the palette and the custom colour input, instead of only showing them once you had already picked a blending mode. The custom colour that was there is now findable.
+
 ### This is a beta
 
 **An ordinary click still behaves exactly as before.** Clicking a file in a background window still brings the window forward and still gives it keyboard focus -- only the press-and-hold gesture holds the window back.

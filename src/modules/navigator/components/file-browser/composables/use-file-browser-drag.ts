@@ -12,8 +12,10 @@ import {
 } from '@/composables/use-drop-target-registry';
 import {
   armDragNoActivate,
+  beginOutboundDragActivationWatch,
   captureOutboundDragTarget,
   disarmDragNoActivate,
+  endOutboundDragActivationWatch,
   focusMainWindow,
   isLeftMouseButtonDown,
   restoreOutboundDragForeground,
@@ -93,6 +95,23 @@ export function useFileBrowserDrag(options: {
   let releaseWatchdogTimer: number | null = null;
   /** 看门狗这一轮的问询还没回来，避免堆积。 */
   let releaseWatchdogBusy = false;
+  /**
+   * 最近一次指针位置（视口坐标）。
+   *
+   * 抑制令牌要回答的是「指针现在停在可拖拽条目上吗」。
+   * 这个问题**不能**用事件目标来回答：列表重排会把条目节点换掉，
+   * 换掉的那一刻浏览器会补发一次 mouseleave，于是令牌被撤掉 ——
+   * 而指针其实还停在同一个像素上同一个条目上。
+   * 令牌一丢，按下就会把窗口激活到前台，长按拖拽又被盖住目标程序。
+   *
+   * 所以改成按**位置**实测：记住指针在哪，用 `elementFromPoint` 问一遍
+   * 「那个位置上现在是什么元素」。
+   */
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let pointerPositionKnown = false;
+  /** 上一次同步出来的结果，只在变化时打日志，避免刷屏。 */
+  let lastArmedOverEntry: boolean | null = null;
 
   const isDragging = computed(() => dragSession.dragState.value.isActive);
   const dragItems = computed(() => dragSession.dragState.value.items);
@@ -215,9 +234,15 @@ export function useFileBrowserDrag(options: {
     // 系统会激活拖拽源窗口，AFM 会盖住它 —— 拖完再把前台还回去。
     captureOutboundDragTarget();
 
+    // 拖拽期间盯着鼠标：悬停到哪个应用就把那个窗口提到前面。
+    // OLE 拖放自己不会这么做，而用户拖到微信/钉钉的对话窗口时，
+    // 需要那个窗口可见才看得到落点。
+    beginOutboundDragActivationWatch();
+
     void dragSession
       .startOutboundDragForEntries(items)
       .finally(() => {
+        endOutboundDragActivationWatch();
         restoreOutboundDragForeground();
       });
   }
@@ -375,28 +400,95 @@ export function useFileBrowserDrag(options: {
   }
 
   /**
+   * 指针现在是不是停在可拖拽条目上。
+   *
+   * 用 `elementFromPoint` 实测当前 DOM，而不是看事件目标 ——
+   * 事件目标在 DOM 被换过之后可能是过时的。
+   */
+  function isPointerOverEntry(): boolean {
+    if (!pointerPositionKnown) {
+      return false;
+    }
+
+    if (typeof document.elementFromPoint !== 'function') {
+      return false;
+    }
+
+    try {
+      const element = document.elementFromPoint(lastPointerX, lastPointerY);
+
+      if (!(element instanceof Element)) {
+        return false;
+      }
+
+      return !!element.closest('[data-entry-path]');
+    }
+    catch {
+      // 拿不到就按「不在条目上」处理。
+      return false;
+    }
+  }
+
+  /**
+   * 按指针的真实位置同步抑制令牌。
+   *
+   * 命令每次都发（不因为「结果没变」就跳过）：两个面板可能交替 arm/disarm，
+   * 后端那边只有一个总开关，漏发一次就等于把抑制丢了。
+   * 日志只在结果变化时打，避免刷屏。
+   */
+  function syncArmWithPointer() {
+    if (!pointerPositionKnown) {
+      // 指针位置还不知道，判不了 —— 保持现状。
+      return;
+    }
+
+    const overEntry = isPointerOverEntry();
+
+    if (overEntry !== lastArmedOverEntry) {
+      lastArmedOverEntry = overEntry;
+      traceDragNoActivate(overEntry ? 'arm-sync-over-entry' : 'arm-sync-not-over-entry');
+    }
+
+    if (overEntry) {
+      armDragNoActivate();
+      return;
+    }
+
+    disarmDragNoActivate();
+  }
+
+  /**
    * 指针在条目上移动时，向后端申请「抑制激活」。
    *
    * 只在文件列表容器内部生效：目录树、工具栏、信息面板这些地方点击时
    * 仍然应该照常把窗口带到前台。
    */
   function handleEntriesMouseOver(event: Event) {
-    const target = event.target;
-
-    if (!(target instanceof Element)) {
-      return;
+    if (event instanceof MouseEvent) {
+      lastPointerX = event.clientX;
+      lastPointerY = event.clientY;
+      pointerPositionKnown = true;
     }
 
-    if (!target.closest('[data-entry-path]')) {
-      disarmDragNoActivate();
-      return;
-    }
-
-    armDragNoActivate();
+    syncArmWithPointer();
   }
 
   function handleEntriesMouseLeave() {
-    disarmDragNoActivate();
+    // 容器被换掉时浏览器会补发 mouseleave。指针可能还停在同一个条目上，
+    // 所以这里不直接撤令牌，而是按位置重新实测一次。
+    syncArmWithPointer();
+  }
+
+  /**
+   * 记住指针位置。
+   *
+   * mouseover 不一定每次都来（指针停着不动就不会来），
+   * 但位置本身要知道 —— 判定「指针在不在条目上」全靠它。
+   */
+  function handlePointerMove(event: MouseEvent) {
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    pointerPositionKnown = true;
   }
 
   watch(
@@ -407,6 +499,10 @@ export function useFileBrowserDrag(options: {
 
       element?.addEventListener('mouseover', handleEntriesMouseOver);
       element?.addEventListener('mouseleave', handleEntriesMouseLeave);
+
+      // 容器换了，条目节点也换了：之前按事件目标做的判断可能已经过期，
+      // 按新 DOM 重新实测一次。
+      syncArmWithPointer();
     },
     {
       immediate: true,
@@ -414,7 +510,10 @@ export function useFileBrowserDrag(options: {
     },
   );
 
+  window.addEventListener('mousemove', handlePointerMove);
+
   onUnmounted(() => {
+    window.removeEventListener('mousemove', handlePointerMove);
     options.entriesContainerRef.value
       ?.removeEventListener('mouseover', handleEntriesMouseOver);
     options.entriesContainerRef.value

@@ -337,6 +337,8 @@ pub fn run() {
             drag_no_activate::drag_no_activate_trace,
             drag_no_activate::capture_outbound_drag_target,
             drag_no_activate::restore_outbound_drag_foreground,
+            drag_no_activate::begin_outbound_drag_activation_watch,
+            drag_no_activate::end_outbound_drag_activation_watch,
             get_launch_context,
             startup_storage_bootstrap::get_startup_storage_bootstrap,
             remote::remote_save_credential,

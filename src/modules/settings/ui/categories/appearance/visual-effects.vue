@@ -580,84 +580,92 @@ async function resetVisualEffectsSection(): Promise<void> {
               />
             </div>
 
-            <template v-if="currentMixBlendMode !== 'normal'">
-              <div class="visual-effects-settings__row">
-                <span class="visual-effects-settings__label">
-                  {{ t('settings.visualEffects.blendTarget') }}
-                </span>
-                <Tabs
-                  :model-value="currentBlendTarget"
-                  class="visual-effects-settings__blend-target"
-                  @update:model-value="onBlendTargetChange"
-                >
-                  <TabsList class="visual-effects-settings__blend-target-list">
-                    <TabsTrigger value="ui">
-                      {{ t('settings.visualEffects.blendTargetUi') }}
-                    </TabsTrigger>
-                    <TabsTrigger value="fill">
-                      {{ t('settings.visualEffects.blendTargetFill') }}
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
+            <!-- FORK-MODIFICATION 2026-10-21：颜色选择器不再藏在
+                 「混合模式 ≠ 正常」的条件里。
 
-              <div
-                v-if="currentBlendTarget === 'fill'"
-                class="visual-effects-settings__row"
+                 上游把「混合对象」和「混合颜色」整块都放在
+                 `v-if="currentMixBlendMode !== 'normal'"` 下面。默认的混合模式
+                 就是「正常」，于是这一块默认**完全不渲染** —— 真机上表现为
+                 「设置里找不到自定义颜色的地方」，功能明明在却没人看得见。
+
+                 现在「混合对象」始终可见，选了「与填充色混合」就露出色板与
+                 自定义颜色。用户一眼能找到，不用先猜「要先改混合模式」。 -->
+            <div class="visual-effects-settings__row">
+              <span class="visual-effects-settings__label">
+                {{ t('settings.visualEffects.blendTarget') }}
+              </span>
+              <Tabs
+                :model-value="currentBlendTarget"
+                class="visual-effects-settings__blend-target"
+                @update:model-value="onBlendTargetChange"
               >
-                <span class="visual-effects-settings__label">
-                  {{ t('settings.visualEffects.blendTint') }}
-                </span>
-                <div
-                  role="radiogroup"
-                  :aria-label="t('settings.visualEffects.blendTint')"
-                  class="visual-effects-settings__tints"
+                <TabsList class="visual-effects-settings__blend-target-list">
+                  <TabsTrigger value="ui">
+                    {{ t('settings.visualEffects.blendTargetUi') }}
+                  </TabsTrigger>
+                  <TabsTrigger value="fill">
+                    {{ t('settings.visualEffects.blendTargetFill') }}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            <div
+              v-if="currentBlendTarget === 'fill'"
+              class="visual-effects-settings__row"
+            >
+              <span class="visual-effects-settings__label">
+                {{ t('settings.visualEffects.blendTint') }}
+              </span>
+              <div
+                role="radiogroup"
+                :aria-label="t('settings.visualEffects.blendTint')"
+                class="visual-effects-settings__tints"
+              >
+                <button
+                  v-for="tint in INFUSION_BLEND_TINTS"
+                  :key="tint"
+                  type="button"
+                  role="radio"
+                  :aria-checked="currentBlendTint === tint"
+                  :aria-label="tint"
+                  class="visual-effects-settings__tint"
+                  :class="{ 'visual-effects-settings__tint--selected': currentBlendTint === tint }"
+                  :style="{ backgroundColor: tint }"
+                  @click="applyBlendTint(tint, true)"
                 >
-                  <button
-                    v-for="tint in INFUSION_BLEND_TINTS"
-                    :key="tint"
-                    type="button"
-                    role="radio"
-                    :aria-checked="currentBlendTint === tint"
-                    :aria-label="tint"
-                    class="visual-effects-settings__tint"
-                    :class="{ 'visual-effects-settings__tint--selected': currentBlendTint === tint }"
-                    :style="{ backgroundColor: tint }"
-                    @click="applyBlendTint(tint, true)"
-                  >
-                    <CheckIcon
-                      v-if="currentBlendTint === tint"
-                      class="visual-effects-settings__tint-check"
-                    />
-                  </button>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <label
-                        class="visual-effects-settings__tint visual-effects-settings__tint--custom"
-                        :class="{ 'visual-effects-settings__tint--selected': isCustomBlendTint }"
-                        :style="isCustomBlendTint ? { background: currentBlendTint } : undefined"
+                  <CheckIcon
+                    v-if="currentBlendTint === tint"
+                    class="visual-effects-settings__tint-check"
+                  />
+                </button>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <label
+                      class="visual-effects-settings__tint visual-effects-settings__tint--custom"
+                      :class="{ 'visual-effects-settings__tint--selected': isCustomBlendTint }"
+                      :style="isCustomBlendTint ? { background: currentBlendTint } : undefined"
+                    >
+                      <input
+                        type="color"
+                        class="visual-effects-settings__tint-input"
+                        :aria-label="t('settings.visualEffects.blendTintCustom')"
+                        :value="currentBlendTint"
+                        @input="onCustomBlendTintInput"
+                        @change="onCustomBlendTintChange"
                       >
-                        <input
-                          type="color"
-                          class="visual-effects-settings__tint-input"
-                          :aria-label="t('settings.visualEffects.blendTintCustom')"
-                          :value="currentBlendTint"
-                          @input="onCustomBlendTintInput"
-                          @change="onCustomBlendTintChange"
-                        >
-                        <CheckIcon
-                          v-if="isCustomBlendTint"
-                          class="visual-effects-settings__tint-check"
-                        />
-                      </label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {{ t('settings.visualEffects.blendTintCustom') }}
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+                      <CheckIcon
+                        v-if="isCustomBlendTint"
+                        class="visual-effects-settings__tint-check"
+                      />
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('settings.visualEffects.blendTintCustom') }}
+                  </TooltipContent>
+                </Tooltip>
               </div>
-            </template>
+            </div>
           </div>
         </div>
       </div>

@@ -128,4 +128,23 @@ describe('抬手补焦点的兜底', () => {
     expect(mocks.invoke).toHaveBeenCalledWith('capture_outbound_drag_target');
     expect(mocks.invoke).toHaveBeenCalledWith('restore_outbound_drag_foreground');
   });
+
+  it('拖拽期间开始盯着鼠标下的窗口，拖完撤掉', async () => {
+    const mod = await loadModule();
+
+    mod.beginOutboundDragActivationWatch();
+    expect(mocks.invoke).toHaveBeenCalledWith('begin_outbound_drag_activation_watch');
+
+    mod.endOutboundDragActivationWatch();
+    expect(mocks.invoke).toHaveBeenCalledWith('end_outbound_drag_activation_watch');
+  });
+
+  it('后端不支持盯着窗口时静默降级，不影响拖拽本身', async () => {
+    const mod = await loadModule();
+
+    mocks.invoke.mockRejectedValue(new Error('命令不存在'));
+
+    expect(() => mod.beginOutboundDragActivationWatch()).not.toThrow();
+    expect(() => mod.endOutboundDragActivationWatch()).not.toThrow();
+  });
 });

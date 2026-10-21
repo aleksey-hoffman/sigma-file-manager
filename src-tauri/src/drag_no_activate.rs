@@ -55,13 +55,15 @@ mod win {
     use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
     use std::sync::{Mutex, OnceLock};
 
-    use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
+    use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
     use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
     use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON};
     use windows::Win32::UI::WindowsAndMessaging::{
-        CallWindowProcW, GetForegroundWindow, GetWindowLongPtrW, GetWindowThreadProcessId, IsWindow,
-        PostMessageW, SetForegroundWindow, SetWindowLongPtrW, GWL_EXSTYLE, GWLP_WNDPROC, WA_ACTIVE,
-        WA_CLICKACTIVE, WM_ACTIVATE, WS_EX_NOACTIVATE, WNDPROC,
+        CallWindowProcW, GetAncestor, GetClassNameW, GetCursorPos, GetForegroundWindow,
+        GetWindowLongPtrW, GetWindowThreadProcessId, IsWindow, IsWindowVisible, PostMessageW,
+        SetForegroundWindow, SetWindowLongPtrW, SwitchToThisWindow, WindowFromPoint, GA_ROOT,
+        GWL_EXSTYLE, GWLP_WNDPROC, WA_ACTIVE, WA_CLICKACTIVE, WM_ACTIVATE, WS_EX_NOACTIVATE,
+        WNDPROC,
     };
 
     use super::DragNoActivateStatus;
@@ -90,6 +92,9 @@ mod win {
 
     /// 出站拖拽开始时前台是哪个窗口 —— 那就是拖拽的目标。
     static OUTBOUND_DRAG_TARGET: AtomicIsize = AtomicIsize::new(0);
+
+    /// 拖拽期间是否还在盯着鼠标下的窗口（要把目标窗口提到前面）。
+    static OUTBOUND_ACTIVATION_WATCH: AtomicBool = AtomicBool::new(false);
 
     /// 已被我们子类化的窗口 → 原始窗口过程。
     static SUBCLASSED: OnceLock<Mutex<HashMap<isize, WNDPROC>>> = OnceLock::new();
@@ -418,6 +423,129 @@ mod win {
         );
     }
 
+    /// 开始盯着鼠标下的窗口：拖拽期间把目标窗口提到前面。
+    ///
+    /// **为什么需要**：Windows 的 OLE 拖放**不会**把悬停到的目标窗口提到前面。
+    /// 实测（把资源管理器当拖放目标，前台先放另一个应用当挡板）：
+    /// 整个拖拽过程 32 次采样前台都是挡板，**放手那一刻目标才被激活**。
+    ///
+    /// 但用户拖到微信/钉钉的对话窗口时，需要那个窗口可见 ——
+    /// 否则看不到落点在哪，拖过去也不知道成没成。
+    ///
+    /// 我们是拖拽源，拖拽由用户此刻发起，前台权在我们这边，
+    /// 所以可以替目标窗口调 `SetForegroundWindow`。
+    pub fn begin_outbound_drag_activation_watch() {
+        OUTBOUND_ACTIVATION_WATCH.store(true, Ordering::SeqCst);
+
+        std::thread::spawn(|| {
+            // 安全网：前端万一没喊停，最多盯 60 秒。
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
+
+            while OUTBOUND_ACTIVATION_WATCH.load(Ordering::SeqCst)
+                && std::time::Instant::now() < deadline
+            {
+                std::thread::sleep(std::time::Duration::from_millis(80));
+                activate_window_under_cursor();
+            }
+
+            OUTBOUND_ACTIVATION_WATCH.store(false, Ordering::SeqCst);
+        });
+    }
+
+    /// 停止盯着鼠标下的窗口。
+    pub fn end_outbound_drag_activation_watch() {
+        OUTBOUND_ACTIVATION_WATCH.store(false, Ordering::SeqCst);
+    }
+
+    /// 把鼠标下的顶层窗口提到前面（如果它是个合适的拖放目标）。
+    fn activate_window_under_cursor() {
+        let Some(own_window) = main_window() else {
+            return;
+        };
+
+        let mut point = POINT::default();
+
+        if unsafe { GetCursorPos(&mut point) }.is_err() {
+            return;
+        }
+
+        let hit = unsafe { WindowFromPoint(point) };
+
+        if hit == HWND(std::ptr::null_mut()) {
+            return;
+        }
+
+        let root = unsafe { GetAncestor(hit, GA_ROOT) };
+
+        if root == HWND(std::ptr::null_mut()) || root == own_window {
+            return;
+        }
+
+        // 已经是前台就别动，避免无谓的闪烁。
+        if unsafe { GetForegroundWindow() } == root {
+            return;
+        }
+
+        if !is_activatable_drop_target(root) {
+            return;
+        }
+
+        if unsafe { SetForegroundWindow(root) }.as_bool() {
+            OUTBOUND_DRAG_TARGET.store(root.0 as isize, Ordering::SeqCst);
+            log::info!("drag_no_activate: activated drop target {:?}", root);
+            return;
+        }
+
+        // 前台锁挡住了。换一条实测有效的路：直接切换。
+        unsafe { SwitchToThisWindow(root, true) };
+
+        if unsafe { GetForegroundWindow() } == root {
+            OUTBOUND_DRAG_TARGET.store(root.0 as isize, Ordering::SeqCst);
+            log::info!("drag_no_activate: activated drop target (switch) {:?}", root);
+        }
+    }
+
+    /// 这个窗口适合被提到前面吗？
+    fn is_activatable_drop_target(hwnd: HWND) -> bool {
+        if !unsafe { IsWindowVisible(hwnd) }.as_bool() {
+            return false;
+        }
+
+        // 同一个进程里的其它窗口（快速查看之类）不参与。
+        let mut target_pid = 0;
+        unsafe { GetWindowThreadProcessId(hwnd, Some(&mut target_pid)) };
+
+        let mut own_pid = 0;
+
+        if let Some(own) = main_window() {
+            unsafe { GetWindowThreadProcessId(own, Some(&mut own_pid)) };
+        }
+
+        if target_pid != 0 && target_pid == own_pid {
+            return false;
+        }
+
+        // 桌面与任务栏不能激活：激活桌面会把所有窗口最小化。
+        let mut buffer = [0u16; 64];
+        let length = unsafe { GetClassNameW(hwnd, &mut buffer) };
+
+        if length <= 0 {
+            return false;
+        }
+
+        let class = String::from_utf16_lossy(&buffer[..length as usize]);
+
+        !matches!(
+            class.as_str(),
+            "Progman"
+                | "WorkerW"
+                | "Shell_TrayWnd"
+                | "Shell_SecondaryTrayWnd"
+                | "NotifyIconOverflowWindow"
+                | "Windows.UI.Core.CoreWindow"
+        )
+    }
+
     /// 出站拖拽结束后，把前台还给拖拽目标。
     ///
     /// **为什么需要这一步**：OLE 拖拽结束的那一刻，系统会把**拖拽源窗口**
@@ -426,6 +554,10 @@ mod win {
     /// 抬手后第一次采样前台就变成了 AFM。
     ///
     /// 拖拽源是本进程，拖拽刚结束，这会儿我们有前台权，直接还回去就行。
+    ///
+    /// **还的是哪个窗口**：`OUTBOUND_DRAG_TARGET`。它有两个来源 ——
+    /// 拖拽开始时的前台，以及拖拽期间被我们提到前面的那个目标窗口
+    /// （后者优先，那才是用户真正要拖进去的地方）。
     ///
     /// **只在「当前前台确实是本窗口」时才还**。用户要是拖完已经切到别的
     /// 程序去了，就绝不能抢回来。
@@ -580,6 +712,10 @@ mod stub {
 
     pub fn restore_outbound_drag_foreground() {}
 
+    pub fn begin_outbound_drag_activation_watch() {}
+
+    pub fn end_outbound_drag_activation_watch() {}
+
     pub fn status() -> DragNoActivateStatus {
         DragNoActivateStatus {
             window_found: false,
@@ -649,6 +785,22 @@ pub fn capture_outbound_drag_target() {
 #[tauri::command]
 pub fn restore_outbound_drag_foreground() {
     platform::restore_outbound_drag_foreground();
+}
+
+/// 开始盯着鼠标下的窗口：拖拽期间把目标窗口提到前面。
+///
+/// Windows 的 OLE 拖放不会把悬停到的目标窗口提到前面（实测：整个拖拽过程
+/// 前台一直是原窗口，放手那一刻目标才被激活）。拖到微信/钉钉的对话窗口时
+/// 需要那个窗口可见 —— 否则看不到落点。
+#[tauri::command]
+pub fn begin_outbound_drag_activation_watch() {
+    platform::begin_outbound_drag_activation_watch();
+}
+
+/// 停止盯着鼠标下的窗口。
+#[tauri::command]
+pub fn end_outbound_drag_activation_watch() {
+    platform::end_outbound_drag_activation_watch();
 }
 
 /// 在建好主窗口之后调用：装上窗口子类。

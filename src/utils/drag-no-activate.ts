@@ -140,6 +140,26 @@ export function restoreOutboundDragForeground() {
 }
 
 /**
+ * 开始盯着鼠标下的窗口：拖拽期间把目标窗口提到前面。
+ *
+ * Windows 的 OLE 拖放不会把悬停到的目标窗口提到前面 —— 实测整个拖拽过程
+ * 前台一直是原窗口，放手那一刻目标才被激活。拖到微信/钉钉的对话窗口时
+ * 需要那个窗口可见，否则看不到落点在哪。
+ */
+export function beginOutboundDragActivationWatch() {
+  void invoke('begin_outbound_drag_activation_watch').catch(() => {
+    // 后端不支持就当没有这个行为，拖拽本身不受影响。
+  });
+}
+
+/** 停止盯着鼠标下的窗口。 */
+export function endOutboundDragActivationWatch() {
+  void invoke('end_outbound_drag_activation_watch').catch(() => {
+    // 同上。
+  });
+}
+
+/**
  * 诊断探针：把一次事件写进应用日志。
  *
  * 发布版拿不到 webview console，页面里的 `console.log` 在真机上看不见；
