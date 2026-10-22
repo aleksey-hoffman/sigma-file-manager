@@ -23,6 +23,10 @@ Everything below is ours. Nothing in this section exists upstream.
 
 | | Feature | Since |
 |---|---|---|
+| 🔍 | **Compare two folders side by side** — recursively, and sync what it finds. You see the plan before anything moves | **3.4.0** |
+| 🧭 | **When it cannot tell which side is newer, it says so and changes nothing** — those items are listed, never overwritten | **3.4.0** |
+| 🗑️ | **The compare-and-sync feature never deletes anything** — mirroring is a later release | **3.4.0** |
+| 🌐 | **Map a network drive from the sidebar** — pick the share and the drive letter, exactly like Explorer | **3.4.0** |
 | 🫳 | **Hold a file and drag it into another program** — WeChat, DingTalk, a browser — without your window jumping to the front and covering the target | **3.3.0** |
 | 👁️ | **The program you drag over comes to the front** — you can see where the file will land | **3.3.0** |
 | 🎨 | **Photoshop-style blend modes for the background effect**, with a fill colour of your own | **3.3.0** |
@@ -82,7 +86,8 @@ they compare.
 | 🫳 | **Dragging a file into another program** | ✅ **hold the file and drag** it into WeChat, DingTalk or a browser — the window you are dragging out of stays in the background | ➖ | ✅ |
 | 👁️ | **The program you drag over comes to the front** | ✅ the window under the pointer is brought forward while you carry the file, so you can see where it will land | ➖ | ➖ a Windows drag never raises the window under the pointer |
 | ⌨️ | **Keyboard range selection** | ✅ **Shift + arrow key** extends the selection from the anchor you started at | ➖ | ✅ Shift + arrow key extends the selection too |
-| 🎨 | **Blend modes for the background effect** | ✅ the Photoshop layer modes, plus a fill colour of your own | ➖ | ❌ |
+| 🔍 | **Comparing two folders** | ✅ recursively, with the criteria serious tools use — and an explicit "direction undecided" state instead of guessing which side is newer | ➖ | ➖ compares by size and date only, and the choice is buried |
+| 🌐 | **Mapping a network drive** | ✅ from the sidebar, with a drive letter you pick | ➖ | ✅ |
 
 ✅ has it · ➖ not part of that project · ❌ cannot
 
@@ -100,6 +105,38 @@ they compare.
 > **Sigma File Manager** is the base application we build on. Take it if you
 > want the upstream project itself, its own release cadence and its community.
 > Alpha File Manager is an independent fork of it and tracks upstream.
+
+---
+
+## 🆕 What's new in 3.4.0
+
+### 🔍 Compare two folders, then sync what you find
+
+Split the navigator into two panes and a **Compare & Sync** button appears in the toolbar. It compares the two folders recursively and tells you what differs — what exists only on the left, what exists only on the right, what is newer on one side, and what differs in size or content. The result is a **tree**, so a subfolder that only exists on one side reads as a subtree instead of a wall of loose names.
+
+The criteria are the ones serious tools use, applied in WinSCP's order: **modification time first, then file size, then content checksum**. Time wins — when the times differ, the size is not even looked at. Leave every criterion off and "the file exists on both sides" is the whole test, so only genuinely new files are reported.
+
+### 🧭 When it cannot decide, it says so — and does nothing
+
+Two files with the **same timestamp but different contents** are the hard case: the copy on the left is not older than the one on the right, yet they are not the same file either. Auto-syncing necessarily overwrites one of them, and which one depends on an implicit convention buried in the implementation.
+
+Alpha File Manager marks those **"direction undecided"** and leaves them alone. They are listed separately so you can decide, but nothing is overwritten behind your back. The same applies to a folder on one side and a file with the same name on the other — there is no target to put anything into.
+
+### 📋 The plan comes before the first byte moves
+
+A preview lists every folder that would be created, every file that would be copied and every item that would be skipped. Only then does the sync start, in the background, with a progress bar you can cancel. Failed items are reported one by one.
+
+### 🗑️ This feature never deletes anything
+
+Syncing copies what is missing and updates what is older. Anything that exists only on the target side is **reported, not removed**. A mirror mode that also deletes is planned for a later release.
+
+### 🌐 Map a network drive from the sidebar
+
+The drive list at the bottom of the sidebar now ends with a **Map network drive** button — the same entry Windows Explorer has offered for years, and the same place you would actually look for it. Pick the share, pick a drive letter (or leave it empty and Windows picks one), and the drive shows up in the sidebar like any other.
+
+### 🩹 And the smaller fixes
+
+**Fixed: the drive letter reported after mapping a network drive was usually blank.** The application looked for the word "assigned" in the output of the Windows `net use` command. That word does not appear in what Windows actually prints, so the letter was often empty even though the drive had been mapped correctly. It now asks Windows directly which drive points at the share — which works regardless of the Windows language, the width of the output table, or whether the share name contains spaces.
 
 ---
 

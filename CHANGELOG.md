@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.4.0] - October 2026
+
+**Summary:** Alpha File Manager can now compare two folders side by side and then sync what it finds. Split the navigator in two, point each pane at a folder, and it will tell you exactly what differs -- file by file, folder by folder, all the way down -- before it touches anything. When it genuinely cannot tell which side is newer, it says so instead of guessing. Nothing is ever deleted by this feature. The release also adds the "Map network drive" entry that Windows Explorer has been offering from the sidebar for years.
+
+### What changed
+
+**Added: compare two folders side by side.** Split the navigator into two panes and a new "Compare & Sync" button appears in the toolbar. It opens a dialog that compares the two folders recursively: what exists only on the left, what exists only on the right, what is newer on one side, and what differs in size or content. The result is shown as a tree, so a whole subfolder that only exists on one side shows up as a subtree rather than a wall of loose names.
+
+**Added: the criteria are the same ones serious tools use.** You choose what counts as a difference, and they are applied in the order WinSCP uses: modification time first, then file size, then content checksum. Time wins -- when the times differ, the size is not even looked at. Leave every criterion off and "the file exists on both sides" is the whole test, so only genuinely new files are reported. A case-insensitive option is there for servers that change the case of a name.
+
+**Added: when it cannot tell which side is newer, it says so and does nothing.** Two files with the same timestamp but different contents are the hard case: the copy on the left is not older than the one on the right, yet they are not the same file either. Alpha File Manager marks those "direction undecided" and leaves them alone. They are listed separately so you can decide, but nothing is overwritten behind your back.
+
+**Added: you see the plan before anything happens.** A preview lists every folder that would be created, every file that would be copied and every item that would be skipped, before the first byte moves. Only then does the sync start, and it runs in the background with a progress bar you can cancel.
+
+**Added: this feature never deletes anything.** Syncing copies what is missing and updates what is older. Anything that exists only on the target side is reported, not removed. A mirror mode that also deletes is planned for a later release.
+
+**Added: map a network drive from the sidebar.** The drive list at the bottom of the sidebar now ends with a "Map network drive" button -- the same entry Windows Explorer has offered for years, and the same place you would look for it. Pick the share, pick a drive letter (or leave it empty and Windows picks one), and the drive shows up in the sidebar like any other.
+
+**Fixed: the drive letter reported after mapping a network drive was usually blank.** The application looked for the word "assigned" in the output of the Windows "net use" command. That word does not appear in what Windows actually prints, so the letter was often empty even though the drive had been mapped correctly. It now asks Windows directly which drive points at the share, which works regardless of the Windows language or the width of the output table.
+
 ## [3.3.0] - October 2026
 
 **Summary:** You can now hold down a file in Alpha File Manager and drag it straight into another program -- WeChat, DingTalk, a browser -- while the window you are dragging out of stays in the background and the program you are dragging into comes to the front. The background visual effect gained Photoshop-style blend modes and a fill colour of your own. Extensions can no longer be steered onto a computer on your own network. And the file browser learned to select a range with the keyboard.
