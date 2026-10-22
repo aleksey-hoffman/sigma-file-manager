@@ -196,6 +196,22 @@ net use Y: \\localhost\AFMDrv    →  成功
 > 门禁基线必须用**同一条命令**量；`eslint .` 与 `eslint src` 差 7 个（`src` 之外的存量），
 > 混口径会凭空多出 7 个「回归」。
 
+### 3.1 顺手修掉的一个门禁脆弱点
+
+`src-tauri/installer/__tests__/single-instance-guard.test.ts` 的两条用例跑的是
+`installer/_acceptance/test-single-instance-guard.ps1`，每次都要拉起守卫脚本，
+而守卫脚本会**枚举全机进程**（WMI）。
+
+本机实测：机器上有 **431 个进程**时，一次 `Get-CimInstance Win32_Process` 要 **6.5 秒**，
+五条判定用例跑完 **42.5 秒** —— 超过 vitest 的 30 秒默认超时，
+于是门禁**时绿时红**，而脚本本身其实全部通过（输出 `OK: all single-instance guard cases passed`）。
+
+`runHarness` 里 spawnSync 本身就给了 120 秒预算，vitest 这边却还是 30 秒。
+现在两边统一给到 180 秒（commit `f0fa87cb`）。
+
+> **判定「门禁红了」之前先问一句：是真红，还是超时？**
+> 这次的报错是 `Test timed out in 30000ms`，不是断言失败 —— 断言失败才有内容可看。
+
 ---
 
 ## 4. 打包与发版
@@ -204,9 +220,46 @@ net use Y: \\localhost\AFMDrv    →  成功
 - `CHANGELOG.md`（英）与 `public/changelog/ch/changelog.md`（中）各加 3.4.0 条目。
 - `README.md` / `README.zh-CN.md`：「我们加了什么」表各加 4 行、三方对比表各加 2 行、新增「3.4.0 新增了什么」整节。
 - `_notes.md` 重写为 3.4.0 中文发布说明（站点清单 + GitHub release 正文共用）。
-- 安装包：`release\Alpha File Manager_3.4.0_x64-setup.exe`
-  （**最终 sha256 见提交记录**；本轮因验收修缺陷重打过两次，以最后一次为准）。
-- 站点源目录 `E:\办公文件\L1网站\alpha-file-manager\version.json` 已更新并归档历史版本。
+
+### 4.1 安装包
+
+```
+release\Alpha File Manager_3.4.0_x64-setup.exe
+20,455,261 字节
+sha256  f85d160ab207cb01ffe9efa1c225d9ef1f3c61b914f146da8ad78afc4dcc534c
+```
+
+> 本轮因真机验收修缺陷**重打过两次**（20,449,816 → 20,451,441 → 20,455,261 字节），
+> 上面的 sha256 是**最终**那次。站点与 GitHub 上的资产都是这个版本。
+
+### 4.2 装机核对
+
+```
+D:\Program Files\Alpha File Manager\alpha-file-manager.exe
+55,681,536 字节
+FileVersion / ProductVersion = 3.4.0
+主窗口 6 秒就绪
+```
+
+### 4.3 提交
+
+| commit | 内容 |
+|---|---|
+| `f0fa87cb` | `fix(gate): 单实例守卫验收用例给足 vitest 超时` |
+| `d9ec5c69` | `fix(compare-sync): 修掉真机验收暴露的三个缺陷` |
+| `eb9da742` | `release: 3.4.0 —— 比较并同步 + 添加网络驱动器` |
+
+### 4.4 发布
+
+- **站点**：版本 3.4.0 已上传，源站与边缘（Cloudflare）**版本号 / 大小 / sha256 三项一致**，
+  `version.json` 已生效（`pub_date` 2026-10-22T01:46:52Z，history 13 条）。
+  清单与安装包：`E:\办公文件\L1网站\alpha-file-manager\`。
+- **GitHub**：<https://github.com/kizemo/alpha-file-manager/releases/tag/v3.4.0>
+  —— 正式版（非 draft / 非 pre-release），正文 2380 字符（含构建信息），
+  资产 `Alpha_File_Manager_3.4.0_x64-setup.exe` 20,455,261 字节，
+  GitHub 侧摘要 `sha256:f85d160a…534c` 与本地一致。
+- **标签**：`v3.4.0`（附注标签，指向 `eb9da742`，与 v3.3.0 的写法一致）。
+- `origin/main` 已推送到 `eb9da742`。
 
 ---
 
@@ -219,5 +272,32 @@ net use Y: \\localhost\AFMDrv    →  成功
 2. **阶段 A 不含删除**：比较结果只报不删，镜像模式留到阶段 B。
 3. **校验和开关在界面上是禁用的**（只有本地↔本地算得出来），阶段 A 不暴露。
 4. **其余 15 个语言包的新文案先用英文占位**（`sync-i18n` 只校验 key 对齐），需要母语校对。
-5. **验收靶子**（用完复原）：`AFMDrv` SMB 共享、`afm-netdrive-fixture`、`afm-cmp-left` / `afm-cmp-right`、
-   `afm-cancel-left` / `afm-cancel-right`（后者含 3.84 GB 大文件，务必删）。
+5. **验收靶子已复原**（本轮自建的全部删除）：
+   - `AFMDrv` SMB 共享 —— 已删除；
+   - `afm-netdrive-fixture` —— 已移入回收站；
+   - `afm-cmp-left` / `afm-cmp-right` —— 已移入回收站；
+   - `afm-cancel-left` / `afm-cancel-right`（含 3.84 GB 大文件）—— 已移入回收站；
+   - 盘符映射 Y: —— 已断开（`net use` 为空）。
+   - 机器上还有 `afm-acceptance` / `afm-acceptance-fixtures` / `afm-e2e-override-probe` /
+     `afm-mcp-spike` / `afm-rust-search-fixtures` —— **是更早几轮留下的，本轮没动**。
+
+### 5.1 验收脚本（`.superpowers/sdd/`，不入库）
+
+| 脚本 | 作用 |
+|---|---|
+| `accept-netdrive-340.ps1` | 网络驱动器端到端：开入口 → 填表 → 连接 → 系统层核对 |
+| `accept-cancel-sample.ps1` | 启动同步 → 延迟取消 → **按文件系统采样**判定是否真的停了 |
+| `accept-cancel.ps1` | 同上但不采样（只点取消） |
+| `uia-invoke.ps1` | 直接 Invoke 一个 UIA 元素并打印 `IsEnabled` 与异常 |
+| `fill-field.ps1` | 点字段 + 剪贴板 + Ctrl+A + Ctrl+V（VK 码与全选都已修） |
+| `uia-find.ps1` / `uia-click.ps1` / `uia-list-names.ps1` | UIA 定位与点击 |
+| `capture.ps1` / `capture-desktop.ps1` / `crop.ps1` | 截图与裁剪放大 |
+| `install-and-launch-3.4.0.ps1` | 静默安装 + 校验版本 + 等主窗口 |
+
+> **验收脚本的三个坑**（都写进注释了）：
+> 1. `.ps1` 里**不能有中文** —— PowerShell 5.1 按 ANSI 读无 BOM 文件，
+>    中文正则能把解析器搞崩（报 `Unexpected token` + 字符串终止符丢失）。中文一律走命令行参数。
+> 2. `PrintWindow` 在进度事件刷爆 WebView2 渲染线程时会返回**陈旧帧** ——
+>    实测两次不同的运行都画出「file-00354.dat」。判运行状态要看**文件系统**，不要看屏幕。
+> 3. UIA 的 `InvokePattern` 对**禁用**的按钮是静默空操作 ——
+>    「点了没反应」先查 `IsEnabled`（`uia-invoke.ps1` 会打印它），别急着当产品 bug。
