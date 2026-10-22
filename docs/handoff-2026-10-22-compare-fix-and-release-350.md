@@ -2,11 +2,12 @@
 
 > 日期：2026-10-22
 > 仓库：`F:\soft\00selfmade\filemanager\sigma-file-manager`（origin `kizemo/alpha-file-manager`）
-> 外层仓：`F:\soft\00selfmade\filemanager`（origin `kizemo/focus-sync`）—— 本轮**没有改动**
+> 外层仓：`F:\soft\00selfmade\filemanager`（origin `kizemo/focus-sync`）—— 本轮只改了 `AGENTS.md`（`baa4187`）
 > 版本：3.4.0 → **3.5.0**（已上线）
 > **当前状态：代码完成、门禁全绿、3.5.0 已打包装机、真机验收通过、站点与 GitHub release 均已发布并回读校验通过。**
-> **已提交并推送**：内层仓 `a5bf6ecb`（比较修复 + 进度指示，25 文件）、`5776e946`（发布说明 + README + CHANGELOG，4 文件），均已推到 `origin/main`；tag `v3.5.0` 指向 `5776e946`。
-> **未完成：无。**（上一份交接文档 `handoff-2026-10-22-delete-progress-and-installer-log.md` 第 7 节第 6 条「站点 / GitHub release 未发布」已在本轮完成，该行已同步更正。）
+> **已提交并推送**：内层仓 `a5bf6ecb`（比较修复 + 进度指示，25 文件）、`5776e946`（发布说明 + README + CHANGELOG，4 文件）、`60a55a45`（本交接文档），外层仓 `baa4187`（`AGENTS.md` 沉淀），均已推到各自 `origin/main`；tag `v3.5.0` 指向 `5776e946`。
+> **未完成：无。** 上一份交接文档 `handoff-2026-10-22-delete-progress-and-installer-log.md` 第 7 节第 6 条「站点 / GitHub release 未发布」已在本轮完成，该行已同步更正。
+> **不需要接力会话**：用户提的两件事（线上发布 + 比较缺陷修复）均已闭环验收；第 10 节列的是**下一轮**可选项，不是未完成的活。
 
 ---
 
@@ -370,3 +371,12 @@ tag `v3.5.0` 已存在于远端，指向 `5776e946`。
 8. **`icacls /deny` 造出来的目录，删除前必须先 `/remove:d`** —— 否则删不掉。
 9. **`rm --` 会被安全层拦**（「requires the targets-only trash marker」），
    要用 `mavis-trash.cmd --`（在 `%activeDataDir%\bin\` 下）。
+10. **本机代理 `127.0.0.1:7897` 的 TLS 握手是间歇性坏的**（2026-10-22 23:0x 实测）：
+    `git push` 报 `TLS connect error: error:0A000126:SSL routines::unexpected eof while reading`，
+    `curl -x http://127.0.0.1:7897 https://github.com/` 也报 `failed to receive handshake`，
+    但**直连完全正常**（`curl --noproxy '*' https://github.com/` → HTTP 200）。
+    ⇒ 推送报 TLS 错时**先试直连**，不要重试到怀疑仓库坏了：
+    ```powershell
+    git -c http.proxy= push origin main      # 只对这一次命令禁用代理，不动全局配置
+    ```
+    注意 `gh api` 走 `api.github.com` 是好的，**别用 `gh api` 能不能用来判断 git 通不通**。
