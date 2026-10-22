@@ -53,6 +53,19 @@ const GUARD_PATH = path.join(INSTALLER_DIR, 'check-single-instance.ps1');
 const HARNESS_PATH = path.join(INSTALLER_DIR, '_acceptance', 'test-single-instance-guard.ps1');
 const VERDICT_FILE_NAME = 'alpha-single-instance-duplicate.flag';
 
+/**
+ * 跑一次验收脚本的用例超时。
+ *
+ * 验收脚本每次都要拉起守卫脚本，守卫脚本会**枚举全机进程**（WMI）。
+ * 2026-10-22 实测：机器上有 431 个进程时，一次 `Get-CimInstance Win32_Process`
+ * 要 6.5 秒，五条判定用例跑完 **42.5 秒** —— 超过 vitest 的 30 秒默认超时，
+ * 于是门禁**时绿时红**，而脚本本身其实全部通过。
+ *
+ * `runHarness` 里 spawnSync 本身就给了 120 秒预算，vitest 这边给同样的量级，
+ * 两边一致。
+ */
+const HARNESS_TIMEOUT_MS = 180_000;
+
 const isWindows = process.platform === 'win32';
 
 describe('安装器单实例守卫：接线', () => {
@@ -166,7 +179,7 @@ describe.skipIf(!isWindows)('安装器单实例守卫：判定与判别力', () 
     ).toBe(0);
 
     expect(result.output).toContain('OK: all single-instance guard cases passed');
-  });
+  }, HARNESS_TIMEOUT_MS);
 
   it('「无兄弟」那条用例不许依赖机器状态（机器繁忙时会假红）', () => {
     const harness = fs.readFileSync(HARNESS_PATH, 'utf8');
@@ -216,5 +229,5 @@ describe.skipIf(!isWindows)('安装器单实例守卫：判定与判别力', () 
     ).toBe(1);
 
     expect(result.output).toContain('FAILED:');
-  });
+  }, HARNESS_TIMEOUT_MS);
 });
