@@ -145,7 +145,11 @@
       "pending": "ממתין",
       "cancelling": "מבטל…"
     },
-    "toolbarActiveCount": "0 פעולות | פעולה אחת | {n} פעולות | {n} פעולות"
+    "toolbarActiveCount": "0 פעולות | פעולה אחת | {n} פעולות | {n} פעולות",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "חיפוש גלובלי",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "הדפסה: הקובץ אינו נתמך",
     "createdNLinks": "נוצרו 0 קישורים | נוצר קישור אחד | נוצרו {n} קישורים | נוצרו {n} קישורים",
     "createdNOfNLinks": "נוצרו {created} מתוך {total} קישורים",
-    "linkCreationPartialFailureDescription": "{count} קישורים נכשלו. השגיאה הראשונה: {error}"
+    "linkCreationPartialFailureDescription": "{count} קישורים נכשלו. השגיאה הראשונה: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

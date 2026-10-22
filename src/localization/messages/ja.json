@@ -918,7 +918,9 @@
     "addedToFavorites": "お気に入りに 0 個のアイテムを追加しました | お気に入りに 1 個のアイテムを追加しました | 気に入りに {n} 個のアイテムをお追加しました | お気に入りに {n} 個のアイテムを追加しました",
     "createdNLinks": "0 個のリンクを作成しました | 1 個のリンクを作成しました | {n} 個のリンクを作成しました | {n} 個のリンクを作成しました",
     "createdNOfNLinks": "{total} 件中 {created} 件のリンクを作成しました",
-    "linkCreationPartialFailureDescription": "{count} 件のリンクに失敗しました。最初のエラー: {error}"
+    "linkCreationPartialFailureDescription": "{count} 件のリンクに失敗しました。最初のエラー: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {
@@ -1503,7 +1505,11 @@
       "pending": "保留中",
       "cancelling": "キャンセル中…"
     },
-    "toolbarActiveCount": "0 件の処理 | 1 件の処理 | {n} 件の処理 | {n} 件の処理"
+    "toolbarActiveCount": "0 件の処理 | 1 件の処理 | {n} 件の処理 | {n} 件の処理",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "recalculate": "Recalculate",
   "lanShare": {

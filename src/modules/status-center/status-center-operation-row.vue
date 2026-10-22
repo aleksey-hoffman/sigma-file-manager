@@ -74,6 +74,18 @@ const showProgressBar = computed(() =>
   props.operation.progress != null && isActive.value,
 );
 
+/**
+ * 统计阶段还没有分母，进度条走不确定态。
+ *
+ * 报一个假的百分比比不报更糟 —— 这正是 2026-10-22 那次「进度条卡在 4%」
+ * 事故的教训：进度条的语义是「离完成还有多远」，给不出这个答案时就不该
+ * 假装能给出。
+ */
+const isScanningPhase = computed(() =>
+  props.operation.phase === 'scanning'
+  && (props.operation.type === 'deleteTrash' || props.operation.type === 'deletePermanent'),
+);
+
 const statusIcon = computed(() => {
   switch (props.operation.status) {
     case 'in-progress':
@@ -272,15 +284,41 @@ function buildOperationDetails(operation: Operation): string {
     ) {
       const sourceName = operation.sourceDisplayName ?? '';
       const segments: string[] = [];
+      const isScanning = operation.phase === 'scanning';
 
-      if (operation.progress != null) {
-        segments.push(`${operation.progress}%`);
+      // FORK-MODIFICATION 2026-10-22：统计阶段与删除阶段分开呈现。
+      //
+      // 统计阶段还没有分母（总数没数完），此时报一个百分比就是假的 —— 所以
+      // 只报「已经发现了多少项」，进度条走不确定态。
+      if (isScanning) {
+        segments.push(t('statusCenter.deleteScanning'));
+
+        if (operation.deletedItems != null && operation.deletedItems > 0) {
+          segments.push(t('statusCenter.deleteScanningFound', {
+            count: operation.deletedItems.toLocaleString(),
+          }));
+        }
       }
+      else {
+        const percent = operation.itemPercent ?? operation.progress;
 
-      const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
+        if (percent != null) {
+          segments.push(`${percent}%`);
+        }
 
-      if (itemCountLine) {
-        segments.push(itemCountLine);
+        if (operation.totalCount != null && operation.deletedItems != null) {
+          segments.push(t('statusCenter.deleteItemsProgress', {
+            done: operation.deletedItems.toLocaleString(),
+            total: operation.totalCount.toLocaleString(),
+          }));
+        }
+
+        if (operation.totalBytes != null && operation.totalBytes > 0 && operation.freedBytes != null) {
+          segments.push(t('statusCenter.deleteBytesProgress', {
+            done: formatBytes(operation.freedBytes),
+            total: formatBytes(operation.totalBytes),
+          }));
+        }
       }
 
       if (
@@ -385,6 +423,7 @@ function handleDismiss() {
       >
         <div
           class="status-center-operation-row__progress-bar"
+          :class="{ 'status-center-operation-row__progress-bar--indeterminate': isScanningPhase }"
           :style="{ width: `${Math.min(100, Math.max(0, operation.progress ?? 0))}%` }"
         />
       </div>
@@ -525,6 +564,22 @@ function handleDismiss() {
   border-radius: 2px;
   background: hsl(var(--primary));
   transition: width 0.2s ease;
+}
+
+/* 统计阶段：宽度没有意义，走一条来回滑动的条。 */
+.status-center-operation-row__progress-bar--indeterminate {
+  width: 35% !important;
+  animation: status-center-indeterminate 1.1s ease-in-out infinite;
+}
+
+@keyframes status-center-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(285%);
+  }
 }
 
 .status-center-operation-row__details {

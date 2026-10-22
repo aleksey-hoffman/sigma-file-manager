@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.5.0] - October 2026
+
+**Summary:** Deleting a large folder tree no longer looks like a frozen application. The progress bar now counts the items it has actually removed instead of the handful of top-level entries you selected, so it moves steadily instead of sitting at one number for the whole job. Cancelling now takes effect immediately rather than after the current folder happens to finish. Folders are deleted with a few parallel workers, which is what a mechanical disk actually needs. The release also fixes the extension update check, which had never worked at all on networks where github.com is unreachable, and gives both the updater and the installer a log you can read.
+
+### What changed
+
+**Fixed: the delete progress bar told you almost nothing.** It was counting the top-level entries you had selected, so deleting one folder that held 250,000 files showed a single jump from 0% to 100% at the very end -- and deleting 25 of them showed 4% for the better part of an hour. The progress bar is now driven by the number of items actually deleted, with the freed space shown alongside it as a second measure. Both are labelled, so there is no ambiguity about which is which.
+
+**Fixed: cancelling a big delete did nothing until the folder was finished.** The cancel flag was only looked at between top-level entries, so cancelling while a large folder was being removed had to wait for that entire folder to be gone. It is now checked before every single file, so cancelling stops within a fraction of a second.
+
+**Improved: the app measures what it is about to delete first.** Before a large deletion starts, the tree is walked once to find out how many files, how many folders and how many bytes are involved. That gives the progress bar a real denominator instead of a guess, and it lets the application tell you the scale before the work begins.
+
+**Improved: subfolders are deleted in parallel.** Deleting hundreds of thousands of small files from a mechanical disk is a seek-bound workload, and a single thread keeps the disk queue nearly empty while the head hunts for one file at a time. Up to four independent subtrees are now removed at once, which is what lets the disk work on several locations at the same time.
+
+**Fixed: the extension update check had never worked on some networks.** It asked github.com for a list of release tags, and on networks where github.com is unreachable that request timed out every single time -- which also produced a burst of failed-request warnings on every launch. The check now uses the api.github.com endpoint, which is reachable on the same networks, and the old address is kept as a fallback. The update check for extensions now actually succeeds.
+
+**Added: the update check writes down what it found.** Each check now records the installed version, the version the server reported, which source answered and whether an update was offered. Previously the answer to "did it check for updates?" could only be guessed at from a timestamp buried in the settings file.
+
+**Added: the installer writes an install log.** Installing the same version again was hard to make sense of, because the installer recorded the fact that it was running but not what it decided: which folder it installed into, whether an existing installation was found, which version was already there, and whether this run was a reinstall of the very same version. All of that is now written to a log file next to the two logs the installer already kept.
+
 ## [3.4.0] - October 2026
 
 **Summary:** Alpha File Manager can now compare two folders side by side and then sync what it finds. Split the navigator in two, point each pane at a folder, and it will tell you exactly what differs -- file by file, folder by folder, all the way down -- before it touches anything. When it genuinely cannot tell which side is newer, it says so instead of guessing. Nothing is ever deleted by this feature. The release also adds the "Map network drive" entry that Windows Explorer has been offering from the sidebar for years.

@@ -18,6 +18,21 @@ interface DeleteJobProgressPayload {
   detail: string;
   processedCount?: number | null;
   totalCount?: number | null;
+  /**
+   * FORK-MODIFICATION 2026-10-22：进度语义从「顶层路径数」换成「条目数」。
+   *
+   * 旧口径在删一棵含 25 万个文件的目录树时，进度条在整个删除期间几乎不动
+   * （用户看到「4% 卡住 40 分钟」）。新口径按条目推进，字节数作辅助。
+   */
+  phase?: 'scanning' | 'deleting';
+  deletedItems?: number;
+  freedBytes?: number;
+  totalBytes?: number | null;
+  itemPercent?: number | null;
+  bytePercent?: number | null;
+  files?: number;
+  directories?: number;
+  currentPath?: string;
 }
 
 interface DeleteJobFinishedPayload {
@@ -27,6 +42,18 @@ interface DeleteJobFinishedPayload {
   useTrash: boolean;
   error: string | null;
   deletedPaths: string[];
+  /** 真正删掉的条目数（文件 + 目录）。 */
+  deletedItems?: number;
+  /** 真正释放的字节数。 */
+  freedBytes?: number;
+  /** 预扫描得到的条目总数。 */
+  totalItems?: number;
+  /** 预扫描得到的文件数。 */
+  files?: number;
+  /** 预扫描得到的目录数。 */
+  directories?: number;
+  /** 预扫描得到的总字节。 */
+  totalBytes?: number;
 }
 
 export interface DeleteJobResult {
@@ -42,7 +69,11 @@ export interface StartDeleteJobOptions {
 }
 
 function toastDeleteSuccess(payload: DeleteJobFinishedPayload) {
-  const deletedCount = payload.deletedPaths.length;
+  // FORK-MODIFICATION 2026-10-22：报**真实删掉的条目数**。
+  //
+  // 旧实现报的是顶层路径数 —— 删一棵含 25 万个文件的目录树，弹出来的却是
+  // 「已删除 1 项」。数字小到让人以为没删掉。
+  const deletedCount = payload.deletedItems ?? payload.deletedPaths.length;
   const titleKey = payload.useTrash
     ? 'notifications.trashedNItems'
     : 'notifications.deletedNItems';
@@ -88,6 +119,15 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
           message: payload.detail,
           processedCount: payload.processedCount ?? undefined,
           totalCount: payload.totalCount ?? undefined,
+          phase: payload.phase,
+          deletedItems: payload.deletedItems,
+          freedBytes: payload.freedBytes,
+          totalBytes: payload.totalBytes ?? undefined,
+          itemPercent: payload.itemPercent ?? undefined,
+          bytePercent: payload.bytePercent ?? undefined,
+          files: payload.files,
+          directories: payload.directories,
+          currentPath: payload.currentPath,
         });
       },
     );

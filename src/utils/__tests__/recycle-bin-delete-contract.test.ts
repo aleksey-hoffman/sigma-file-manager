@@ -35,6 +35,8 @@ import { join } from 'node:path';
 const REPO_ROOT = join(__dirname, '..', '..', '..');
 
 const DELETE_JOB_RS = join(REPO_ROOT, 'src-tauri', 'src', 'delete_job.rs');
+// FORK-MODIFICATION 2026-10-22：批量删除算法搬到了独立模块。
+const DELETE_TREE_RS = join(REPO_ROOT, 'src-tauri', 'src', 'delete_tree.rs');
 const FILE_OPERATIONS_RS = join(REPO_ROOT, 'src-tauri', 'src', 'file_operations.rs');
 const LIB_RS = join(REPO_ROOT, 'src-tauri', 'src', 'lib.rs');
 const RECYCLE_BIN_DELETE_TS = join(REPO_ROOT, 'src', 'utils', 'recycle-bin-delete.ts');
@@ -112,8 +114,22 @@ describe('回收站删除的跨语言契约', () => {
   it('后端删除路径走的是 delete_path_to_trash，不是裸 trash::delete', () => {
     // 少了这道闸，前端的确认框就成了唯一防线 ——
     // 而上游 0ae258d6 之前的实现正是「trash 失败就当永久删除」。
-    expect(read(DELETE_JOB_RS)).toContain('delete_path_to_trash(path, &normalized)');
-    expect(read(DELETE_JOB_RS)).not.toContain('trash::delete(');
+    //
+    // FORK-MODIFICATION 2026-10-22：进回收站的实现挪到了 delete_tree.rs
+    // （批量删除算法模块），所以这里要盯的是**整条调用链**，而不是某一个文件里
+    // 的某一行字样 —— 挪个位置不等于绕过防线。
+    const deleteJob = read(DELETE_JOB_RS);
+    const deleteTree = read(DELETE_TREE_RS);
+
+    // 作业层把「进回收站」交给 delete_tree 的专门入口。
+    expect(deleteJob).toContain('delete_tree::delete_paths_to_trash');
+
+    // 算法层最终调的是 utils 里那个会拒绝网络盘的助手。
+    expect(deleteTree).toContain('delete_path_to_trash(Path::new(path), path)');
+    expect(deleteTree).not.toContain('trash::delete(');
+
+    // 作业层同样不许出现裸 trash::delete。
+    expect(deleteJob).not.toContain('trash::delete(');
 
     expect(read(FILE_OPERATIONS_RS)).toContain('delete_path_to_trash(path, path_str)');
     expect(read(FILE_OPERATIONS_RS)).not.toContain('trash::delete(');

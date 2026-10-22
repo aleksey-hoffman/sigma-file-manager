@@ -33,6 +33,29 @@ export interface Operation {
   sourceDisplayName?: string;
   startedAt: number;
   completedAt?: number;
+  /**
+   * FORK-MODIFICATION 2026-10-22：删除作业的阶段。
+   *
+   * `scanning` = 正在统计要删掉多少条目；`deleting` = 正在删除。
+   * 统计阶段没有分母（总数还没数完），此时界面显示不确定态而不是假百分比。
+   */
+  phase?: 'scanning' | 'deleting';
+  /** 已删除的条目数（文件 + 目录）。 */
+  deletedItems?: number;
+  /** 已释放的字节数。 */
+  freedBytes?: number;
+  /** 预扫描得到的总字节。 */
+  totalBytes?: number;
+  /** 条目口径的百分比。 */
+  itemPercent?: number;
+  /** 字节口径的百分比。 */
+  bytePercent?: number;
+  /** 文件数。 */
+  files?: number;
+  /** 目录数。 */
+  directories?: number;
+  /** 当前正在处理的路径。 */
+  currentPath?: string;
 }
 
 function isActiveOperationStatus(status: OperationStatus): boolean {

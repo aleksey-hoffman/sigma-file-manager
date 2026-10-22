@@ -42,6 +42,7 @@ import { createRemoteDirectory, hasRemoteTarget, renameRemoteEntry } from '@/mod
 import { isRemotePath } from '@/utils/remote-paths';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
+import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 import { applyBackgroundContextMenu } from '@/modules/navigator/components/file-browser/utils/file-browser-background-context-menu';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
@@ -55,6 +56,14 @@ import { refreshDrives } from '@/modules/home/composables/use-drives';
 import { shouldOpenFavoriteCategoryDialog } from '@/modules/navigator/components/file-browser/utils/file-browser-favorites';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
+
+/**
+ * FORK-MODIFICATION 2026-10-22：超过这个条目数就算「大批量」。
+ *
+ * 阈值取自 2026-10-22 那份批量删除分析报告的建议值（10,000）。低于它的时候
+ * 删除是「秒级」的事，弹个规模提示纯属噪声。
+ */
+export const LARGE_BATCH_ITEM_THRESHOLD = 10_000;
 
 export function useFileBrowserSelection(
   entriesRef: Ref<DirEntry[]>,
@@ -1261,6 +1270,61 @@ export function useFileBrowserSelection(
     onSelect(selectedEntries.value);
   }
 
+  /**
+   * FORK-MODIFICATION 2026-10-22：大批量删除先把规模摆出来。
+   *
+   * 删一棵含 25 万个文件的目录树时，界面上从头到尾只看得见「1 个项目」。
+   * 用户按下删除之前完全无从判断自己在删什么 —— 这是 2026-10-22 那份
+   * 分析报告 P2 的一条：删除前预扫描，展示「N 个文件 / M 个目录 / X GiB」。
+   *
+   * 只统计**目录**：单个文件的规模一眼就知道，统计它没有意义。
+   * 统计失败绝不挡住删除 —— 统计是给人看的，不是删除的前置条件。
+   */
+  async function showLargeBatchDeletePreview(targets: DirEntry[]): Promise<void> {
+    const directoryPaths = targets
+      .filter(entry => !entry.is_file)
+      .map(entry => entry.path);
+
+    if (directoryPaths.length === 0) {
+      return;
+    }
+
+    let summary: {
+      files: number;
+      directories: number;
+      totalItems: number;
+      totalBytes: number;
+    };
+
+    try {
+      summary = await invoke('scan_delete_targets', { paths: directoryPaths });
+    }
+    catch {
+      return;
+    }
+
+    if (!summary || summary.totalItems < LARGE_BATCH_ITEM_THRESHOLD) {
+      return;
+    }
+
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('notifications.deletingLargeBatch', {
+            count: summary.totalItems.toLocaleString(),
+          }),
+          description: t('notifications.deletingLargeBatchDetail', {
+            files: summary.files.toLocaleString(),
+            directories: summary.directories.toLocaleString(),
+            size: formatBytes(summary.totalBytes),
+          }),
+          actionText: '',
+        },
+      },
+      duration: 8000,
+    });
+  }
+
   async function deleteItems(entries: DirEntry[], useTrash: boolean = true): Promise<boolean> {
     if (entries.length === 0) {
       return false;
@@ -1271,6 +1335,8 @@ export function useFileBrowserSelection(
     if (!canPerformAction(deleteAction, entries)) {
       return false;
     }
+
+    await showLargeBatchDeletePreview(entries);
 
     // FORK-MODIFICATION 2026-10-20：移植上游 0ae258d6。
     //

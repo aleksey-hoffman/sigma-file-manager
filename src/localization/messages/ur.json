@@ -145,7 +145,11 @@
       "pending": "منتظر",
       "cancelling": "منسوخ ہو رہا ہے…"
     },
-    "toolbarActiveCount": "0 آپریشنز | 1 آپریشن | {n} آپریشنز | {n} آپریشنز"
+    "toolbarActiveCount": "0 آپریشنز | 1 آپریشن | {n} آپریشنز | {n} آپریشنز",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "عالمی تلاش",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "پرنٹ: فائل معاون نہیں",
     "createdNLinks": "0 لنکس بنائے گئے | 1 لنک بنایا گیا | {n} لنکس بنائے گئے | {n} لنکس بنائے گئے",
     "createdNOfNLinks": "{total} میں سے {created} لنکس بنائے گئے",
-    "linkCreationPartialFailureDescription": "{count} لنکس ناکام ہوئے۔ پہلی خرابی: {error}"
+    "linkCreationPartialFailureDescription": "{count} لنکس ناکام ہوئے۔ پہلی خرابی: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

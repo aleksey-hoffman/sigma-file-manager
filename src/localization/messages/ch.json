@@ -918,7 +918,9 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "已创建 0 个链接 | 已创建 1 个链接 | 已创建 {n} 个链接 | 已创建 {n} 个链接",
     "createdNOfNLinks": "已创建 {total} 个链接中的 {created} 个",
-    "linkCreationPartialFailureDescription": "{count} 个链接失败。第一个错误：{error}"
+    "linkCreationPartialFailureDescription": "{count} 个链接失败。第一个错误：{error}",
+    "deletingLargeBatch": "正在删除 {count} 个项目",
+    "deletingLargeBatchDetail": "{files} 个文件 · {directories} 个目录 · {size}"
   },
   "contextMenus": {
     "dirItem": {
@@ -1507,7 +1509,11 @@
       "pending": "等待中",
       "cancelling": "正在取消…"
     },
-    "toolbarActiveCount": "0 项操作 | 1 项操作 | {n} 项操作 | {n} 项操作"
+    "toolbarActiveCount": "0 项操作 | 1 项操作 | {n} 项操作 | {n} 项操作",
+    "deleteScanning": "正在统计要删掉多少…",
+    "deleteScanningFound": "已发现 {count} 项",
+    "deleteItemsProgress": "已删除 {done} / {total} 项",
+    "deleteBytesProgress": "已释放 {done} / {total}"
   },
   "recalculate": "Recalculate",
   "lanShare": {

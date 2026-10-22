@@ -37,6 +37,25 @@ Var AlphaSilentMode
 Var AlphaTempOption
 
 ; -----------------------------------------------------------------------
+; 2026-10-22 安装日志用的变量。
+;
+; AlphaDetectedVersion   = 既有安装的版本号（没检测到就是空）
+; AlphaDetectedLocation  = 既有安装的位置（没检测到就是空）
+; AlphaLogPhase          = 写日志时标注的阶段
+; AlphaLogInstDir        = 本次安装最终选定的目录
+;
+; 为什么要有这份日志：安装器此前**只**有两个持久日志（单实例守卫日志、
+; 杀进程日志），**安装器自己的决定一个都没落盘** —— 装了哪个目录、检测到
+; 既有安装没有、既有版本是几、这次是不是同版本重装、最后有没有装完，
+; 全都只能靠猜。于是「我装完又装了一次，怎么像是激活了在线更新」这类
+; 问题无法从产物上回答：日志能证明「没有并发安装器」，却答不出版本。
+; -----------------------------------------------------------------------
+Var AlphaDetectedVersion
+Var AlphaDetectedLocation
+Var AlphaLogPhase
+Var AlphaLogInstDir
+
+; -----------------------------------------------------------------------
 ; AlphaNormalizeInstDir — the single gate between "a registry string" and
 ; "$INSTDIR".
 ;
@@ -228,6 +247,33 @@ Function AlphaCheckSingleInstance
   IfFileExists "$PLUGINSDIR\alpha-single-instance-duplicate.flag" 0 alpha_single_instance_done
     StrCpy $AlphaSingleInstanceDuplicate 1
   alpha_single_instance_done:
+FunctionEnd
+
+; -----------------------------------------------------------------------
+; AlphaLogInstall — 把本次安装的关键事实追加到持久日志。
+;
+; 日志路径：%TEMP%\alpha-file-manager-install.log（追加，不覆盖）。
+;
+; 记录的内容：本次安装器自身的版本、检测到的既有安装版本与位置、这次是不是
+; 同版本重装、最终选定的安装目录。这几项此前**一个都没有落盘**，于是
+; 「装完又装了一次」这类问题无法从产物上回答。
+;
+; 脚本本体是 write-install-log.ps1（与另外两个助手脚本一样在编译期内嵌、
+; 运行期原样解包到 $PLUGINSDIR，不经 ANSI 代码页转换）。
+; 时间戳由脚本自己打 —— NSIS 这边拿系统时间不值得赌寄存器。
+; -----------------------------------------------------------------------
+!macro AlphaLogInstallBody
+  File /oname=$PLUGINSDIR\write-install-log.ps1 "${__FILEDIR__}\write-install-log.ps1"
+  nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\write-install-log.ps1" -Phase "$AlphaLogPhase" -InstallerPath "$EXEPATH" -InstDir "$AlphaLogInstDir" -DetectedVersion "$AlphaDetectedVersion" -DetectedLocation "$AlphaDetectedLocation"'
+  Pop $2
+!macroend
+
+Function AlphaLogInstall
+  !insertmacro AlphaLogInstallBody
+FunctionEnd
+
+Function un.AlphaLogInstall
+  !insertmacro AlphaLogInstallBody
 FunctionEnd
 
 !macro NSIS_HOOK_PREINSTALL
@@ -476,6 +522,38 @@ FunctionEnd
     DetailPrint "==> [PREINSTALL HOOK] No existing Alpha FM / Sigma FM install detected; using default path ($INSTDIR)."
   ${EndIf}
   DetailPrint "==> [PREINSTALL HOOK END] $INSTDIR (after detection) = $INSTDIR"
+
+  ; ---------------------------------------------------------------------
+  ; 2026-10-22: 记录「既有安装」的版本与位置。
+  ;
+  ; 有了这两项，安装日志才能回答「这次是不是同版本重装」——
+  ; 也就是「我明明装的就是同一个版本，为什么像是又装了一遍」这个问题。
+  ; 读的是同一个 Uninstall 键的 DisplayVersion / InstallLocation。
+  ; ---------------------------------------------------------------------
+  StrCpy $AlphaDetectedVersion ""
+  StrCpy $AlphaDetectedLocation ""
+
+  ReadRegStr $2 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "DisplayVersion"
+  ${If} $2 == ""
+    ReadRegStr $2 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "DisplayVersion"
+  ${EndIf}
+
+  ${If} $2 != ""
+    StrCpy $AlphaDetectedVersion $2
+    ReadRegStr $2 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "InstallLocation"
+    ${If} $2 == ""
+      ReadRegStr $2 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "InstallLocation"
+    ${EndIf}
+    StrCpy $AlphaDetectedLocation $2
+    DetailPrint "==> [PREINSTALL HOOK] Existing installation detected: version=$AlphaDetectedVersion location=$AlphaDetectedLocation"
+  ${Else}
+    DetailPrint "==> [PREINSTALL HOOK] No existing installation record found."
+  ${EndIf}
+
+  ; 落盘本次安装的第一条记录（此时 $INSTDIR 已定，既有版本也已知）。
+  StrCpy $AlphaLogPhase "PREINSTALL"
+  StrCpy $AlphaLogInstDir "$INSTDIR"
+  Call AlphaLogInstall
 !macroend
 
 !macro NSIS_HOOK_POSTINSTALL
@@ -748,6 +826,17 @@ FunctionEnd
   DetailPrint "    Sidecar binary:  $RESOLVEDAPPDATA\com.sigma-file-manager.app\extensions\kizemo.focus-sync\bin\focus-sync-sidecar\focus-sync-sidecar.exe (canonical, per-user)"
   DetailPrint "    Registry:        HKLM\SOFTWARE\kizemo\focus-sync\SidecarPath"
   DetailPrint "    Scheduled Task:  KizemoFocusSync (AtLogOn, --service mode)"
+
+  ; ---------------------------------------------------------------------
+  ; 落盘本次安装的第二条记录（安装已完成）。
+  ;
+  ; 注意 AlphaDetectedVersion 仍然是 PREINSTALL 阶段读到的**旧**版本 ——
+  ; 到这一步模板已经把注册表里的 DisplayVersion 改成新版本了，再读就会变成
+  ; 「3.4.0 vs 3.4.0」，同版本重装这个事实就永远看不出来了。
+  ; ---------------------------------------------------------------------
+  StrCpy $AlphaLogPhase "POSTINSTALL"
+  StrCpy $AlphaLogInstDir "$INSTDIR"
+  Call AlphaLogInstall
 !macroend
 
 !macro NSIS_HOOK_PREUNINSTALL
@@ -771,6 +860,11 @@ FunctionEnd
   ; WebView2 子进程，既能解锁文件，又不会波及其他应用。
   ; Brief settle delay so the process can release any open handles.
   Sleep 1000
+
+  ; 卸载也要留痕：否则「装了几次、卸了几次」永远说不清。
+  StrCpy $AlphaLogPhase "PREUNINSTALL"
+  StrCpy $AlphaLogInstDir "$INSTDIR"
+  Call un.AlphaLogInstall
 !macroend
 
 !macro NSIS_HOOK_POSTUNINSTALL
@@ -862,4 +956,8 @@ FunctionEnd
   ${EndIf}
 
   DetailPrint "==> [POSTUNINSTALL HOOK END] Cleanup complete (extension, sidecar binary, task, registry, install dir)."
+
+  StrCpy $AlphaLogPhase "POSTUNINSTALL"
+  StrCpy $AlphaLogInstDir "$INSTDIR"
+  Call un.AlphaLogInstall
 !macroend

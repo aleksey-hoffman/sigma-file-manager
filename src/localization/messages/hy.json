@@ -145,7 +145,11 @@
       "pending": "Սպասող",
       "cancelling": "Չեղարկում․․․"
     },
-    "toolbarActiveCount": "0 գործողություն | 1 գործողություն | {n} գործողություն | {n} գործողություն"
+    "toolbarActiveCount": "0 գործողություն | 1 գործողություն | {n} գործողություն | {n} գործողություն",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "Գլոբալ որոնում",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "Տպել. ֆայլը չի աջակցվում",
     "createdNLinks": "Ստեղծվել է 0 հղում | Ստեղծվել է 1 հղում | Ստեղծվել է {n} հղում | Ստեղծվել է {n} հղում",
     "createdNOfNLinks": "Ստեղծվել է {created}/{total} հղում",
-    "linkCreationPartialFailureDescription": "{count} հղում չհաջողվեց։ Առաջին սխալը՝ {error}"
+    "linkCreationPartialFailureDescription": "{count} հղում չհաջողվեց։ Առաջին սխալը՝ {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

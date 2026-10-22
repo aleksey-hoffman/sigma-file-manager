@@ -918,7 +918,9 @@
     "addedToFavorites": "Đã thêm 0 mục vào mục yêu thích | Đã thêm 1 mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích",
     "createdNLinks": "Đã tạo 0 liên kết | Đã tạo 1 liên kết | Đã tạo {n} liên kết | Đã tạo {n} liên kết",
     "createdNOfNLinks": "Đã tạo {created} trên {total} liên kết",
-    "linkCreationPartialFailureDescription": "{count} liên kết thất bại. Lỗi đầu tiên: {error}"
+    "linkCreationPartialFailureDescription": "{count} liên kết thất bại. Lỗi đầu tiên: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {
@@ -1503,7 +1505,11 @@
       "pending": "Đang chờ",
       "cancelling": "Đang hủy…"
     },
-    "toolbarActiveCount": "0 thao tác | 1 thao tác | {n} thao tác | {n} thao tác"
+    "toolbarActiveCount": "0 thao tác | 1 thao tác | {n} thao tác | {n} thao tác",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "recalculate": "Tính toán lại",
   "lanShare": {

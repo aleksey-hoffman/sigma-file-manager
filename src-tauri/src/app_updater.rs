@@ -545,13 +545,21 @@ where
 {
     match primary {
         Ok(manifest) => Ok(result_from_manifest(&manifest, current_version)),
-        Err(primary_error) => match fetch_fallback().await {
-            Ok(body) => Ok(result_from_github(&body, current_version)),
-            Err(fallback_error) => Err(format!(
-                "主源({})失败: {}; 兜底源({})也失败: {}",
-                SOURCE_SITE, primary_error, SOURCE_GITHUB, fallback_error
-            )),
-        },
+        Err(primary_error) => {
+            log::warn!(
+                "app updater: primary source {} failed ({}); querying the fallback source {}",
+                SOURCE_SITE,
+                primary_error,
+                SOURCE_GITHUB
+            );
+            match fetch_fallback().await {
+                Ok(body) => Ok(result_from_github(&body, current_version)),
+                Err(fallback_error) => Err(format!(
+                    "主源({})失败: {}; 兜底源({})也失败: {}",
+                    SOURCE_SITE, primary_error, SOURCE_GITHUB, fallback_error
+                )),
+            }
+        }
     }
 }
 
@@ -561,17 +569,58 @@ pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckRes
         return Ok(UpdateCheckResult::up_to_date(&current_version, SOURCE_SITE));
     }
 
+    // FORK-MODIFICATION 2026-10-22：更新检查**必须落盘**。
+    //
+    // 之前这个环节一点日志都没有，于是「装完软件是不是激活了在线更新」这类
+    // 问题只能靠 settings 里一个时间戳反推 —— 反推不出「查了什么、判定是
+    // 什么、哪个源答的、报了什么错」。安装日志里没有的东西，等于没有诊断能力。
+    let started = std::time::Instant::now();
+    log::info!(
+        "app updater: checking for updates (installed version {})",
+        current_version
+    );
+
     let client = build_http_client(UPDATE_CHECK_TIMEOUT_SECS)
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let primary = fetch_version_manifest(&client).await;
 
-    compose_update_result(
+    match &primary {
+        Ok(manifest) => log::info!(
+            "app updater: primary source {} reports version {}",
+            SOURCE_SITE,
+            manifest.version
+        ),
+        Err(error) => log::warn!(
+            "app updater: primary source {} failed: {}",
+            SOURCE_SITE,
+            error
+        ),
+    }
+
+    let result = compose_update_result(
         primary,
         || fetch_github_releases_body(&client),
         &current_version,
     )
-    .await
+    .await;
+
+    match &result {
+        Ok(check) => log::info!(
+            "app updater: check finished in {:?} — source={} latest={} update_available={}",
+            started.elapsed(),
+            check.source,
+            check.latest_version,
+            check.update_available
+        ),
+        Err(error) => log::warn!(
+            "app updater: check failed after {:?}: {}",
+            started.elapsed(),
+            error
+        ),
+    }
+
+    result
 }
 
 /// 计算已落盘文件的 sha256（十六进制小写）。

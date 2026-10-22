@@ -145,7 +145,11 @@
       "pending": "लंबित",
       "cancelling": "रद्द हो रहा है…"
     },
-    "toolbarActiveCount": "0 ऑपरेशन | 1 ऑपरेशन | {n} ऑपरेशन | {n} ऑपरेशन"
+    "toolbarActiveCount": "0 ऑपरेशन | 1 ऑपरेशन | {n} ऑपरेशन | {n} ऑपरेशन",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "वैश्विक खोज",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "मुद्रण: फ़ाइल समर्थित नहीं है",
     "createdNLinks": "0 लिंक बनाए गए | 1 लिंक बनाया गया | {n} लिंक बनाए गए | {n} लिंक बनाए गए",
     "createdNOfNLinks": "{total} में से {created} लिंक बनाए गए",
-    "linkCreationPartialFailureDescription": "{count} लिंक विफल रहे। पहली त्रुटि: {error}"
+    "linkCreationPartialFailureDescription": "{count} लिंक विफल रहे। पहली त्रुटि: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

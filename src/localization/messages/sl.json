@@ -145,7 +145,11 @@
       "pending": "V čakanju",
       "cancelling": "Preklic…"
     },
-    "toolbarActiveCount": "0 opravil | 1 opravilo | {n} opravil | {n} opravil"
+    "toolbarActiveCount": "0 opravil | 1 opravilo | {n} opravil | {n} opravil",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "Globalno iskanje",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "Tiskanje: datoteka ni podprta",
     "createdNLinks": "Ustvarjenih 0 povezav | Ustvarjena 1 povezava | Ustvarjene {n} povezave | Ustvarjenih {n} povezav",
     "createdNOfNLinks": "Ustvarjenih {created} od {total} povezav",
-    "linkCreationPartialFailureDescription": "{count} povezav ni uspelo. Prva napaka: {error}"
+    "linkCreationPartialFailureDescription": "{count} povezav ni uspelo. Prva napaka: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

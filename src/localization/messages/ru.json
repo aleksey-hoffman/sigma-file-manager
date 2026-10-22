@@ -145,7 +145,11 @@
       "pending": "Ожидание",
       "cancelling": "Отмена…"
     },
-    "toolbarActiveCount": "0 операций | 1 операция | {n} операций | {n} операций"
+    "toolbarActiveCount": "0 операций | 1 операция | {n} операций | {n} операций",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "Глобальный поиск",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "Печать: файл не поддерживается",
     "createdNLinks": "Создано 0 ссылок | Создана 1 ссылка | Создано {n} ссылки | Создано {n} ссылок",
     "createdNOfNLinks": "Создано ссылок: {created} из {total}",
-    "linkCreationPartialFailureDescription": "Не удалось создать ссылок: {count}. Первая ошибка: {error}"
+    "linkCreationPartialFailureDescription": "Не удалось создать ссылок: {count}. Первая ошибка: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

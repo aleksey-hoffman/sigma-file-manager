@@ -918,7 +918,9 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "0 liens créés | 1 lien créé | {n} liens créés | {n} liens créés",
     "createdNOfNLinks": "{created} liens créés sur {total}",
-    "linkCreationPartialFailureDescription": "{count} liens ont échoué. Première erreur : {error}"
+    "linkCreationPartialFailureDescription": "{count} liens ont échoué. Première erreur : {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {
@@ -1503,7 +1505,11 @@
       "pending": "En attente",
       "cancelling": "Annulation…"
     },
-    "toolbarActiveCount": "0 opérations | 1 opération | {n} opérations | {n} opérations"
+    "toolbarActiveCount": "0 opérations | 1 opération | {n} opérations | {n} opérations",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "recalculate": "Recalculate",
   "lanShare": {

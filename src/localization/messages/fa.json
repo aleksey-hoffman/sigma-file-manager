@@ -911,7 +911,9 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "۰ پیوند ایجاد شد | ۱ پیوند ایجاد شد | {n} پیوند ایجاد شد | {n} پیوند ایجاد شد",
     "createdNOfNLinks": "{created} از {total} لینک ایجاد شد",
-    "linkCreationPartialFailureDescription": "{count} لینک ناموفق بود. اولین خطا: {error}"
+    "linkCreationPartialFailureDescription": "{count} لینک ناموفق بود. اولین خطا: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {
@@ -1503,7 +1505,11 @@
       "pending": "در انتظار",
       "cancelling": "در حال لغو…"
     },
-    "toolbarActiveCount": "0 عملیات | 1 عملیات | {n} عملیات | {n} عملیات"
+    "toolbarActiveCount": "0 عملیات | 1 عملیات | {n} عملیات | {n} عملیات",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "recalculate": "Recalculate",
   "lanShare": {

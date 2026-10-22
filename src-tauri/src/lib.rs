@@ -15,6 +15,7 @@ mod compare;
 mod copy_move_job;
 mod default_file_manager;
 mod delete_job;
+mod delete_tree;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
@@ -411,6 +412,7 @@ pub fn run() {
             copy_move_job::start_copy_move_job,
             copy_move_job::cancel_copy_move_job,
             delete_job::recycle_bin_unavailable_paths,
+            delete_job::scan_delete_targets,
             delete_job::start_delete_job,
             delete_job::cancel_delete_job,
             global_search::global_search_init,

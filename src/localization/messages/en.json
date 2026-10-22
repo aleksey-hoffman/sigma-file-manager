@@ -145,7 +145,11 @@
       "pending": "Pending",
       "cancelling": "Canceling…"
     },
-    "toolbarActiveCount": "0 operations | 1 operation | {n} operations | {n} operations"
+    "toolbarActiveCount": "0 operations | 1 operation | {n} operations | {n} operations",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "globalSearch": {
     "globalSearch": "Global search",
@@ -947,7 +951,9 @@
     "printViewFileIsNotSupported": "Print: file is not supported",
     "createdNLinks": "Created 0 links | Created 1 link | Created {n} links | Created {n} links",
     "createdNOfNLinks": "Created {created} of {total} links",
-    "linkCreationPartialFailureDescription": "{count} links failed. First error: {error}"
+    "linkCreationPartialFailureDescription": "{count} links failed. First error: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {

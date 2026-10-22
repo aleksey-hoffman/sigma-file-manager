@@ -918,7 +918,9 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "0 bağlantı oluşturuldu | 1 bağlantı oluşturuldu | {n} bağlantı oluşturuldu | {n} bağlantı oluşturuldu",
     "createdNOfNLinks": "{total} bağlantıdan {created} tanesi oluşturuldu",
-    "linkCreationPartialFailureDescription": "{count} bağlantı başarısız oldu. İlk hata: {error}"
+    "linkCreationPartialFailureDescription": "{count} bağlantı başarısız oldu. İlk hata: {error}",
+    "deletingLargeBatch": "Deleting {count} items",
+    "deletingLargeBatchDetail": "{files} files · {directories} folders · {size}"
   },
   "contextMenus": {
     "dirItem": {
@@ -1503,7 +1505,11 @@
       "pending": "Beklemede",
       "cancelling": "İptal ediliyor…"
     },
-    "toolbarActiveCount": "0 işlem | 1 işlem | {n} işlem | {n} işlem"
+    "toolbarActiveCount": "0 işlem | 1 işlem | {n} işlem | {n} işlem",
+    "deleteScanning": "Measuring what will be deleted…",
+    "deleteScanningFound": "{count} items found",
+    "deleteItemsProgress": "{done} / {total} items deleted",
+    "deleteBytesProgress": "{done} / {total} freed"
   },
   "recalculate": "Recalculate",
   "lanShare": {
