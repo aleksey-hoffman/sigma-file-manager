@@ -6,7 +6,7 @@
 > 版本：3.4.0 → **3.5.0**
 > **当前状态：代码完成、门禁全绿、3.5.0 已打包并装机、安装日志验收通过、批量删除的回收站路径与永久删除路径（连同取消与并行）都已过真机验收。**
 > **已提交并推送**：内层仓 `8cbb9caa`（`release: 3.5.0 —— 批量删除进度重做 + 安装/更新链路修复`，39 个文件）、外层仓 `7f06dec`（`docs(agents): 更正永久删除入口的描述,并补四条真机验收沉淀`），均已推到各自 `origin/main`。
-> **未完成：无。站点 / GitHub release 未获授权，本轮未发布；`v3.5.0` tag 暂未打（3.4.0 的 tag 是在发布流程里打的）。**
+> **未完成：无。**（2026-10-22 更新：本文件写成时「站点 / GitHub release 未发布、tag 未打」；后续同一天已获用户授权并完成发布，3.5.0 已上线，`v3.5.0` tag 已打，指向 `5776e946`。发布细节见 `handoff-2026-10-22-compare-fix-and-release-350.md` 第 8 节。本文件其余内容为当时的真实状态，未改。）
 
 ---
 
@@ -420,7 +420,9 @@ finished in 18.3984672s: cancelled=true deleted_items=46921 freed_bytes=96061440
 4. **扩展更新检查的限流兜底**。**已从「理论风险」变成「实测发生」**：匿名 `api.github.com` 60 次/小时，本轮反复启动应用后已收到 `HTTP 403` 并回落 atom 源。
    下一步要做的是**加缓存/退避**（前端 `VERSIONS_CACHE_TTL_MS` 只挡同一次会话内，跨会话不挡），否则用户每开几次应用就退化成旧的 atom 源（而 atom 源在本机不可达）。
 5. **本地化 changelog**（`public/changelog/*/changelog.md`）仍停在 3.2.11 —— fork 早前就有的状态，`verify-changelog.mjs` 只警告不失败。
-6. **站点 / GitHub release 未发布**。本轮只打包 + 本机安装，**没有**上传（用户未要求）。站点 `version.json` 仍是 3.4.0。
+6. ~~**站点 / GitHub release 未发布**。~~ —— **已发布（2026-10-22，见 `handoff-2026-10-22-compare-fix-and-release-350.md` 第 8 节）**。
+   3.5.0 已上线：站点 `version.json` = 3.5.0、`https://www.aiec.fun/alpha-file-manager/` 可下载、
+   GitHub release `v3.5.0`（tag → `5776e946`）。安装包 sha256 `76f3a5957c4626378e1de53cafc1ca56331cfb689c163c14e168afe45f895ef4`，20,494,128 字节。
 7. **【新增】删除进度日志的采样太稀**。进度事件每 10 个记一行（扫描阶段例外），删得快的时候
    删除阶段只剩几行。事实一条不少（终值那行带全了），但**过程**在日志里看不清。
    要彻底解决得改 `delete_job.rs` 的日志规则（哪怕删得只剩 16 个条目，也要把最后一条
@@ -453,7 +455,7 @@ finished in 18.3984672s: cancelled=true deleted_items=46921 freed_bytes=96061440
 
 ### 8.3 可选（用户确认后再做）
 
-8. 发布到站点 / GitHub release（`node scripts/release-publish.mjs upload` → `verify` → `github`）。**本轮未获授权，不要擅自发布。**
+8. ~~发布到站点 / GitHub release（`node scripts/release-publish.mjs upload` → `verify` → `github`）。~~ —— **已完成（2026-10-22）**：用户明确授权后已发布 3.5.0，详见 `handoff-2026-10-22-compare-fix-and-release-350.md`。
 
 ---
 
