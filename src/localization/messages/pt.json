@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "Preparando…",
+    "progressScanningLeft": "Verificando o lado esquerdo…",
+    "progressScanningRight": "Verificando o lado direito…",
+    "progressComparing": "Comparando…",
+    "progressDone": "Concluído",
+    "progressScanned": "{count} itens verificados",
+    "progressCompared": "{count} de {total} itens comparados",
+    "rowsTruncated": "Mostrando {shown} de {total}. Use os filtros para reduzir.",
+    "showMore": "Mostrar mais {count}",
+    "statsUnreadable": "ilegível"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

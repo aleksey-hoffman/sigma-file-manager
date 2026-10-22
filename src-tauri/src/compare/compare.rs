@@ -19,8 +19,12 @@
 use crate::remote::{join_remote_parent_and_name, RemoteProvider};
 use crate::utils::metadata_modified_time_unix_ms;
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
+use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::{Arc, Condvar, Mutex};
+use std::time::Duration;
 
 use super::criteria::{CompareCriteria, ExcludeMatcher};
 use super::location::{EntryKind, EntryMeta};
@@ -42,6 +46,17 @@ pub struct FlatTree {
     pub digests: HashMap<String, String>,
     /// 被排除规则挡掉的条目数。
     pub excluded: u32,
+    /// **读不了**的目录数。
+    ///
+    /// 撞上 `System Volume Information`、`$RECYCLE.BIN`、受保护的目录、
+    /// 正在被别的进程占用的目录 —— 都会读不了。
+    ///
+    /// **这些目录被跳过，比较继续往下走** —— 早期版本在这里直接失败，
+    /// 结果是「树上只要有一个目录读不了，整个比较就没了」，
+    /// 而真实目录树上这种目录几乎必然存在。
+    pub unreadable: u32,
+    /// 取不到元数据而跳过的条目数（文件在枚举过程中被删掉等）。
+    pub skipped: u32,
 }
 
 impl FlatTree {
@@ -88,106 +103,342 @@ impl FlatTree {
 // 收集
 // ---------------------------------------------------------------------------
 
+/// 收集过程中的进度。
+#[derive(Debug, Clone, Default)]
+pub struct CollectProgress {
+    /// 已扫描过的条目数。
+    pub scanned: u32,
+    /// 当前正在读的目录（相对根目录；根目录是空串）。
+    pub current: String,
+}
+
+/// 收集本地目录树时的并行度。
+///
+/// 目录树比较是 **IO 密集** 的：每一个条目都要向文件系统问一次元数据。
+/// Windows 上这些问询走的是同步 API，单线程会让磁盘的请求队列一直空着，
+/// 所以这里开几个 worker 同时问 —— 和批量删除用同一套理由。
+const COLLECT_WORKERS: usize = 4;
+
+/// 一个待处理的目录任务。
+type DirTask = (PathBuf, String, u32);
+
+/// 任务队列。
+///
+/// worker 从这里取目录、做完把子目录放回来。取不到任务且没有别的 worker
+/// 在忙，就说明整棵树走完了。
+struct TaskQueue {
+    inner: Mutex<QueueInner>,
+    condvar: Condvar,
+}
+
+#[derive(Default)]
+struct QueueInner {
+    tasks: VecDeque<DirTask>,
+    /// 正在处理任务的 worker 数。
+    active: usize,
+}
+
+impl TaskQueue {
+    fn new(root: &Path) -> Self {
+        let mut tasks = VecDeque::new();
+        tasks.push_back((root.to_path_buf(), String::new(), 0));
+
+        Self {
+            inner: Mutex::new(QueueInner {
+                tasks,
+                active: 0,
+            }),
+            condvar: Condvar::new(),
+        }
+    }
+
+    /// 取一个任务。返回 `None` 表示**全部干完了**。
+    fn take(&self, cancel: &AtomicBool) -> Option<DirTask> {
+        let mut inner = self.inner.lock().unwrap_or_else(|error| error.into_inner());
+
+        loop {
+            if cancel.load(Ordering::Relaxed) {
+                return None;
+            }
+
+            if let Some(task) = inner.tasks.pop_front() {
+                inner.active += 1;
+
+                return Some(task);
+            }
+
+            // 队列空，但还有别人在忙 → 等它。
+            if inner.active == 0 {
+                return None;
+            }
+
+            // 带超时的等待：取消标志被别处置上时，最多等这么久就会被唤醒。
+            let (guard, _timeout) = self
+                .condvar
+                .wait_timeout(inner, Duration::from_millis(100))
+                .unwrap_or_else(|error| error.into_inner());
+
+            inner = guard;
+        }
+    }
+
+    /// 一个任务做完了，把它的子目录放回队列。
+    fn done(&self, children: Vec<DirTask>) {
+        let mut inner = self.inner.lock().unwrap_or_else(|error| error.into_inner());
+
+        inner.active -= 1;
+
+        for child in children {
+            inner.tasks.push_back(child);
+        }
+
+        self.condvar.notify_all();
+    }
+}
+
+/// 一个 worker 收集到的东西。
+#[derive(Default)]
+struct Collected {
+    entries: Vec<(String, EntryMeta)>,
+    digests: Vec<(String, String)>,
+    excluded: u32,
+    unreadable: u32,
+    skipped: u32,
+}
+
 /// 收集本地目录树。
 ///
 /// **不跟随符号链接**：跟随会走进环里，比较就停不下来。
 /// 链接本身按「链接目标」的大小/时间参与比较。
+///
+/// **读不了的目录被跳过，不让整个比较失败。** 真实目录树上几乎必然存在
+/// 读不了的目录（系统目录、回收站、别人占着的目录），早期版本在这里
+/// 直接返回错误，结果是「树上只要有一个目录读不了，功能就整个不可用」。
 pub fn collect_local_tree(root: &Path, criteria: &CompareCriteria) -> Result<FlatTree, String> {
+    let cancel = AtomicBool::new(false);
+    let no_progress: Arc<dyn Fn(CollectProgress) + Send + Sync> = Arc::new(|_| {});
+
+    collect_local_tree_with(root, criteria, &cancel, &no_progress)
+}
+
+/// 收集本地目录树（带取消与进度）。
+///
+/// - `cancel` —— 协作式取消标志。检查点在**每个条目**上。
+/// - `on_progress` —— 进度回调。**必须是 `Sync` 的**：多个 worker 都会调它。
+///   收 `Arc` 是因为它要跨 `spawn_blocking` 的边界。
+pub fn collect_local_tree_with(
+    root: &Path,
+    criteria: &CompareCriteria,
+    cancel: &AtomicBool,
+    on_progress: &Arc<dyn Fn(CollectProgress) + Send + Sync>,
+) -> Result<FlatTree, String> {
+    collect_local_tree_with_workers(
+        root,
+        criteria,
+        cancel,
+        on_progress,
+        COLLECT_WORKERS,
+    )
+}
+
+/// 收集本地目录树（带取消、进度与**可调的并行度**）。
+///
+/// `workers` 是并行度。`1` 就是单线程 —— 基准用它来量「并行到底值多少」。
+pub fn collect_local_tree_with_workers(
+    root: &Path,
+    criteria: &CompareCriteria,
+    cancel: &AtomicBool,
+    on_progress: &Arc<dyn Fn(CollectProgress) + Send + Sync>,
+    workers: usize,
+) -> Result<FlatTree, String> {
     let matcher = ExcludeMatcher::new(&criteria.exclude_patterns)?;
-    let mut tree = FlatTree::default();
-    let mut excluded = 0u32;
 
-    // 收集期间记下每个文件的绝对路径，算摘要时要用。
-    let mut file_paths: Vec<(String, PathBuf)> = Vec::new();
+    // 根目录自己都读不了 —— 这才是真的没法比较。
+    if let Err(error) = std::fs::read_dir(root) {
+        return Err(format!("无法读取目录「{}」：{error}", root.display()));
+    }
 
-    let mut stack: Vec<(PathBuf, String, u32)> = vec![(root.to_path_buf(), String::new(), 0)];
+    let queue = Arc::new(TaskQueue::new(root));
+    let collected = Arc::new(Mutex::new(Collected::default()));
+    let scanned = Arc::new(AtomicU32::new(0));
 
-    while let Some((dir_path, rel_prefix, depth)) = stack.pop() {
-        let read = std::fs::read_dir(&dir_path)
-            .map_err(|error| format!("无法读取目录「{}」：{error}", dir_path.display()))?;
+    // 几个 worker 共用同一份排除规则 —— 用引用共享，别把值搬走。
+    let matcher = &matcher;
 
-        for item in read {
-            let item = item.map_err(|error| {
-                format!("无法读取目录「{}」：{error}", dir_path.display())
-            })?;
+    std::thread::scope(|scope| {
+        for _ in 0..workers.max(1) {
+            let queue = Arc::clone(&queue);
+            let collected = Arc::clone(&collected);
+            let scanned = Arc::clone(&scanned);
 
-            let name = item.file_name().to_string_lossy().to_string();
+            scope.spawn(move || {
+                collect_worker(
+                    &queue,
+                    &collected,
+                    &scanned,
+                    criteria,
+                    matcher,
+                    cancel,
+                    on_progress,
+                );
+            });
+        }
+    });
 
-            if name == "." || name == ".." {
-                continue;
-            }
+    let mut collected = collected.lock().unwrap_or_else(|error| error.into_inner());
 
-            let rel_path = if rel_prefix.is_empty() {
-                name.clone()
-            } else {
-                format!("{rel_prefix}/{name}")
-            };
+    let mut entries = BTreeMap::new();
 
-            if matcher.excludes(&name, &rel_path) {
-                excluded += 1;
-                continue;
-            }
+    for (rel_path, meta) in std::mem::take(&mut collected.entries) {
+        entries.insert(rel_path, meta);
+    }
 
-            // 用 symlink_metadata：它**不跟随**链接，正是我们要的。
-            let Ok(metadata) = std::fs::symlink_metadata(item.path()) else {
-                continue;
-            };
+    let mut digests = HashMap::new();
 
-            let file_type = metadata.file_type();
-            let kind = if file_type.is_symlink() {
-                EntryKind::Symlink
-            } else if file_type.is_dir() {
-                EntryKind::Directory
-            } else if file_type.is_file() {
-                EntryKind::File
-            } else {
-                EntryKind::Other
-            };
+    for (rel_path, digest) in std::mem::take(&mut collected.digests) {
+        digests.insert(rel_path, digest);
+    }
 
-            let size = if kind == EntryKind::File {
-                metadata.len()
-            } else {
-                0
-            };
+    Ok(FlatTree {
+        entries,
+        digests,
+        excluded: collected.excluded,
+        unreadable: collected.unreadable,
+        skipped: collected.skipped,
+    })
+}
 
-            tree.entries.insert(
-                rel_path.clone(),
-                EntryMeta {
-                    name: name.clone(),
-                    kind,
-                    size,
-                    modified_time: metadata_modified_time_unix_ms(&metadata),
-                },
-            );
+/// 一个 worker 的收集循环。
+fn collect_worker(
+    queue: &TaskQueue,
+    collected: &Mutex<Collected>,
+    scanned: &AtomicU32,
+    criteria: &CompareCriteria,
+    matcher: &ExcludeMatcher,
+    cancel: &AtomicBool,
+    on_progress: &Arc<dyn Fn(CollectProgress) + Send + Sync>,
+) {
+    let mut local = Collected::default();
+    let mut pending: Vec<DirTask> = Vec::new();
 
-            if kind == EntryKind::File {
-                file_paths.push((rel_path.clone(), item.path()));
-            }
+    while let Some((dir_path, rel_prefix, depth)) = queue.take(cancel) {
+        let mut children: Vec<DirTask> = Vec::new();
 
-            if kind == EntryKind::Directory && criteria.recursive {
-                let next_depth = depth + 1;
+        // **读不了就跳过** —— 不让一个目录拖垮整次比较。
+        match std::fs::read_dir(&dir_path) {
+            Ok(read) => {
+                for item in read {
+                    if cancel.load(Ordering::Relaxed) {
+                        break;
+                    }
 
-                if criteria
-                    .max_depth
-                    .is_none_or(|limit| next_depth <= limit)
-                {
-                    stack.push((item.path(), rel_path, next_depth));
+                    let Ok(item) = item else {
+                        local.skipped += 1;
+
+                        continue;
+                    };
+
+                    let name = item.file_name().to_string_lossy().to_string();
+
+                    if name == "." || name == ".." {
+                        continue;
+                    }
+
+                    let rel_path = if rel_prefix.is_empty() {
+                        name.clone()
+                    } else {
+                        format!("{rel_prefix}/{name}")
+                    };
+
+                    if matcher.excludes(&name, &rel_path) {
+                        local.excluded += 1;
+
+                        continue;
+                    }
+
+                    // `DirEntry::metadata()` **不跟随符号链接**（`symlink_metadata`
+                    // 语义），正是这里要的 —— 跟随会走进环里。
+                    let Ok(metadata) = item.metadata() else {
+                        local.skipped += 1;
+
+                        continue;
+                    };
+
+                    let file_type = metadata.file_type();
+                    let kind = if file_type.is_symlink() {
+                        EntryKind::Symlink
+                    } else if file_type.is_dir() {
+                        EntryKind::Directory
+                    } else if file_type.is_file() {
+                        EntryKind::File
+                    } else {
+                        EntryKind::Other
+                    };
+
+                    let size = if kind == EntryKind::File {
+                        metadata.len()
+                    } else {
+                        0
+                    };
+
+                    let modified_time = metadata_modified_time_unix_ms(&metadata);
+
+                    if kind == EntryKind::File && criteria.by_checksum {
+                        // 摘要并行算：它要读文件内容，是整轮收集里最慢的一段。
+                        if let Some(digest) = file_sha256(&item.path()) {
+                            local.digests.push((rel_path.clone(), digest));
+                        }
+                    }
+
+                    local.entries.push((
+                        rel_path.clone(),
+                        EntryMeta {
+                            name,
+                            kind,
+                            size,
+                            modified_time,
+                        },
+                    ));
+
+                    if kind == EntryKind::Directory && criteria.recursive {
+                        let next_depth = depth + 1;
+
+                        if criteria
+                            .max_depth
+                            .is_none_or(|limit| next_depth <= limit)
+                        {
+                            children.push((item.path(), rel_path, next_depth));
+                        }
+                    }
+
+                    // 每 64 个条目报一次进度。报太勤会把界面刷爆。
+                    let count = scanned.fetch_add(1, Ordering::Relaxed) + 1;
+
+                    if count % 64 == 0 {
+                        on_progress(CollectProgress {
+                            scanned: count,
+                            current: rel_prefix.clone(),
+                        });
+                    }
                 }
             }
-        }
-    }
-
-    if criteria.by_checksum {
-        for (rel_path, absolute) in file_paths {
-            if let Some(digest) = file_sha256(&absolute) {
-                tree.digests.insert(rel_path, digest);
+            Err(_) => {
+                // 读不了这个目录 —— 记一笔，继续走别的目录。
+                local.unreadable += 1;
             }
         }
+
+        pending.append(&mut children);
+        queue.done(pending.drain(..).collect());
     }
 
-    tree.excluded = excluded;
+    let mut guard = collected.lock().unwrap_or_else(|error| error.into_inner());
 
-    Ok(tree)
+    guard.entries.append(&mut local.entries);
+    guard.digests.append(&mut local.digests);
+    guard.excluded += local.excluded;
+    guard.unreadable += local.unreadable;
+    guard.skipped += local.skipped;
 }
 
 /// 收集远程目录树。
@@ -199,6 +450,7 @@ pub async fn collect_remote_tree(
     connection_id: &str,
     remote_root: &str,
     criteria: &CompareCriteria,
+    on_progress: &Arc<dyn Fn(CollectProgress) + Send + Sync>,
 ) -> Result<FlatTree, String> {
     let matcher = ExcludeMatcher::new(&criteria.exclude_patterns)?;
     let mut tree = FlatTree::default();
@@ -206,15 +458,22 @@ pub async fn collect_remote_tree(
 
     let mut stack: Vec<(String, String, u32)> =
         vec![(remote_root.to_string(), String::new(), 0)];
+    let mut scanned = 0u32;
 
     while let Some((dir_path, rel_prefix, depth)) = stack.pop() {
-        let entries = provider
-            .read_dir(connection_id, &dir_path)
-            .await
-            .map_err(|error| format!("无法读取远程目录「{dir_path}」：{error}"))?;
+        // **读不了就跳过** —— 远程目录同样可能读不了（权限、目录刚好被删）。
+        let entries = match provider.read_dir(connection_id, &dir_path).await {
+            Ok(entries) => entries,
+            Err(_) => {
+                tree.unreadable += 1;
+
+                continue;
+            }
+        };
 
         for entry in entries {
             let name = entry.name.clone();
+            scanned += 1;
 
             let rel_path = if rel_prefix.is_empty() {
                 name.clone()
@@ -261,6 +520,11 @@ pub async fn collect_remote_tree(
                 }
             }
         }
+
+        on_progress(CollectProgress {
+            scanned,
+            current: rel_prefix.clone(),
+        });
     }
 
     tree.excluded = excluded;
@@ -280,10 +544,25 @@ fn apply_time_offset(time_ms: u64, offset_seconds: i64) -> u64 {
 }
 
 /// 算一个文件的 sha256（十六进制小写）。
+///
+/// **流式读** —— 早期版本用 `std::fs::read` 把整个文件读进内存，
+/// 比一个几百 MB 的安装包就足以把进程撑爆。这里按固定大小的缓冲读，
+/// 内存占用与文件大小无关。
 fn file_sha256(path: &Path) -> Option<String> {
-    let bytes = std::fs::read(path).ok()?;
+    let file = std::fs::File::open(path).ok()?;
+    let mut reader = std::io::BufReader::with_capacity(64 * 1024, file);
     let mut hasher = Sha256::new();
-    hasher.update(&bytes);
+    let mut buffer = vec![0u8; 64 * 1024];
+
+    loop {
+        let read = reader.read(&mut buffer).ok()?;
+
+        if read == 0 {
+            break;
+        }
+
+        hasher.update(&buffer[..read]);
+    }
 
     Some(
         hasher
@@ -384,6 +663,15 @@ pub fn classify_pair(
     (CompareStatus::Same, Direction::None)
 }
 
+/// 判定阶段的进度。
+#[derive(Debug, Clone, Copy, Default)]
+pub struct CompareProgress {
+    /// 已配对完的键数。
+    pub compared: u32,
+    /// 参与配对的键总数。
+    pub total: u32,
+}
+
 /// 比较两侧的目录树，产出差异树。
 ///
 /// **纯函数** —— 没有 I/O，所以可以在单测里直接摆两棵树进去断言语义。
@@ -392,6 +680,21 @@ pub fn compare_trees(
     right: &FlatTree,
     criteria: &CompareCriteria,
 ) -> CompareTree {
+    let no_progress: Arc<dyn Fn(CompareProgress) + Send + Sync> = Arc::new(|_| {});
+
+    compare_trees_with_progress(left, right, criteria, &no_progress)
+}
+
+/// 比较两侧的目录树，产出差异树（带进度）。
+///
+/// `on_progress` 每配对 1024 个键报一次。判定本身很快
+/// （一万个条目约 0.1 秒），但条目上了十万级之后它也值得一个进度条。
+pub fn compare_trees_with_progress(
+    left: &FlatTree,
+    right: &FlatTree,
+    criteria: &CompareCriteria,
+    on_progress: &Arc<dyn Fn(CompareProgress) + Send + Sync>,
+) -> CompareTree {
     let left_index = build_index(&left.entries, criteria.case_sensitive);
     let right_index = build_index(&right.entries, criteria.case_sensitive);
 
@@ -399,14 +702,16 @@ pub fn compare_trees(
     all_keys.extend(left_index.keys().cloned());
     all_keys.extend(right_index.keys().cloned());
 
+    let total = all_keys.len() as u32;
+
     // 先算出每个键对应的节点，再按父子关系拼成树。
     let mut nodes: HashMap<String, CompareNode> = HashMap::new();
     let mut children_of: HashMap<String, Vec<String>> = HashMap::new();
+    let mut compared = 0u32;
 
     for key in &all_keys {
         let left_item = left_index.get(key);
         let right_item = right_index.get(key);
-
         let left_meta = left_item.map(|(_, meta)| *meta);
         let right_meta = right_item.map(|(_, meta)| *meta);
 
@@ -457,10 +762,19 @@ pub fn compare_trees(
                 children: Vec::new(),
             },
         );
+
+        compared += 1;
+
+        // 每 1024 个键报一次进度。
+        if compared % 1024 == 0 {
+            on_progress(CompareProgress { compared, total });
+        }
     }
 
     let mut stats = CompareStats {
         excluded: left.excluded + right.excluded,
+        unreadable: left.unreadable + right.unreadable,
+        skipped: left.skipped + right.skipped,
         ..CompareStats::default()
     };
 
@@ -538,6 +852,11 @@ mod tests {
 
     const SECOND: u64 = 1_000;
     const MINUTE: u64 = 60_000;
+
+    /// 一个什么都不做的进度回调。
+    fn no_progress() -> Arc<dyn Fn(CollectProgress) + Send + Sync> {
+        Arc::new(|_| {})
+    }
 
     #[test]
     fn an_entry_only_on_the_left_points_to_the_right() {
@@ -816,9 +1135,10 @@ mod tests {
 
         let provider = FakeRemoteProvider::sample();
 
-        let plain = collect_remote_tree(&provider, "conn-a", "/", &CompareCriteria::default())
-            .await
-            .expect("collect");
+        let plain =
+            collect_remote_tree(&provider, "conn-a", "/", &CompareCriteria::default(), &no_progress())
+                .await
+                .expect("collect");
 
         let criteria = CompareCriteria {
             remote_time_offset_seconds: 3600,
@@ -826,7 +1146,7 @@ mod tests {
         };
 
         let shifted =
-            collect_remote_tree(&provider, "conn-a", "/", &criteria)
+            collect_remote_tree(&provider, "conn-a", "/", &criteria, &no_progress())
                 .await
                 .expect("collect");
 
@@ -842,9 +1162,15 @@ mod tests {
 
         let provider = FakeRemoteProvider::sample();
 
-        let tree = collect_remote_tree(&provider, "conn-a", "/pub", &CompareCriteria::default())
-            .await
-            .expect("collect");
+        let tree = collect_remote_tree(
+            &provider,
+            "conn-a",
+            "/pub",
+            &CompareCriteria::default(),
+            &no_progress(),
+        )
+        .await
+        .expect("collect");
 
         // 根是 `/pub`，所以里面那个文件叫 `readme.txt`，不带 `pub/` 前缀。
         assert!(tree.entries.contains_key("readme.txt"));
@@ -969,5 +1295,132 @@ mod tests {
 
         let with = collect_local_tree(root, &criteria).expect("collect");
         assert!(with.digests.contains_key("a.txt"));
+    }
+
+    /// **这条是 2026-10-22 真机缺陷的回归测试。**
+    ///
+    /// 早期版本撞上任何读不了的子目录就让**整个比较失败**，
+    /// 而真实目录树上几乎必然有读不了的目录（系统目录、回收站、
+    /// 别人占着的目录）—— 结果是这个功能在真实目录上基本不可用。
+    ///
+    /// 现在读不了的目录被**跳过**，比较继续，并把数量报出来。
+    #[test]
+    fn an_unreadable_directory_is_skipped_instead_of_failing_the_whole_compare() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let root = temp.path();
+
+        // 根目录本身读不了 —— 这才是真的没法比较。
+        let missing = root.join("does-not-exist");
+        let error = collect_local_tree(&missing, &CompareCriteria::default())
+            .expect_err("根目录读不了必须报错");
+
+        assert!(error.contains("无法读取目录"));
+
+        // 一个**存在的**目录，里面有个读不了的子目录。
+        // Windows 上用「拒绝访问」制造这个情况。
+        let locked = root.join("locked");
+        std::fs::create_dir_all(&locked).expect("locked dir");
+        std::fs::write(locked.join("inside.txt"), b"x").expect("inside.txt");
+        std::fs::write(root.join("visible.txt"), b"v").expect("visible.txt");
+
+        let acl_restored = deny_access(&locked);
+
+        let tree = collect_local_tree(root, &CompareCriteria::default())
+            .expect("有读不了的子目录时，比较必须继续而不是失败");
+
+        restore_access(&locked, acl_restored);
+
+        // 可读的条目一个不少。
+        assert!(tree.entries.contains_key("visible.txt"));
+        assert!(tree.entries.contains_key("locked"));
+
+        if acl_restored {
+            // 我们确实造出了一个读不了的目录 → 里面的东西必须读不到，
+            // 而且读不掉的目录数要报出来。
+            assert!(!tree.entries.contains_key("locked/inside.txt"));
+            assert_eq!(tree.unreadable, 1);
+        } else {
+            // 造不出来（这台机器不给加规则）—— 那至少不能失败。
+            assert!(tree.entries.contains_key("locked/inside.txt"));
+        }
+    }
+
+    /// 给目录加「拒绝访问」规则。
+    ///
+    /// **只有 Windows 上做得到**，别的平台直接返回 `false`（测试照跑，
+    /// 只是造不出读不了的目录）。
+    fn deny_access(path: &Path) -> bool {
+        if !cfg!(windows) {
+            return false;
+        }
+
+        let user = std::env::var("USERNAME").unwrap_or_default();
+        let output = std::process::Command::new("icacls")
+            .arg(path)
+            .args(["/deny"])
+            .arg(format!("{user}:(OI)(CI)F"))
+            .output()
+            .expect("icacls");
+
+        output.status.success()
+    }
+
+    /// 把「拒绝访问」规则撤掉 —— 测试不留痕迹在磁盘上。
+    fn restore_access(path: &Path, denied: bool) {
+        if !denied {
+            return;
+        }
+
+        let user = std::env::var("USERNAME").unwrap_or_default();
+        let _ = std::process::Command::new("icacls")
+            .arg(path)
+            .args(["/remove:d"])
+            .arg(user)
+            .output();
+    }
+
+    /// 收集过程中确实会报进度 —— 界面靠它显示「正在扫描…」。
+    #[test]
+    fn the_collect_progress_callback_is_called() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let root = temp.path();
+
+        for index in 0..130 {
+            std::fs::write(root.join(format!("f{index}.txt")), b"x").expect("file");
+        }
+
+        let seen = Arc::new(Mutex::new(Vec::<u32>::new()));
+        let seen_by_callback = Arc::clone(&seen);
+
+        let on_progress: Arc<dyn Fn(CollectProgress) + Send + Sync> =
+            Arc::new(move |progress: CollectProgress| {
+                seen_by_callback
+                    .lock()
+                    .unwrap_or_else(|error| error.into_inner())
+                    .push(progress.scanned);
+            });
+
+        let cancel = AtomicBool::new(false);
+        let tree = collect_local_tree_with(
+            root,
+            &CompareCriteria::default(),
+            &cancel,
+            &on_progress,
+        )
+        .expect("collect");
+
+        assert_eq!(tree.entries.len(), 130);
+
+        let reported = seen
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .clone();
+
+        // 每 64 个条目报一次 —— 130 个条目至少报两次。
+        assert!(
+            reported.len() >= 2,
+            "进度回调至少要被调用两次，实际 {reported:?}"
+        );
+        assert!(reported.windows(2).all(|pair| pair[0] <= pair[1]));
     }
 }

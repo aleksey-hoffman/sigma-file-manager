@@ -1766,6 +1766,16 @@
     "reportSkipped": "已跳过",
     "reportFailed": "失败",
     "reportCancelled": "已取消",
-    "invalidPath": "这个路径用不了。"
+    "invalidPath": "这个路径用不了。",
+    "progressPreparing": "准备中…",
+    "progressScanningLeft": "正在扫描左侧…",
+    "progressScanningRight": "正在扫描右侧…",
+    "progressComparing": "正在比对差异…",
+    "progressDone": "完成",
+    "progressScanned": "已扫描 {count} 个条目",
+    "progressCompared": "已比对 {count} / {total} 个条目",
+    "rowsTruncated": "共 {total} 条，已显示 {shown} 条。条目太多时请用筛选缩小范围。",
+    "showMore": "再显示 {count} 条",
+    "statsUnreadable": "无法读取"
   }
 }

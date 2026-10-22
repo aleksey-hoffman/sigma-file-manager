@@ -119,6 +119,13 @@ pub struct CompareStats {
     pub indeterminate: u32,
     /// 被排除规则挡掉的条目数。
     pub excluded: u32,
+    /// **读不了**的目录数。
+    ///
+    /// 真实目录树上几乎必然有读不了的目录（系统目录、回收站、别人占着
+    /// 的目录）。这些目录被**跳过**，比较继续 —— 早期版本在这里整个失败。
+    pub unreadable: u32,
+    /// 取不到元数据而跳过的条目数。
+    pub skipped: u32,
 }
 
 impl CompareStats {

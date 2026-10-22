@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "Đang chuẩn bị…",
+    "progressScanningLeft": "Đang quét phía trái…",
+    "progressScanningRight": "Đang quét phía phải…",
+    "progressComparing": "Đang so sánh…",
+    "progressDone": "Xong",
+    "progressScanned": "Đã quét {count} mục",
+    "progressCompared": "Đã so sánh {count} / {total} mục",
+    "rowsTruncated": "Đang hiển thị {shown} / {total}. Dùng bộ lọc để thu hẹp.",
+    "showMore": "Hiện thêm {count}",
+    "statsUnreadable": "không đọc được"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

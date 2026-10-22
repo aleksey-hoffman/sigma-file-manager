@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "準備中…",
+    "progressScanningLeft": "左側を走査中…",
+    "progressScanningRight": "右側を走査中…",
+    "progressComparing": "比較中…",
+    "progressDone": "完了",
+    "progressScanned": "{count} 件の項目を走査しました",
+    "progressCompared": "{total} 件中 {count} 件を比較しました",
+    "rowsTruncated": "{total} 件中 {shown} 件を表示しています。フィルターで絞り込んでください。",
+    "showMore": "さらに {count} 件表示",
+    "statsUnreadable": "読み取り不可"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

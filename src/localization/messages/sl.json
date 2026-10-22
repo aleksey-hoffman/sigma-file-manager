@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "Pripravljam…",
+    "progressScanningLeft": "Skeniranje leve strani…",
+    "progressScanningRight": "Skeniranje desne strani…",
+    "progressComparing": "Primerjavam…",
+    "progressDone": "Končano",
+    "progressScanned": "Skeniranih {count} vnosov",
+    "progressCompared": "Primerjanih {count} od {total} vnosov",
+    "rowsTruncated": "Prikazanih {shown} od {total}. Za omejitev uporabite filtre.",
+    "showMore": "Prikaži še {count}",
+    "statsUnreadable": "neberljivo"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

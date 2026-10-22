@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "تیاری ہو رہی ہے…",
+    "progressScanningLeft": "بائیں طرف اسکین ہو رہی ہے…",
+    "progressScanningRight": "دائیں طرف اسکین ہو رہی ہے…",
+    "progressComparing": "موازنہ ہو رہا ہے…",
+    "progressDone": "مکمل",
+    "progressScanned": "{count} اندراجات اسکین ہوئے",
+    "progressCompared": "{total} میں سے {count} اندراجات کا موازنہ ہوا",
+    "rowsTruncated": "{total} میں سے {shown} دکھائے جا رہے ہیں۔ محدود کرنے کے لیے فلٹرز استعمال کریں۔",
+    "showMore": "مزید {count} دکھائیں",
+    "statsUnreadable": "پڑھا نہیں جا سکا"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

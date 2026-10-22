@@ -79,6 +79,10 @@ export interface CompareStats {
   kindDiff: number;
   indeterminate: number;
   excluded: number;
+  /** **读不了**的目录数。这些目录被跳过，比较继续。 */
+  unreadable: number;
+  /** 取不到元数据而跳过的条目数。 */
+  skipped: number;
 }
 
 /** 差异树。 */
@@ -152,6 +156,26 @@ export interface CompareSyncJobProgressPayload {
   percent: number;
   detail: string;
   processed: number;
+  total: number;
+}
+
+/**
+ * 比较阶段的进度事件载荷。
+ *
+ * **载荷里没有文案** —— 文案由界面按 `phase` / `side` 本地化，
+ * 这样 17 个语言包都能说人话。
+ */
+export interface CompareProgressPayload {
+  jobId: string;
+  /** `scanning`（收集）/ `comparing`（判定）/ `done`（完成）。 */
+  phase: 'scanning' | 'comparing' | 'done';
+  /** 收集阶段是哪一侧：`left` / `right`；判定与完成阶段是空串。 */
+  side: 'left' | 'right' | '';
+  /** 0..=100。 */
+  percent: number;
+  /** 已扫描的条目数。 */
+  scanned: number;
+  /** 总量。收集阶段还不知道，是 0。 */
   total: number;
 }
 

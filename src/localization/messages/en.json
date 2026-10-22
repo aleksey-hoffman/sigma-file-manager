@@ -1766,6 +1766,16 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "Preparing…",
+    "progressScanningLeft": "Scanning the left side…",
+    "progressScanningRight": "Scanning the right side…",
+    "progressComparing": "Comparing…",
+    "progressDone": "Done",
+    "progressScanned": "{count} entries scanned",
+    "progressCompared": "{count} of {total} entries compared",
+    "rowsTruncated": "Showing {shown} of {total}. Use the filters to narrow it down.",
+    "showMore": "Show {count} more",
+    "statsUnreadable": "unreadable"
   }
 }

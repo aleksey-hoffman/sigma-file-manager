@@ -30,3 +30,7 @@ pub mod location;
 pub mod sync_plan;
 pub mod sync_runner;
 pub mod tree;
+
+/// 比较引擎的**手工基准**（只在测试编译时存在，不进产品二进制）。
+#[cfg(test)]
+mod bench;

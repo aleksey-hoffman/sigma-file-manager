@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "Hazırlanıyor…",
+    "progressScanningLeft": "Sol taraf taranıyor…",
+    "progressScanningRight": "Sağ taraf taranıyor…",
+    "progressComparing": "Karşılaştırılıyor…",
+    "progressDone": "Tamam",
+    "progressScanned": "{count} öğe tarandı",
+    "progressCompared": "{total} ögeden {count} tanesi karşılaştırıldı",
+    "rowsTruncated": "{total} ögeden {shown} tanesi gösteriliyor. Daraltmak için filtreleri kullanın.",
+    "showMore": "{count} tane daha göster",
+    "statsUnreadable": "okunamıyor"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

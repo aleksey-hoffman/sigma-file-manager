@@ -38,6 +38,7 @@ import type {
   CompareCriteria,
   CompareNode,
   ComparePlanResponse,
+  CompareProgressPayload,
   CompareResponse,
   CompareStatus,
   CompareSyncAction,
@@ -105,12 +106,24 @@ const jobStarted = ref(false);
 
 const filter = ref<CompareFilter>('differences');
 
+/**
+ * 比较阶段的进度（收集 → 判定）。
+ *
+ * 收集大树的时候后端要问文件系统几十万次，没有进度指示的话
+ * 界面看上去就是「卡住了」—— 用户根本不知道它是在干活还是死了。
+ */
+const compareProgress = ref<CompareProgressPayload | null>(null);
+
+/** 本次比较的任务 id。进度事件按它对号入座。 */
+const compareJobId = ref('');
+
 const progress = ref<CompareSyncJobProgressPayload | null>(null);
 const report = ref<CompareSyncRunReport | null>(null);
 const jobId = ref('');
 
 let progressUnlisten: UnlistenFn | null = null;
 let finishedUnlisten: UnlistenFn | null = null;
+let compareProgressUnlisten: UnlistenFn | null = null;
 
 /** 打开时把两侧的当前路径带进来。 */
 watch(() => props.open, (isOpen) => {
@@ -152,7 +165,7 @@ function matchesFilter(node: CompareNode): boolean {
 }
 
 /** 差异树摊平成带深度的行，渲染时不用递归组件。 */
-const visibleRows = computed(() => {
+const allRows = computed(() => {
   const source = tree.value?.nodes ?? [];
   const filtered = filterCompareNodes(source, matchesFilter);
   const rows: {
@@ -173,6 +186,36 @@ const visibleRows = computed(() => {
   walk(filtered, 0);
 
   return rows;
+});
+
+/**
+ * 一次最多渲染多少行。
+ *
+ * 一棵十万个条目的树会摊平成十万行 —— 全渲染出去，
+ * 浏览器的 DOM 会胀到操作不动，载荷本身也有几十兆。
+ * 所以这里**只渲染前面一段**，剩下的用「再显示一批」慢慢放出来，
+ * 并且**明说一共多少条**，不让用户以为那就是全部。
+ */
+const RENDER_PAGE = 2000;
+
+const renderLimit = ref(RENDER_PAGE);
+
+/** 真正进 DOM 的行。 */
+const visibleRows = computed(() => allRows.value.slice(0, renderLimit.value));
+
+/** 摊平后的总行数。 */
+const totalRowCount = computed(() => allRows.value.length);
+
+/** 还有没有没显示的行。 */
+const hasMoreRows = computed(() => totalRowCount.value > visibleRows.value.length);
+
+function showMoreRows() {
+  renderLimit.value += RENDER_PAGE;
+}
+
+// 换了筛选条件，行的集合全变了 —— 渲染上限要跟着回到起点。
+watch(filter, () => {
+  renderLimit.value = RENDER_PAGE;
 });
 
 const filterOptions = computed<{
@@ -301,9 +344,18 @@ async function runCompare() {
 
   isComparing.value = true;
   errorMessage.value = null;
+  compareProgress.value = null;
+  compareJobId.value = `compare-${Date.now()}`;
+
+  await ensureCompareProgressListener();
 
   try {
-    const response = await invoke<CompareResponse>('compare_directories', { request });
+    const response = await invoke<CompareResponse>('compare_directories', {
+      request: {
+        ...request,
+        jobId: compareJobId.value,
+      },
+    });
 
     tree.value = response.tree;
     step.value = 'results';
@@ -313,6 +365,7 @@ async function runCompare() {
   }
   finally {
     isComparing.value = false;
+    compareProgress.value = null;
   }
 }
 
@@ -326,9 +379,18 @@ async function runPreview() {
 
   isPreviewing.value = true;
   errorMessage.value = null;
+  compareProgress.value = null;
+  compareJobId.value = `compare-preview-${Date.now()}`;
+
+  await ensureCompareProgressListener();
 
   try {
-    const response = await invoke<ComparePlanResponse>('preview_compare_sync', { request });
+    const response = await invoke<ComparePlanResponse>('preview_compare_sync', {
+      request: {
+        ...request,
+        jobId: compareJobId.value,
+      },
+    });
 
     plan.value = response;
     step.value = 'preview';
@@ -338,8 +400,70 @@ async function runPreview() {
   }
   finally {
     isPreviewing.value = false;
+    compareProgress.value = null;
   }
 }
+
+/** 订阅比较进度事件。只订一次。 */
+async function ensureCompareProgressListener() {
+  if (compareProgressUnlisten) {
+    return;
+  }
+
+  compareProgressUnlisten = await listen<CompareProgressPayload>(
+    'compare-progress',
+    (event) => {
+      if (event.payload.jobId !== compareJobId.value) {
+        return;
+      }
+
+      compareProgress.value = event.payload;
+    },
+  );
+}
+
+/** 进度条上那句「正在干什么」。 */
+const compareProgressLabel = computed(() => {
+  const current = compareProgress.value;
+
+  if (!current) {
+    return t('compareSync.progressPreparing');
+  }
+
+  if (current.phase === 'comparing') {
+    return t('compareSync.progressComparing');
+  }
+
+  if (current.phase === 'done') {
+    return t('compareSync.progressDone');
+  }
+
+  return current.side === 'right'
+    ? t('compareSync.progressScanningRight')
+    : t('compareSync.progressScanningLeft');
+});
+
+/** 进度条下面那行数字。 */
+const compareProgressDetail = computed(() => {
+  const current = compareProgress.value;
+
+  if (!current) {
+    return '';
+  }
+
+  if (current.phase === 'comparing' && current.total > 0) {
+    return t('compareSync.progressCompared', {
+      count: current.scanned,
+      total: current.total,
+    });
+  }
+
+  if (current.phase === 'scanning') {
+    return t('compareSync.progressScanned', { count: current.scanned });
+  }
+
+  return '';
+});
 
 async function ensureJobListeners() {
   if (progressUnlisten && finishedUnlisten) {
@@ -437,8 +561,10 @@ function goBack() {
 onBeforeUnmount(() => {
   progressUnlisten?.();
   finishedUnlisten?.();
+  compareProgressUnlisten?.();
   progressUnlisten = null;
   finishedUnlisten = null;
+  compareProgressUnlisten = null;
 });
 </script>
 
@@ -605,6 +731,12 @@ onBeforeUnmount(() => {
             {{ t('compareSync.statsNeedsReview') }}
             {{ (tree?.stats.sizeDiff ?? 0) + (tree?.stats.contentDiff ?? 0) + (tree?.stats.kindDiff ?? 0) + (tree?.stats.indeterminate ?? 0) }}
           </span>
+          <span
+            v-if="(tree?.stats.unreadable ?? 0) > 0"
+            class="compare-sync-dialog__stat--warn"
+          >
+            {{ t('compareSync.statsUnreadable') }} {{ tree?.stats.unreadable ?? 0 }}
+          </span>
         </div>
 
         <div class="compare-sync-dialog__filters">
@@ -659,6 +791,26 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </ScrollArea>
+
+        <!--
+          条目太多时只渲染前面一段，剩下的按批次放出来。
+          **必须明说一共多少条**，否则用户会以为那就是全部。
+        -->
+        <div
+          v-if="hasMoreRows"
+          class="compare-sync-dialog__rows-note"
+        >
+          <span>{{ t('compareSync.rowsTruncated', {
+            shown: visibleRows.length,
+            total: totalRowCount,
+          }) }}</span>
+          <Button
+            variant="ghost"
+            @click="showMoreRows"
+          >
+            {{ t('compareSync.showMore', { count: 2000 }) }}
+          </Button>
+        </div>
       </div>
 
       <!-- 第三步：预览与执行 -->
@@ -748,6 +900,38 @@ onBeforeUnmount(() => {
             <em>{{ failure.message }}</em>
           </li>
         </ul>
+      </div>
+
+      <!--
+        比较进度。收集一棵大树要向文件系统问几十万次，
+        没有进度指示的话界面看上去就是「卡住了」——
+        用户分不清它是在干活还是死了。
+      -->
+      <div
+        v-if="isComparing || isPreviewing"
+        class="compare-sync-dialog__compare-progress"
+      >
+        <div class="compare-sync-dialog__compare-progress-head">
+          <Loader2Icon
+            :size="14"
+            class="compare-sync-dialog__spinner"
+          />
+          <span>{{ compareProgressLabel }}</span>
+        </div>
+
+        <div
+          v-if="compareProgressDetail"
+          class="compare-sync-dialog__compare-progress-detail"
+        >
+          {{ compareProgressDetail }}
+        </div>
+
+        <div class="compare-sync-dialog__progress-track">
+          <div
+            class="compare-sync-dialog__progress-bar"
+            :style="{ width: `${compareProgress?.percent ?? 4}%` }"
+          />
+        </div>
       </div>
 
       <div
@@ -1145,6 +1329,53 @@ onBeforeUnmount(() => {
   gap: 0.375rem;
   color: hsl(var(--destructive));
   font-size: 0.8125rem;
+}
+
+.compare-sync-dialog__compare-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(var(--border) / 60%);
+  border-radius: 0.5rem;
+  background: hsl(var(--muted) / 40%);
+}
+
+.compare-sync-dialog__compare-progress-head {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.compare-sync-dialog__compare-progress-detail {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+}
+
+.compare-sync-dialog__progress-track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: hsl(var(--border) / 70%);
+}
+
+.compare-sync-dialog__progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  transition: width 160ms ease-out;
+}
+
+.compare-sync-dialog__rows-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
 }
 
 .compare-sync-dialog__footer {

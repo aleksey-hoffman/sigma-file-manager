@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "מכינים…",
+    "progressScanningLeft": "סורק את הצד השמאלי…",
+    "progressScanningRight": "סורק את הצד הימני…",
+    "progressComparing": "משווה…",
+    "progressDone": "סיום",
+    "progressScanned": "נסרקו {count} פריטים",
+    "progressCompared": "הושווו {count} מתוך {total} פריטים",
+    "rowsTruncated": "מוצגים {shown} מתוך {total}. אפשר לסנן כדי לצמצם.",
+    "showMore": "הצג עוד {count}",
+    "statsUnreadable": "לא ניתן לקרוא"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",

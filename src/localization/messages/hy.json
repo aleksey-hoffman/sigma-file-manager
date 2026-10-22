@@ -1762,7 +1762,17 @@
     "reportSkipped": "Skipped",
     "reportFailed": "Failed",
     "reportCancelled": "Cancelled",
-    "invalidPath": "This path cannot be used."
+    "invalidPath": "This path cannot be used.",
+    "progressPreparing": "Նախապահում…",
+    "progressScanningLeft": "Սկանում են ձախ կողմը…",
+    "progressScanningRight": "Սկանում են աջ կողմը…",
+    "progressComparing": "Համեմատում է…",
+    "progressDone": "Պատրաստ",
+    "progressScanned": "Սկանվել է {count} գրառ",
+    "progressCompared": "Համեմատվել է {total}-ից {count} գրառ",
+    "rowsTruncated": "Ցուցադրվում է {total}-ից {shown}։ Սեղմացրեք զտիչները՝ նվազև տեսնելու համար։",
+    "showMore": "Ցուցադրել ևս {count}",
+    "statsUnreadable": "չի կարող ընթերցվել"
   },
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
