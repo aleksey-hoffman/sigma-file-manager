@@ -106,8 +106,11 @@ fn disconnect_windows_network_drive(mount_point: &str) -> Result<(), String> {
         return Ok(());
     }
 
-    let stderr = super::drives_platform::decode_windows_command_output(&output.stderr);
-    let stdout = super::drives_platform::decode_windows_command_output(&output.stdout);
+    // `net.exe` 的输出是控制台代码页（中文 Windows 上是 cp936），
+    // 用 `decode_windows_command_output`（那套是给 `wsl.exe` 的 UTF-16 输出用的）
+    // 会解出一串乱码。
+    let stderr = super::network_shares::decode_windows_console_output(&output.stderr);
+    let stdout = super::network_shares::decode_windows_console_output(&output.stdout);
     let message = if !stderr.trim().is_empty() {
         stderr
     } else {

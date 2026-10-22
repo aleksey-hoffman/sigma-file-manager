@@ -5,3 +5,4 @@
 export { useDrives } from './use-drives';
 export { useUserDirectories } from './use-user-directories';
 export type { UserDirectory } from './use-user-directories';
+export { deriveMountName, useNetworkMountForm } from './use-network-mount-form';

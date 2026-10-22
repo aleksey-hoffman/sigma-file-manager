@@ -88,6 +88,21 @@ const isPreviewing = ref(false);
 const isExecuting = ref(false);
 const errorMessage = ref<string | null>(null);
 
+/**
+ * 后台任务是否**真的**已经在跑了。
+ *
+ * `isExecuting` 在调用 `start_compare_sync_job` **之前**就置位（为了让按钮立刻
+ * 变成「取消」），但那一次 IPC 还没回来时，Rust 侧的任务还没进注册表 ——
+ * 这时候点「取消」必然得到「没有正在跑的比较同步任务」。
+ *
+ * 2026-10-22 真机验收实测到了这个窗口：点了「开始同步」之后 6 毫秒就点「取消」，
+ * 取消失败、任务照跑完 3000 个文件，错误信息被埋在报告下面很难注意到。
+ *
+ * 所以「取消」按钮在 `start_compare_sync_job` 返回之前是禁用状态 ——
+ * 那一次 IPC 返回时，Rust 侧已经注册好了任务，取消必然有效。
+ */
+const jobStarted = ref(false);
+
 const filter = ref<CompareFilter>('differences');
 
 const progress = ref<CompareSyncJobProgressPayload | null>(null);
@@ -111,6 +126,7 @@ watch(() => props.open, (isOpen) => {
   errorMessage.value = null;
   progress.value = null;
   report.value = null;
+  jobStarted.value = false;
   filter.value = 'differences';
 });
 
@@ -350,6 +366,7 @@ async function ensureJobListeners() {
 
       report.value = event.payload.report;
       isExecuting.value = false;
+      jobStarted.value = false;
 
       if (event.payload.error) {
         errorMessage.value = event.payload.error;
@@ -370,6 +387,7 @@ async function runExecute() {
   errorMessage.value = null;
   progress.value = null;
   report.value = null;
+  jobStarted.value = false;
   jobId.value = `compare-sync-${Date.now()}`;
 
   await ensureJobListeners();
@@ -381,6 +399,10 @@ async function runExecute() {
         jobId: jobId.value,
       },
     });
+
+    // 这一次 IPC 返回时，Rust 侧的任务已经在注册表里了 ——
+    // 从这一刻起「取消」才真的能取消（见 jobStarted 的注释）。
+    jobStarted.value = true;
   }
   catch (executeError) {
     errorMessage.value = String(executeError);
@@ -778,6 +800,7 @@ onBeforeUnmount(() => {
           <Button
             v-if="isExecuting"
             variant="outline"
+            :disabled="!jobStarted"
             @click="cancelExecute"
           >
             {{ t('compareSync.cancel') }}

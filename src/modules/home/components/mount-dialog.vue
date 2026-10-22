@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { useNetworkMountForm } from '@/modules/home/composables';
 import type { MountableDevice } from '@/types/drive-info';
 
 type TabId = 'devices' | 'network';
@@ -54,15 +55,20 @@ const isScanning = ref(false);
 const mountingDevicePath = ref<string | null>(null);
 
 const selectedProtocol = ref<Protocol>('sshfs');
-const networkHost = ref('');
-const networkPort = ref('');
-const networkUsername = ref('');
-const networkPassword = ref('');
-const networkRemotePath = ref('');
-const networkMountName = ref('');
-const networkDriveLetter = ref('');
 const isConnecting = ref(false);
 const connectionError = ref<string | null>(null);
+
+const {
+  networkHost,
+  networkPort,
+  networkUsername,
+  networkPassword,
+  networkRemotePath,
+  networkMountName,
+  networkDriveLetter,
+  markMountNameTouched,
+  resetNetworkForm: resetMountForm,
+} = useNetworkMountForm();
 
 const networkOnly = computed(() => props.mode === 'network');
 
@@ -152,35 +158,13 @@ watchEffect(() => {
   }
 });
 
-watch([networkHost, networkRemotePath], () => {
-  if (networkMountName.value === '' || networkMountName.value === deriveMountName()) {
-    networkMountName.value = deriveMountName();
-  }
-});
-
-function deriveMountName(): string {
-  const path = networkRemotePath.value.trim();
-  const host = networkHost.value.trim();
-
-  if (path) {
-    const lastSegment = path.split('/').filter(Boolean).pop();
-
-    if (lastSegment) {
-      return lastSegment;
-    }
-  }
-
-  return host.replace(/\./g, '_') || '';
-}
-
+/**
+ * 表单重置：清空所有输入**并**清掉上一次的报错。
+ *
+ * 状态本身归 `useNetworkMountForm` 管，报错归组件管，所以这里合一下。
+ */
 function resetNetworkForm() {
-  networkHost.value = '';
-  networkPort.value = '';
-  networkUsername.value = '';
-  networkPassword.value = '';
-  networkRemotePath.value = '';
-  networkMountName.value = '';
-  networkDriveLetter.value = '';
+  resetMountForm();
   connectionError.value = null;
 }
 
@@ -476,6 +460,7 @@ function handleOpenChange(isOpen: boolean) {
                 type="text"
                 class="mount-dialog__input"
                 :placeholder="t('networkMountNamePlaceholder')"
+                @input="markMountNameTouched()"
               >
             </div>
 
