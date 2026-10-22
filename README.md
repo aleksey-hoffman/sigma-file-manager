@@ -88,6 +88,7 @@ they compare.
 | ⌨️ | **Keyboard range selection** | ✅ **Shift + arrow key** extends the selection from the anchor you started at | ➖ | ✅ Shift + arrow key extends the selection too |
 | 🔍 | **Comparing two folders** | ✅ recursively, with the criteria serious tools use — and an explicit "direction undecided" state instead of guessing which side is newer | ➖ | ➖ compares by size and date only, and the choice is buried |
 | 🌐 | **Mapping a network drive** | ✅ from the sidebar, with a drive letter you pick | ➖ | ✅ |
+| 🎨 | **Background effects can blend** | ✅ the full set of Photoshop layer modes, with your own fill colour | ➖ | ❌ |
 
 ✅ has it · ➖ not part of that project · ❌ cannot
 
@@ -105,6 +106,41 @@ they compare.
 > **Sigma File Manager** is the base application we build on. Take it if you
 > want the upstream project itself, its own release cadence and its community.
 > Alpha File Manager is an independent fork of it and tracks upstream.
+
+---
+
+## 🆕 What's new in 3.5.0
+
+### 🔍 Comparing two folders no longer gives up at the first folder it cannot read
+
+**Fixed.** Comparing two folders used to fail completely the moment it met a single directory it was not allowed to read. Windows keeps a lot of those — `System Volume Information`, the recycle bin, anything another program is holding open — and a real folder tree is full of them, so in practice the comparison usually ended in an error instead of a result. Unreadable directories are now **skipped**, the count is shown in the summary, and the comparison carries on with everything else. Only a root directory that cannot be read is still an error, because that genuinely cannot be compared.
+
+### ⚡ Comparing a large tree is about fifty times faster
+
+**Improved.** Collecting the two sides was **93% of the time**, and it was slow for one reason: the metadata of every entry was looked up by rebuilding an absolute path and asking again, which on Windows costs about a hundred times more than asking the directory entry itself. The metadata now comes straight from the directory entry, and **four workers collect in parallel** — this is IO-bound work, and a single thread leaves the disk queue empty.
+
+Measured on one machine, over the same ten thousand entries: **1.18 seconds before, 23 milliseconds after.** The measurement was run in **both orders**, so neither implementation could claim the advantage of a warm cache.
+
+### 📊 The comparison now tells you how far along it is
+
+**Added.** Walking a large tree takes a while, and the dialog used to show nothing but a spinner — there was no way to tell a working application from a stuck one. It now says **which side it is reading**, how many entries it has been through, and how far along the comparison itself is.
+
+### 🧾 A huge result list no longer locks up the window
+
+**Fixed.** The difference tree was flattened into every single row and rendered at once, so a tree of hundreds of thousands of entries meant hundreds of thousands of DOM nodes. The first **two thousand rows** appear immediately and the rest are released in batches on request, with the total always on screen so nothing is silently hidden. The summary counts are still computed over everything, and the sync plan is still computed by the back end from its own fresh comparison.
+
+### 🗑️ Deleting a big folder tree finally shows what it is doing
+
+**Fixed.** The delete progress bar was counting the **top-level entries you had selected**, so deleting one folder that held 250,000 files showed a single jump from 0% to 100% at the very end. It is now driven by the number of items **actually deleted**, with the freed space shown alongside it as a second measure. Cancelling is checked before **every file**, so it now stops within a fraction of a second instead of waiting for the current folder to finish. Before a large deletion starts, the tree is walked once to find out how many files, folders and bytes are involved — which gives the progress bar a real denominator and lets the application tell you the scale before the work begins.
+
+**Improved: subfolders are deleted in parallel.** Deleting hundreds of thousands of small files from a mechanical disk is a seek-bound workload, and a single thread keeps the disk queue nearly empty while the head hunts for one file at a time. Up to four independent subtrees are now removed at once.
+
+### 🩹 And the smaller fixes
+
+- **The extension update check had never worked on some networks.** It asked `github.com` for a list of release tags, which times out on networks where that host is unreachable — and produced a burst of failed-request warnings on every launch. The check now uses the `api.github.com` endpoint, which is reachable on the same networks, with the old address kept as a fallback. The update check for extensions now actually succeeds.
+- **The update check writes down what it found.** Each check records the installed version, the version the server reported, which source answered and whether an update was offered.
+- **The installer writes an install log.** Which folder it installed into, whether an existing installation was found, which version was already there, and whether this run was a reinstall of the very same version — all of it is now on disk next to the two logs the installer already kept.
+- **The checksum criterion no longer loads whole files into memory.** Enabling the content checksum used to read each file completely into memory; files are now read in fixed-size pieces, so memory use does not depend on file size.
 
 ---
 
