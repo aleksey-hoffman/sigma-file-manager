@@ -28,6 +28,8 @@ import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
+// FORK-MODIFICATION 2026-10-23：Hero 顶部区（移植自 upstream `3eca4c17`）。
+import DashboardHero from '@/modules/dashboard/components/dashboard-hero.vue';
 import DashboardTagSectionHeader from '@/modules/dashboard/components/dashboard-tag-section-header.vue';
 // FORK-MODIFICATION: 需求反馈 4（2026-10-15）——收藏/标记的新建与编辑入口。
 import DashboardCategorySectionHeader from '@/modules/dashboard/components/dashboard-category-section-header.vue';
@@ -564,71 +566,75 @@ function requestRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
 </script>
 
 <template>
-  <PageDefaultLayout
-    class="dashboard-page"
-    :title="t('pages.dashboard')"
-    :subtitle="t('dashboard.subtitle')"
-  >
+  <PageDefaultLayout class="dashboard-page">
     <div ref="dropContainerRef">
       <Tabs
         v-model="activeTab"
         default-value="favorites"
         class="dashboard-page__tabs"
       >
-        <TabsList class="dashboard-page__tabs-list">
-          <TabsTrigger
-            value="favorites"
-            class="dashboard-page__tab-trigger"
-          >
-            <StarIcon :size="16" />
-            <span>{{ t('dashboard.tabs.favorites') }}</span>
-            <span
-              v-if="favoriteItems.length > 0"
-              class="dashboard-page__tab-badge"
+        <!-- FORK-MODIFICATION 2026-10-23：Hero 顶部区（移植自 upstream `3eca4c17`）。
+             页签从 Hero 外面挪进 Hero 底部，样式仍是本仓的胶囊页签 ——
+             upstream 那个位置放的是四张大计数卡，本仓不能换。 -->
+        <DashboardHero
+          :title="t('pages.dashboard')"
+          :subtitle="t('dashboard.subtitle')"
+        >
+          <TabsList class="dashboard-page__tabs-list">
+            <TabsTrigger
+              value="favorites"
+              class="dashboard-page__tab-trigger"
             >
-              {{ favoriteItems.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="tagged"
-            class="dashboard-page__tab-trigger"
-          >
-            <TagIcon :size="16" />
-            <span>{{ t('dashboard.tabs.tagged') }}</span>
-            <span
-              v-if="taggedItems.length > 0"
-              class="dashboard-page__tab-badge"
+              <StarIcon :size="16" />
+              <span>{{ t('dashboard.tabs.favorites') }}</span>
+              <span
+                v-if="favoriteItems.length > 0"
+                class="dashboard-page__tab-badge"
+              >
+                {{ favoriteItems.length }}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="tagged"
+              class="dashboard-page__tab-trigger"
             >
-              {{ taggedItems.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="frequent"
-            class="dashboard-page__tab-trigger"
-          >
-            <TrendingUpIcon :size="16" />
-            <span>{{ t('dashboard.tabs.frequent') }}</span>
-            <span
-              v-if="frequentItems.length > 0"
-              class="dashboard-page__tab-badge"
+              <TagIcon :size="16" />
+              <span>{{ t('dashboard.tabs.tagged') }}</span>
+              <span
+                v-if="taggedItems.length > 0"
+                class="dashboard-page__tab-badge"
+              >
+                {{ taggedItems.length }}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="frequent"
+              class="dashboard-page__tab-trigger"
             >
-              {{ frequentItems.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            class="dashboard-page__tab-trigger"
-          >
-            <ClockIcon :size="16" />
-            <span>{{ t('dashboard.tabs.history') }}</span>
-            <span
-              v-if="historyItems.length > 0"
-              class="dashboard-page__tab-badge"
+              <TrendingUpIcon :size="16" />
+              <span>{{ t('dashboard.tabs.frequent') }}</span>
+              <span
+                v-if="frequentItems.length > 0"
+                class="dashboard-page__tab-badge"
+              >
+                {{ frequentItems.length }}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              class="dashboard-page__tab-trigger"
             >
-              {{ historyItems.length }}
-            </span>
-          </TabsTrigger>
-        </TabsList>
+              <ClockIcon :size="16" />
+              <span>{{ t('dashboard.tabs.history') }}</span>
+              <span
+                v-if="historyItems.length > 0"
+                class="dashboard-page__tab-badge"
+              >
+                {{ historyItems.length }}
+              </span>
+            </TabsTrigger>
+          </TabsList>
+        </DashboardHero>
 
         <TabsContent
           value="favorites"
@@ -955,11 +961,17 @@ function requestRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
   flex-direction: column;
 }
 
+/* FORK-MODIFICATION 2026-10-23：页签挪进 Hero 之后改玻璃态 ——
+   胶囊压在背景图上，半透明 + 背景模糊才读得清。
+   `display` 从 flex 改回 inline-flex：胶囊块按内容宽度收缩，
+   像一块浮在 Hero 底部的玻璃，而不是横贯一整行。 */
 .dashboard-page__tabs-list {
-  display: flex;
+  display: inline-flex;
   padding: 4px;
+  border: 1px solid hsl(var(--border) / 70%);
   border-radius: var(--radius);
-  background-color: hsl(var(--muted) / 50%);
+  background-color: hsl(var(--card) / 72%);
+  backdrop-filter: blur(10px);
   gap: 4px;
 }
 
