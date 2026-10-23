@@ -22,7 +22,7 @@
   "pages": {
     "home": "Ana sayfa",
     "navigator": "Navigatör",
-    "dashboard": "Gösterge Tablosu",
+    "dashboard": "Hızlı Erişim",
     "notes": "Notlar",
     "settings": "Ayarlar",
     "extensions": "Uzantılar"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Favorilerinize, etiketli ve sık kullanılan öğelerinize hızlı erişim",
+    "subtitle": "Favoriler, etiketli ve sık kullanılan öğeler — hepsi bir arada",
     "tabs": {
       "favorites": "Favoriler",
       "tagged": "Etiketli",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "Açılır menüler kapatıldığında odak dönüşünü engelle",
       "preventDropdownCloseFocusReturnDescription": "Etkinleştirildiğinde, bir açılır menüyü kapatmak (ör. Escape ile) odağı tetikleyici düğmeye geri döndürmeyecek, odak halkası ve araç ipucu görüntülenmesini önleyecektir",
       "quickAccessOnHover": "Fareyle üzerine gelindiğinde hızlı erişim panelini aç",
-      "quickAccessOnHoverDescription": "Etkinleştirildiğinde, kenar çubuğundaki pano düğmesinin üzerine gelindiğinde hızlı erişim paneli otomatik olarak açılır"
+      "quickAccessOnHoverDescription": "Etkinleştirildiğinde, kenar çubuğundaki hızlı erişim düğmesinin üzerine gelindiğinde hızlı erişim paneli otomatik olarak açılır"
     },
     "tooltips": {
       "title": "İpuçları",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "Kullanıcı verileri",
-      "description": "Uygulama, gösterge paneli listeleri ve arama gibi özellikleri etkinleştirmek için verileri yerel olarak depolar (etiketler, favoriler, geçmiş, son açılan öğeler). Bu veriler uygulama dizininde saklanır.",
+      "description": "Uygulama, hızlı erişim listeleri ve arama gibi özellikleri etkinleştirmek için verileri yerel olarak depolar (etiketler, favoriler, geçmiş, son açılan öğeler). Bu veriler uygulama dizininde saklanır.",
       "openDataDirectory": "Veri dizinini aç"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "görsel, filtreler, renk, kontrast, parlaklık, doygunluk, görüntü, video, tema, iletişim kutusu, arka plan, bulanıklık",
     "fonts": "yazı tipleri, metin",
     "dateTime": "tarih, saat, biçim",
-    "uiElements": "ui, öğeler, görsel, giriş, vurgu, renk, zaman çizelgesi, pano, sayfa, son, kartlar, ev, sürücü, boşluk, gösterge, stil",
+    "uiElements": "ui, öğeler, görsel, giriş, vurgu, renk, zaman çizelgesi, hızlı erişim, sayfa, son, kartlar, ev, sürücü, boşluk, gösterge, stil",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "pano, yapıştır, kopyala, kes, araç çubuğu, görsel, ekran görüntüsü, yol, dosya",
@@ -728,7 +728,7 @@
     "shortcuts": "kısayollar",
     "tabAppearance": "sekmeler, etkin sekme, kalın, metin",
     "globalSearch": "global, ara, bul, bak, filtrele, tara",
-    "stats": "istatistikler, veri, kullanıcı, favoriler, etiketler, geçmiş, son, gösterge paneli, depolama",
+    "stats": "istatistikler, veri, kullanıcı, favoriler, etiketler, geçmiş, son, hızlı erişim, depolama",
     "driveDetection": "sürücü, usb, depolama, disk, cihaz, algılama, bağlantı",
     "autoplay": "otomatik oynatma, gezgin, windows, sürücü, usb, otomatik, aç, klasör",
     "experimental": "gelişmiş, deneysel, varsayılan dosya yöneticisi, dosya gezgini, kayıt defteri, terminal, shell",
@@ -740,7 +740,7 @@
     "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "sekmeler, çalışma alanları, kapat, son sekme, varsayılan sekme",
     "defaultDirectory": "ana sayfa, locations, bu bilgisayar, sürücüler, varsayılan klasör, varsayılan dizin, yeni sekme, özel yol",
-    "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, pano, gezgin, son sayfa, geri yükle, sayfa",
+    "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, hızlı erişim, gezgin, son sayfa, geri yükle, sayfa",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
@@ -780,7 +780,7 @@
     "focusAppWindow": "Uygulama penceresini odakla",
     "switchToHomePage": "Ana sayfaya geç",
     "switchToNavigatorPage": "Gezgin sayfasına geç",
-    "switchToDashboardPage": "Panoya geç",
+    "switchToDashboardPage": "Hızlı Erişime geç",
     "switchToSettingsPage": "Ayarlar sayfasına geç",
     "switchToExtensionsPage": "Uzantılar sayfasına geç",
     "navigatePageBack": "Önceki sayfaya git",

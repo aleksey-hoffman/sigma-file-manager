@@ -22,7 +22,7 @@
   "pages": {
     "home": "Página de inicio",
     "navigator": "Explorador",
-    "dashboard": "Tablero",
+    "dashboard": "Acceso rápido",
     "notes": "Notas",
     "settings": "Configuración",
     "extensions": "Extensiones"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Acceso rápido a tus elementos favoritos, etiquetados y más utilizados",
+    "subtitle": "Tus favoritos, elementos etiquetados y los más usados, todo en un lugar",
     "tabs": {
       "favorites": "Favoritos",
       "tagged": "Etiquetados",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "Evitar devolver el foco al cerrar menús desplegables",
       "preventDropdownCloseFocusReturnDescription": "Cuando está activado, cerrar un menú desplegable (p. ej. con Escape) no devolverá el foco al botón de activación, evitando el anillo de foco y la tooltip",
       "quickAccessOnHover": "Abrir panel de acceso rápido al pasar el cursor",
-      "quickAccessOnHoverDescription": "Cuando está activado, el panel de acceso rápido se abre automáticamente al pasar el cursor sobre el botón del panel en la barra lateral"
+      "quickAccessOnHoverDescription": "Cuando está activado, el panel de acceso rápido se abre automáticamente al pasar el cursor sobre el botón de acceso rápido en la barra lateral"
     },
     "tooltips": {
       "title": "Información emergente",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "Datos de usuario",
-      "description": "La aplicación almacena datos localmente (etiquetas, favoritos, historial, elementos abiertos recientemente) para habilitar funciones como listas del panel y búsqueda. Estos datos se almacenan en el directorio de la aplicación.",
+      "description": "La aplicación almacena datos localmente (etiquetas, favoritos, historial, elementos abiertos recientemente) para habilitar funciones como listas de acceso rápido y búsqueda. Estos datos se almacenan en el directorio de la aplicación.",
       "openDataDirectory": "Abrir directorio de datos"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "visual, filtros, color, contraste, brillo, saturación, imagen, video, tema, diálogo, fondo, desenfoque",
     "fonts": "fuentes, texto",
     "dateTime": "fecha, hora, formato",
-    "uiElements": "ui, elementos, visual, entrada, acento, color, línea de tiempo, tablero, página, reciente, tarjetas, inicio, unidad, espacio, indicador, estilo",
+    "uiElements": "ui, elementos, visual, entrada, acento, color, línea de tiempo, acceso rápido, página, reciente, tarjetas, inicio, unidad, espacio, indicador, estilo",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "portapapeles, pegar, copiar, cortar, barra de herramientas, imagen, captura, ruta, archivos",
@@ -729,9 +729,9 @@
     "tabAppearance": "pestañas, pestaña activa, negrita, texto",
     "tabsWorkspaces": "pestañas, espacios de trabajo, cerrar, última pestaña, pestaña predeterminada",
     "defaultDirectory": "inicio, locations, este equipo, equipo, unidades, carpeta predeterminada, directorio predeterminado, nueva pestaña, ruta personalizada",
-    "startupPage": "página de arranque, inicio, arranque, abrir al iniciar, página de inicio, dashboard, navigator, última página, restaurar, página",
+    "startupPage": "página de arranque, inicio, arranque, abrir al iniciar, página de inicio, acceso rápido, navigator, última página, restaurar, página",
     "globalSearch": "global, buscar, encontrar, buscar, filtrar, escanear",
-    "stats": "estadísticas, datos, usuario, favoritos, etiquetas, historial, reciente, panel, almacenamiento",
+    "stats": "estadísticas, datos, usuario, favoritos, etiquetas, historial, reciente, acceso rápido, almacenamiento",
     "driveDetection": "unidad, usb, almacenamiento, disco, dispositivo, detección, conexión",
     "autoplay": "reproducción automática, explorador, windows, unidad, usb, automático, abrir, carpeta",
     "experimental": "avanzado, experimental, gestor de archivos predeterminado, explorador de archivos, registro, terminal, shell",
@@ -780,7 +780,7 @@
     "focusAppWindow": "Enfocar la ventana de la aplicación",
     "switchToHomePage": "Cambiar a la página de inicio",
     "switchToNavigatorPage": "Cambiar a la página del navegador",
-    "switchToDashboardPage": "Cambiar al panel de control",
+    "switchToDashboardPage": "Cambiar a acceso rápido",
     "switchToSettingsPage": "Cambiar a la página de configuración",
     "switchToExtensionsPage": "Cambiar a la página de extensiones",
     "navigatePageBack": "Navegar a la página anterior",

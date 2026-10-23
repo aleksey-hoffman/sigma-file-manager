@@ -22,7 +22,7 @@
   "pages": {
     "home": "Startseite",
     "navigator": "Navigator",
-    "dashboard": "Dashboard",
+    "dashboard": "Schnellzugriff",
     "notes": "Notizen",
     "settings": "Einstellungen",
     "extensions": "Erweiterungen"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Schneller Zugriff auf Ihre Favoriten, markierte und häufig verwendete Elemente",
+    "subtitle": "Favoriten, markierte Elemente und häufig genutzte Dateien – an einem Ort",
     "tabs": {
       "favorites": "Favoriten",
       "tagged": "Markiert",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "Fokus-Rückgabe beim Schließen von Dropdowns verhindern",
       "preventDropdownCloseFocusReturnDescription": "Wenn aktiviert, wird beim Schließen eines Dropdowns (z. B. mit Escape) der Fokus nicht zum Auslöser-Button zurückgegeben, wodurch Fokusring und Tooltip vermieden werden",
       "quickAccessOnHover": "Schnellzugriffsleiste beim Überfahren öffnen",
-      "quickAccessOnHoverDescription": "Wenn aktiviert, öffnet sich die Schnellzugriffsleiste automatisch beim Überfahren der Dashboard-Schaltfläche in der Seitenleiste"
+      "quickAccessOnHoverDescription": "Wenn aktiviert, öffnet sich die Schnellzugriffsleiste automatisch beim Überfahren der Schnellzugriff-Schaltfläche in der Seitenleiste"
     },
     "tooltips": {
       "title": "Tooltips",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "Benutzerdaten",
-      "description": "Die App speichert Daten lokal (Tags, Favoriten, Verlauf, kürzlich geöffnete Elemente), um Funktionen wie Dashboard-Listen und Suche zu ermöglichen. Diese Daten werden im App-Verzeichnis gespeichert.",
+      "description": "Die App speichert Daten lokal (Tags, Favoriten, Verlauf, kürzlich geöffnete Elemente), um Funktionen wie Schnellzugriff-Listen und Suche zu ermöglichen. Diese Daten werden im App-Verzeichnis gespeichert.",
       "openDataDirectory": "Datenverzeichnis öffnen"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "visuell, Filter, Farbe, Kontrast, Helligkeit, Sättigung, Bild, Video, Thema, Dialog, Hintergrund, Unschärfe",
     "fonts": "Schriftarten, Text",
     "dateTime": "Datum, Uhrzeit, Format",
-    "uiElements": "UI, Elemente, visuell, Eingabe, Akzent, Farbe, Zeitleiste, Dashboard, Seite, aktuell, Karten, Startseite, Laufwerk, Raum, Anzeige, Stil",
+    "uiElements": "UI, Elemente, visuell, Eingabe, Akzent, Farbe, Zeitleiste, Schnellzugriff, Seite, aktuell, Karten, Startseite, Laufwerk, Raum, Anzeige, Stil",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "Zwischenablage, einfügen, kopieren, ausschneiden, Symbolleiste, Bild, Screenshot, Pfad, Dateien",
@@ -729,9 +729,9 @@
     "tabAppearance": "Tabs, aktiver Tab, fett, Text",
     "tabsWorkspaces": "Tabs, Arbeitsbereiche, schließen, letzter Tab, Standard-Tab",
     "defaultDirectory": "Home, Locations, Arbeitsplatz, Computer, Laufwerke, Standardordner, Standardverzeichnis, neuer Tab, benutzerdefinierter Pfad",
-    "startupPage": "Seite beim Start, Start, Startseite, Dashboard, Navigator, letzte Seite, wiederherstellen, Seite",
+    "startupPage": "Seite beim Start, Start, Startseite, Schnellzugriff, Navigator, letzte Seite, wiederherstellen, Seite",
     "globalSearch": "global, suchen, finden, suchen, filtern, scannen",
-    "stats": "Statistiken, Daten, Benutzer, Favoriten, Tags, Verlauf, kürzlich, Dashboard, Speicher",
+    "stats": "Statistiken, Daten, Benutzer, Favoriten, Tags, Verlauf, kürzlich, Schnellzugriff, Speicher",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",
     "autoplay": "autoplay, explorer, windows, laufwerk, usb, automatisch, öffnen, ordner",
     "experimental": "erweitert, experimentell, Standard-Dateimanager, Datei-Explorer, Registrierung, Terminal, Shell",
@@ -780,7 +780,7 @@
     "focusAppWindow": "App-Fenster fokussieren",
     "switchToHomePage": "Zur Startseite wechseln",
     "switchToNavigatorPage": "Zur Navigatorseite wechseln",
-    "switchToDashboardPage": "Zum Dashboard wechseln",
+    "switchToDashboardPage": "Zum Schnellzugriff wechseln",
     "switchToSettingsPage": "Zur Einstellungsseite wechseln",
     "switchToExtensionsPage": "Zur Erweiterungsseite wechseln",
     "navigatePageBack": "Zur vorherigen Seite navigieren",

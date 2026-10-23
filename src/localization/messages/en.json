@@ -22,7 +22,7 @@
   "pages": {
     "home": "Home page",
     "navigator": "Navigator",
-    "dashboard": "Dashboard",
+    "dashboard": "Quick Access",
     "notes": "Notes",
     "settings": "Settings",
     "extensions": "Extensions"
@@ -217,7 +217,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Quick access to your favorite, tagged, and frequently used items",
+    "subtitle": "Favorites, tagged items, and frequently used files — all in one place",
     "tabs": {
       "favorites": "Favorites",
       "tagged": "Tagged",
@@ -421,7 +421,7 @@
       "preventDropdownCloseFocusReturn": "Prevent focus return when closing dropdowns",
       "preventDropdownCloseFocusReturnDescription": "When enabled, closing a dropdown (e.g. with Escape) will not return focus to the trigger button, avoiding focus ring and tooltip display",
       "quickAccessOnHover": "Open quick access panel on hover",
-      "quickAccessOnHoverDescription": "When enabled, the quick access panel opens automatically when hovering over the dashboard button in the sidebar"
+      "quickAccessOnHoverDescription": "When enabled, the quick access panel opens automatically when hovering over the quick access button in the sidebar"
     },
     "tooltips": {
       "title": "Tooltips",
@@ -542,7 +542,7 @@
     },
     "stats": {
       "title": "User data",
-      "description": "The app stores data locally (tags, favorites, history, recently opened items) to enable features like dashboard lists and search. This data is stored in the app directory.",
+      "description": "The app stores data locally (tags, favorites, history, recently opened items) to enable features like quick access lists and search. This data is stored in the app directory.",
       "openDataDirectory": "Open data directory"
     },
     "experimental": {
@@ -752,7 +752,7 @@
     "visualFilters": "visual, filters, color, contrast, brightness, saturation, image, video, theme, dialog, backdrop, blur",
     "fonts": "fonts, text",
     "dateTime": "date, time, format",
-    "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
+    "uiElements": "ui, elements, visual, input, accent, color, timeline, quick access, page, recent, cards, home, drive, space, indicator, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "clipboard, paste, copy, cut, toolbar, image, screenshot, path, files",
@@ -763,9 +763,9 @@
     "tabAppearance": "tabs, active tab, bold, text",
     "tabsWorkspaces": "tabs, workspaces, close, last tab, default tab",
     "defaultDirectory": "home, locations, this pc, computer, drives, default folder, default directory, new tab, custom path",
-    "startupPage": "startup page, startup, launch, open on launch, home, dashboard, navigator, last page, restore, page",
+    "startupPage": "startup page, startup, launch, open on launch, home, quick access, navigator, last page, restore, page",
     "globalSearch": "global, search, find, look, filter, scan",
-    "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",
+    "stats": "stats, data, user, favorites, tags, history, recent, quick access, storage",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",
     "autoplay": "autoplay, explorer, windows, drive, usb, automatic, open, folder",
     "experimental": "advanced, experimental, default file manager, file explorer, registry, terminal, shell",
@@ -813,7 +813,7 @@
     "focusAppWindow": "Focus the app window",
     "switchToHomePage": "Switch to home page",
     "switchToNavigatorPage": "Switch to navigator page",
-    "switchToDashboardPage": "Switch to dashboard page",
+    "switchToDashboardPage": "Switch to quick access page",
     "switchToSettingsPage": "Switch to settings page",
     "switchToExtensionsPage": "Switch to extensions page",
     "navigatePageBack": "Navigate to previous page",

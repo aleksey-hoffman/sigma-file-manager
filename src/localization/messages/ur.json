@@ -22,7 +22,7 @@
   "pages": {
     "home": "ہوم",
     "navigator": "نیویگیٹر",
-    "dashboard": "ڈیش بورڈ",
+    "dashboard": "فوری رسائی",
     "notes": "نوٹس",
     "settings": "ترتیبات",
     "extensions": "ایکسٹینشنز"
@@ -217,7 +217,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "پسندیدہ، ٹیگ والی اور اکثر استعمال ہونے والی اشیاء تک فوری رسائی",
+    "subtitle": "پسندیدہ، ٹیگ والی اور اکثر استعمال ہونے والی اشیاء — سب ایک جگہ",
     "tabs": {
       "favorites": "پسندیدہ",
       "tagged": "ٹیگ والے",
@@ -421,7 +421,7 @@
       "preventDropdownCloseFocusReturn": "ڈراپ ڈاؤن بند کرتے وقت فوکس واپس نہ جائے",
       "preventDropdownCloseFocusReturnDescription": "چالو ہونے پر ڈراپ ڈاؤن (جیسے Esc سے) بند کرنے پر فوکس ٹرگر بٹن پر نہیں لوٹے گا—فوکس رنگ اور ٹول ٹِپ سے بچاؤ",
       "quickAccessOnHover": "ہوور پر فوری رسائی پینل کھولیں",
-      "quickAccessOnHoverDescription": "چالو ہونے پر سائیڈ بار میں ڈیش بورڈ بٹن پر ہوور کرتے ہی فوری رسائی پینل کھلتا ہے"
+      "quickAccessOnHoverDescription": "چالو ہونے پر سائیڈ بار میں فوری رسائی بٹن پر ہوور کرتے ہے فوری رسائی پینل کھلتا ہے"
     },
     "tooltips": {
       "title": "ٹول ٹپس",
@@ -542,7 +542,7 @@
     },
     "stats": {
       "title": "صارف ڈیٹا",
-      "description": "ایپ مقامی طور پر ڈیٹا رکھتی ہے (ٹیگ، پسندیدہ، سابقات، حالیہ اشیاء) تاکہ ڈیش بورڈ اور تلاش کام کریں۔ یہ ڈیٹا ایپ فولڈر میں ہے۔",
+      "description": "ایپ مقامی طور پر ڈیٹا رکھتی ہے (ٹیگ، پسندیدہ، سابقات، حالیہ اشیاء) تاکہ فوری رسائی اور تلاش کام کریں۔ یہ ڈیٹا ایپ فولڈر میں ہے۔",
       "openDataDirectory": "ڈیٹا فولڈر کھولیں"
     },
     "experimental": {
@@ -752,7 +752,7 @@
     "visualFilters": "فلٹر, کنٹراسٹ, چمک, تصویر, ویڈیو, ڈائیلاگ, پس‌منظر, دھندلاپن",
     "fonts": "فونٹ, متن",
     "dateTime": "تاریخ, وقت, فارمیٹ",
-    "uiElements": "ui, عناصر, ڈیش بورڈ, کارڈ, ٹائم لائن",
+    "uiElements": "ui, عناصر, فوری رسائی, کارڈ, ٹائم لائن",
     "quickAccess": "فوری رسائی, سائیڈ بار, ہوور",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "کلپ بورڈ, پیسٹ, کاپی, کٹ, ٹول بار, تصویر, اسکرین شاٹ, راستہ, فائل",
@@ -761,7 +761,7 @@
     "shortcuts": "شارٹ کٹس",
     "tabAppearance": "ٹیب, فعال ٹیب, بولڈ, متن",
     "globalSearch": "عالمی تلاش, تلاش, اسکین",
-    "stats": "اعداد و شمار, پسندیدہ, ٹیگ, سابقات",
+    "stats": "اعداد و شمار, پسندیدہ, ٹیگ, سابقات, فوری رسائی",
     "driveDetection": "ڈرائیو, usb, ڈسک, کنکشن",
     "autoplay": "آٹو پلے, explorer, windows",
     "experimental": "تجرباتی, ٹرمینل, رجسٹری, ڈیفالٹ فائل مینیجر",
@@ -773,7 +773,7 @@
     "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "ٹیب, ورک اسپیس, بند, آخری ٹیب, ڈیفالٹ ٹیب",
     "defaultDirectory": "ہوم, locations, یہ پی سی, کمپیوٹر, ڈرائیو, ڈیفالٹ فولڈر, نیا ٹیب, حسب ضرورت راستہ",
-    "startupPage": "اسٹارٹ اپ صفحہ, اسٹارٹ اپ, لانچ پر کھولیں, ہوم, ڈیش بورڈ, نیویگیٹر, آخری صفحہ, بحال, صفحہ",
+    "startupPage": "اسٹارٹ اپ صفحہ, اسٹارٹ اپ, لانچ پر کھولیں, ہوم, فوری رسائی, نیویگیٹر, آخری صفحہ, بحال, صفحہ",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
@@ -813,7 +813,7 @@
     "focusAppWindow": "ایپ ونڈو پر فوکس کریں",
     "switchToHomePage": "ہوم صفحے پر جائیں",
     "switchToNavigatorPage": "نیویگیٹر صفحے پر جائیں",
-    "switchToDashboardPage": "ڈیش بورڈ پر جائیں",
+    "switchToDashboardPage": "فوری رسائی پر جائیں",
     "switchToSettingsPage": "ترتیبات صفحے پر جائیں",
     "switchToExtensionsPage": "ایکسٹینشنز صفحے پر جائیں",
     "navigatePageBack": "پچھلے صفحے پر جائیں",

@@ -22,7 +22,7 @@
   "pages": {
     "home": "主页",
     "navigator": "导航器",
-    "dashboard": "仪表板",
+    "dashboard": "快速访问",
     "notes": "笔记",
     "settings": "设置",
     "extensions": "扩展功能"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "快速访问您的收藏、标记和常用项目",
+    "subtitle": "收藏、标记与常用项目，一处直达",
     "tabs": {
       "favorites": "收藏",
       "tagged": "已标记",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "关闭下拉菜单时不返回焦点",
       "preventDropdownCloseFocusReturnDescription": "启用后，关闭下拉菜单（例如按 Escape）时不会将焦点返回到触发按钮，从而避免显示焦点环和工具提示",
       "quickAccessOnHover": "悬停时打开快速访问面板",
-      "quickAccessOnHoverDescription": "启用后，将鼠标悬停在侧边栏的仪表板按钮上时，快速访问面板会自动打开"
+      "quickAccessOnHoverDescription": "启用后，将鼠标悬停在侧边栏的快速访问按钮上时，快速访问面板会自动打开"
     },
     "tooltips": {
       "title": "工具提示",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "用户数据",
-      "description": "应用程序在本地存储数据（标签、收藏、历史记录、最近打开的项目）以支持仪表板列表和搜索等功能。这些数据存储在应用程序目录中。",
+      "description": "应用程序在本地存储数据（标签、收藏、历史记录、最近打开的项目）以支持快速访问列表和搜索等功能。这些数据存储在应用程序目录中。",
       "openDataDirectory": "打开数据目录"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "视觉、滤镜、颜色、对比度、亮度、饱和度、图像、视频、主题、对话框、背景、模糊",
     "fonts": "字体,文本",
     "dateTime": "日期,时间,格式",
-    "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、仪表板、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
+    "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、快速访问、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "剪贴板, 粘贴, 复制, 剪切, 工具栏, 图像, 截图, 路径, 文件",
@@ -728,7 +728,7 @@
     "shortcuts": "快捷键",
     "tabAppearance": "标签,活动标签,加粗,文本",
     "globalSearch": "全局,搜索,查找,查看,过滤,扫描",
-    "stats": "统计、数据、用户、收藏、标签、历史、最近、仪表板、存储",
+    "stats": "统计、数据、用户、收藏、标签、历史、最近、快速访问、存储",
     "driveDetection": "驱动器、USB、存储、磁盘、设备、检测、连接",
     "autoplay": "自动播放、资源管理器、windows、驱动器、usb、自动、打开、文件夹",
     "experimental": "高级，实验性，默认文件管理器，文件资源管理器，注册表，终端，壳",
@@ -740,7 +740,7 @@
     "fileView": "文件视图, 框选, 拖动选择, 列表, 网格, 间距, 内边距, 文件夹, 优先, 置顶, 排序, 顺序, 文件, 目录, 分组, 视图",
     "tabsWorkspaces": "标签, 工作区, 关闭, 最后一个标签, 默认标签",
     "defaultDirectory": "主页, locations, 此电脑, 计算机, 驱动器, 默认文件夹, 默认目录, 新标签, 自定义路径",
-    "startupPage": "启动页, 启动, 启动时打开, 主页, 仪表板, 导航器, 上次打开的页面, 恢复, 页面",
+    "startupPage": "启动页, 启动, 启动时打开, 主页, 快速访问, 导航器, 上次打开的页面, 恢复, 页面",
     "thumbnailCache": "缩略图, 缓存, 清理, 图片, 视频, 预览, 存储, 磁盘, 占用"
   },
   "drag": {
@@ -780,7 +780,7 @@
     "focusAppWindow": "聚焦应用程序窗口",
     "switchToHomePage": "切换到主页",
     "switchToNavigatorPage": "切换到导航器页面",
-    "switchToDashboardPage": "切换到仪表板",
+    "switchToDashboardPage": "切换到快速访问",
     "switchToSettingsPage": "切换到设置页面",
     "switchToExtensionsPage": "切换到扩展页面",
     "navigatePageBack": "导航到上一页",

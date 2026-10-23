@@ -22,7 +22,7 @@
   "pages": {
     "home": "ホームページ",
     "navigator": "ナビゲーター",
-    "dashboard": "ダッシュボード",
+    "dashboard": "クイックアクセス",
     "notes": "ノート",
     "settings": "環境設定",
     "extensions": "拡張機能"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "お気に入り、タグ付け、よく使うアイテムへのクイックアクセス",
+    "subtitle": "お気に入り、タグ付け、よく使うアイテム — すべてここに",
     "tabs": {
       "favorites": "お気に入り",
       "tagged": "タグ",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "ドロップダウンを閉じた時にフォーカスを戻さない",
       "preventDropdownCloseFocusReturnDescription": "有効にすると、ドロップダウンを閉じても（Escapeキーなど）フォーカスがトリガーボタンに戻らず、フォーカスリングやツールチップの表示を防ぎます",
       "quickAccessOnHover": "ホバーでクイックアクセスパネルを開く",
-      "quickAccessOnHoverDescription": "有効にすると、サイドバーのダッシュボードボタンにマウスを合わせたときにクイックアクセスパネルが自動的に開きます"
+      "quickAccessOnHoverDescription": "有効にすると、サイドバーのクイックアクセスボタンにマウスを合わせたときにクイックアクセスパネルが自動的に開きます"
     },
     "tooltips": {
       "title": "ツールチップ",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "ユーザーデータ",
-      "description": "アプリはデータをローカルに保存します（タグ、お気に入り、履歴、最近開いた項目）。これにより、ダッシュボードリストや検索などの機能が有効になります。このデータはアプリディレクトリに保存されます。",
+      "description": "アプリはデータをローカルに保存します（タグ、お気に入り、履歴、最近開いた項目）。これにより、クイックアクセスリストや検索などの機能が有効になります。このデータはアプリディレクトリに保存されます。",
       "openDataDirectory": "データディレクトリを開く"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "ビジュアル、フィルター、色、コントラスト、明るさ、彩度、画像、動画、テーマ、ダイアログ、背景、ぼかし",
     "fonts": "フォント、テキスト",
     "dateTime": "日付、時刻、形式",
-    "uiElements": "UI、要素、ビジュアル、入力、アクセント、色、タイムライン、ダッシュボード、ページ、最近、カード、ホーム、ドライブ、スペース、インジケーター、スタイル",
+    "uiElements": "UI、要素、ビジュアル、入力、アクセント、色、タイムライン、クイックアクセス、ページ、最近、カード、ホーム、ドライブ、スペース、インジケーター、スタイル",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "クリップボード, 貼り付け, コピー, 切り取り, ツールバー, 画像, スクリーンショット, パス, ファイル",
@@ -728,7 +728,7 @@
     "shortcuts": "ショートカット",
     "tabAppearance": "タブ、アクティブなタブ、太字、テキスト",
     "globalSearch": "グローバル、検索、検索、検索、フィルター、スキャン",
-    "stats": "統計、データ、ユーザー、お気に入り、タグ、履歴、最近、ダッシュボード、ストレージ",
+    "stats": "統計、データ、ユーザー、お気に入り、タグ、履歴、最近、クイックアクセス、ストレージ",
     "driveDetection": "ドライブ、USB、ストレージ、ディスク、デバイス、検出、接続",
     "autoplay": "自動再生、エクスプローラー、windows、ドライブ、usb、自動、開く、フォルダ",
     "experimental": "高度, 実験的, 既定のファイルマネージャー, エクスプローラー, レジストリ, ターミナル, シェル",
@@ -740,7 +740,7 @@
     "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "タブ, ワークスペース, 閉じる, 最後のタブ, デフォルトタブ",
     "defaultDirectory": "ホーム, locations, このPC, コンピュータ, ドライブ, デフォルトフォルダー, デフォルトディレクトリ, 新しいタブ, カスタムパス",
-    "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, ダッシュボード, ナビゲーター, 最後のページ, 復元, ページ",
+    "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, クイックアクセス, ナビゲーター, 最後のページ, 復元, ページ",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
@@ -780,7 +780,7 @@
     "focusAppWindow": "アプリ ウィンドウをフォーカスする",
     "switchToHomePage": "ホームページに切り替え",
     "switchToNavigatorPage": "ナビゲーターページに切り替え",
-    "switchToDashboardPage": "ダッシュボードに切り替え",
+    "switchToDashboardPage": "クイックアクセスに切り替え",
     "switchToSettingsPage": "設定ページに切り替え",
     "switchToExtensionsPage": "拡張機能ページに切り替え",
     "navigatePageBack": "前のページへ移動",

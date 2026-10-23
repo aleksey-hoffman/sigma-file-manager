@@ -22,7 +22,7 @@
   "pages": {
     "home": "Página de inicio",
     "navigator": "Explorador",
-    "dashboard": "Painel",
+    "dashboard": "Acesso rápido",
     "notes": "Notas",
     "settings": "Configuração",
     "extensions": "Extensões"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Acesso rápido aos seus itens favoritos, marcados e frequentemente usados",
+    "subtitle": "Seus favoritos, itens marcados e os mais usados — tudo em um só lugar",
     "tabs": {
       "favorites": "Favoritos",
       "tagged": "Marcados",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "Impedir o retorno do foco ao fechar menus suspensos",
       "preventDropdownCloseFocusReturnDescription": "Quando ativado, fechar um menu suspenso (ex.: com Escape) não retornará o foco ao botão de ativação, evitando a exibição do anel de foco e da dica de ferramenta",
       "quickAccessOnHover": "Abrir painel de acesso rápido ao passar o cursor",
-      "quickAccessOnHoverDescription": "Quando ativado, o painel de acesso rápido abre automaticamente ao passar o cursor sobre o botão do painel na barra lateral"
+      "quickAccessOnHoverDescription": "Quando ativado, o painel de acesso rápido abre automaticamente ao passar o cursor sobre o botão de acesso rápido na barra lateral"
     },
     "tooltips": {
       "title": "Dicas",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "Dados do usuário",
-      "description": "O aplicativo armazena dados localmente (etiquetas, favoritos, histórico, itens abertos recentemente) para habilitar recursos como listas do painel e pesquisa. Esses dados são armazenados no diretório do aplicativo.",
+      "description": "O aplicativo armazena dados localmente (etiquetas, favoritos, histórico, itens abertos recentemente) para habilitar recursos como listas de acesso rápido e pesquisa. Esses dados são armazenados no diretório do aplicativo.",
       "openDataDirectory": "Abrir diretório de dados"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "visual, filtros, cor, contraste, brilho, saturação, imagem, vídeo, tema, diálogo, fundo, desfoque",
     "fonts": "fontes, texto",
     "dateTime": "data, hora, formato",
-    "uiElements": "ui, elementos, visual, entrada, acento, cor, linha do tempo, painel, página, recente, cartões, página inicial, unidade, espaço, indicador, estilo",
+    "uiElements": "ui, elementos, visual, entrada, acento, cor, linha do tempo, acesso rápido, página, recente, cartões, página inicial, unidade, espaço, indicador, estilo",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "área de transferência, colar, copiar, recortar, barra de ferramentas, imagem, captura, caminho, arquivos",
@@ -728,7 +728,7 @@
     "shortcuts": "atalhos",
     "tabAppearance": "guias, guia ativa, negrito, texto",
     "globalSearch": "global, pesquisar, localizar, pesquisar, filtrar, verificar",
-    "stats": "estatísticas, dados, usuário, favoritos, etiquetas, histórico, recente, painel, armazenamento",
+    "stats": "estatísticas, dados, usuário, favoritos, etiquetas, histórico, recente, acesso rápido, armazenamento",
     "driveDetection": "unidade, usb, armazenamento, disco, dispositivo, detecção, conexão",
     "autoplay": "reprodução automática, explorador, windows, unidade, usb, automático, abrir, pasta",
     "experimental": "avançado, experimental, gerenciador de arquivos padrão, explorador de arquivos, registro, terminal, shell",
@@ -740,7 +740,7 @@
     "fileView": "visualização arquivos, caixa, seleção, arrastar, lista, grade, espaços, preenchimento, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "abas, espaços de trabalho, fechar, última aba, aba padrão",
     "defaultDirectory": "início, locations, este computador, unidades, pasta padrão, diretório padrão, nova aba, caminho personalizado",
-    "startupPage": "página de inicialização, início, abrir ao iniciar, página inicial, dashboard, navigator, última página, restaurar, página",
+    "startupPage": "página de inicialização, início, abrir ao iniciar, página inicial, acesso rápido, navigator, última página, restaurar, página",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
@@ -780,7 +780,7 @@
     "focusAppWindow": "Focar a janela do aplicativo",
     "switchToHomePage": "Alternar para a página inicial",
     "switchToNavigatorPage": "Alternar para a página do navegador",
-    "switchToDashboardPage": "Alternar para o painel de controle",
+    "switchToDashboardPage": "Alternar para acesso rápido",
     "switchToSettingsPage": "Alternar para a página de configuração",
     "switchToExtensionsPage": "Alternar para a página de extensões",
     "navigatePageBack": "Navegar para a página anterior",

@@ -22,7 +22,7 @@
   "pages": {
     "home": "Pagina iniziale",
     "navigator": "Navigatore",
-    "dashboard": "Dashboard",
+    "dashboard": "Accesso rapido",
     "notes": "Note",
     "settings": "Impostazioni",
     "extensions": "Estensioni"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Accesso rapido ai tuoi elementi preferiti, taggati e usati frequentemente",
+    "subtitle": "Preferiti, elementi taggati e file più usati — tutto in un posto",
     "tabs": {
       "favorites": "Preferiti",
       "tagged": "Taggati",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "Impedire il ritorno del focus alla chiusura dei menu a discesa",
       "preventDropdownCloseFocusReturnDescription": "Quando attivato, la chiusura di un menu a discesa (es. con Esc) non riporterà il focus sul pulsante di attivazione, evitando la visualizzazione del contorno di focus e del tooltip",
       "quickAccessOnHover": "Apri pannello accesso rapido al passaggio del mouse",
-      "quickAccessOnHoverDescription": "Quando attivato, il pannello di accesso rapido si apre automaticamente passando il mouse sul pulsante dashboard nella barra laterale"
+      "quickAccessOnHoverDescription": "Quando attivato, il pannello di accesso rapido si apre automaticamente passando il mouse sul pulsante di accesso rapido nella barra laterale"
     },
     "tooltips": {
       "title": "Suggerimenti",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "Dati utente",
-      "description": "L'app memorizza dati localmente (etichette, preferiti, cronologia, elementi aperti di recente) per abilitare funzionalità come elenchi della dashboard e ricerca. Questi dati sono memorizzati nella cartella dell'app.",
+      "description": "L’app memorizza dati localmente (etichette, preferiti, cronologia, elementi aperti di recente) per abilitare funzionalità come elenchi di accesso rapido e ricerca. Questi dati sono memorizzati nella cartella dell’app.",
       "openDataDirectory": "Apri cartella dati"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "visivo, filtri, colore, contrasto, luminosità, saturazione, immagine, video, tema, finestra, sfondo, sfocatura",
     "fonts": "font, testo",
     "dateTime": "data, ora, formato",
-    "uiElements": "ui, elementi, visivo, input, accento, colore, cronologia, dashboard, pagina, recenti, schede, inizio, drive, spazio, indicatore, stile",
+    "uiElements": "ui, elementi, visivo, input, accento, colore, cronologia, accesso rapido, pagina, recenti, schede, inizio, drive, spazio, indicatore, stile",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "appunti, incolla, copia, taglia, barra strumenti, immagine, screenshot, percorso, file",
@@ -728,7 +728,7 @@
     "shortcuts": "scorciatoie",
     "tabAppearance": "schede, scheda attiva, grassetto, testo",
     "globalSearch": "globale, ricerca, trova, visualizza, filtra, scansiona",
-    "stats": "statistiche, dati, utente, preferiti, etichette, cronologia, recente, dashboard, archiviazione",
+    "stats": "statistiche, dati, utente, preferiti, etichette, cronologia, recente, accesso rapido, archiviazione",
     "driveDetection": "unità, usb, archiviazione, disco, dispositivo, rilevamento, connessione",
     "autoplay": "riproduzione automatica, esplora risorse, windows, unità, usb, automatico, aprire, cartella",
     "experimental": "avanzato, sperimentale, file manager predefinito, esplora file, registro, terminale, shell",
@@ -740,7 +740,7 @@
     "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "schede, spazi di lavoro, chiudi, ultima scheda, scheda predefinita",
     "defaultDirectory": "home, locations, questo PC, computer, unità, cartella predefinita, nuova scheda, percorso personalizzato",
-    "startupPage": "pagina di avvio, avvio, apri all'avvio, home, dashboard, navigator, ultima pagina, ripristina, pagina",
+    "startupPage": "pagina di avvio, avvio, apri all’avvio, home, accesso rapido, navigator, ultima pagina, ripristina, pagina",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
@@ -780,7 +780,7 @@
     "focusAppWindow": "Mostra la finestra dell'app",
     "switchToHomePage": "Passa alla pagina iniziale",
     "switchToNavigatorPage": "Passa alla pagina del navigatore",
-    "switchToDashboardPage": "Passa alla dashboard",
+    "switchToDashboardPage": "Passa all’accesso rapido",
     "switchToSettingsPage": "Passa alla pagina delle impostazioni",
     "switchToExtensionsPage": "Passa alla pagina delle estensioni",
     "navigatePageBack": "Vai alla pagina precedente",

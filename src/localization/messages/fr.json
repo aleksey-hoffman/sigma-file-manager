@@ -22,7 +22,7 @@
   "pages": {
     "home": "Page d'accueil",
     "navigator": "Navigateur",
-    "dashboard": "Tableau de bord",
+    "dashboard": "Accès rapide",
     "notes": "Notes",
     "settings": "Paramètres",
     "extensions": "Extensions"
@@ -184,7 +184,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Accès rapide à vos éléments favoris, tagués et fréquemment utilisés",
+    "subtitle": "Vos favoris, vos éléments tagués et les plus utilisés — au même endroit",
     "tabs": {
       "favorites": "Favoris",
       "tagged": "Tagués",
@@ -388,7 +388,7 @@
       "preventDropdownCloseFocusReturn": "Empêcher le retour du focus à la fermeture des menus déroulants",
       "preventDropdownCloseFocusReturnDescription": "Lorsqu'activé, la fermeture d'un menu déroulant (par ex. avec Échap) ne ramènera pas le focus sur le bouton déclencheur, évitant l'affichage du contour de focus et de l'infobulle",
       "quickAccessOnHover": "Ouvrir le panneau d'accès rapide au survol",
-      "quickAccessOnHoverDescription": "Lorsqu'activé, le panneau d'accès rapide s'ouvre automatiquement au survol du bouton tableau de bord dans la barre latérale"
+      "quickAccessOnHoverDescription": "Lorsqu’activé, le panneau d’accès rapide s’ouvre automatiquement au survol du bouton d’accès rapide dans la barre latérale"
     },
     "tooltips": {
       "title": "Info-bulles",
@@ -509,7 +509,7 @@
     },
     "stats": {
       "title": "Données utilisateur",
-      "description": "L'application stocke des données localement (étiquettes, favoris, historique, éléments récemment ouverts) pour activer des fonctionnalités telles que les listes du tableau de bord et la recherche. Ces données sont stockées dans le répertoire de l'application.",
+      "description": "L’application stocke des données localement (étiquettes, favoris, historique, éléments récemment ouverts) pour activer des fonctionnalités telles que les listes d’accès rapide et la recherche. Ces données sont stockées dans le répertoire de l’application.",
       "openDataDirectory": "Ouvrir le répertoire des données"
     },
     "experimental": {
@@ -719,7 +719,7 @@
     "visualFilters": "visuel, filtres, couleur, contraste, luminosité, saturation, image, vidéo, thème, dialogue, arrière-plan, flou",
     "fonts": "polices, texte",
     "dateTime": "date, heure, format",
-    "uiElements": "interface utilisateur, éléments, visuel, entrée, accent, couleur, chronologie, tableau de bord, page, récent, cartes, accueil, lecteur, espace, indicateur, style",
+    "uiElements": "interface utilisateur, éléments, visuel, entrée, accent, couleur, chronologie, accès rapide, page, récent, cartes, accueil, lecteur, espace, indicateur, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "presse-papiers, coller, copier, couper, barre d'outils, image, capture, chemin, fichiers",
@@ -729,9 +729,9 @@
     "tabAppearance": "onglets, onglet actif, gras, texte",
     "tabsWorkspaces": "onglets, espaces de travail, fermer, dernier onglet, onglet par défaut",
     "defaultDirectory": "accueil, locations, ce PC, ordinateur, lecteurs, dossier par défaut, nouveau onglet, chemin personnalisé",
-    "startupPage": "page de démarrage, démarrage, lancer, ouvrir au démarrage, accueil, tableau de bord, navigateur, dernière page, restaurer, page",
+    "startupPage": "page de démarrage, démarrage, lancer, ouvrir au démarrage, accueil, accès rapide, navigateur, dernière page, restaurer, page",
     "globalSearch": "global, chercher, trouver, regarder, filtrer, scanner",
-    "stats": "statistiques, données, utilisateur, favoris, étiquettes, historique, récent, tableau de bord, stockage",
+    "stats": "statistiques, données, utilisateur, favoris, étiquettes, historique, récent, accès rapide, stockage",
     "driveDetection": "lecteur, usb, stockage, disque, périphérique, détection, connexion",
     "autoplay": "lecture automatique, explorateur, windows, lecteur, usb, automatique, ouvrir, dossier",
     "experimental": "avancé, expérimental, gestionnaire de fichiers par défaut, explorateur de fichiers, registre, terminal, shell",
@@ -780,7 +780,7 @@
     "focusAppWindow": "Afficher la fenêtre de l'application",
     "switchToHomePage": "Passer à la page d'accueil",
     "switchToNavigatorPage": "Passer à la page du navigateur",
-    "switchToDashboardPage": "Passer au tableau de bord",
+    "switchToDashboardPage": "Passer à l’accès rapide",
     "switchToSettingsPage": "Passer à la page des paramètres",
     "switchToExtensionsPage": "Passer à la page des extensions",
     "navigatePageBack": "Aller à la page précédente",

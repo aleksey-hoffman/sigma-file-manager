@@ -22,7 +22,7 @@
   "pages": {
     "home": "Domača stran",
     "navigator": "Navigator",
-    "dashboard": "Nadzorna plošča",
+    "dashboard": "Hitri dostop",
     "notes": "Opombe",
     "settings": "Nastavitve",
     "extensions": "Razširitve"
@@ -217,7 +217,7 @@
     "hideFolderTree": "Hide folder tree"
   },
   "dashboard": {
-    "subtitle": "Hiter dostop do vaših priljubljenih, označenih in pogosto uporabljenih predmetov",
+    "subtitle": "Priljubljeni, označeni in pogosto uporabljeni predmeti — vse na enem mestu",
     "tabs": {
       "favorites": "Priljubljene",
       "tagged": "Označene",
@@ -421,7 +421,7 @@
       "preventDropdownCloseFocusReturn": "Prepreči vrnitev fokusa ob zapiranju spustnih menijev",
       "preventDropdownCloseFocusReturnDescription": "Ko je omogočeno, zapiranje spustnega menija (npr. z Escape) ne bo vrnilo fokusa na gumb aktivacije, kar prepreči prikaz obroča fokusa in namiga",
       "quickAccessOnHover": "Odpri ploščo za hitri dostop ob lebdenju",
-      "quickAccessOnHoverDescription": "Ko je omogočeno, se plošča za hitri dostop samodejno odpre ob lebdenju nad gumbom nadzorne plošče v stranski vrstici"
+      "quickAccessOnHoverDescription": "Ko je omogočeno, se plošča za hitri dostop samodejno odpre ob lebdenju nad gumbom hitrega dostopa v stranski vrstici"
     },
     "tooltips": {
       "title": "Namigi",
@@ -542,7 +542,7 @@
     },
     "stats": {
       "title": "Uporabniški podatki",
-      "description": "Aplikacija lokalno shranjuje podatke (oznake, priljubljene, zgodovina, nedavno odprti predmeti) za omogočanje funkcij kot so seznami na nadzorni plošči in iskanje. Ti podatki so shranjeni v mapi aplikacije.",
+      "description": "Aplikacija lokalno shranjuje podatke (oznake, priljubljene, zgodovina, nedavno odprti predmeti) za omogočanje funkcij kot so seznami hitrega dostopa in iskanje. Ti podatki so shranjeni v mapi aplikacije.",
       "openDataDirectory": "Odpri podatkovno mapo"
     },
     "experimental": {
@@ -752,7 +752,7 @@
     "visualFilters": "visual, filters, color, contrast, brightness, saturation, image, video, theme, dialog, backdrop, blur",
     "fonts": "fonts, text",
     "dateTime": "date, time, format",
-    "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
+    "uiElements": "ui, elements, visual, input, accent, color, timeline, hitri dostop, page, recent, cards, home, drive, space, indicator, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "odložišče, prilepi, kopiraj, izreži, orodna vrstica, slika, posnetek zaslona, pot, datoteke",
@@ -761,7 +761,7 @@
     "shortcuts": "shortcuts",
     "tabAppearance": "zavihki, aktiven zavihek, krepko, besedilo",
     "globalSearch": "global, search, find, look, filter, scan",
-    "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",
+    "stats": "stats, data, user, favorites, tags, history, recent, hitri dostop, storage",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",
     "autoplay": "autoplay, explorer, windows, drive, usb, automatic, open, folder",
     "experimental": "napredno, eksperimentalno, privzeti upravljalnik datotek, raziskovalec datotek, register, terminal, lupina",
@@ -773,7 +773,7 @@
     "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik, folder, folders, first, top, sort, sorting, order, ordering, list, files, file, directory, directories, group, grouping, view, precedence",
     "tabsWorkspaces": "zavihki, delovni prostori, zapri, zadnji zavihek, privzet zavihek",
     "defaultDirectory": "domov, locations, ta računalnik, pogoni, privzeta mapa, nov zavihek, pot po meri",
-    "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, nadzorna plošča, navigator, zadnja stran, obnovi, stran",
+    "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, hitri dostop, navigator, zadnja stran, obnovi, stran",
     "thumbnailCache": "thumbnail, cache, clear, image, video, preview, storage, disk, usage"
   },
   "drag": {
@@ -813,7 +813,7 @@
     "focusAppWindow": "Prikaži okno aplikacije",
     "switchToHomePage": "Preklopi na domačo stran",
     "switchToNavigatorPage": "Preklopi na stran Navigator",
-    "switchToDashboardPage": "Preklopi na nadzorno ploščo",
+    "switchToDashboardPage": "Preklopi na hitri dostop",
     "switchToSettingsPage": "Preklopi na stran z nastavitvami",
     "switchToExtensionsPage": "Preklopi na stran z razširitvami",
     "navigatePageBack": "Pojdi na prejšnjo stran",
