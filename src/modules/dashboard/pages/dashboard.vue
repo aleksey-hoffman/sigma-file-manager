@@ -47,15 +47,19 @@ import type {
   TaggedItem,
 } from '@/types/user-stats';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
+// FORK-MODIFICATION 2026-10-23：标签分组逻辑与色板抽成纯模块（移植自 upstream `3eca4c17`）。
+// 原来色板在这个文件里抄了两份（下面一份常量、一份数组字面量），迟早漂移。
+import { getTaggedSections, type TaggedSection } from '@/utils/tagged-sections';
+import { pickRandomTagColor, TAG_COLORS } from '@/utils/tag-colors';
 
 type ActiveTagSelector = {
   sectionTagId: string;
   itemPath: string;
 };
 
-type TaggedSection = {
-  tag: ItemTag;
-  items: TaggedItem[];
+// FORK-MODIFICATION 2026-10-23：分组本体来自 `@/utils/tagged-sections` 的纯函数，
+// 这里只加一个本仓特有的 `staggerBase`（错落入场动画的起始序号）。
+type DashboardTaggedSection = TaggedSection & {
   staggerBase: number;
 };
 
@@ -111,10 +115,8 @@ const newTagDialogOpen = ref(false);
 const renameCategoryDialogOpen = ref(false);
 const categoryBeingRenamed = ref<FavoriteCategory | null>(null);
 
-const TAG_COLOR_PALETTE = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e',
-  '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899',
-];
+// FORK-MODIFICATION 2026-10-23：色板改为引用 `@/utils/tag-colors` 里的唯一一份。
+const TAG_COLOR_PALETTE = TAG_COLORS;
 
 const categoryNameDraft = ref('');
 const tagNameDraft = ref('');
@@ -182,26 +184,19 @@ const favoriteSections = computed((): FavoriteSection[] => {
   return sections;
 });
 
-const taggedSections = computed((): TaggedSection[] => {
+// FORK-MODIFICATION 2026-10-23：分组交给纯函数 `getTaggedSections`，
+// 这里只补上本仓特有的 `staggerBase`（错落入场动画的起始序号）。
+const taggedSections = computed((): DashboardTaggedSection[] => {
   let staggerBase = 0;
-  const sections: TaggedSection[] = [];
 
-  for (const tag of tags.value) {
-    const itemsForTag = taggedItems.value.filter(item => item.tagIds.includes(tag.id));
-
-    if (itemsForTag.length === 0) {
-      continue;
-    }
-
-    sections.push({
-      tag,
-      items: itemsForTag,
+  return getTaggedSections(tags.value, taggedItems.value).map((section) => {
+    const staggered = {
+      ...section,
       staggerBase,
-    });
-    staggerBase += itemsForTag.length;
-  }
-
-  return sections;
+    };
+    staggerBase += section.items.length;
+    return staggered;
+  });
 });
 
 function isTagSelectorActive(sectionTagId: string, itemPath: string): boolean {
@@ -292,8 +287,7 @@ async function handleToggleTagOnItem(item: TaggedItem, tagId: string) {
 }
 
 async function handleCreateTagForItem(item: TaggedItem, name: string) {
-  const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const randomColor = pickRandomTagColor();
   const newTag = await userStatsStore.createTag(name, randomColor);
 
   await userStatsStore.addTagToItem(item.path, newTag.id, item.isFile);
