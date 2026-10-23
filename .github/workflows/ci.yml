@@ -78,3 +78,103 @@ jobs:
 
       - name: Cargo check release lib
         run: cargo check --manifest-path src-tauri/Cargo.toml --release --lib
+
+  e2e-windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      SFM_E2E_ARTIFACTS_DIR: ${{ github.workspace }}\e2e-webdriver\artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-windows-e2e
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install e2e dependencies
+        run: npm ci --prefix e2e-webdriver
+
+      - name: Install tauri-driver
+        run: cargo install tauri-driver --locked --version 2.1.0
+
+      - name: Install msedgedriver matching WebView2
+        run: npm run test:e2e:webdriver:install-edge-driver
+
+      # WebView2 Runtime 150+ ignores WEBVIEW2_* environment variables for
+      # elevated host processes, and runner processes are elevated, so the
+      # --remote-debugging-port that msedgedriver passes that way never reaches
+      # the app's WebView2. The HKLM policy is still honored under elevation.
+      # FORK-MODIFICATION 2026-10-23：策略键名要跟本仓的二进制名一致
+      # （`alpha-file-manager`），upstream 用的是 `sigma-file-manager.exe`。
+      - name: Allow WebDriver to attach to the app's WebView2
+        shell: pwsh
+        run: |
+          $policyKey = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+          New-Item -Path $policyKey -Force | Out-Null
+          New-ItemProperty -Path $policyKey -Name 'alpha-file-manager.exe' -PropertyType String -Value '--remote-debugging-port=0' -Force | Out-Null
+
+      - name: Build app (debug)
+        timeout-minutes: 30
+        shell: bash
+        run: npm run tauri -- build --debug --no-bundle
+
+      - name: Run WebDriver e2e tests
+        timeout-minutes: 15
+        run: npm run test:e2e:webdriver:skip-build
+
+      # The suite keeps all app data in a temp folder (see e2e-webdriver/wdio.conf.js).
+      # On this fresh runner the app's default folders must therefore stay empty.
+      - name: Check that the e2e run left no app data behind
+        shell: pwsh
+        run: |
+          $leaks = @()
+          $roamingDirectory = Join-Path $env:APPDATA 'com.sigma-file-manager.app'
+          if (Test-Path $roamingDirectory) { $leaks += $roamingDirectory }
+          # Tauri creates this folder for the WebView profile before the
+          # WEBVIEW2_USER_DATA_FOLDER override applies; it must stay empty.
+          $localDirectory = Join-Path $env:LOCALAPPDATA 'com.sigma-file-manager.app'
+          if ((Test-Path $localDirectory) -and (Get-ChildItem -Force $localDirectory | Select-Object -First 1)) { $leaks += $localDirectory }
+          $leftoverRunDirectories = Get-ChildItem -Force -Directory -Path ([System.IO.Path]::GetTempPath()) -Filter 'sfm-e2e-*' -ErrorAction SilentlyContinue
+          foreach ($runDirectory in $leftoverRunDirectories) { $leaks += $runDirectory.FullName }
+          if ($leaks.Count -gt 0) {
+            Write-Host "Unexpected app data after the e2e run:"
+            $leaks | ForEach-Object { Write-Host "  $_"; Get-ChildItem -Force -Recurse $_ -ErrorAction SilentlyContinue | Select-Object -First 20 -ExpandProperty FullName }
+            exit 1
+          }
+          Write-Host 'No app data outside the run folder.'
+
+      - name: Upload e2e artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-windows-artifacts
+          path: e2e-webdriver/artifacts
+          if-no-files-found: ignore
+          retention-days: 7
