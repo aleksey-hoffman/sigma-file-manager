@@ -140,6 +140,7 @@
 | `cargo test --lib` | 793 passed / 0 failed（Rust 侧本轮未改） |
 | 17 个语言包 key 一致性 | 0 mismatch |
 | 语言包格式（无 CR / 恰好一个末尾换行 / 两空格缩进） | 全部通过 |
+| 改名校验 `verify-locale-rename.cjs` | `ALL CHECKS PASSED (17 locales, 8 keys each)` |
 新增单测：
 - `src/utils/__tests__/dashboard-item-size.test.ts`（8 例）
 - `src/utils/__tests__/dashboard-relative-time.test.ts`（6 例）
@@ -197,7 +198,11 @@
 | 仓库 | 提交 | 内容 |
 |---|---|---|
 | 内层 | `4b94a2de` | `feat(dashboard): 卡片补条目大小、相对时间、缩略图与破坏性操作确认框` |
+| 内层 | `fc6ecf66` | `feat(dashboard): 顶部加沉浸封面 Hero 区（upstream 版式，封面图向下不淡出）` |
+| 内层 | `98d3feba` | `feat(i18n): 板块标题「仪表板」全量改名为「快速访问」` |
+| 外层 | `12c1bad` | `docs(agents): 补两条本轮真机踩到的硬约束` |
 
+两仓推送后 ahead/behind 均为 0/0。
 
 ---
 
