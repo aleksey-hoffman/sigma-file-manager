@@ -4,7 +4,7 @@
 > 仓库：`F:\soft\00selfmade\filemanager\sigma-file-manager`（origin `kizemo/alpha-file-manager`）
 > 外层仓：`F:\soft\00selfmade\filemanager`（origin `kizemo/focus-sync`）
 > 上游：`aleksey-hoffman/sigma-file-manager`（本机远端名 `upstream`）
-> **当前状态：P1–P3 已落地并推送，门禁全绿；P4 是产品决策，评估材料已备齐，等你拍板。**
+> **当前状态：P1–P3 已落地并推送，门禁全绿；P4 是产品决策，评估材料与真机截图已备齐，等你拍板。**
 
 ---
 
@@ -12,7 +12,9 @@
 
 AFM 落后 upstream 的 **23 个 commit 里，10 个早就移植过了、4 个用不上**；
 真正该动的只有 **CI 跑 e2e**、**语言包格式门禁**、**仪表盘纯函数抽取** 三件 —— 本轮全部做完。
-剩下的 **仪表盘 UI 改版**（2 个 commit、约 2600 行）是**产品决策不是合并决策**，本文档给出评估材料。
+剩下的 **仪表盘 UI 改版**（2 个 commit、约 2600 行）是**产品决策不是合并决策**，
+本文档给出评估材料 —— 包括**真机拍到的 upstream 新仪表盘实际画面**
+（upstream 这次改版还没进任何 release，没有官方截图可用）。
 
 ---
 
@@ -164,6 +166,23 @@ upstream 的 `removeTagFromAllItems` / `removeTaggedItem` 本仓也没有 ——
 
 ### 4.1 upstream 改了什么（用大白话说）
 
+> **本节的截图全部是本轮真机拍到的 upstream 实际运行画面。**
+> upstream 这次改版**还没进任何 release**（upstream 最新 v2.2.0 是 2026-07-17），
+> 没有官方截图可用，所以是自行构建 upstream `main` 的 debug 包拍的。
+> 拍法：拉 worktree → debug 构建 → 用 `SFM_E2E_DATA_DIR` 指到**隔离数据目录**
+> （两个应用共用 identifier `com.sigma-file-manager.app`，绝不能碰 AFM 与用户的真实数据）
+> → 灌入带真实照片的种子数据 → 最大化窗口 → 逐页签点过去拍。
+>
+> 原始截图 3862×2110（150% DPI 物理像素），入库版本已压到 1931×1055。
+
+| 画面 | 截图 |
+|---|---|
+| upstream 新仪表盘总览（收藏页签） | `docs/screenshots/upstream-dashboard-favorites.png` |
+| upstream 标记页签 —— **列表视图**（左侧标签栏 + 右侧条目） | `docs/screenshots/upstream-dashboard-tagged-list.png` |
+| upstream 标记页签 —— **网格视图**（卡片带缩略图 / 大小 / 相对时间） | `docs/screenshots/upstream-dashboard-tagged-grid.png` |
+| upstream 常用页签（卡片带「Opened N times」） | `docs/screenshots/upstream-dashboard-frequent.png` |
+| **AFM 现状**（同样的数据量，用于对照） | `docs/screenshots/afm-dashboard-current.png` |
+
 upstream 把仪表盘从「标题 + 一行小胶囊页签 + 内容区平铺一堆分组」改成：
 
 > **顶部一整块带背景图的 Hero 区，Hero 底部排四张带图标和大号计数的页签卡；
@@ -176,7 +195,7 @@ upstream 把仪表盘从「标题 + 一行小胶囊页签 + 内容区平铺一�
 
 | 元素 | 改动前（= AFM 现在的骨架） | 改动后（upstream 新版） |
 |---|---|---|
-| 顶部 | 普通标题区，下面一行胶囊页签 | 一整块背景图 Hero 区，页签升级成 **2×2 的大卡片**（图标块 + 名字 + 大号计数 + 箭头 + 口径说明） |
+| 顶部 | 普通标题区，下面一行胶囊页签 | 一整块背景图 Hero 区，页签升级成 **1×4 横排的四张大卡片**（图标块 + 名字 + 大号计数 + 「N total」+ 箭头） |
 | 导航 | **没有侧栏**，标签分组全平铺在内容区 | **300px 左侧标签栏**：搜索框过滤、可拖拽排序、每行 = 色点 + 名字 + 条目数 + ⋮ 菜单；灰色「未分类」固定在末尾；窄屏退化成横向滚动条 |
 | 卡片 | 固定图标 + 名字 + 父路径 | 支持**列表/网格**两种排布；图标位可显示**真实缩略图**；文件名右侧显示**文件大小**；整张卡是 hitbox |
 | 分组标题 | 内容区里的分组标题条（带改名/改色/删除） | **搬进侧栏**，内容区只显示当前选中标签那一组 |
@@ -198,7 +217,32 @@ upstream 把仪表盘从「标题 + 一行小胶囊页签 + 内容区平铺一�
 | 列表/网格切换 | 右上角两个图标按钮，网格是卡片墙 | `dashboard-tagged-view.vue` |
 | 打开所在文件夹 | 每张卡右上角一个文件夹按钮 | `dashboard-open-folder-button.vue` |
 
-**upstream 删掉/改掉的**
+### 4.1.1 实测拍出来的界面细节（源码读不出来的那些）
+
+以下都是**看着真机截图逐条核对**出来的，源码和设计稿里不写明：
+
+1. **Hero 的四张页签卡是 1×4 横排**（不是 2×2），卡面是「图标 + 名字 + 计数 + `N total` + 右箭头」，
+   当前选中的那张用主色描边高亮（Favorites 是橙色的）。**点卡片主体和点右箭头都会切页签。**
+2. **「文件大小」和「相对时间」不在同一个视图里**：
+   - 列表视图：文件名**右侧**显示大小（`166.1 KB`），**没有**相对时间；
+   - 网格视图：名称行右侧仍有大小，卡片**底部另起一行**显示「类型图标 + `JPG` + 日历图标 + `5 hours ago`」。
+   ⇒ 想要「添加于 X 小时前」，**必须切到网格视图**。
+3. **「打开所在文件夹」按钮的位置跟着视图变**：列表视图在卡片**右上角**，网格视图在卡片**右下角**。
+4. **标记页签的工具条在标题行右侧**，从左到右是：类型筛选（`All` / `Folders` / `Files` / `⋯`）
+   → 列表/网格切换（两个图标按钮）→ 排序下拉（`↑ Custom`）→ `⋮`。
+5. **左侧标签栏固定 300px**，每行是「拖拽手柄 + 色点 + 标签名 + 条目数徽章 + `⋯`」，
+   上面还有一个 `Search / create tag` 输入框（**能直接新建标签**）。选中行整行描边高亮。
+6. **收藏页签确实完全没有分类分组**（实测：5 条收藏平铺，无任何分组标题）——
+   这坐实了冲突清单第 1 条：AFM 的收藏分类体系在 upstream 那边**没有对应物可搬**。
+7. **常用页签的卡片带「Opened N times」徽章**（`Opened 30 times` / `Opened 23 times` …），
+   最近浏览页签则是时间戳。upstream 把「历史」改称 `Recently viewed`。
+8. **AFM 现状对照**（`docs/screenshots/afm-dashboard-current.png`）：
+   AFM 是「标题 + 四个胶囊页签（收藏 9 / 已标记 2 / 常用 100 / 历史 100）」
+   + 内容区**按收藏分类分组**（数据 / 软件 / 办公 / 学习，每组标题带改名、删除按钮）。
+   AFM 的数据量更大（收藏 9 / 常用 100 / 历史 100），upstream 种子数据只有 5 / 5 / 7，
+   所以**对比时看的是布局，不是条目数**。
+
+### 4.1.2 upstream 删掉/改掉的
 
 - 删 `dashboard-tag-section-header.vue`（171 行）：分组标题条不再在内容区；
 - 删 `entry-card-tags.vue`（288 行）：卡片上的标签 chip 改成新的共享组件 `item-tags-field.vue`；
@@ -306,3 +350,20 @@ upstream 把仪表盘从「标题 + 一行小胶囊页签 + 内容区平铺一�
    所有 git 远程操作带 `git -c http.proxy=`；推送失败时两条路轮着试。
 7. **`Measure-Object -Character` 量字符数会虚高** —— 管道里按行累加，量出来比真实值大一倍多。
    量文件体量一律用 node 读 git show 的输出。
+8. **给 upstream 拍截图有四个专门的坑**（这一整轮 P4 取图全靠它们）：
+   - **`app-key.ps1` / `click-webview-point.ps1` 都写死了进程名 `alpha-file-manager`**，
+     upstream 的二进制叫 `sigma-file-manager`，脚本直接报 `NO_PROCESS`。
+     ⇒ 另写了 `app-key-proc.ps1` / `click-webview-point-proc.ps1`（`-ProcName` 参数化）。
+   - **首启会弹「What's New」更新日志模态框**，把整个仪表盘挡住；ESC 发不进去
+     （`SetForegroundWindow` 没拿到前台权，`GetForegroundWindow() -ne $hwnd`）。
+     ⇒ 干净的解法不是关弹窗，而是**别让它弹**：
+     隔离目录里的 `user-settings.json` 写上 `"changelog.lastSeenVersion": "2.2.0"`，
+     `hasUnseenUpdate` 就是 false，重启后不再弹（`use-changelog.ts`）。
+   - **upstream 进程会在两次 shell 调用之间自己消失** —— 后台在给真实目录建 tantivy 索引
+     （日志里 `maxdoc=339601` 一路涨），把进程拖垮。
+     ⇒ 「启动 → 最大化 → 点页签 → 连拍两张」必须**在同一个脚本进程里跑完**
+     （`upstream-dashboard-shot.ps1`），别拆成多次调用。
+   - **两个应用共用 identifier `com.sigma-file-manager.app`**，同一时刻只能开一个；
+     取图全程用 `SFM_E2E_DATA_DIR` 指到隔离目录，**不碰** AFM 与用户的真实数据。
+9. **upstream debug 构建 10 分 03 秒** —— 判定需要真机证据就**早启动、丢后台**，
+   别等到写文档时才开始编译。
