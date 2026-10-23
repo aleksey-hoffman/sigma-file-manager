@@ -249,7 +249,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "הסר",
+      "clearAllConfirmTitle": "להסיר הכול מהרשימה הזו?",
+      "clearAllConfirmDescription": "לא ניתן לבטל פעולה זו.",
+      "removeFavoriteConfirmTitle": "להסיר מהמועדפים?",
+      "removeFavoriteConfirmDescription": "הפריט יוסר מכאן. סמן אותו כמועדף שוב כדי להחזיר אותו.",
+      "deleteTagConfirmTitle": "למחוק את התג הזה?",
+      "deleteTagConfirmDescription": "התג יימחק ויוסר מכל הפריטים.",
+      "removeTagConfirmTitle": "להסיר את התג מהפריט?",
+      "removeTagConfirmDescription": "הפריט לא יישאר עם התג הזה."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

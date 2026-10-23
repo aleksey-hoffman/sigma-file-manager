@@ -249,7 +249,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Հեռացնել",
+      "clearAllConfirmTitle": "Հանել բոլորը այս ցանկից?",
+      "clearAllConfirmDescription": "Սա հետ բերել հնարավոր չէ:",
+      "removeFavoriteConfirmTitle": "Հեռացնել սիրելիներից?",
+      "removeFavoriteConfirmDescription": "Տեղանշանը կհեռացվի այստեղից։ Վերադարձնելու համար նորից նշեք սիրելի։",
+      "deleteTagConfirmTitle": "Ջեռնանշանը ջնջե՞լ:",
+      "deleteTagConfirmDescription": "Ջեռնանշանը կջնջվի և կհանվի բոլոր տեղանշաններից։",
+      "removeTagConfirmTitle": "Հեռացնե՞լ ջեռնանշանը տեղանշանից։",
+      "removeTagConfirmDescription": "Տեղանշանը այլևս չի կրում այս ջեռնանշանը։"
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

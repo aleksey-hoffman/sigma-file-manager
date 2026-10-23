@@ -249,7 +249,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Remove",
+      "clearAllConfirmTitle": "Remove all from this list?",
+      "clearAllConfirmDescription": "This cannot be undone.",
+      "removeFavoriteConfirmTitle": "Remove this favorite?",
+      "removeFavoriteConfirmDescription": "The item will be removed from here. Favorite it again to bring it back.",
+      "deleteTagConfirmTitle": "Delete this tag?",
+      "deleteTagConfirmDescription": "The tag will be deleted and removed from all items.",
+      "removeTagConfirmTitle": "Remove this tag from the item?",
+      "removeTagConfirmDescription": "The item will no longer carry this tag."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

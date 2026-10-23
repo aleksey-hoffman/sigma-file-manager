@@ -249,7 +249,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Odstrani",
+      "clearAllConfirmTitle": "Odstrani vse s tega seznama?",
+      "clearAllConfirmDescription": "Tega dejanja ni mogoče razveljaviti.",
+      "removeFavoriteConfirmTitle": "Odstrani iz priljubljenih?",
+      "removeFavoriteConfirmDescription": "Predmet bo odstranjen od todaj. Ponovno ga dodajte med priljubljene, da ga vrnete.",
+      "deleteTagConfirmTitle": "Izbrišati to oznako?",
+      "deleteTagConfirmDescription": "Oznaka bo izbrisana in odstranjena iz vseh predmetov.",
+      "removeTagConfirmTitle": "Odstrani to oznako s predmeta?",
+      "removeTagConfirmDescription": "Predmet ne bo več imel te oznake."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

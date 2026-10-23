@@ -3,17 +3,29 @@ License: GNU GPLv3 or later. See the license file in the project root for more i
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
+<!-- FORK-MODIFICATION 2026-10-23：移植自 upstream `3eca4c17`（仪表盘重设计）的「给卡片加信息」部分。
+     三处改动，都不改变卡片原有的点击行为与插槽结构：
+       1. `sizeLabel` —— 文件名右侧显示条目大小；
+       2. 缩略图 —— 图片/视频进入视口后显示真实缩略图，没有缩略图就落回原来的图标；
+       3. `#meta` 插槽 —— 路径下面多一行元信息（类型 + 相对时间）。
+     upstream 那一版把整张卡片换成了「div + 绝对定位 hitbox」并引入了 list/grid 两种布局，
+     那是骨架级替换，不在本次范围内。 -->
+
 <script setup lang="ts">
-import { computed, useSlots } from 'vue';
+import { computed, ref, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FolderIcon, FileIcon, HardDriveIcon } from '@lucide/vue';
 import { getPathDisplayName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import { useDashboardEntryPreview } from '@/modules/dashboard/composables/use-dashboard-entry-preview';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   path: string;
   isFile?: boolean;
-}>();
+  sizeLabel?: string;
+}>(), {
+  sizeLabel: '',
+});
 
 const emit = defineEmits<{
   click: [];
@@ -21,6 +33,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const slots = useSlots();
+const rootRef = ref<HTMLElement | null>(null);
 
 const hasFooter = computed(() => !!slots.footer);
 
@@ -49,6 +62,12 @@ const isDirectory = computed(() => {
 
 const showLocationsIcon = computed(() => isVirtualLocationPath(props.path));
 
+const { thumbnailSrc } = useDashboardEntryPreview({
+  path: () => props.path,
+  isFile: () => !isDirectory.value,
+  rootRef,
+});
+
 function handleClick() {
   emit('click');
 }
@@ -56,6 +75,7 @@ function handleClick() {
 
 <template>
   <div
+    ref="rootRef"
     class="entry-card"
     :class="{ 'entry-card--with-footer': hasFooter }"
   >
@@ -65,8 +85,15 @@ function handleClick() {
       @click="handleClick"
     >
       <div class="entry-card__icon">
+        <img
+          v-if="thumbnailSrc"
+          class="entry-card__preview"
+          :src="thumbnailSrc"
+          alt=""
+          draggable="false"
+        >
         <HardDriveIcon
-          v-if="showLocationsIcon"
+          v-else-if="showLocationsIcon"
           :size="20"
         />
         <FolderIcon
@@ -79,8 +106,20 @@ function handleClick() {
         />
       </div>
       <div class="entry-card__content">
-        <span class="entry-card__name">{{ itemName }}</span>
+        <div class="entry-card__heading">
+          <span class="entry-card__name">{{ itemName }}</span>
+          <span
+            v-if="sizeLabel"
+            class="entry-card__size"
+          >{{ sizeLabel }}</span>
+        </div>
         <span class="entry-card__path">{{ itemDirectory }}</span>
+        <div
+          v-if="slots.meta"
+          class="entry-card__meta"
+        >
+          <slot name="meta" />
+        </div>
       </div>
       <slot />
     </button>
@@ -126,6 +165,7 @@ function handleClick() {
 
 .entry-card__icon {
   display: flex;
+  overflow: hidden;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
@@ -136,6 +176,12 @@ function handleClick() {
   color: hsl(var(--primary));
 }
 
+.entry-card__preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .entry-card__content {
   display: flex;
   min-width: 0;
@@ -144,8 +190,17 @@ function handleClick() {
   gap: 4px;
 }
 
+.entry-card__heading {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .entry-card__name {
   overflow: hidden;
+  min-width: 0;
+  flex: 1;
   color: hsl(var(--foreground));
   font-size: 0.9rem;
   font-weight: 500;
@@ -153,11 +208,29 @@ function handleClick() {
   white-space: nowrap;
 }
 
+.entry-card__size {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .entry-card__path {
   overflow: hidden;
   color: hsl(var(--muted-foreground));
   font-size: 0.8rem;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-card__meta {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  align-items: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  gap: 16px;
   white-space: nowrap;
 }
 

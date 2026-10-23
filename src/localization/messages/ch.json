@@ -216,7 +216,16 @@
       "removeTag": "移除标记",
       "renameCategory": "重命名分类",
       "deleteCategory": "删除分类",
-      "uncategorized": "未分类"
+      "uncategorized": "未分类",
+      "confirmRemove": "移除",
+      "clearAllConfirmTitle": "要从这个列表中移除全部吗？",
+      "clearAllConfirmDescription": "此操作无法撤销。",
+      "removeFavoriteConfirmTitle": "要取消收藏吗？",
+      "removeFavoriteConfirmDescription": "该条目将从此处移除。重新收藏即可让它回到这里。",
+      "deleteTagConfirmTitle": "要删除这个标记吗？",
+      "deleteTagConfirmDescription": "该标记将被删除，并从所有条目上移除。",
+      "removeTagConfirmTitle": "要移除这个标记吗？",
+      "removeTagConfirmDescription": "该条目将不再带有这个标记。"
     },
     "newFavoriteDialog": {
       "title": "添加到收藏",

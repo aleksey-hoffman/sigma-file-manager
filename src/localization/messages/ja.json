@@ -216,7 +216,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "削除",
+      "clearAllConfirmTitle": "このリストからすべて削除しますか？",
+      "clearAllConfirmDescription": "この操作は元に戻せません。",
+      "removeFavoriteConfirmTitle": "お気に入りから外しますか？",
+      "removeFavoriteConfirmDescription": "項目はここから削除されます。再度お気に入りに追加すると元に戻せます。",
+      "deleteTagConfirmTitle": "このタグを削除しますか？",
+      "deleteTagConfirmDescription": "タグは削除され、すべての項目から取り除かれます。",
+      "removeTagConfirmTitle": "この項目からタグを削除しますか？",
+      "removeTagConfirmDescription": "項目はこのタグを持たなくなります。"
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

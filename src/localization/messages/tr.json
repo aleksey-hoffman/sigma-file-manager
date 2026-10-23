@@ -216,7 +216,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Kaldır",
+      "clearAllConfirmTitle": "Bu listeden tümünü kaldırmak istiyor musunuz?",
+      "clearAllConfirmDescription": "Bu işlem geri alınamaz.",
+      "removeFavoriteConfirmTitle": "Favorilerden kaldırılsın mı?",
+      "removeFavoriteConfirmDescription": "Öğe buradan kaldırılacak. Geri getirmek için tekrar favoriye ekleyin.",
+      "deleteTagConfirmTitle": "Bu etiket silinsin mi?",
+      "deleteTagConfirmDescription": "Etiket silinecek ve tüm öğelerden kaldırılacak.",
+      "removeTagConfirmTitle": "Bu etiket öğeden kaldırılsın mı?",
+      "removeTagConfirmDescription": "Öğe artık bu etiketi taşımayacak."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

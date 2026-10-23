@@ -249,7 +249,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "ہٹائیں",
+      "clearAllConfirmTitle": "اس فہرست سے سب کچھ ہٹائیں؟",
+      "clearAllConfirmDescription": "یہ کار واپس نہیں لیا جا سکتا۔",
+      "removeFavoriteConfirmTitle": "پسندیدہ سے ہٹائیں؟",
+      "removeFavoriteConfirmDescription": "آئٹم یہاں سے ہٹا دیا جائے گا۔ واپس لانے کے لیے اسے دوبارہ پسندیدہ بنائیں۔",
+      "deleteTagConfirmTitle": "یہ ٹیگ حذف کریں؟",
+      "deleteTagConfirmDescription": "ٹیگ حذف ہو جائے گا اور تمام آئٹم سے ہٹا دیا جائے گا۔",
+      "removeTagConfirmTitle": "اس آئٹم سے یہ ٹیگ ہٹائیں؟",
+      "removeTagConfirmDescription": "آئٹم پر اب یہ ٹیگ نہیں ہوگا۔"
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

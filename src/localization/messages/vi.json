@@ -216,7 +216,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Xóa",
+      "clearAllConfirmTitle": "Xóa tất cả khỏi danh sách này?",
+      "clearAllConfirmDescription": "Không thể hoàn tác hành động này.",
+      "removeFavoriteConfirmTitle": "Xóa khỏi yêu thích?",
+      "removeFavoriteConfirmDescription": "Mục sẽ bị xóa khỏi đây. Đánh dấu yêu thích lại để đưa nó trở về.",
+      "deleteTagConfirmTitle": "Xóa thẻ này?",
+      "deleteTagConfirmDescription": "Thẻ sẽ bị xóa và gỡ khỏi mọi mục.",
+      "removeTagConfirmTitle": "Xóa thẻ này khỏi mục?",
+      "removeTagConfirmDescription": "Mục sẽ không còn mang thẻ này."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

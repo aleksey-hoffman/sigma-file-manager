@@ -249,7 +249,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Удалить",
+      "clearAllConfirmTitle": "Удалить все из этого списка?",
+      "clearAllConfirmDescription": "Это действие нельзя отменить.",
+      "removeFavoriteConfirmTitle": "Убрать из избранного?",
+      "removeFavoriteConfirmDescription": "Элемент будет удалён отсюда. Добавьте его в избранное снова, чтобы вернуть.",
+      "deleteTagConfirmTitle": "Удалить этот тег?",
+      "deleteTagConfirmDescription": "Тег будет удалён и снят со всех элементов.",
+      "removeTagConfirmTitle": "Убрать этот тег с элемента?",
+      "removeTagConfirmDescription": "Элемент больше не будет иметь этот тег."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

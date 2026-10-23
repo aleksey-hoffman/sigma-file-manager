@@ -36,6 +36,16 @@ import DashboardNameDialog from '@/modules/dashboard/components/dashboard-name-d
 import DashboardNewFavoriteDialog from '@/modules/dashboard/components/dashboard-new-favorite-dialog.vue';
 import EntryCard from '@/modules/dashboard/components/entry-card.vue';
 import EntryCardTags from '@/modules/dashboard/components/entry-card-tags.vue';
+// FORK-MODIFICATION 2026-10-23：移植 upstream `3eca4c17` 的「给现有卡片加信息」四项。
+// 这里只动信息层，不换页面骨架：标签页、分类分组、条目卡片结构全部保持原样。
+import DashboardTaggedItemMeta from '@/modules/dashboard/components/dashboard-tagged-item-meta.vue';
+import DashboardConfirmDialog from '@/modules/dashboard/components/dashboard-confirm-dialog.vue';
+import { provideDashboardEntryPreviews } from '@/modules/dashboard/composables/use-dashboard-entry-previews';
+import {
+  useDashboardItemSizes,
+  type DashboardSizedItem,
+} from '@/modules/dashboard/composables/use-dashboard-item-sizes';
+import { formatDashboardRelativeTime } from '@/utils/dashboard-relative-time';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import type {
@@ -105,6 +115,103 @@ const taggedItems = computed(() => userStatsStore.taggedItems);
 const historyItems = computed(() => userStatsStore.sortedHistory);
 const frequentItems = computed(() => userStatsStore.sortedFrequentItems);
 const tags = computed(() => userStatsStore.tags);
+
+// FORK-MODIFICATION 2026-10-23：缩略图助手在**页面级** provide，
+// 几十张卡片共用一套缩略图缓存 —— 每张卡片各建一个 composable
+// 会让同一个文件被重复解码、重复占内存。
+provideDashboardEntryPreviews();
+
+// 只统计**当前页签**的条目大小。四个页签的条目合起来可能几百条，
+// 一次性全部 stat 会把界面卡住；切页签时 watch 会自动重新取，
+// 目录大小还有 `useDirSizesStore` 的全局缓存兜底。
+const activeSizedItems = computed<DashboardSizedItem[]>(() => {
+  switch (activeTab.value) {
+    case 'tagged':
+      return taggedItems.value.map(item => ({
+        path: item.path,
+        isFile: item.isFile,
+      }));
+    case 'frequent':
+      return frequentItems.value.map(item => ({
+        path: item.path,
+        isFile: item.isFile,
+      }));
+    case 'history':
+      return historyItems.value.map(item => ({
+        path: item.path,
+        isFile: item.isFile,
+      }));
+    default:
+      return favoriteItems.value.map(item => ({
+        path: item.path,
+        isFile: isFavoriteFile(item),
+      }));
+  }
+});
+
+const { getSizeLabel } = useDashboardItemSizes(activeSizedItems);
+
+// FORK-MODIFICATION 2026-10-23：破坏性操作先弹确认框。
+// 收进来的口径（与 upstream 一致）：**批量**与**不可逆**的操作要确认；
+// 可逆的不确认 ——
+//   确认：清空收藏/标记/常用、删除标记、取消收藏、移除单个标记；
+//   不确认：删除收藏分类（收藏会回到「未分类」，可逆）、
+//           移除历史记录（重新访问就回来了，可逆）。
+type ConfirmAction = {
+  title: string;
+  description: string;
+  onConfirm: () => void | Promise<void>;
+};
+
+const confirmDialogOpen = ref(false);
+const pendingConfirmAction = ref<ConfirmAction | null>(null);
+
+function requestConfirmation(action: ConfirmAction) {
+  pendingConfirmAction.value = action;
+  confirmDialogOpen.value = true;
+}
+
+async function handleConfirmAction() {
+  const action = pendingConfirmAction.value;
+  pendingConfirmAction.value = null;
+
+  if (action) {
+    await action.onConfirm();
+  }
+}
+
+// FORK-MODIFICATION 2026-10-23：清空整个列表先弹确认框。
+function requestClearFavorites() {
+  requestConfirmation({
+    title: t('dashboard.actions.clearAllConfirmTitle'),
+    description: t('dashboard.actions.clearAllConfirmDescription'),
+    onConfirm: () => userStatsStore.clearAllFavorites(),
+  });
+}
+
+function requestClearTagged() {
+  requestConfirmation({
+    title: t('dashboard.actions.clearAllConfirmTitle'),
+    description: t('dashboard.actions.clearAllConfirmDescription'),
+    onConfirm: () => userStatsStore.clearAllTagged(),
+  });
+}
+
+function requestClearFrequent() {
+  requestConfirmation({
+    title: t('dashboard.actions.clearAllConfirmTitle'),
+    description: t('dashboard.actions.clearAllConfirmDescription'),
+    onConfirm: () => userStatsStore.clearAllFrequent(),
+  });
+}
+
+function requestClearHistory() {
+  requestConfirmation({
+    title: t('dashboard.actions.clearAllConfirmTitle'),
+    description: t('dashboard.actions.clearAllConfirmDescription'),
+    onConfirm: () => userStatsStore.clearHistory(),
+  });
+}
 
 // FORK-MODIFICATION: 反馈 4 —— 对话框状态。三种「新建」共用 name-dialog，
 // 只有「新建收藏」因为需要路径输入而单独一个。
@@ -238,17 +345,13 @@ function isFavoriteFile(item: FavoriteItem): boolean {
   return item.isFile;
 }
 
+// FORK-MODIFICATION 2026-10-23：相对时间改为复用纯模块
+// `@/utils/dashboard-relative-time`（原来这里内联了一份，和新加的
+// 「条目添加时间」是同一套逻辑，两处各写一遍迟早漂移）。
 function formatRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diffMs = now - timestamp;
-  const diffMinutes = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMinutes < 1) return t('dashboard.justNow');
-  if (diffMinutes < 60) return t('dashboard.minutesAgo', diffMinutes);
-  if (diffHours < 24) return t('dashboard.hoursAgo', diffHours);
-  return t('dashboard.daysAgo', diffDays);
+  return formatDashboardRelativeTime(timestamp, (key, count) => {
+    return count === undefined ? t(key) : t(key, count);
+  });
 }
 
 function openFavoriteItem(item: FavoriteItem) {
@@ -263,11 +366,18 @@ function openFrequentItem(item: FrequentItem) {
   openItem(item.path, item.isFile);
 }
 
-async function removeFavorite(path: string, event?: MouseEvent) {
+// FORK-MODIFICATION 2026-10-23：取消收藏改成先弹确认框。
+// 这个按钮是 AFM 特意保留的（upstream 把它删了且没补替代入口），
+// 误点之后只能靠「记得路径」重新收藏 —— 代价对用户是实打实的。
+function requestRemoveFavorite(path: string, event?: MouseEvent) {
   // 事件是可选的：卡片上的「取消收藏」既可能来自卡片按钮（带 MouseEvent），
   // 也可能来自 ⋮ 菜单项（无参数）。
   event?.stopPropagation();
-  await userStatsStore.removeFromFavorites(path);
+  requestConfirmation({
+    title: t('dashboard.actions.removeFavoriteConfirmTitle'),
+    description: t('dashboard.actions.removeFavoriteConfirmDescription'),
+    onConfirm: () => userStatsStore.removeFromFavorites(path),
+  });
 }
 
 async function removeHistoryItem(path: string, openedAt: number, event: MouseEvent) {
@@ -293,8 +403,14 @@ async function handleCreateTagForItem(item: TaggedItem, name: string) {
   await userStatsStore.addTagToItem(item.path, newTag.id, item.isFile);
 }
 
-async function handleDeleteTag(tagId: string) {
-  await userStatsStore.deleteTag(tagId);
+// FORK-MODIFICATION 2026-10-23：删标记先弹确认框 —— 删标记会同时把所有条目上的
+// tagId 剥掉，这一步是不可逆的。
+function requestDeleteTag(tagId: string) {
+  requestConfirmation({
+    title: t('dashboard.actions.deleteTagConfirmTitle'),
+    description: t('dashboard.actions.deleteTagConfirmDescription'),
+    onConfirm: () => userStatsStore.deleteTag(tagId),
+  });
 }
 
 async function handleRenameTag(tagId: string, name: string) {
@@ -437,8 +553,13 @@ async function handleMoveTaggedItem(section: TaggedSection, path: string, direct
   await userStatsStore.setTaggedItems(nextItems);
 }
 
-async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
-  await userStatsStore.removeTagFromItem(item.path, sectionTagId);
+// FORK-MODIFICATION 2026-10-23：移除单个标记先弹确认框。
+function requestRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
+  requestConfirmation({
+    title: t('dashboard.actions.removeTagConfirmTitle'),
+    description: t('dashboard.actions.removeTagConfirmDescription'),
+    onConfirm: () => userStatsStore.removeTagFromItem(item.path, sectionTagId),
+  });
 }
 </script>
 
@@ -515,7 +636,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
         >
           <DashboardActionBar
             :is-empty="favoriteItems.length === 0"
-            @clear-all="userStatsStore.clearAllFavorites()"
+            @clear-all="requestClearFavorites()"
           >
             <template #menu-items>
               <DropdownMenuItem
@@ -568,6 +689,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                     v-bind="getStaggerSlideUpBinding(section.staggerBase + itemIndex)"
                     :path="item.path"
                     :is-file="isFavoriteFile(item)"
+                    :size-label="getSizeLabel(item.path)"
                     @click="openFavoriteItem(item)"
                   >
                     <DashboardEntryActionsMenu
@@ -580,8 +702,12 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                       @move-up="handleMoveFavorite(item.path, -1)"
                       @move-down="handleMoveFavorite(item.path, 1)"
                       @move-to-category="categoryId => handleMoveFavoriteToCategory(item.path, categoryId)"
-                      @remove="removeFavorite(item.path, $event)"
+                      @remove="requestRemoveFavorite(item.path, $event)"
                     />
+                    <!-- FORK-MODIFICATION 2026-10-23：类型 + 「添加于 X 前」 -->
+                    <template #meta>
+                      <DashboardTaggedItemMeta :item="item" />
+                    </template>
                   </EntryCard>
                 </DirEntryInteractive>
               </div>
@@ -595,7 +721,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
         >
           <DashboardActionBar
             :is-empty="taggedItems.length === 0"
-            @clear-all="userStatsStore.clearAllTagged()"
+            @clear-all="requestClearTagged()"
           >
             <template #menu-items>
               <DropdownMenuItem
@@ -627,7 +753,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                   :can-move-up="canMoveTag(section.tag.id, -1)"
                   :can-move-down="canMoveTag(section.tag.id, 1)"
                   @rename-tag="handleRenameTag"
-                  @delete-tag="handleDeleteTag"
+                  @delete-tag="requestDeleteTag"
                   @update-tag-color="handleUpdateTagColor"
                   @move-up="tagId => handleMoveTag(tagId, -1)"
                   @move-down="tagId => handleMoveTag(tagId, 1)"
@@ -644,6 +770,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                     v-bind="getStaggerSlideUpBinding(section.staggerBase + itemIndex)"
                     :path="item.path"
                     :is-file="item.isFile"
+                    :size-label="getSizeLabel(item.path)"
                     @click="openItem(item.path, item.isFile)"
                   >
                     <template #footer>
@@ -667,8 +794,12 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                       :remove-label="t('dashboard.actions.removeTag')"
                       @move-up="handleMoveTaggedItem(section, item.path, -1)"
                       @move-down="handleMoveTaggedItem(section, item.path, 1)"
-                      @remove="handleRemoveTaggedItem(item, section.tag.id)"
+                      @remove="requestRemoveTaggedItem(item, section.tag.id)"
                     />
+                    <!-- FORK-MODIFICATION 2026-10-23：类型 + 「添加于 X 前」 -->
+                    <template #meta>
+                      <DashboardTaggedItemMeta :item="item" />
+                    </template>
                   </EntryCard>
                 </DirEntryInteractive>
               </div>
@@ -682,7 +813,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
         >
           <DashboardActionBar
             :is-empty="frequentItems.length === 0"
-            @clear-all="userStatsStore.clearAllFrequent()"
+            @clear-all="requestClearFrequent()"
           />
           <DashboardEmptyState
             v-if="frequentItems.length === 0"
@@ -704,6 +835,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                 v-bind="getStaggerSlideUpBinding(itemIndex)"
                 :path="item.path"
                 :is-file="item.isFile"
+                :size-label="getSizeLabel(item.path)"
                 @click="openFrequentItem(item)"
               >
                 <div class="entry-card__stats">
@@ -720,7 +852,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
         >
           <DashboardActionBar
             :is-empty="historyItems.length === 0"
-            @clear-all="userStatsStore.clearHistory()"
+            @clear-all="requestClearHistory()"
           />
           <DashboardEmptyState
             v-if="historyItems.length === 0"
@@ -742,6 +874,7 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
                 v-bind="getStaggerSlideUpBinding(itemIndex)"
                 :path="item.path"
                 :is-file="item.isFile"
+                :size-label="getSizeLabel(item.path)"
                 @click="openHistoryItem(item)"
               >
                 <span class="entry-card__time">{{ formatRelativeTime(item.openedAt) }}</span>
@@ -804,6 +937,14 @@ async function handleRemoveTaggedItem(item: TaggedItem, sectionTagId: string) {
       :initial-name="categoryBeingRenamed?.name ?? ''"
       :duplicate-of="categoryNameConflict"
       @confirm="handleRenameCategory"
+    />
+
+    <!-- FORK-MODIFICATION 2026-10-23：破坏性操作的确认框。 -->
+    <DashboardConfirmDialog
+      v-model:open="confirmDialogOpen"
+      :title="pendingConfirmAction?.title ?? ''"
+      :description="pendingConfirmAction?.description ?? ''"
+      @confirm="handleConfirmAction"
     />
   </PageDefaultLayout>
 </template>

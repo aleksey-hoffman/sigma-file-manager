@@ -216,7 +216,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "Eliminar",
+      "clearAllConfirmTitle": "¿Eliminar todo de esta lista?",
+      "clearAllConfirmDescription": "Esta acción no se puede deshacer.",
+      "removeFavoriteConfirmTitle": "¿Quitar de favoritos?",
+      "removeFavoriteConfirmDescription": "El elemento se quitará de aquí. Vuelve a marcarlo como favorito para recuperarlo.",
+      "deleteTagConfirmTitle": "¿Eliminar esta etiqueta?",
+      "deleteTagConfirmDescription": "La etiqueta se eliminará y se quitará de todos los elementos.",
+      "removeTagConfirmTitle": "¿Quitar esta etiqueta del elemento?",
+      "removeTagConfirmDescription": "El elemento dejará de llevar esta etiqueta."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",

@@ -209,7 +209,16 @@
       "removeTag": "Remove tag",
       "renameCategory": "Rename category",
       "deleteCategory": "Delete category",
-      "uncategorized": "Uncategorized"
+      "uncategorized": "Uncategorized",
+      "confirmRemove": "حذف",
+      "clearAllConfirmTitle": "همه از این فهرست حذف شوند؟",
+      "clearAllConfirmDescription": "این کار قابل بازگشت نیست.",
+      "removeFavoriteConfirmTitle": "از علاقه‌مندی‌ها حذف شود؟",
+      "removeFavoriteConfirmDescription": "این مورد از اینجا حذف می‌شود. برای بازگرداندن آن دوباره آن را علاقه‌مندی کنید.",
+      "deleteTagConfirmTitle": "این برچسب حذف شود؟",
+      "deleteTagConfirmDescription": "این برچسب حذف شده و از همه موارد برداشته می‌شود.",
+      "removeTagConfirmTitle": "این برچسب از مورد حذف شود؟",
+      "removeTagConfirmDescription": "این مورد دیگر این برچسب را نخواهد داشت."
     },
     "newFavoriteDialog": {
       "title": "Add to favorites",
