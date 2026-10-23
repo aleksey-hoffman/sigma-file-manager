@@ -41,10 +41,10 @@
     "history": "History",
     "emptyFrequent": "No frequently used items",
     "emptyHistory": "No history yet",
-    "openFavoritesTab": "Open Favorites tab in dashboard",
-    "openFrequentTab": "Open Frequent tab in dashboard",
-    "openHistoryTab": "Open History tab in dashboard",
-    "openTaggedTab": "Open Tagged tab in dashboard"
+    "openFavoritesTab": "Open Favorites tab in Quick Access",
+    "openFrequentTab": "Open Frequent tab in Quick Access",
+    "openHistoryTab": "Open History tab in Quick Access",
+    "openTaggedTab": "Open Tagged tab in Quick Access"
   },
   "placeholders": {
     "noDrivesFound": "לא נמצאו כוננים",
@@ -753,7 +753,7 @@
     "fonts": "גופנים, טקסט",
     "dateTime": "תאריך, שעה, תבנית",
     "uiElements": "ממשק, רכיבים, חזותי, קלט, צבע הדגשה, ציר זמן, גישה מהירה, דף, אחרונים, כרטיסים, דף הבית, כונן, שטח, מחוון, סגנון",
-    "quickAccess": "גישה מהירה, לוח, ריחוף, סרגל צד, לוח מחוונים",
+    "quickAccess": "גישה מהירה, לוח, ריחוף, סרגל צד",
     "tooltips": "תיאור כלי, ריחוף, השהיה, תזמון",
     "clipboard": "לוח העריכה, הדבקה, העתקה, גזירה, סרגל כלים, תמונה, צילום מסך, נתיב, קבצים",
     "homePageMediaBanner": "דף הבית, מדיה, באנר, רקע, תמונה, סרטון",

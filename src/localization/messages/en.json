@@ -41,10 +41,10 @@
     "history": "History",
     "emptyFrequent": "No frequently used items",
     "emptyHistory": "No history yet",
-    "openFavoritesTab": "Open Favorites tab in dashboard",
-    "openFrequentTab": "Open Frequent tab in dashboard",
-    "openHistoryTab": "Open History tab in dashboard",
-    "openTaggedTab": "Open Tagged tab in dashboard"
+    "openFavoritesTab": "Open Favorites tab in Quick Access",
+    "openFrequentTab": "Open Frequent tab in Quick Access",
+    "openHistoryTab": "Open History tab in Quick Access",
+    "openTaggedTab": "Open Tagged tab in Quick Access"
   },
   "placeholders": {
     "noDrivesFound": "No drives found",
@@ -753,7 +753,7 @@
     "fonts": "fonts, text",
     "dateTime": "date, time, format",
     "uiElements": "ui, elements, visual, input, accent, color, timeline, quick access, page, recent, cards, home, drive, space, indicator, style",
-    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "quickAccess": "quick, access, panel, hover, sidebar",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "clipboard, paste, copy, cut, toolbar, image, screenshot, path, files",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",

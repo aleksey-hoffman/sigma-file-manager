@@ -41,10 +41,10 @@
     "history": "历史",
     "emptyFrequent": "无常用项目",
     "emptyHistory": "暂无历史记录",
-    "openFavoritesTab": "在仪表盘打开「收藏夹」页签",
-    "openFrequentTab": "在仪表盘打开「常用」页签",
-    "openHistoryTab": "在仪表盘打开「历史」页签",
-    "openTaggedTab": "在仪表盘打开「已标记」页签"
+    "openFavoritesTab": "在快速访问打开「收藏夹」页签",
+    "openFrequentTab": "在快速访问打开「常用」页签",
+    "openHistoryTab": "在快速访问打开「历史」页签",
+    "openTaggedTab": "在快速访问打开「已标记」页签"
   },
   "placeholders": {
     "noDrivesFound": "未找到驱动器",
@@ -720,7 +720,7 @@
     "fonts": "字体,文本",
     "dateTime": "日期,时间,格式",
     "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、快速访问、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
-    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "quickAccess": "quick, access, panel, hover, sidebar",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "剪贴板, 粘贴, 复制, 剪切, 工具栏, 图像, 截图, 路径, 文件",
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",

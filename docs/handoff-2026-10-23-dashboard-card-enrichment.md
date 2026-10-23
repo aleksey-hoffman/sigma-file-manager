@@ -47,14 +47,17 @@
 | `src/modules/dashboard/composables/use-dashboard-entry-preview.ts` | upstream `3eca4c17`（**有改动**） | 单卡片缩略图：IntersectionObserver + 取消请求 |
 | `src/modules/dashboard/components/dashboard-tagged-item-meta.vue` | upstream `3eca4c17`（**有改动**） | 卡片底部的「类型 + 相对时间」一行 |
 | `src/modules/dashboard/components/dashboard-confirm-dialog.vue` | upstream `3eca4c17` | 通用确认框壳子（标题/描述由调用方给） |
+| `src/modules/dashboard/components/dashboard-hero.vue` | upstream `3eca4c17`（**有改动**） | Hero 顶部区（方向 C · 沉浸封面），四处理意差异见 6.3 |
+| `src/assets/media/dashboard/dashboard-top-bg.jpg` | upstream `3eca4c17` | Hero 封面图（69,249 字节） |
+| `src/localization/__tests__/quick-access-rename.test.ts` | 本轮自写 | 板块改名门禁：13 个必需 key + 全量旧名扫描（4 例） |
 
 ### 1.2 改动文件
 
 | 文件 | 改动 |
 |---|---|
 | `src/modules/dashboard/components/entry-card.vue` | 加 `sizeLabel` prop、缩略图渲染位、`#meta` 插槽 |
-| `src/modules/dashboard/pages/dashboard.vue` | 接线四项能力 + 确认框状态机 |
-| `src/localization/messages/*.json`（17 个） | 新增 9 个确认框文案 key |
+| `src/modules/dashboard/pages/dashboard.vue` | 接线四项能力 + 确认框状态机；页签挪进 Hero 并改玻璃态 |
+| `src/localization/messages/*.json`（17 个） | 新增 9 个确认框文案 key；改名 13 个 key（见第 7 节） |
 
 ### 1.3 刻意**没有**搬的部分（以及原因）
 
@@ -133,17 +136,19 @@
 
 | 门禁 | 结果 |
 |---|---|
-| `npx vitest run` | **240 文件 / 2110 用例全通过**（上一轮 238 / 2097，新增 2 文件 13 用例） |
+| `npx vitest run` | **241 文件 / 2114 用例全通过**（改名门禁新增 1 文件 4 用例） |
 | `npx eslint src` | **175 errors / 0 warnings**（= HEAD 基线，**新增 0**） |
 | `npx eslint .` | **188 errors / 0 warnings**（= HEAD 基线，**新增 0**） |
 | `npx vue-tsc --build` | exit 0 |
 | `cargo test --lib` | 793 passed / 0 failed（Rust 侧本轮未改） |
 | 17 个语言包 key 一致性 | 0 mismatch |
 | 语言包格式（无 CR / 恰好一个末尾换行 / 两空格缩进） | 全部通过 |
-| 改名校验 `verify-locale-rename.cjs` | `ALL CHECKS PASSED (17 locales, 8 keys each)` |
+| 改名校验 `verify-locale-rename.cjs` | `ALL CHECKS PASSED (17 locales, 13 required keys, 0 stale hits)` |
+| 旧板块名全量扫描 `scan-old-board-name.cjs` | **0 命中** |
 新增单测：
 - `src/utils/__tests__/dashboard-item-size.test.ts`（8 例）
 - `src/utils/__tests__/dashboard-relative-time.test.ts`（6 例）
+- `src/localization/__tests__/quick-access-rename.test.ts`（4 例）—— 板块改名门禁
 
 ---
 
@@ -327,12 +332,13 @@ PageDefaultLayout（不再传 title/subtitle，交给 Hero 渲染）
 
 | 范围 | 处理 |
 |---|---|
-| **所有用户可见 UI 文案** | 8 个 key × 17 语言，**全部改掉** |
+| **所有用户可见 UI 文案** | **13 个 key × 17 语言，**全部改掉** |
 | key 名本身 | **不动**（`pages.dashboard` 等仍是 `dashboard`，避免牵连代码与上游对齐） |
 | 代码里的文件名 / 函数名 | **不动**（`dashboard-*` 是本仓既定模块命名） |
-| 代码注释里的「仪表盘」内部术语 | **不动**（58 处 / 31 文件）—— 这是内部术语不是用户可见文案；要一并改请明示 |
+| 代码注释里的「仪表盘」内部术语 | **不动**（52 处 / 30 文件，`src/` 下）—— 这是内部术语不是用户可见文案；要一并改请明示 |
+| `public/changelog/**` 里的「仪表盘」 | **不动** —— 那是**已发布版本**的历史更新日志，改它等于篡改历史 |
 
-改动的 8 个 key：
+改动的 13 个 key：
 
 | key | 作用 |
 |---|---|
@@ -342,6 +348,31 @@ PageDefaultLayout（不再传 title/subtitle，交给 Hero 渲染）
 | `settings.uiElements.quickAccessOnHoverDescription` | 设置项「悬停打开快速访问」说明 |
 | `settings.stats.description` | 设置里「统计」的说明 |
 | `settingsTags.uiElements` / `settingsTags.stats` / `settingsTags.startupPage` | 标签页里的对应条目 |
+| `quickAccess.openFavoritesTab` / `openFrequentTab` / `openHistoryTab` / `openTaggedTab` | 侧边栏「快速访问」面板里四个跳转按钮的原生 title |
+| `settingsTags.quickAccess` | 设置页搜索关键词表（逗号分隔的同义词） |
+
+### 7.1.1 第一轮漏了 5 个 key —— 这次返工的教训
+
+第一轮改名是**手工挑 key** 做的，只改了上表前 8 个。
+结果漏掉了最后 5 个，而它们**同样是用户可见的**：
+
+- `quickAccess.open*Tab`（4 个）—— 侧边栏「快速访问」面板里四个跳转按钮的
+  `title` 属性，鼠标悬停就会显示「在仪表盘打开「收藏夹」页签」；
+- `settingsTags.quickAccess` —— 设置页的**搜索关键词表**，
+  值是 `"quick, access, panel, hover, sidebar, dashboard"`，
+  用户在设置页搜 "dashboard" 仍能命中「快速访问悬停」这个设置项。
+
+**漏改不会让任何功能测试变红** —— 功能是好的，只是文案还指着旧板块名。
+⇒ 根治办法不是「再仔细挑一遍」，而是把校验改成**扫全部字符串值**：
+
+| 门禁 | 做法 |
+|---|---|
+| `src/localization/__tests__/quick-access-rename.test.ts`（新增，4 例） | ① 13 个必需 key 在 17 个语言包都存在且非空；② **全部字符串值**里不出现任何语言的旧板块名（20 条正则）；③ 中文包用词被钉死 |
+| `.superpowers/sdd/scan-old-board-name.cjs`（一次性，不入库） | 全语言包扫描旧名残留，当前 **0 命中** |
+
+顺带发现：其余 16 个语言包的 `quickAccess.open*Tab` **本来就是未翻译的英文原文**
+（upstream 遗留），这一轮只把其中的 "dashboard" 换成 "Quick Access"，
+没有代做翻译 —— 翻译是另一件事，不在这次改名范围内。
 
 ### 7.2 顺带修掉的一处文案重复
 
@@ -376,10 +407,51 @@ PageDefaultLayout（不再传 title/subtitle，交给 Hero 渲染）
 
 ### 7.4 校验
 
-`node .superpowers/sdd/verify-locale-rename.cjs` →
-`ALL CHECKS PASSED (17 locales, 8 keys each)`。
-校验项：8 个 key 在每个语言包都存在且非空、旧词零残留、JSON 格式与缩进未被破坏、
-key 集合与改动前完全一致（没多没少）。
+| 门禁 | 结果 |
+|---|---|
+| `src/localization/__tests__/quick-access-rename.test.ts`（新增，4 例） | 13 个必需 key 在 17 个语言包都存在且非空；**全部字符串值**零旧名残留；中文用词被钉死 |
+| `node .superpowers/sdd/verify-locale-rename.cjs`（一次性） | `ALL CHECKS PASSED (17 locales, 13 required keys, 0 stale hits)` |
+| `node .superpowers/sdd/scan-old-board-name.cjs`（一次性） | 旧板块名残留 **0 命中** |
+
+### 7.5 真机验收：设置页搜索的正 / 负对照
+
+产物：`src-tauri/target/release/alpha-file-manager.exe`（55,970,816 字节，00:25:18）。
+
+改 `settingsTags.quickAccess` 的意义就在这里：设置页的搜索关键词表原本带 `dashboard`，
+用户在设置页搜 "dashboard" 仍能命中「快速访问悬停」这个设置项。
+而搜索是**跨所有 locale 匹配**的（`getAllTranslations`），
+所以改之前是 **13 个 locale 的英文 fallback + he/hi 两个本地化写法**共 15 处命中。
+
+**阳性对照（搜 "quick" → 必须命中）**
+
+<figure>
+  <img src="screenshots/afm-settings-search-quick.png" alt="设置页搜索 quick：命中「悬停时打开快速访问面板」" />
+</figure>
+
+`docs/screenshots/afm-settings-search-quick.png`
+
+搜索框里是 `quick`，「搜索结果」里出现了
+**「悬停时打开快速访问面板」**，描述是
+「启用后，将鼠标悬停在侧边栏的**快速访问**按钮上时，快速访问面板会自动打开」——
+**新名字已经生效**。
+
+**阴性对照（搜 "dashboard" → 必须零结果）**
+
+<figure>
+  <img src="screenshots/afm-settings-search-dashboard.png" alt="设置页搜索 dashboard：零结果" />
+</figure>
+
+`docs/screenshots/afm-settings-search-dashboard.png`
+
+搜索框里是 `dashboard`，「搜索结果」**一片空白** —— 旧板块名彻底搜不到任何设置项。
+
+两个对照是同一个搜索框、同一个设置项：一个词必须命中，一个词必须不命中，
+所以「搜不到」只能解释成关键词表里没有旧名，而不是「搜索坏了」。
+
+> 注入路径记录：`Set-Clipboard` + `SendInput` 的 **Ctrl+V**（VK_CONTROL=0x11 / VK_V=0x56）。
+> ⚠️ `INPUT` 结构必须显式 `[StructLayout(LayoutKind.Explicit, Size = 40)]` ——
+> 漏了 MOUSEINPUT 那 32 字节 union 时 `Marshal.SizeOf` 算出来不是 40，
+> `SendInput` 会**静默失败**，表现是「粘贴没反应」。
 
 ---
 
@@ -423,3 +495,16 @@ key 集合与改动前完全一致（没多没少）。
    100 历史 / 100 常用，与验收前逐项一致。
    ⇒ 顺带一条：`backup` 的语义是「**不存在才建**」，所以它**不会**覆盖旧备份 ——
    这在「旧备份才是真实数据」时救了我们一次，但平时要当心它不会刷新。
+8. **`SendInput` 的 `INPUT` 结构必须是 40 字节** —— 官方 `INPUT` 的 union 同时容纳
+   `MOUSEINPUT`（32 字节），所以结构体总长 40。若只声明 `KEYBDINPUT`，
+   `Marshal.SizeOf` 算出来会小于 40，`SendInput` **静默失败**（返回 0，不报错），
+   表现就是「粘贴没反应 / 键盘打不进去」。
+   ⇒ 正确写法：`[StructLayout(LayoutKind.Explicit, Size = 40)]` 显式钉住大小
+   （本仓 `.superpowers/sdd/app-key.ps1` 就是这么写的，照抄即可）。
+   本轮第一次写注入脚本时踩了这个坑：Popover 打开了、输入框有焦点光标，
+   但 `Ctrl+V` 的文字始终没进去 —— 换成 40 字节结构后一次就成功
+   （`SendInput` 返回 4 = 2 次调用 × 2 个事件）。
+9. **注入探针要「阳性对照在前」** —— 本轮把「搜 quick 必须命中」排在
+   「搜 dashboard 必须不命中」**前面**跑。这样一旦出现空结果，
+   能立刻分辨是「注入没进去」还是「功能真的没生效」；
+   反过来先跑阴性对照的话，空结果会有两种解释，白白多花一轮。

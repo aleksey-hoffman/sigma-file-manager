@@ -41,10 +41,10 @@
     "history": "History",
     "emptyFrequent": "No frequently used items",
     "emptyHistory": "No history yet",
-    "openFavoritesTab": "Open Favorites tab in dashboard",
-    "openFrequentTab": "Open Frequent tab in dashboard",
-    "openHistoryTab": "Open History tab in dashboard",
-    "openTaggedTab": "Open Tagged tab in dashboard"
+    "openFavoritesTab": "Open Favorites tab in Quick Access",
+    "openFrequentTab": "Open Frequent tab in Quick Access",
+    "openHistoryTab": "Open History tab in Quick Access",
+    "openTaggedTab": "Open Tagged tab in Quick Access"
   },
   "placeholders": {
     "noDrivesFound": "Диски не найдены",
@@ -753,7 +753,7 @@
     "fonts": "шрифты, текст",
     "dateTime": "дата, время, формат",
     "uiElements": "пользовательский интерфейс, элементы, визуальный элемент, ввод, акцент, цвет, временная шкала, быстрый доступ, страница, недавние, карточки, главная страница, диск, пространство, индикатор, стиль",
-    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "quickAccess": "quick, access, panel, hover, sidebar",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "буфер обмена, вставить, копировать, вырезать, панель, изображение, скриншот, путь, файлы",
     "homePageMediaBanner": "главная, страница, медиа, баннер, фон, изображение, видео",

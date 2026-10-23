@@ -41,10 +41,10 @@
     "history": "History",
     "emptyFrequent": "No frequently used items",
     "emptyHistory": "No history yet",
-    "openFavoritesTab": "Open Favorites tab in dashboard",
-    "openFrequentTab": "Open Frequent tab in dashboard",
-    "openHistoryTab": "Open History tab in dashboard",
-    "openTaggedTab": "Open Tagged tab in dashboard"
+    "openFavoritesTab": "Open Favorites tab in Quick Access",
+    "openFrequentTab": "Open Frequent tab in Quick Access",
+    "openHistoryTab": "Open History tab in Quick Access",
+    "openTaggedTab": "Open Tagged tab in Quick Access"
   },
   "placeholders": {
     "noDrivesFound": "No se encontraron unidades",
@@ -720,7 +720,7 @@
     "fonts": "fuentes, texto",
     "dateTime": "fecha, hora, formato",
     "uiElements": "ui, elementos, visual, entrada, acento, color, línea de tiempo, acceso rápido, página, reciente, tarjetas, inicio, unidad, espacio, indicador, estilo",
-    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "quickAccess": "quick, access, panel, hover, sidebar",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "portapapeles, pegar, copiar, cortar, barra de herramientas, imagen, captura, ruta, archivos",
     "homePageMediaBanner": "inicio, página, medios, banner, fondo, imagen, video",

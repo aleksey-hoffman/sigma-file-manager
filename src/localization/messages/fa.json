@@ -41,10 +41,10 @@
     "history": "History",
     "emptyFrequent": "No frequently used items",
     "emptyHistory": "No history yet",
-    "openFavoritesTab": "Open Favorites tab in dashboard",
-    "openFrequentTab": "Open Frequent tab in dashboard",
-    "openHistoryTab": "Open History tab in dashboard",
-    "openTaggedTab": "Open Tagged tab in dashboard"
+    "openFavoritesTab": "Open Favorites tab in Quick Access",
+    "openFrequentTab": "Open Frequent tab in Quick Access",
+    "openHistoryTab": "Open History tab in Quick Access",
+    "openTaggedTab": "Open Tagged tab in Quick Access"
   },
   "placeholders": {
     "noDrivesFound": "هیچ درایوی پیدا نشد",
@@ -713,7 +713,7 @@
     "fonts": "فونت، متن",
     "dateTime": "تاریخ، زمان، قالب",
     "uiElements": "رابط کاربری، عناصر، بصری، ورودی، لهجه، رنگ، جدول زمانی، دسترسی سریع، صفحه، اخیر، کارت‌ها، خانه، درایو، فضا، نشانگر، سبک",
-    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "quickAccess": "quick, access, panel, hover, sidebar",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "clipboard": "کلیپ‌بورد, چسباندن, کپی, برش, نوار ابزار, تصویر, اسکرین‌شات, مسیر, فایل",
     "homePageMediaBanner": "خانه، صفحه، رسانه، بنر، پس زمینه، تصویر، ویدئو",
