@@ -7,16 +7,16 @@
 
 | 版本 | PR | 状态 |
 |---|---|---|
-| 3.5.1 | https://github.com/microsoft/winget-pkgs/pull/460692 | open（等待 CLA 与评审） |
+| 3.5.1 | https://github.com/microsoft/winget-pkgs/pull/460744 | open（CLA 已签，校验进行中） |
 
 目录结构与上游仓库一致：
 
 ```
 manifests/<发布者首字母小写>/<发布者>/<应用名>/<版本>/
-    <包 ID>.yaml                # ManifestType: version
+    <包 ID>.yaml                # ManifestType: version      —— 带 DefaultLocale 字段
     <包 ID>.installer.yaml      # ManifestType: installer
-    <包 ID>.locale.en-US.yaml   # ManifestType: defaultLocale
-    <包 ID>.locale.zh-CN.yaml   # ManifestType: defaultLocale
+    <包 ID>.locale.en-US.yaml   # ManifestType: defaultLocale —— 其 PackageLocale 必须等于上面那个 DefaultLocale
+    <包 ID>.locale.zh-CN.yaml   # ManifestType: locale        —— 其它语言只能是这个值
 ```
 
 中间两层是**包 ID 按点拆开后的发布者段与应用名段**，不是包名 —— 本项目是
@@ -28,7 +28,7 @@ manifests/<发布者首字母小写>/<发布者>/<应用名>/<版本>/
 > `manifests/` 这层根目录会被吃掉，文件落到仓库根下的 `k/...` ——
 > 机器人直接判 `missing the manifests folder`。相对路径必须以包含 `manifests/` 的那层为基准。
 
-## 三条必须守住的规则
+## 必须守住的规则
 
 1. **`Publisher` 必须等于安装器写进 Windows ARP 的那个发布者。**
    它的来源是 `src-tauri/tauri.conf.json` 的 `bundle.publisher` → NSIS 模板的
@@ -40,6 +40,33 @@ manifests/<发布者首字母小写>/<发布者>/<应用名>/<版本>/
 
 3. **`InstallerSha256` 是安装包字节的 SHA-256**（大写十六进制）。
    重新打包后哈希会变，清单和 PR 都要一起更新。
+
+4. **一个版本目录里，每种 `ManifestType` 只允许一份文件。**
+   `version` / `installer` / `defaultLocale` 各一份；其它语言一律写
+   `ManifestType: locale`。两份 locale 文件都写 `defaultLocale`，上游会判
+   `DuplicateMultiFileManifestType`（"The multi file manifest should contain only one
+   file with the particular ManifestType"），校验在第 02 步直接停掉，后面几步根本不跑。
+
+   规则出处：`microsoft/winget-cli` 的
+   `src/AppInstallerCommonCore/Manifest/YamlParser.cpp` —— `Version` / `Installer` /
+   `DefaultLocale` 各自有一个「已找到」标志位，重复即报错；`Locale` 分支只查
+   `PackageLocale` 是否重复（错误码 `DuplicateMultiFileManifestLocale`），允许多份。
+
+   顺带两个 schema 差异（`aka.ms/winget-manifest.*.1.12.0.schema.json`）：
+
+   - `defaultLocale` 必填 `Publisher` / `PackageName` / `License` / `ShortDescription`；
+     `locale` 只必填 `PackageIdentifier` / `PackageVersion` / `PackageLocale` /
+     `ManifestType` / `ManifestVersion`。
+   - **`Moniker` 只在 `defaultLocale` 的字段表里**，`locale` 的字段表里没有。
+
+   所以 locale 文件只放「翻译过的那些字段」（对照上游
+   `manifests/m/Microsoft/AKSdesktop/0.43.0/`）：`PackageIdentifier`、`PackageVersion`、
+   `PackageLocale`、`ShortDescription`、`Description`、`Tags`、`ManifestType`、
+   `ManifestVersion`。完整元数据（`Publisher`、`PackageName`、`License`、`Moniker`…）
+   留在 `defaultLocale` 文件里。
+
+5. **`version` 文件的 `DefaultLocale` 必须等于 `defaultLocale` 文件的 `PackageLocale`。**
+   不一致会被判 `InconsistentMultiFileManifestDefaultLocale`。
 
 ## 提交方式
 

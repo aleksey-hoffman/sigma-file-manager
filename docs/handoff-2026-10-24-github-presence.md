@@ -237,9 +237,13 @@ winget 包**还没发布**（缺 `WINGET_TOKEN`），README 里放一个 `winget
    SHA-256 `8606AD3DF0DF6747C7403BB01C0014F1915CF050CCB9FB7FE8575B7D736A3BE9`。
    生成的 `installer.nsi` 里 `!define MANUFACTURER "kizemo"` 已确认。
 4. **发 GitHub release v3.5.1**（正文 = 英文摘要 + 中文详述，见 `_notes.md`）。
-5. **提交 winget 清单** ⇒ https://github.com/microsoft/winget-pkgs/pull/460692
-   （`New package: kizemo.AlphaFileManager version 3.5.1`，4 个文件 +121 行，
+5. **提交 winget 清单** ⇒ https://github.com/microsoft/winget-pkgs/pull/460744
+   （`New package: kizemo.AlphaFileManager version 3.5.1`，4 个文件，
    mergeable=true，上游校验流水线自动跑）。清单原文留在 `docs/winget/`。
+   ⚠️ 第一个 PR **#460692 已关闭**：它的清单路径写错了（少了上游的发布者层级），
+   机器人判 `missing the manifests folder`；改对路径后校验服务又报
+   `Internal-Error-PR` / `WinGetSvcError`（发生在分支正被连续删/加文件的半路上）。
+   ⇒ 干净重开为 #460744：**1 个 commit、4 个文件、base = 当时的 upstream master**。
 6. **HelloGitHub 自荐**：提交表单是客户端模态框，**没有独立路由**；
    `/submit` 一类路径全是 404，真实存在的只有 `/report/contribution`（贡献排行榜，不是表单）。
    ⇒ 登录必须由用户本人完成（OAuth）；登录后表单与提交由 agent 代做。
@@ -271,6 +275,72 @@ winget 包**还没发布**（缺 `WINGET_TOKEN`），README 里放一个 `winget
 - **自动化点击在 HelloGitHub 上 275 秒超时且点击根本没派发**（页面持续动画，
   工具的「元素稳定」前置检查等不到稳定帧）；而 `query` 只要 150–200 毫秒
   ⇒ 读页面用 query，交互交给人。
+
+---
+
+## 9. 第三轮：修掉 winget 校验的 `DuplicateMultiFileManifestType`（2026-10-24 晚）
+
+### 9.1 发生了什么
+
+#460744 的上游校验跑完了，第 02 步 `Manifest Validation` 红了：
+
+```
+[Error] DuplicateMultiFileManifestType: The multi file manifest should contain only one
+file with the particular ManifestType. (ManifestType)
+```
+
+第 03 步往后的下载安装包、核对哈希、沙箱试装**根本没跑**（校验在第 02 步就停）。
+
+### 9.2 根因
+
+我们自己写的两份 locale 文件**都**写了 `ManifestType: defaultLocale`：
+
+```
+kizemo.AlphaFileManager.locale.en-US.yaml   ManifestType: defaultLocale   ← 对
+kizemo.AlphaFileManager.locale.zh-CN.yaml   ManifestType: defaultLocale   ← 错，应为 locale
+```
+
+上游规则（`microsoft/winget-cli`，`src/AppInstallerCommonCore/Manifest/YamlParser.cpp`）：
+`Version` / `Installer` / `DefaultLocale` 三个分支各有一个「已找到」标志位，
+同一版本目录里重复出现就报 `DuplicateMultiFileManifestType`；
+`Locale` 分支只查 `PackageLocale` 是否重复（错误码 `DuplicateMultiFileManifestLocale`），
+**允许多份**。
+
+### 9.3 顺带发现的两处 schema 不对称
+
+对比 `aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json` 与
+`aka.ms/winget-manifest.locale.1.12.0.schema.json`：
+
+| | defaultLocale | locale |
+|---|---|---|
+| 必填 | 多 4 个：`Publisher` / `PackageName` / `License` / `ShortDescription` | 只 5 个身份字段 |
+| `Moniker` | **在字段表里** | **不在字段表里** |
+
+⇒ 完整元数据（`Publisher` / `PackageName` / `License` / `Moniker`…）一律留在
+`defaultLocale` 文件；`locale` 文件只放翻译过的 `ShortDescription` / `Description` / `Tags`。
+上游真实多语言包可对照 `manifests/m/Microsoft/AKSdesktop/0.43.0/`。
+
+### 9.4 修法与验证
+
+- 把 `kizemo.AlphaFileManager.locale.zh-CN.yaml` 改成 `ManifestType: locale` +
+  locale schema URL + 上述最小字段集；
+- 写了 `.superpowers/sdd/sync-winget-stage.cjs` 做**机器自检**：
+  四个文件的 `ManifestType` 各归其位、`U+FFFD === 0`、行尾全是 LF、
+  `version.DefaultLocale === defaultLocale.PackageLocale`、locale 文件不含 `Moniker`；
+- 用 contents API 把该文件更新到 fork 分支（**非空提交**，空提交会被判 `noContent`），
+  PR 随即 `synchronize`，校验重跑。
+
+### 9.5 这一轮踩的坑
+
+- **上游发布者目录名保留原始大小写**：`manifests/m/Microsoft/...`，
+  不是 `manifests/m/microsoft/...`。拿上游目录当模板时按小写拼 ⇒ contents API 直接 404，
+  一度以为「上游没有这个包」。
+- **GitHub 上 `search/code` 对 winget-pkgs 这种超大仓索引不到**（`total_count` 恒为 0），
+  改用 contents API 逐层列目录才拿到真实样例。
+- **PowerShell 的 `>` 重定向会写成 UTF-16**，后续按 UTF-8 解析必炸（一堆替换字符）；
+  取 API 响应要用 node 直接捕获 `gh api` 的 stdout，别走 PowerShell 重定向。
+- **`raw.githubusercontent.com` 与 `api.github.com` 走的是两条路**：前者本机超时，
+  后者正常。取上游文件一律走 `gh api ... -H 'Accept: application/vnd.github.raw'`。
 
 ---
 
