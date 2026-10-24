@@ -342,6 +342,53 @@ kizemo.AlphaFileManager.locale.zh-CN.yaml   ManifestType: defaultLocale   ← �
 - **`raw.githubusercontent.com` 与 `api.github.com` 走的是两条路**：前者本机超时，
   后者正常。取上游文件一律走 `gh api ... -H 'Accept: application/vnd.github.raw'`。
 
+### 9.6 最终结果：校验全绿，等版主评审
+
+修正后的这一轮（`OperationId: WinGetSvc-Validation-460744-2`，head `5c75afac`）
+**10 步全部通过**：
+
+| 步骤 | 结论 |
+|---|---|
+| 01 Pull Request Validation | success |
+| 02 Manifest Validation | success（修掉判重错误之后） |
+| 03 URLs Validation | success |
+| 04 URL Domain Validation | success |
+| 05 Manifest Policy Validation | success |
+| 06 Catalog Content Verification | success（含 Duplicate Hash Verification: Passed） |
+| 07 Installers Scan | success（Defender 静态扫描） |
+| 08 Installation Validation | success（沙箱试装，**约 35 分钟**） |
+| 09 Installer Metadata Validation | success |
+| 10 Validation Completed | success |
+
+PR 标签：`Azure-Pipeline-Passed` + `Validation-Completed` + `New-Package`
+（`Validation-Guide` 与 `Needs-CLA` 都被自动清掉了）。
+上游机器人最后一条留言说明下一步：
+
+> The check-in policies require a moderator to approve PRs from the community.
+> Our moderators are community volunteers, please be patient and allow them
+> sufficient time to review your submission.
+
+⇒ **剩下的是社区版主人工评审与合并，不是机器流程。**
+
+另有两条旁证：
+- `github-actions[bot]` 在 06:33 发的诊断留言独立指出了同一个根因
+  （"Both … .locale.en-US.yaml and … .locale.zh-CN.yaml declare `ManifestType: defaultLocale`"），
+  与我们自己从 `YamlParser.cpp` 读到的规则一致。
+- 第 08 步耗时 ~35 分钟，比同期样本（~10 分钟）长得多。原因基本确定：
+  `tauri.conf.json` **没有配 `webviewInstallMode`**，Tauri v2 默认
+  `downloadBootstrapper` ⇒ 沙箱机器上没装 WebView2 运行时时，
+  安装过程要联网下载引导程序再装运行时（~130MB）。这一步是**安装耗时**，
+  不是卡死。⚠️ 推论：若换成 `offlineInstaller`，包体会多出 ~130MB；
+  换 `skip` 则目标机没 WebView2 就跑不起来。**当前配置下上游校验已通过，
+  暂时不需要动它** —— 但这是后续发版要知道的取舍。
+
+### 9.7 还需要人做的事
+
+| 事项 | 状态 | 谁来做 |
+|---|---|---|
+| winget 版主评审与合并 | 校验已全绿，等社区版主 | 上游版主（社区志愿者） |
+| 安装包代码签名 | `NotSigned`，评审通常会要求 | 用户（需自备证书） |
+
 ---
 
 *文档生成时间：2026-10-24（Asia/Shanghai）*

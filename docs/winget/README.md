@@ -7,7 +7,7 @@
 
 | 版本 | PR | 状态 |
 |---|---|---|
-| 3.5.1 | https://github.com/microsoft/winget-pkgs/pull/460744 | open（CLA 已签，校验进行中） |
+| 3.5.1 | https://github.com/microsoft/winget-pkgs/pull/460744 | 校验 10 步全绿（`Validation-Completed`），等版主评审 |
 
 目录结构与上游仓库一致：
 
@@ -128,6 +128,27 @@ check run 删掉，所以「PR 上没有校验条目」通常意味着**已经�
 **踩过的坑：** 一次 operation 报 `Internal-Error-PR` / `WinGetSvcError`（03–09 步全 skipped、
 10 步 neutral），发生在分支正被连续删/加文件的半路上 —— operation 是在 diff 还没稳定时算的。
 **一次把清单推到位再让它跑**，别一边改一边验。
+
+**第 08 步（沙箱试装）可能跑很久，别当成卡死。** 本项目实测 3.5.1 这一轮第 08 步
+从 07:10 跑到 07:45，**约 35 分钟**（同期其它包样本约 10 分钟）。原因：
+`src-tauri/tauri.conf.json` **没有配 `webviewInstallMode`**，Tauri v2 默认
+`downloadBootstrapper` —— 沙箱机器上没装 WebView2 运行时时，安装过程要联网下载
+引导程序再装运行时（~130MB）。这是**安装耗时**，不是挂起。
+⚠️ 取舍：改 `offlineInstaller` 会让安装包多出 ~130MB；改 `skip` 则目标机没装
+WebView2 就跑不起来。当前配置已通过上游校验，暂不需要动。
+
+## 校验通过之后
+
+机器流程到此为止，剩下的是**社区版主人工评审与合并**。上游机器人会留言：
+
+> The check-in policies require a moderator to approve PRs from the community.
+> Our moderators are community volunteers, please be patient and allow them
+> sufficient time to review your submission.
+
+已合并的上游 PR 标签形如 `Validation-Completed` + `Azure-Pipeline-Passed` +
+`Moderator-Approved` + `New-Package` —— `Moderator-Approved` 是版主加的，
+**我们加不了，也不该加**。版主的名单见
+`doc/Moderation.md#moderators`。`@wingetbot run` 也只有版主能发。
 
 ## 还没解决的事
 
