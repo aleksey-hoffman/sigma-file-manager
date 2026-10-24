@@ -122,8 +122,8 @@ locale code 是 `ch` 不是 `zh`）是**完整翻译**的。
 | SFM 没有目录树 | 本仓 README 自己的声明（「Everything below is ours. Nothing in this section exists upstream.」） |
 | SFM 有分屏，但没有左右互换 | 上游 2.2.0 有 `Linked` / `Split` 两种模式，**模式切换在导航器选项菜单里**；左右互换是 fork 3.2.4 才加的 |
 | SFM **没有批量改名** | 上游 changelog 里根本没有这个功能；「Adds batch rename」是 **fork 的 3.0.0**。3.0.1 修的是它自己的静默覆盖 bug |
-| SFM 没有四档缩略图 | 「Four thumbnail sizes | 3.1.0」是 fork 的版本号 → 上游没有 |
-| SFM 收藏没有分类 | 「Favourites ask for a category | 3.1.3」「Dashboard favourites grouped by category | 3.1.2」都是 fork 的版本号 |
+| SFM 没有四档缩略图 | 「Four thumbnail sizes \| 3.1.0」是 fork 的版本号 → 上游没有 |
+| SFM 收藏没有分类 | 「Favourites ask for a category \| 3.1.3」「Dashboard favourites grouped by category \| 3.1.2」都是 fork 的版本号 |
 | SFM 与 AFM 都支持 Linux | 本仓 README 首句：*A modern file manager for Windows and Linux*（AFM 是 SFM 的构建） |
 
 表格下面有一段「**该选哪个**」的说明，**如实写出资源管理器的强项**
