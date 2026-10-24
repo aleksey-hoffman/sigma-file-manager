@@ -25,7 +25,7 @@ const HTTP_TIMEOUT_SECS: u64 = 900;
 // 15s x retries x N probes was the entire 180s cold start. A reachable CDN or
 // GitHub connects in well under a second, so 5s costs nothing when the network
 // is fine and saves ~2/3 of the stall when it is not. See extensions.ts
-// unStartupMarketplaceSync for the other half of that fix.
+// `runStartupMarketplaceSync` for the other half of that fix.
 const HTTP_CONNECT_TIMEOUT_SECS: u64 = 5;
 const HTTP_POOL_IDLE_TIMEOUT_SECS: u64 = 30;
 const HTTP_TCP_KEEPALIVE_SECS: u64 = 30;
@@ -35,9 +35,9 @@ const DNS_RESOLVE_TIMEOUT_SECS: u64 = 10;
 const MAX_REMOTE_REDIRECTS: usize = 10;
 
 pub const HTTP_USER_AGENT: &str = concat!(
-    "sigma-file-manager/",
+    "alpha-file-manager/",
     env!("CARGO_PKG_VERSION"),
-    " (+https://github.com/aleksey-hoffman/sigma-file-manager)"
+    " (+https://github.com/kizemo/alpha-file-manager)"
 );
 
 fn base_http_client_builder() -> reqwest::ClientBuilder {

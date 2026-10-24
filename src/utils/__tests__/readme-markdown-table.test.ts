@@ -6,7 +6,7 @@
 //
 // ## 这道门禁为什么存在
 //
-// 2026-10-24 重写双��� README 后，GitHub 上「Alpha File Manager vs Sigma File Manager
+// 2026-10-24 重写双语 README 后，GitHub 上「Alpha File Manager vs Sigma File Manager
 // vs Windows Explorer」那张对比表**整块塌成了一段文字** —— 用户直接指出来了。
 //
 // 根因是 GFM 的表格规则：**表头行、分隔行、每一行数据行的列数必须完全一致**，

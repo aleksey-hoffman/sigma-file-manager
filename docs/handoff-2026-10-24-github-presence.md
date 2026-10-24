@@ -151,7 +151,7 @@ $ gh api repos/kizemo/alpha-file-manager --jq '{fork,parent:.parent.full_name,ne
 
 | # | 问题 | 后果 | 修法 |
 |---|---|---|---|
-| 1 | `identifier: AlekseyHoffman.SigmaFileManager`（**上游的包 ID**） | 一旦配上 token，我们���二进制会**覆盖上游的 winget 包** | 改成 `kizemo.AlphaFileManager` |
+| 1 | `identifier: AlekseyHoffman.SigmaFileManager`（**上游的包 ID**） | 一旦配上 token，我们的二进制会**覆盖上游的 winget 包** | 改成 `kizemo.AlphaFileManager` |
 | 2 | `installers-regex: '-windows-setup\.exe$'` | 我们的资产名是 `Alpha_File_Manager_3.5.0_x64-setup.exe`，**正则匹配不上** | 改成 `-x64-setup\.exe$` |
 
 另外：这两个 bug 叠加上「仓库里没有 `WINGET_TOKEN` 这个 secret」⇒ 该工作流
@@ -213,6 +213,58 @@ winget 包**还没发布**（缺 `WINGET_TOKEN`），README 里放一个 `winget
 8. **冷启动要 3 分钟**：`afm-nav-accept.ps1` 里 90 秒的等窗口上限不够，
    表现为「AFM main window never appeared」，但应用其实好好地起来了。
    ⇒ 新增了 `afm-capture-only.ps1`（只抓不重启），可以等窗口出现后再抓。
+
+---
+
+## 8. 第二轮：3.5.1 发版 + winget 提交（2026-10-24 下午）
+
+上一轮把仓库门面改好了，但 winget 与 HelloGitHub 两件事卡在同一个地方：
+**发布者**。安装器写进 Windows ARP 的 `Publisher` 来自
+`tauri.conf.json` 的 `bundle.publisher`，而 Tauri v2 的默认值是
+**identifier 的第二段** —— 本仓 identifier 是 `com.sigma-file-manager.app`，
+于是默认发布者成了 `sigma-file-manager`（上游的名字）。
+
+包管理器靠「发布者 + 程序名 + 版本号」认领一个已安装程序，对不上就当不认识，
+升级也不会接管。⇒ 必须先修发布者，再打包发版，才能拿到与清单一致的资产。
+
+### 8.1 做了什么
+
+1. **修发布者与包元数据**（`bundle.publisher: "kizemo"`、Cargo 的 authors/repository、
+   HTTP User-Agent、Flatpak 主页与问题反馈链接全部指向本仓）。
+2. **版本 3.5.0 → 3.5.1**，CHANGELOG 补条目（`verify-changelog` 是门禁，缺条目就红）。
+3. **重新打包**（`npm run tauri:build`，约 8 分钟）⇒ 产物
+   `Alpha_File_Manager_3.5.1_x64-setup.exe`，20,570,585 字节，
+   SHA-256 `8606AD3DF0DF6747C7403BB01C0014F1915CF050CCB9FB7FE8575B7D736A3BE9`。
+   生成的 `installer.nsi` 里 `!define MANUFACTURER "kizemo"` 已确认。
+4. **发 GitHub release v3.5.1**（正文 = 英文摘要 + 中文详述，见 `_notes.md`）。
+5. **提交 winget 清单** ⇒ https://github.com/microsoft/winget-pkgs/pull/460692
+   （`New package: kizemo.AlphaFileManager version 3.5.1`，4 个文件 +121 行，
+   mergeable=true，上游校验流水线自动跑）。清单原文留在 `docs/winget/`。
+6. **HelloGitHub 自荐**：提交表单是客户端模态框，**没有独立路由**；
+   `/submit` 一类路径全是 404，真实存在的只有 `/report/contribution`（贡献排行榜，不是表单）。
+   ⇒ **这一步需要用户本人登录**（侧栏「立即登录」/ `/user/login`），登录后才能填表提交。
+
+### 8.2 三个未决项
+
+| 事项 | 状态 | 谁来做 |
+|---|---|---|
+| winget 的 CLA 签署 | 校验任务在排队 | 用户（GitHub 账号一次性签署） |
+| 安装包代码签名 | `NotSigned`，评审通常会要求 | 用户（需自备证书） |
+| HelloGitHub 表单提交 | 表单与文案已备好 | 用户登录后我代填代交 |
+
+### 8.3 这一轮踩的坑（已写进 AGENTS.md 2.4）
+
+- **孤立 CR 地雷**：`src-tauri/src/extensions/http.rs` 的注释里夹了一个裸 `0x0D`，
+  rustc 认得（整行仍是注释），但任何规范化行尾的写入路径都会把它变成换行 ⇒
+  注释后半句变成裸代码 ⇒ **整个 crate 编译失败**（10 个错误，E0277 全是级联）。
+  第一轮打包就是死在这。⇒ 改 `.rs` 前先扫孤立 CR，修复用 node 按字节改。
+- **写工具把一个汉字写成 3 个 U+FFFD**（`双` + 三个替换符）。
+  ⇒ 写完中文必须验 `U+FFFD === 0`；但 `network_shares.rs` 等文件里的 U+FFFD 是故意的。
+- **`tauri build` 报 `failed to remove file ... os error 5`**：上一轮残留的应用进程
+  占着 `target/release/alpha-file-manager.exe` ⇒ 打包前先杀进程并核对真实用户数据。
+- **自动化点击在 HelloGitHub 上 275 秒超时且点击根本没派发**（页面持续动画，
+  工具的「元素稳定」前置检查等不到稳定帧）；而 `query` 只要 150–200 毫秒
+  ⇒ 读页面用 query，交互交给人。
 
 ---
 
