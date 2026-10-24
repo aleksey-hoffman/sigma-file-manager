@@ -1,12 +1,26 @@
 name: Publish to winget
 
+# FORK-MODIFICATION (kizemo / Alpha File Manager):
+#   1. `identifier` was inherited from upstream and still pointed at upstream's
+#      package id (`AlekseyHoffman.SigmaFileManager`). Submitting our binaries
+#      under upstream's id would overwrite upstream's winget package.
+#   2. `installers-regex` still matched upstream's asset name
+#      (`-windows-setup.exe`); our release assets are named
+#      `Alpha_File_Manager_<version>_x64-setup.exe`.
+#   3. This workflow needs a `WINGET_TOKEN` secret: a PAT with the `winget`
+#      scope. Without it every run fails on the first step, so winget
+#      publication never happened (0 runs so far).
+#
+# Verify the asset name after renaming the bundle:
+#   gh api repos/kizemo/alpha-file-manager/releases/latest --jq '.assets[].name'
+
 on:
   release:
     types: [released, prereleased]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing release tag to submit (e.g. v2.0.0)'
+        description: 'Existing release tag to submit (e.g. v3.5.0)'
         required: true
         type: string
 
@@ -21,8 +35,8 @@ jobs:
       - name: Submit to winget-pkgs
         uses: vedantmgoyal9/winget-releaser@v2
         with:
-          identifier: AlekseyHoffman.SigmaFileManager
-          installers-regex: '-windows-setup\.exe$'
+          identifier: kizemo.AlphaFileManager
+          installers-regex: '-x64-setup\.exe$'
           release-tag: ${{ github.event.inputs.tag || github.event.release.tag_name }}
           token: ${{ secrets.WINGET_TOKEN }}
           max-versions-to-keep: 10
