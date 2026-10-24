@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.5.1] - October 2026
+
+**Summary:** A housekeeping release, with one change that is visible outside the application. The installer now records this project's own publisher instead of the name of the project it was forked from, so Windows "Apps & features" and the Windows Package Manager list the same publisher as the program's own name. The release also repairs the repository page itself: the comparison table between the three file managers is a table again instead of a paragraph, the licence is the actual GPL-3.0 text so the repository is labelled GPL-3.0 rather than "NOASSERTION", and the automatic winget submission targets this repository's own package id instead of the upstream one.
+
+### What changed
+
+**Fixed: the installer claimed the wrong publisher.** The publisher written into the Windows registry was inherited from the project this one was forked from, which meant the program was listed under a name that was not its own. It is now the publisher this project publishes under, which is also the publisher the Windows Package Manager entry is filed under -- the two now agree, which is what makes an upgrade over an existing installation work.
+
+**Fixed: the comparison table in the repository page was not a table.** The header row had five columns and the separator row underneath it had only four, and GitHub's Markdown parser responds to that by turning the whole block into one paragraph of pipe characters. The table now renders as a table, and a check runs over every Markdown file in the repository so a mismatch like this cannot come back unnoticed.
+
+**Fixed: the repository's licence was not being recognised.** The licence file was a hand-written summary rather than the licence itself, so GitHub could not identify it and showed "NOASSERTION" in the repository sidebar. It is now the full GPL-3.0 text, with the copyright and attribution statement moved to a separate notice file, and the repository now shows GPL-3.0.
+
+**Improved: the repository page was rewritten.** The README used to run to nearly fifty kilobytes, most of it a wall of release notes that pushed the actual description of the program off the first screen. It is now a page that says what the program is, shows it, and links to the things a reader is most likely to want next: the download matrix, the feature comparison, the change log, and the sources it was built on.
+
+**Fixed: the automatic winget submission pointed at the upstream package.** The publish workflow still carried the upstream package id and the upstream installer filename pattern, so the first time it had been allowed to run it would have offered our binaries as an update to somebody else's package. Both now refer to this repository's own package id and to the asset names this repository actually produces.
+
+**Changed: the package metadata points at this repository.** The Cargo manifest's authors and repository fields, the HTTP user agent, and the Flatpak homepage and bug tracker links all still named the upstream project. They now name this project.
+
 ## [3.5.0] - October 2026
 
 **Summary:** Two things that made the application look broken are fixed. Comparing two folders no longer gives up at the first directory it is not allowed to read -- which, on a real folder tree, was almost always the first directory it met -- and it is now roughly fifty times faster while telling you how far along it is. Deleting a large folder tree no longer looks like a frozen application either: the progress bar now counts the items it has actually removed instead of the handful of top-level entries you selected, so it moves steadily instead of sitting at one number for the whole job. Cancelling now takes effect immediately rather than after the current folder happens to finish. Folders are deleted with a few parallel workers, which is what a mechanical disk actually needs. The release also fixes the extension update check, which had never worked at all on networks where github.com is unreachable, and gives both the updater and the installer a log you can read.

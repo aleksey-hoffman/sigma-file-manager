@@ -1,10 +1,10 @@
 [package]
 name = "alpha-file-manager"
 description = "Alpha File Manager"
-version = "3.5.0"
+version = "3.5.1"
 license = "GPL-3.0-or-later"
-authors = ["Aleksey Hoffman"]
-repository = "https://github.com/aleksey-hoffman/sigma-file-manager"
+authors = ["kizemo"]
+repository = "https://github.com/kizemo/alpha-file-manager"
 edition = "2021"
 rust-version = "1.90.0"
 

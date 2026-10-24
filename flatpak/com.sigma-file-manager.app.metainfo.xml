@@ -28,8 +28,8 @@
       </description>
     </release>
   </releases>
-  <url type="homepage">https://github.com/aleksey-hoffman/sigma-file-manager</url>
-  <url type="bugtracker">https://github.com/aleksey-hoffman/sigma-file-manager/issues</url>
+  <url type="homepage">https://github.com/kizemo/alpha-file-manager</url>
+  <url type="bugtracker">https://github.com/kizemo/alpha-file-manager/issues</url>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <content_rating type="oars-1.1"/>

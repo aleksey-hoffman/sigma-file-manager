@@ -70,6 +70,7 @@
   },
   "bundle": {
     "active": true,
+    "publisher": "kizemo",
     "targets": [
       "nsis",
       "appimage",

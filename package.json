@@ -1,7 +1,16 @@
 {
   "name": "sigma-file-manager",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "license": "GPL-3.0-or-later",
+  "author": {
+    "name": "kizemo",
+    "url": "https://github.com/kizemo"
+  },
+  "homepage": "https://github.com/kizemo/alpha-file-manager",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kizemo/alpha-file-manager.git"
+  },
   "private": true,
   "type": "module",
   "engines": {
