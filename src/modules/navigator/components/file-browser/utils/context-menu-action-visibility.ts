@@ -109,6 +109,13 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
 
 const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties', 'open-containing-directory']);
 
+// FORK-MODIFICATION 2026-10-24：「解除文件锁定」与「彻底删除」。
+//
+// 这两个动作背后是 Windows 特有的能力（Restart Manager 查占用者、
+// delete-pending 标记删除、重启后删除），在别的平台上**没有对应实现**，
+// 所以只在 Windows 上出现 —— 与 `properties` 的处理方式一致。
+const FILE_LOCK_ACTIONS = new Set<ContextMenuAction>(['unlock', 'force-delete']);
+
 // FORK-MODIFICATION: 只在搜索结果视图里出现的动作。见上方 `open-containing-directory-in-app` 的说明。
 const SEARCH_RESULTS_ONLY_ACTIONS = new Set<ContextMenuAction>(['open-containing-directory-in-app']);
 
@@ -145,6 +152,31 @@ export function isContextMenuActionVisible(
 
   if (action === 'delete-permanently') {
     return isContextMenuActionVisible('delete', entries, options);
+  }
+
+  // FORK-MODIFICATION 2026-10-24：解除锁定 / 彻底删除。
+  //
+  // ① **只对 Windows 开放**（底层是 Windows 特有的 API）；
+  // ② **只对单个条目开放** —— 这两个动作都作用在「一个路径」上，
+  //    后端的 `unlock_file` / `force_delete_path` 签名就是单路径。
+  //
+  // ⚠️ 这里**必须自己跑一遍策略门禁**（`isActionBlockedByEntryPolicy`），
+  // 因为下面那个通用门禁在本分支之前就 return 了 ——
+  // 忘了这一句的后果是「远程条目 / 虚拟位置 / 盘根」上也会冒出这两个入口。
+  if (FILE_LOCK_ACTIONS.has(action)) {
+    if (options?.platform !== 'windows') {
+      return false;
+    }
+
+    if (entries.length !== 1) {
+      return false;
+    }
+
+    if (isActionBlockedByEntryPolicy(action, entries, options?.platform ?? null, options)) {
+      return false;
+    }
+
+    return true;
   }
 
   if (action === 'disconnect') {

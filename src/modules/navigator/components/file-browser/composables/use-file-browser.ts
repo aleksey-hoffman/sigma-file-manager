@@ -734,6 +734,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     permanentDeleteConfirm: selection.permanentDeleteConfirm,
     // FORK-MODIFICATION 2026-10-20：远程删除的确认框状态。
     remoteDeleteConfirm: selection.remoteDeleteConfirm,
+    // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框状态。
+    fileLockWorkflow: selection.fileLockWorkflow,
 
     getImageThumbnail: imageThumbnails.getImageThumbnail,
     getImageThumbnailPlaceholder: imageThumbnails.getImageThumbnailPlaceholder,

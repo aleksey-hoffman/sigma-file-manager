@@ -1185,7 +1185,9 @@
       "openInNewTab": "In neuem Tab öffnen",
       "addToFavorites": "Zu Favoriten hinzufügen",
       "removeFromFavorites": "Aus Favoriten entfernen",
-      "createLink": "Link erstellen"
+      "createLink": "Link erstellen",
+      "unlock": "Unlock file",
+      "forceDelete": "Force delete"
     },
     "linkTypes": {
       "symlink": "Symbolischer Link",
@@ -1786,5 +1788,22 @@
   "mapNetworkDrive": "Map network drive",
   "mapNetworkDriveDescription": "Map a network share to a drive letter. Once it is mounted it shows up in the drive list on the left.",
   "networkDriveLetter": "Drive letter",
-  "networkDriveLetterPlaceholder": "Auto"
+  "networkDriveLetterPlaceholder": "Auto",
+  "fileLock": {
+    "unlocked": "File unlocked",
+    "unlockedDescription": "Whatever was blocking the file has been cleared. You can delete it normally now.",
+    "unlockFailed": "Could not unlock the file",
+    "forceDeleted": "File deleted",
+    "forceDeletedDescription": "The file was removed even though it was in use.",
+    "forceDeleteFailed": "Could not delete the file",
+    "scheduledForReboot": "Deletion scheduled",
+    "scheduledForRebootDescription": "The file is still in use. It will be deleted the next time Windows starts.",
+    "terminateFailed": "Could not end the process",
+    "unknownError": "Unknown error",
+    "holdersTitle": "Programs using this file",
+    "holdersDescription": "These programs are holding the file open. Ending one of them may lose unsaved work.",
+    "noHolders": "No program was found holding this file.",
+    "endProcess": "End process",
+    "diagnoseFailed": "Could not check which programs are using this file"
+  }
 }

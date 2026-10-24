@@ -19,6 +19,10 @@ const VIRTUAL_LOCATION_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'paste',
   'delete',
   'delete-permanently',
+  // FORK-MODIFICATION 2026-10-24：解除锁定 / 彻底删除对虚拟位置也是非目标
+  // —— 虚拟位置不是真实路径，本地那套 Win32 手段对它没有意义。
+  'unlock',
+  'force-delete',
   'open-with',
   'properties',
   'quick-view',
@@ -33,6 +37,10 @@ const SYSTEM_MOUNT_ROOT_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'link',
   'delete',
   'delete-permanently',
+  // FORK-MODIFICATION 2026-10-24：盘根本身不能「解锁」也不能「彻底删除」——
+  // 那等于「把这个盘删了」。
+  'unlock',
+  'force-delete',
 ]);
 
 /**
@@ -65,6 +73,10 @@ const REMOTE_PHASE0_BLOCKED_ACTIONS = new Set<ContextMenuAction>([
   'paste',
   'delete',
   'delete-permanently',
+  // FORK-MODIFICATION 2026-10-24：远程服务器上的文件锁**不在本机**，
+  // 本地的 Restart Manager / delete-pending 对它完全没有意义 ⇒ 一律屏蔽。
+  'unlock',
+  'force-delete',
   'create-file',
   'open-with',
   'properties',

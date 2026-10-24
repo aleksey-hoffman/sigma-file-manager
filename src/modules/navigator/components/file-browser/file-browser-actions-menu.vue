@@ -24,6 +24,9 @@ import {
   UnplugIcon,
   InfoIcon,
   TextCursorInputIcon,
+  // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+  LockOpenIcon,
+  FlameIcon,
   // FORK-MODIFICATION: 本地 ↔ 远程传输与远程权限设置。
   UploadIcon,
   DownloadIcon,
@@ -492,6 +495,35 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   >
     <CopyIcon :size="16" />
     <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
+  </component>
+  <!--
+    FORK-MODIFICATION 2026-10-24：「解除文件锁定」与「彻底删除」。
+
+    这两个动作解决的是「文件被占用 → 删不掉」：
+    - **解除文件锁定**：查出谁占着它，把挡着删除的东西清掉
+      （清只读位 / 结束占用者）。⚠️ **它不删文件**。
+    - **彻底删除**：删文件。手段按代价从低到高：清只读位 → 标记删除
+      （占用者一放手就消失，不用重启）→ 登记为「重启后删除」。
+
+    可见性由 `context-menu-action-visibility.ts` 判定：
+    **只在 Windows 上出现、且只对单个条目出现**。
+  -->
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('unlock')"
+    @select="emitAction('unlock')"
+  >
+    <LockOpenIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.unlock') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('force-delete')"
+    class="file-browser-actions-menu__action--danger"
+    @select="emitAction('force-delete')"
+  >
+    <FlameIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.forceDelete') }}</span>
   </component>
   <!-- FORK-MODIFICATION: 本地 ↔ 远程传输。三个动作的前提都是「对面还有一格」，
        所以可见性判定不在 `CONTEXT_MENU_ITEMS` 那张表里，见

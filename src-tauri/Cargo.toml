@@ -169,6 +169,11 @@ windows = { version = "0.58", features = [
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_System_Console",
     "Win32_System_Threading",
+    # FORK-MODIFICATION 2026-10-24：「解除文件锁定 / 彻底删除」用 Restart Manager
+    # 查出「谁占着这个文件」（rstrtmgr.dll 的 RmStartSession / RmRegisterResources /
+    # RmGetList）。这套 API 就在 `windows` crate 里，开个 feature 即可，
+    # 不需要引入外部 crate。
+    "Win32_System_RestartManager",
     # 远程凭据的 DPAPI 加解密（CryptProtectData / CryptUnprotectData）。
     "Win32_Security_Cryptography",
 ] }

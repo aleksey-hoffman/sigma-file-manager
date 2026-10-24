@@ -14,6 +14,8 @@ import FileBrowserNewItemDialog from '@/modules/navigator/components/file-browse
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import PermanentDeleteConfirmDialog from '@/modules/navigator/components/file-browser/permanent-delete-confirm-dialog.vue';
+// FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框。
+import FileLockDialog from '@/modules/navigator/components/file-browser/file-lock-dialog.vue';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
 import type { DirEntry } from '@/types/dir-entry';
@@ -48,10 +50,19 @@ const {
   handleTopLevelNameConflictMerge,
   handleTopLevelNameConflictCancel,
   permanentDeleteConfirm,
+  // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+  fileLockWorkflow,
 } = useDirEntryActions();
 
 const permanentDeleteIsOpen = permanentDeleteConfirm.isOpen;
 const permanentDeletePendingEntries = permanentDeleteConfirm.pendingEntries;
+
+// FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框。
+const fileLockIsOpen = fileLockWorkflow.isOpen;
+const fileLockMode = fileLockWorkflow.mode;
+const fileLockPath = fileLockWorkflow.path;
+const fileLockHolders = fileLockWorkflow.holders;
+const fileLockBusy = fileLockWorkflow.isBusy;
 
 const contextMenuOpenCount = inject(CONTEXT_MENU_OPEN_COUNT_KEY, null);
 const showContextMenuContent = ref(false);
@@ -256,6 +267,19 @@ function handleNewItemCancel() {
     :entries="permanentDeletePendingEntries"
     @update:open="permanentDeleteConfirm.handleOpenChange"
     @confirm="permanentDeleteConfirm.handleConfirm"
+  />
+
+  <!-- FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框。 -->
+  <FileLockDialog
+    :open="fileLockIsOpen"
+    :mode="fileLockMode"
+    :path="fileLockPath"
+    :holders="fileLockHolders"
+    :busy="fileLockBusy"
+    @update:open="fileLockWorkflow.handleOpenChange"
+    @unlock="fileLockWorkflow.handleUnlock"
+    @force-delete="fileLockWorkflow.handleForceDelete"
+    @terminate-holders="fileLockWorkflow.handleTerminateHolders"
   />
 </template>
 

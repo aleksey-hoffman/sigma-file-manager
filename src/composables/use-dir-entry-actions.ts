@@ -37,6 +37,8 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
 import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
 import { refreshDrives } from '@/modules/home/composables/use-drives';
+// FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+import { useFileLockWorkflow } from '@/composables/use-file-lock-workflow';
 
 export function useDirEntryActions() {
   const { t } = useI18n();
@@ -52,6 +54,8 @@ export function useDirEntryActions() {
   const folderTreeStore = useFolderTreeStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
+  // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+  const fileLockWorkflow = useFileLockWorkflow();
   const {
     performCopyMoveWithConflicts,
     conflictDialogState,
@@ -583,6 +587,20 @@ export function useDirEntryActions() {
     }
   }
 
+  /**
+   * FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+   *
+   * 具体流程在 `use-file-lock-workflow.ts`（两个调用点共用一份，
+   * 免得破坏性动作的确认框在某一处漏掉）。
+   */
+  async function unlockEntry(entry: DirEntry) {
+    await fileLockWorkflow.unlockEntry(entry);
+  }
+
+  async function forceDeleteEntry(entry: DirEntry) {
+    fileLockWorkflow.forceDeleteEntry(entry);
+  }
+
   function handleContextMenuAction(action: ContextMenuAction, entries: DirEntry[]) {
     if (entries.length === 0) return;
 
@@ -611,6 +629,17 @@ export function useDirEntryActions() {
         break;
       case 'delete-permanently':
         void deleteItems(entries, false);
+        break;
+      // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+      //
+      // 这两个动作**只对单个条目**开放（可见性判定在
+      // `context-menu-action-visibility.ts`），所以这里拿到的
+      // `entries` 必然只有一个。
+      case 'unlock':
+        void unlockEntry(entries[0]);
+        break;
+      case 'force-delete':
+        void forceDeleteEntry(entries[0]);
         break;
       case 'open-in-new-tab':
         openEntriesInNewTabs(entries);
@@ -668,5 +697,7 @@ export function useDirEntryActions() {
     handleTopLevelNameConflictMerge,
     handleTopLevelNameConflictCancel,
     permanentDeleteConfirm,
+    // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+    fileLockWorkflow,
   };
 }

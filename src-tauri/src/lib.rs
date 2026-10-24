@@ -21,6 +21,8 @@ mod dir_size;
 mod dir_watcher;
 mod drag_no_activate;
 mod extensions;
+mod file_lock;
+mod file_lock_commands;
 mod file_operations;
 mod global_search;
 mod image_thumbnails;
@@ -415,6 +417,11 @@ pub fn run() {
             delete_job::scan_delete_targets,
             delete_job::start_delete_job,
             delete_job::cancel_delete_job,
+            // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+            file_lock_commands::diagnose_file_locks,
+            file_lock_commands::unlock_file,
+            file_lock_commands::force_delete_path,
+            file_lock_commands::terminate_lock_holder_processes,
             global_search::global_search_init,
             global_search::global_search_get_status,
             global_search::global_search_start_scan,

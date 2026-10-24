@@ -57,7 +57,7 @@ export interface GroupedEntries {
 // 远程服务器上没有回收箱，「移至垃圾箱」在远程是**假选项**。
 // 所以远程条目只出一个「删除」，本地的 `delete` / `delete-permanently`
 // 继续对远程保持屏蔽（见 `entry-action-policy.ts`）。
-export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory' | 'open-containing-directory-in-app' | 'upload-to-remote' | 'download-to-local' | 'remote-permissions' | 'remote-delete';
+export type ContextMenuAction = 'rename' | 'batch-rename' | 'copy' | 'cut' | 'link' | 'paste' | 'delete' | 'delete-permanently' | 'unlock' | 'force-delete' | 'open-with' | 'properties' | 'quick-view' | 'print' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory' | 'disconnect' | 'open-containing-directory' | 'open-containing-directory-in-app' | 'upload-to-remote' | 'download-to-local' | 'remote-permissions' | 'remote-delete';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

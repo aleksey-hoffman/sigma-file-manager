@@ -1187,7 +1187,9 @@
       "openInNewTab": "在新标签页中打开",
       "addToFavorites": "添加到收藏",
       "removeFromFavorites": "从收藏中移除",
-      "createLink": "创建链接"
+      "createLink": "创建链接",
+      "unlock": "解除文件锁定",
+      "forceDelete": "彻底删除"
     },
     "linkTypes": {
       "symlink": "符号链接",
@@ -1786,5 +1788,22 @@
     "rowsTruncated": "共 {total} 条，已显示 {shown} 条。条目太多时请用筛选缩小范围。",
     "showMore": "再显示 {count} 条",
     "statsUnreadable": "无法读取"
+  },
+  "fileLock": {
+    "unlocked": "已解除锁定",
+    "unlockedDescription": "挡着删除的东西已经清掉，现在可以正常删除这个文件了。",
+    "unlockFailed": "无法解除文件锁定",
+    "forceDeleted": "已彻底删除",
+    "forceDeletedDescription": "该文件虽然正在被使用，仍已被删除。",
+    "forceDeleteFailed": "无法彻底删除该文件",
+    "scheduledForReboot": "已登记为重启后删除",
+    "scheduledForRebootDescription": "该文件仍被占用，已登记为下次启动 Windows 时删除。",
+    "terminateFailed": "无法结束进程",
+    "unknownError": "未知错误",
+    "holdersTitle": "正在使用该文件的程序",
+    "holdersDescription": "这些程序正占用着该文件。结束其中任何一个都可能导致未保存的内容丢失。",
+    "noHolders": "没有找到占用该文件的程序。",
+    "endProcess": "结束进程",
+    "diagnoseFailed": "无法查出哪些程序正在使用该文件"
   }
 }

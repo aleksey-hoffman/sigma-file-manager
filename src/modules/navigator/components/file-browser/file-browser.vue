@@ -30,6 +30,8 @@ import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.v
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from './file-browser-top-level-conflict-dialog.vue';
 import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue';
+// FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框。
+import FileLockDialog from './file-lock-dialog.vue';
 // FORK-MODIFICATION 2026-10-20：远程删除的确认框。
 import RemoteDeleteConfirmDialog from '@/modules/remote/components/remote-delete-confirm-dialog.vue';
 import HostKeyTrustDialog from '@/modules/remote/components/host-key-trust-dialog.vue';
@@ -117,6 +119,14 @@ const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
 // 与上面的本地永久删除确认框同款。
 const remoteDeleteIsOpen = fb.remoteDeleteConfirm.isOpen;
 const remoteDeletePendingEntries = fb.remoteDeleteConfirm.pendingEntries;
+
+// FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框。
+// **每个 pane 一份**，与上面两个确认框同款。
+const fileLockIsOpen = fb.fileLockWorkflow.isOpen;
+const fileLockMode = fb.fileLockWorkflow.mode;
+const fileLockPath = fb.fileLockWorkflow.path;
+const fileLockHolders = fb.fileLockWorkflow.holders;
+const fileLockBusy = fb.fileLockWorkflow.isBusy;
 
 // FORK-MODIFICATION 2026-10-18：主机公钥信任流（阶段 2 决策 3）。
 // 与上面同理 —— `fb.xxx` 是普通对象上的 ref，模板只会解包**顶层**绑定，
@@ -509,6 +519,19 @@ defineExpose({
       :entries="remoteDeletePendingEntries"
       @update:open="fb.remoteDeleteConfirm.handleOpenChange"
       @confirm="fb.remoteDeleteConfirm.handleConfirm"
+    />
+
+    <!-- FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框。 -->
+    <FileLockDialog
+      :open="fileLockIsOpen"
+      :mode="fileLockMode"
+      :path="fileLockPath"
+      :holders="fileLockHolders"
+      :busy="fileLockBusy"
+      @update:open="fb.fileLockWorkflow.handleOpenChange"
+      @unlock="fb.fileLockWorkflow.handleUnlock"
+      @force-delete="fb.fileLockWorkflow.handleForceDelete"
+      @terminate-holders="fb.fileLockWorkflow.handleTerminateHolders"
     />
 
     <!-- FORK-MODIFICATION 2026-10-18：SSH 主机公钥的信任确认（阶段 2 决策 3）。 -->

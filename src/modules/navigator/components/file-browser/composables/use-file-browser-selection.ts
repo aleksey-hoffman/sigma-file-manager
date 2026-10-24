@@ -53,6 +53,9 @@ import {
 } from '../utils/file-browser-range-selection';
 import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
 import { refreshDrives } from '@/modules/home/composables/use-drives';
+// FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+// 与 `use-dir-entry-actions.ts` 共用同一份流程，避免破坏性动作的确认框漏一处。
+import { useFileLockWorkflow } from '@/composables/use-file-lock-workflow';
 import { shouldOpenFavoriteCategoryDialog } from '@/modules/navigator/components/file-browser/utils/file-browser-favorites';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
@@ -92,6 +95,9 @@ export function useFileBrowserSelection(
   // FORK-MODIFICATION 2026-10-20：远程删除的确认框。**每个 FileBrowser 实例一份**，
   // 与本地的 `permanentDeleteConfirm` 同款 —— 左右双屏时两格不能共用一份待确认条目。
   const remoteDeleteConfirm = useRemoteDeleteConfirm();
+  // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。**每个 FileBrowser 实例一份**，
+  // 与 `permanentDeleteConfirm` 同款 —— 左右双屏时两格不能共用一份待确认路径。
+  const fileLockWorkflow = useFileLockWorkflow();
   const {
     performCopyMoveWithConflicts,
     conflictDialogState,
@@ -1166,6 +1172,22 @@ export function useFileBrowserSelection(
         }
 
         break;
+      // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
+      //
+      // 只对**单个**条目开放（可见性判定在
+      // `context-menu-action-visibility.ts`），所以这里拿到的 entries 只有一个。
+      case 'unlock':
+        if (entries.length === 1) {
+          void fileLockWorkflow.unlockEntry(entries[0]);
+        }
+
+        break;
+      case 'force-delete':
+        if (entries.length === 1) {
+          fileLockWorkflow.forceDeleteEntry(entries[0]);
+        }
+
+        break;
       // FORK-MODIFICATION 2026-10-20：远程删除。
       //
       // 刻意**不复用**上面的 `delete` / `delete-permanently`：
@@ -1535,6 +1557,8 @@ export function useFileBrowserSelection(
     permanentDeleteConfirm,
     // FORK-MODIFICATION 2026-10-20：远程删除的确认框状态。
     remoteDeleteConfirm,
+    // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除的对话框状态。
+    fileLockWorkflow,
     setOpenBatchRenameDialogHandler(handler: (entries: DirEntry[]) => void) {
       openBatchRenameDialogForSelection = handler;
     },
