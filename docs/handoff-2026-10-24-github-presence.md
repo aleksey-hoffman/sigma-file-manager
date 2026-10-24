@@ -242,7 +242,13 @@ winget 包**还没发布**（缺 `WINGET_TOKEN`），README 里放一个 `winget
    mergeable=true，上游校验流水线自动跑）。清单原文留在 `docs/winget/`。
 6. **HelloGitHub 自荐**：提交表单是客户端模态框，**没有独立路由**；
    `/submit` 一类路径全是 404，真实存在的只有 `/report/contribution`（贡献排行榜，不是表单）。
-   ⇒ **这一步需要用户本人登录**（侧栏「立即登录」/ `/user/login`），登录后才能填表提交。
+   ⇒ 登录必须由用户本人完成（OAuth）；登录后表单与提交由 agent 代做。
+7. **已提交**：2026-10-24 13:06，以账号 Kizemo 提交。
+   两条独立证据：① 网络日志 `POST https://api.hellogithub.com/v1/repository/` → 200 OK
+   （提交前还有一次 `GET /v1/repository/check/` 校验 GitHub 地址，200）；
+   ② 侧栏贡献值从 **0/64 变成 5/64** —— HelloGitHub 的规则是「分享开源项目可获得 5 点贡献值」。
+   提交内容：项目地址 `https://github.com/kizemo/alpha-file-manager`，
+   标题「Alpha File Manager：Windows 与 Linux 双栏文件管理器」，描述 217 字符（限 10–300）。
 
 ### 8.2 三个未决项
 
@@ -250,7 +256,7 @@ winget 包**还没发布**（缺 `WINGET_TOKEN`），README 里放一个 `winget
 |---|---|---|
 | winget 的 CLA 签署 | 校验任务在排队 | 用户（GitHub 账号一次性签署） |
 | 安装包代码签名 | `NotSigned`，评审通常会要求 | 用户（需自备证书） |
-| HelloGitHub 表单提交 | 表单与文案已备好 | 用户登录后我代填代交 |
+| HelloGitHub 表单提交 | **已完成**（2026-10-24 13:06 提交，账号 Kizemo） | — |
 
 ### 8.3 这一轮踩的坑（已写进 AGENTS.md 2.4）
 
