@@ -50,6 +50,9 @@ sync, batch rename, and a long list of day-to-day fixes.
 - 🧠 **Batch rename that does not lose work** — find-and-replace, case conversion,
   templates and numbering, with a live preview, conflicts blocked instead of
   silently overwriting, and undo.
+- 🔓 **A file that will not delete can be dealt with** — the right-click menu tells
+  you which program is holding it open, and *Delete anyway* removes it even when
+  Windows refuses to.
 
 ---
 
@@ -67,6 +70,7 @@ sync, batch rename, and a long list of day-to-day fixes.
 | 🎚️ | **Item filter** — narrow a large folder by name, size, date, type and more |
 | 🖼️ | **Thumbnails** — four sizes, generated lazily only for what is on screen |
 | 📐 | **Per-folder layout** — list or grid, chosen per location rather than globally |
+| 🔓 | **Unlock a file that is in use** — the right-click menu lists the programs holding it, by name and process id; *Delete anyway* removes it even when Windows says no |
 
 ### Compare and sync
 
@@ -134,6 +138,7 @@ they compare.
 | ↔️ | **Two panes, used together** | ✅ **swap them with one button**, and a **synchronized browsing** toggle right beside it — enter a folder and the other pane follows, going up a level takes it along too | ➖ **no pane swap**; linked browsing exists but is a buried option in the navigator menu | ➖ tabs, not panes |
 | 🔍 | **Comparing two folders** | ✅ recursively, with the criteria serious tools use — and an explicit "direction undecided" state instead of guessing which side is newer | ➖ | ➖ compares by size and date only, and the choice is buried |
 | 🧠 | **Batch rename** | ✅ find-and-replace, case conversion, templates and numbering — with a live preview, conflicts blocked instead of silently overwriting, and undo | ❌ not in Sigma at all | ✅ find-and-replace, with a preview |
+| 🔓 | **A file that will not delete** | ✅ the right-click menu lists the programs holding it, and *Delete anyway* removes it anyway — clearing the read-only flag, marking it for deletion, or falling back to deletion at the next restart | ➖ | ❌ |
 | 🫳 | **Dragging a file into another program** | ✅ **hold the file and drag** it into WeChat, DingTalk or a browser — the window you are dragging out of stays in the background | ➖ | ✅ |
 | 👁️ | **The program you drag over comes to the front** | ✅ the window under the pointer is brought forward while you carry the file, so you can see where it will land | ➖ | ➖ a Windows drag never raises the window under the pointer |
 | ⌨️ | **Keyboard range selection** | ✅ **Shift + arrow key** extends the selection from the anchor you started at | ➖ | ✅ Shift + arrow key extends the selection too |
@@ -182,44 +187,45 @@ GitHub releases carry the same installer and act as a fallback mirror:
 
 ---
 
-## 🆕 What's new in 3.5.0
+## 🆕 What's new in 3.6.0
 
-### 🔍 Comparing two folders no longer gives up at the first folder it cannot read
+### 🔓 The right-click menu now tells you what is holding a file open
 
-**Fixed.** Comparing two folders used to fail completely the moment it met a
-single directory it was not allowed to read. Windows keeps a lot of those — the
-recycle bin, anything another program is holding open — and a real folder tree
-is full of them, so in practice the comparison usually ended in an error instead
-of a result. Unreadable directories are now **skipped**, the count is shown in
-the summary, and the comparison carries on with everything else.
+**Added.** Delete a file and Windows says *the operation cannot be completed
+because the file is open in another program*, and leaves you there. The new
+**Unlock file** entry asks Windows which programs have the file open and lists
+them with their process ids — so you can tell an editor from a backup tool from
+a stuck service. You can end one of them from the same dialog.
 
-### ⚡ Comparing a large tree is about fifty times faster
+It never deletes anything itself. It clears what is in the way — the read-only
+flag and the programs holding the file — and then tells you the file can be
+deleted now.
 
-**Improved.** Collecting the two sides was **93% of the time**, and it was slow
-for one reason: the metadata of every entry was looked up by rebuilding an
-absolute path and asking again, which on Windows costs about a hundred times
-more than asking the directory entry itself. The metadata now comes straight from
-the directory entry, and **four workers collect in parallel**.
+![The unlock dialog](docs/screenshots/afm-file-unlock-dialog.png)
 
-Measured on one machine, over the same ten thousand entries: **1.18 seconds
-before, 23 milliseconds after.** The measurement was run in **both orders**, so
-neither implementation could claim the advantage of a warm cache.
+### 🗑️ The right-click menu can now delete a file that will not delete
 
-### 📊 The comparison now tells you how far along it is
+**Added.** Some files refuse to be deleted no matter what you try: they are
+read-only, or a program holds them open without allowing the deletion. The new
+**Delete anyway** entry tries three things, cheapest first:
 
-**Added.** Walking a large tree takes a while, and the dialog used to show
-nothing but a spinner — there was no way to tell a working application from a
-stuck one. It now says **which side it is reading**, how many entries it has
-been through, and how far along the comparison itself is.
+1. clear the read-only flag;
+2. mark the file for deletion, so it disappears the moment the program holding
+   it closes — **no restart needed**;
+3. register the file with Windows to be deleted at the next restart, which needs
+   administrator rights.
 
-### 🗑️ Deleting a big folder tree finally shows what it is doing
+Every step reports what actually happened. A file that could not be deleted is
+reported as such — **not as a success**.
 
-**Fixed.** The delete progress bar was counting the **top-level entries you had
-selected**, so deleting one folder that held 250,000 files showed a single jump
-from 0% to 100% at the very end. It is now driven by the number of items
-**actually deleted**, with the freed space shown alongside it. Cancelling is
-checked before **every file**, and up to four independent subtrees are removed
-in parallel.
+### 🔧 A build breakage on the main branch is fixed
+
+**Fixed.** One test file used the wrong Node type, which produced five type
+errors and made `tauri build` fail before it ever reached the Rust compiler.
+The release pipeline is unblocked again.
+
+> Neither new entry needs anything extra installed — the Windows APIs that do
+> the work were already part of the application's own dependencies.
 
 > The full history — every release, every fix — is in the
 > [changelog](CHANGELOG.md) and on the

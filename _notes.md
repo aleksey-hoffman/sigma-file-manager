@@ -1,55 +1,95 @@
-## 3.5.1: the installer stops claiming someone else's name, and the repository page gets fixed
+## 3.6.0:删不掉的文件,现在有专门的一条路
 
-**Summary:** The installer now records this project's own publisher instead of the name of the project it was forked from, which is what lets the program be listed in the Windows Package Manager and be upgraded in place. The repository page itself is repaired too: the comparison table between the three file managers is a table again, the licence is the actual GPL-3.0 text so the repository is labelled GPL-3.0 rather than "NOASSERTION", and the automatic winget submission points at this repository's own package id instead of the upstream one.
+Windows 删文件失败时只给你一句话:「操作无法完成,因为文件已在另一程序中打开。」
+然后你就卡在那儿了 —— 不知道是谁占着它,也不知道除了关掉那个程序还能怎么办。
+这一版把这条路的两个环节都补上了,而且**不用额外装任何东西**。
 
 ---
 
-### 第一件:安装器里挂的是别人的名字
+### 第一件:解除文件锁定 —— 先问清楚是谁占着它
 
-Windows 的"应用和功能"、以及 Windows 包管理器,认的是安装器写进注册表的那个
-`Publisher` 字段。这个字段是从上游继承下来的 —— 也就是说,你在"应用和功能"里
-看到的发布者是上游项目的名字,不是 Alpha File Manager 自己的。
+新加的「解除文件锁定」会问 Windows **到底哪些程序开着这个文件**,把它们连
+进程号一起列出来 —— 是编辑器、是备份软件、还是一个卡住的服务,一眼能认出来。
+同一个对话框里可以结束其中任何一个,结束完应用会重新探一次,告诉你这个文件
+现在删得掉删不掉。
 
-这不只是好不好看的问题。包管理器靠 `发布者 + 程序名 + 版本号` 三样对上号,才
-知道自己装的这份和清单里那一份是同一个程序;对不上,它就认为你机器上装的是
-一个"没见过的软件",升级也不会把它认出来。
+**它自己从不删任何东西。** 它只把挡路的清掉 —— 只读位、占着文件的程序 ——
+然后把「空出来了」这件事告诉你。真正要删文件,那是「彻底删除」的事。
 
-现在这个字段写的是本项目自己的发布者 `kizemo`,与 winget 清单里的 `Publisher`
-完全一致。顺带修好的还有一处隐患:源码里有一行注释中间夹了一个裸的换行符
-(CR),平时看不出来,但任何编辑器在保存时规范化行尾,都会把那一行劈成两半,
-后半句变成裸代码,整个工程直接编译不过 —— 注释被切断这件事,本来就该修。
+查占用者用的是 Windows 自带的 Restart Manager(`rstrtmgr.dll`),**不需要额外
+装任何东西**。
 
-### 第二件:仓库页面的表格根本不是表格
+### 第二件:彻底删除 —— 三步递进,每步都如实回报
 
-README 里那张"三款文件管理器对比"表,表头是五列,下面那行分隔线却只有四段。
-GitHub 的 Markdown 解析器遇到这种情况,会把整块当成普通段落 —— 于是页面上
-看到的不是表格,是一堆竖线。
+有些文件怎么试都删不掉:它本身是只读的,或者有个程序开着它、又不允许别人删。
+「彻底删除」按代价从低到高试三步:
 
-原因是当时重写 README 时只按内容写了表头,没按列数对齐分隔行。现在补齐了,
-并且加了一条常驻门禁:它会解析仓库里所有 Markdown 文件的表格,逐表核对表头、
-分隔行和数据行的列数,不一致就红。门禁自带"故意喂坏输入"的负向用例,保证它
-自己还能变红 —— 一道永远绿的检查等于没有检查。
+1. **清只读位。** 只读文件用普通删除会报「操作无法完成」,去掉只读位往往就删了。
+2. **标记删除。** 文件还被占着的话,把它标记成「等最后一个句柄关掉就删」——
+   占用程序一放手,文件当场消失,**不用重启**。
+3. **登记为重启后删除。** 连标记删除都被拒绝(内核态驱动占着、或者文件系统
+   不认这个操作),就登记给 Windows,让它下次启动时删掉。**这一步需要管理员权限。**
 
-### 第三件:许可证 GitHub 认不出来
+三步都失败时会**如实报错**,不会假装文件已经没了。
 
-`LICENSE.md` 之前是一份手写的摘要,不是许可证原文。GitHub 靠匹配许可证原文
-来识别协议,匹配不上就在侧栏写 `NOASSERTION`。现在是 GPL-3.0 的规范原文
-(35,149 字节 / 675 行),版权与致谢声明移到新的 `NOTICE.md`,仓库侧栏显示
-GPL-3.0。
+清只读位时只清只读位,**隐藏位与系统位原样保留** —— 清掉隐藏位会让文件在
+资源管理器里凭空冒出来,那是副作用,不是本意。
 
-### 第四件:仓库门面重写
+---
 
-README 之前接近 50 KB,大半是一面更新日志墙,把项目本身的介绍挤到了第二屏。
-现在它是一份能看完的页面:门面图、徽章、Highlights、五组功能表、下载矩阵,
-以及"从源码构建"和社区入口。中文版同步重写。
+### 为什么一个外部依赖都没加
 
-### 第五件:自动发布到 winget 的工作流指错了地方
+调研了 GitHub 上的同类方案:`P4suta/restart-manager`(Rust 包装,MIT/Apache-2.0,
+但只有 2 star、零 fork)、`sjp/Sherlock`(C#)、`mantvmass/file-lock-checker`(Rust)、
+Process Hacker / System Informer(内核驱动路线)、NirSoft Unlocker 与
+Sysinternals handle.exe(闭源,不可嵌入)。
 
-`.github/workflows/winget.yml` 里还留着上游的包 ID 和上游的安装包文件名规则。
-真跑起来,我们的二进制会以"更新上游包"的名义提交上去。现在包 ID 是
-`kizemo.AlphaFileManager`,资产名规则也换成本仓库实际产出的名字。
+结论是**一个都不需要引**:
 
-### 第六件:包元数据还指向上游
+- 本仓已经依赖 `windows` crate 0.58,而它的 `Win32_System_RestartManager` 模块
+  **已经把 Restart Manager 整套 API 编译进本地 registry 了**(`RmStartSession` /
+  `RmRegisterResources` / `RmGetList` / `RmShutdown` / `RmEndSession`),只是
+  Cargo feature 没开;
+- `Win32_Storage_FileSystem` 里已有 `SetFileInformationByHandle` +
+  `FILE_DISPOSITION_INFO_EX` + `FILE_DISPOSITION_FLAG_DELETE`,这是「标记删除」
+  的正规做法;
+- `Win32_System_Threading` 里已有 `OpenProcess` / `TerminateProcess`。
 
-`Cargo.toml` 的 `authors` 与 `repository`、HTTP User-Agent 里写的仓库地址、
-Flatpak 的主页与问题反馈链接,全都还是上游项目的。现在都指向本仓库。
+所以这一版只是**调用已经躺在依赖树里的 API**,Cargo.toml 只多一行 feature。
+对比之下 `restart-manager` 那个 crate 自己也承认它包的就是同一套 API,而它只有
+2 star —— 引进来反而多一份要维护的依赖与 MSRV 风险。内核驱动路线则要处理驱动
+签名与安全评审,成本与本项目的体量不匹配。
+
+---
+
+### 顺带修掉的:仓库在 HEAD 上打包不出来
+
+有一个测试文件用错了 Node 的类型(`ReturnType<typeof readdirSync>` 取到的是
+Buffer 重载),于是 `vue-tsc` 报 5 条类型错误,`tauri build` 的
+`beforeBuildCommand` 直接失败 —— **仓库在 main 分支上根本构建不出安装包**。
+改好之后 `vue-tsc --build` 完全干净。
+
+### 这一版是怎么验的
+
+- **算法层与命令层分成两个文件。** `file_lock.rs`(算法本体)刻意不引用
+  `tauri::AppHandle` 与 `tauri::async_runtime::*` —— 那是 `cargo test --lib` 的
+  隐形红线(会把 tao 的窗口链拖进测试二进制,进程在加载期以
+  `STATUS_ENTRYPOINT_NOT_FOUND` 崩掉)。所以有 7 条用例是真的建文件、真的开
+  句柄、真的调 Win32 API:Restart Manager 真的能查出占用进程、空闲文件查不出
+  占用者、被独占占用时如实报错不假装成功、解锁成功后**文件仍在**、只读文件
+  清位后可删。
+- **真实机器上用打包产物验**(`tauri build` 的产物,不是 `tauri dev` —— 本项目
+  的 dev 构建路由页内容区全空白,界面结论一律作废):右键菜单里两项都在;弹框
+  列出的占用者与注入的持锁进程 PID 一致;仍被占用时点解锁会如实报「文件仍被
+  其他程序占用」;结束占用进程后解锁成功且**文件仍在**;彻底删除能删掉空闲
+  文件、只读文件与已解锁的文件;对仍被占用的文件会退到「已登记为重启后删除」。
+- **门禁**:`cargo test --lib` 809 例全过;`vitest` 243 文件 / 2201 用例全过;
+  `eslint .` 188 errors 与基线逐条相同(零新增);`vue-tsc --build` 0 错误。
+
+### 这个版本不是什么
+
+- **不处理远程文件。** 服务器上的文件锁不在本机,本地手段对它没有意义,
+  所以远程条目上根本不出现这两项。
+- **不是内核级的解锁器。** 占着文件的是内核态驱动时,只能退到「重启后删除」。
+- **不支持一次解锁一整棵树。** 递归枚举占用者的收益与复杂度不成比例。
+- **不新增任何外部依赖。**
