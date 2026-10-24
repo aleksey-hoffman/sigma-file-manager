@@ -43,7 +43,7 @@
 // 3. **数据行比表头多列** ⇒ 多出来的列**被静默丢弃**（内容丢失）—— **必须报**。
 
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, type Dirent } from 'node:fs';
 import { join } from 'node:path';
 
 // 本文件在 `src/utils/__tests__/` 下，往上三层才是仓库根。
@@ -164,7 +164,18 @@ const IGNORED_DIRECTORIES = new Set([
 
 /** 递归收集目录下所有 markdown 文件（跳过构建产物与缓存目录）。 */
 function collectMarkdownFiles(dir: string, files: string[]): void {
-  let entries: ReturnType<typeof readdirSync>;
+  // FORK-MODIFICATION 2026-10-24：这里**必须**显式写 `Dirent<string>`，
+  // 不能用 `ReturnType<typeof readdirSync>`。
+  //
+  // `readdirSync` 有多个重载，`ReturnType` 取的是**最后一个**重载的返回类型
+  // —— 那是「按 Buffer 编码读目录名」的那个重载 ⇒ `Dirent<NonSharedBuffer>[]`。
+  // 但下面真正调用的是 `{ withFileTypes: true }` 那个重载，
+  // 返回的是 `Dirent<string>[]`（目录名是字符串）。
+  //
+  // 两者对不上 ⇒ `vue-tsc --build` 报 5 条类型错误 ⇒
+  // **打包流程的 `beforeBuildCommand` 直接失败**（`npm run build` 里跑着 vue-tsc），
+  // 于是「仓库在 HEAD 上根本构建不出来」。
+  let entries: Dirent<string>[];
 
   try {
     entries = readdirSync(dir, { withFileTypes: true });
