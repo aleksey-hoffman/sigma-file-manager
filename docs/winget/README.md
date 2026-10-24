@@ -12,12 +12,21 @@
 目录结构与上游仓库一致：
 
 ```
-manifests/<包 ID 首字母小写>/<包名>/<包 ID>/<版本>/
+manifests/<发布者首字母小写>/<发布者>/<应用名>/<版本>/
     <包 ID>.yaml                # ManifestType: version
     <包 ID>.installer.yaml      # ManifestType: installer
     <包 ID>.locale.en-US.yaml   # ManifestType: defaultLocale
     <包 ID>.locale.zh-CN.yaml   # ManifestType: defaultLocale
 ```
+
+中间两层是**包 ID 按点拆开后的发布者段与应用名段**，不是包名 —— 本项目是
+`kizemo.AlphaFileManager` ⇒ `manifests/k/kizemo/AlphaFileManager/3.5.1/`，
+不是 `Alpha File Manager`（带空格，不能当目录名）。
+对照：`manifests/j/Justsenger/ExHyperV/1.5.2/Justsenger.ExHyperV.yaml`。
+
+> 踩过的坑：用 contents API 提交时，如果相对路径以 `.../winget/manifests` 为基准，
+> `manifests/` 这层根目录会被吃掉，文件落到仓库根下的 `k/...` ——
+> 机器人直接判 `missing the manifests folder`。相对路径必须以包含 `manifests/` 的那层为基准。
 
 ## 三条必须守住的规则
 
@@ -69,6 +78,29 @@ gh pr comment <PR号> --repo microsoft/winget-pkgs --body '@microsoft-github-pol
 真正的清单校验由 `wingetvalidator-prod[bot]` 这个 App 跑。新包会先被自动打上
 `Project-File` 标签，校验随后才开始 —— 要下载安装包核对哈希、在沙箱里试装，
 十几分钟起步。**PR 提交后没有立刻出现校验结果是正常的**。
+
+## 校验怎么跑、怎么看、怎么重跑
+
+**状态看标签，不看 check runs。** 校验 App 在一次 operation 结束后会把自己的 10 条
+check run 删掉，所以「PR 上没有校验条目」通常意味着**已经跑完了**。真正的状态在标签上：
+
+| 标签 | 含义 |
+|---|---|
+| `Validation-Completed` | 校验通过（常同时有 `Azure-Pipeline-Passed`） |
+| `Validation-Executable-Error` | 校验脚本自身出错 |
+| `Validation-Installation-Error` | 沙箱试装失败 |
+| `Validation-Defender-Error` | 安装包被 Defender 拦 |
+| `Validation-Guide` | 机器人在 PR 里给了指引 |
+| `Needs-Author-Feedback` | 要作者回复 |
+
+**重跑校验：** ① 版主在 PR 里发 `@wingetbot run`（非版主发会被拒，机器人回
+`Commenter does not have sufficient privileges`）；② 推一个新的 commit（`synchronize` 事件）——
+**不能是空提交**，空提交会被判 `noContent`（"This pull request does not update any files"）。
+想重跑就往清单里加一行真实的注释再推。
+
+**踩过的坑：** 一次 operation 报 `Internal-Error-PR` / `WinGetSvcError`（03–09 步全 skipped、
+10 步 neutral），发生在分支正被连续删/加文件的半路上 —— operation 是在 diff 还没稳定时算的。
+**一次把清单推到位再让它跑**，别一边改一边验。
 
 ## 还没解决的事
 
