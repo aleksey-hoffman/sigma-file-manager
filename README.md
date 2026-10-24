@@ -123,7 +123,7 @@ Three different tools, three different jobs. Here is the honest version of how
 they compare.
 
 | | | Alpha File Manager | Sigma File Manager | Windows Explorer |
-|---|---|---|---|
+|---|---|---|---|---|
 | 🖥️ | **Where it runs** | Windows + Linux | Windows + Linux | Windows only |
 | 🌲 | **Folder tree in the left sidebar** | ✅ a permanent tree that follows the pane you are in — and becomes the remote tree | ➖ none | ✅ in the navigation pane |
 | ⭐ | **Getting to the folders you use daily** | ✅ favourites grouped by category and editable — adding one asks which category it belongs to, so your working set is one click away | ➖ no categories, and adding one never asks | ➖ pinned to Quick access, no categories |
