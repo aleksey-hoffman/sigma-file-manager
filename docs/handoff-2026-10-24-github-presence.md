@@ -74,7 +74,7 @@ $ gh api repos/kizemo/alpha-file-manager --jq '{fork,parent:.parent.full_name,ne
 |---|---|---|---|---|
 | `Axorax/awesome-free-apps` | 高 | 2026-10-21 | 只改 `README.md`/`MOBILE.md`，**不要动 `filter/`**（自动生成）；加在**分类末尾**；描述以句号结尾；commit `Add: 名称` | ✅ [PR #429](https://github.com/Axorax/awesome-free-apps/pull/429) |
 | `chrysler-stone/awesome-tauri-apps` | 42 | 2026-10-16 | 必须 Tauri 写的**可用应用**、有公开站点/仓库、**分类内按字母序**、免费就不加 `(Paid)` | ✅ [PR #36](https://github.com/chrysler-stone/awesome-tauri-apps/pull/36) |
-| `thechampagne/awesome-windows` | 295 | 2026-10-17 | 有 `README.md` 与 `README-cn.md` 两份，图标用 `[![Open-Source Software][oss icon]](repo)` | ✅ [PR #114](https://github.com/kizemo/awesome-windows/pull/114)（两份文件各加一行） |
+| `thechampagne/awesome-windows` | 295 | 2026-10-17 | 有 `README.md` 与 `README-cn.md` 两份，图标用 `[![Open-Source Software][oss icon]](repo)` | ✅ [PR #114](https://github.com/thechampagne/awesome-windows/pull/114)（从 fork `kizemo/awesome-windows` 的 `main` 开的，两份文件各加一行） |
 | `0PandaDEV/awesome-windows` | 3072 | 2026-10-17 | **README 第 5 行明文禁止 AI 生成的 PR** | ⛔ **主动跳过** |
 | `tauri-apps/awesome-tauri` | 8139 | — | 是**资源/插件/模板**清单，不是应用展示清单 | 不适用 |
 | `521xueweihan/HelloGitHub` | 高 | 2026-09-28 | 自荐走 **hellogithub.com/periodical**，不是 GitHub PR | 需网站自荐（见第 6 节） |
