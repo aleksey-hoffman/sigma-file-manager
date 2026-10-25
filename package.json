@@ -43,6 +43,7 @@
     "tauri": "tauri",
     "sync-version": "node ./scripts/sync-version.js",
     "verify-changelog": "node ./scripts/verify-changelog.mjs",
+    "check:winget": "node ./docs/winget/check-manifest.mjs",
     "tauri:dev": "npm run sync-version && tauri dev",
     "tauri:dev:webkit-igpu": "npm run sync-version && env WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri dev",
     "tauri:build": "npm run sync-version && tauri build && node ./scripts/publish-bundle-to-release.mjs",

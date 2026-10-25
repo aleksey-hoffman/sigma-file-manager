@@ -8,6 +8,7 @@
 | 版本 | PR | 状态 |
 |---|---|---|
 | 3.5.1 | https://github.com/microsoft/winget-pkgs/pull/460744 | 校验 10 步全绿（`Validation-Completed`），等版主评审 |
+| 3.6.0 | 尚未提交 | 清单**已备好**（`manifests/.../3.6.0/`），**等 3.5.1 合并后再开 PR**（2026-10-25 决定） |
 
 目录结构与上游仓库一致：
 
@@ -149,6 +150,64 @@ WebView2 就跑不起来。当前配置已通过上游校验，暂不需要动�
 `Moderator-Approved` + `New-Package` —— `Moderator-Approved` 是版主加的，
 **我们加不了，也不该加**。版主的名单见
 `doc/Moderation.md#moderators`。`@wingetbot run` 也只有版主能发。
+
+## 3.6.0 的清单：已备好，等 3.5.1 合并
+
+2026-10-25 决定：**不与 3.5.1 并行提交**。3.5.1 还没被版主合并，
+同时提 3.6.0 有可能被要求「等前一版合了再提」；先合并、再提，链路更干净。
+
+`manifests/k/kizemo/AlphaFileManager/3.6.0/` 下四个文件已经写好并入库，
+**3.5.1 一合并就可以直接提**，剩下的只是开 PR + 回 CLA + 等校验。
+
+### 这一版清单的几个取舍
+
+1. **`ManifestVersion` 仍是 `1.12.0`，不升到上游当前的 `1.28.0`。**
+   上游最近合并的 PR 里 1.28.0 是主流，但抽样 6 份最近合并的清单，
+   仍有 2 份用 1.12.0、1 份用 1.6.0 —— **旧 schema 版本照收不误**，
+   而 1.12.0 已经被 3.5.1 验证过一轮，风险最低。
+
+2. **`Tags` 上限是 16 个，而 3.5.1 的标签**正好已经 16 个** ——
+   想加新功能的标签必须先删一个。删掉的是 `file-management`
+   （与 `file-manager`、`file-explorer` 语义重复），换上 `file-unlock`。
+
+3. **`ReleaseDate` 用 `2026-10-25`** —— release 实际发布时刻是
+   `2026-10-24T16:07:34Z`，按本地（UTC+8）日期算就是 10-25；
+   且必须**严格晚于** 3.5.1 的 `2026-10-24`。
+
+4. **`ShortDescription` 与 `Description` 加了本版的新能力**（解除文件锁定 / 彻底删除），
+   长度远在 schema 上限内（256 / 10000）。
+
+5. **`InstallerSha256` = `A2724AC9…D644A`**，与 GitHub release v3.6.0 的资产、
+   `release/` 下的本地安装包、站点 `version.json` 三方一致（20,608,754 字节）。
+
+### 本地自检
+
+本机**没装 `winget` 命令行**（`Get-Command winget` 为空），所以本地那两项
+（`winget validate`、沙箱试装）交给上游流水线。但上游一轮校验要十几分钟起步，
+错误的往返成本很高 ⇒ 写了一个本地自检脚本，把 schema 约束与上游规则
+逐条核一遍：
+
+```powershell
+npm run check:winget
+```
+
+它检查：四个文件齐全 / 无 BOM / LF / 末尾换行 / YAML 可解析；
+`PackageIdentifier` 与 `PackageVersion` 一致；四种 `ManifestType` 各一份；
+`version.DefaultLocale` == `defaultLocale.PackageLocale`；
+locale 文件不重复声明 defaultLocale；locale 文件只带可翻译字段、`Moniker` 不外泄；
+`ShortDescription` / `Description` / `Tags` 的长度与去重；
+`InstallerSha256` 与**本地安装包实际字节**核对；
+`InstallerUrl` 指向本版本 GitHub release 资产。
+
+⚠️ 它**不能替代上游流水线** —— 真值仍以 `Validation-Completed` 标签为准。
+
+### 3.5.1 合并后要做的
+
+1. fork `microsoft/winget-pkgs`（本地还没有克隆，需要先 clone）；
+2. 从 `master` 拉分支，把 `manifests/k/kizemo/AlphaFileManager/3.6.0/` 四个文件放进去；
+3. 向 `master` 开 PR，标题 `New package: kizemo.AlphaFileManager version 3.6.0`；
+4. 机器人要求时回一行 `@microsoft-github-policy-service agree`；
+5. 等校验跑完（看标签，不看 check runs），再等版主评审。
 
 ## 还没解决的事
 
