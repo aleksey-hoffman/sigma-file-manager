@@ -12,7 +12,7 @@
 | 问 | 答 |
 |---|---|
 | 项目是什么 | **Alpha File Manager（AFM）**，Windows + Linux 双栏文件管理器（Tauri 2 + Rust + Vue 3）。在 GitHub 上是上游 `aleksey-hoffman/sigma-file-manager` 的 **fork**（`kizemo/alpha-file-manager`），GPL-3.0-or-later |
-| 这轮做了什么 | 仓库「门面」整套重做 + 3.5.1 发版 + winget 清单提交并通过上游 10 步校验 + HelloGitHub 自荐 + 3 个 awesome 榜单 PR + 表格门禁加固 |
+| 这轮做了什么 | 仓库「门面」整套重做 + 3.5.1→3.6.1 发版 + winget 清单提交并通过上游 10 步校验 + HelloGitHub 自荐 + 3 个 awesome 榜单 PR + 表格门禁加固 |
 | 现在卡在哪 | **只剩等外部的人**：winget 版主评审合并、3 个 awesome 维护者合并、安装包代码签名（需你自备证书） |
 | 下一步 | 见第 5 节；**第一件事是查 winget PR 有没有被合并**（合并了就加 winget 徽章） |
 | 最容易踩的坑 | ① 清单的 `ManifestType` 判重；② 表格的 GFM 判据；③ `webviewInstallMode` 让试装跑 35 分钟；④ PowerShell 的 `>` 写成 UTF-16；⑤ git 推送要看代理状态 |
@@ -45,7 +45,7 @@
 | `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\screenshots\afm-social-preview.png` | 1280×640 社交预览横幅（461,038 B） |
 | `F:\soft\00selfmade\filemanager\sigma-file-manager\.github\media\alpha-file-manager-logo.png` | `α` 图标（41,379 B） |
 | `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\winget\README.md` | **winget 清单规则**（目录结构、ManifestType 规则、CLA 流程、校验状态判读） |
-| `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\winget\manifests\k\kizemo\AlphaFileManager\3.5.1\` | 清单原文 4 个文件（与 PR 上的**逐字节一致**） |
+| `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\winget\manifests\k\kizemo\AlphaFileManager\` | 清单原文，按版本分目录：`3.5.1\`（**已提 PR**）、`3.6.0\`、`3.6.1\`（**已备好，等 3.5.1 合并后再提**） |
 | `F:\soft\00selfmade\filemanager\sigma-file-manager\.github\workflows\winget.yml` | 自动发布 winget 的工作流（**仍缺 `WINGET_TOKEN` secret**） |
 | `F:\soft\00selfmade\filemanager\sigma-file-manager\src\utils\__tests__\readme-markdown-table.test.ts` | 表格门禁（77 例，覆盖根 README + `docs/**/*.md`） |
 | `F:\soft\00selfmade\filemanager\sigma-file-manager\src\localization\messages\*.json` | 17 个语言包（中文是 **`ch.json`**，不是 `zh`） |
@@ -82,12 +82,19 @@
   （一旦配 token 会**覆盖上游的包**）、资产正则 `-windows-setup\.exe$` 匹配不上我们的 `..._x64-setup.exe`。
 - ⚠️ 该工作流**历史运行次数为 0**（仓库里没有 `WINGET_TOKEN`）⇒ winget 上从未出现过 AFM。
 
-### 3.2 3.5.1 发版
+### 3.2 发版（3.5.1 → 3.6.0 → 3.6.1）
 
-- `bundle.publisher` 改成 `kizemo`、版本 3.5.0 → 3.5.1、CHANGELOG 补条目（`verify-changelog` 是门禁）。
-- 产物 `Alpha_File_Manager_3.5.1_x64-setup.exe`，**20,570,585 B**，
-  SHA-256 `8606AD3DF0DF6747C7403BB01C0014F1915CF050CCB9FB7FE8575B7D736A3BE9`。
-- `v3.5.1` 已是 **Latest** release。安装包**未代码签名**（`NotSigned`）。
+| 版本 | 安装包 | 大小 | SHA-256 | 状态 |
+|---|---|---|---|---|
+| 3.5.1 | `Alpha_File_Manager_3.5.1_x64-setup.exe` | 20,570,585 B | `8606AD3DF0DF6747C7403BB01C0014F1915CF050CCB9FB7FE8575B7D736A3BE9` | **已提 winget PR #460744** |
+| 3.6.0 | `Alpha_File_Manager_3.6.0_x64-setup.exe` | 20,608,754 B | — | 解除文件锁定 / 彻底删除 |
+| **3.6.1** | `Alpha_File_Manager_3.6.1_x64-setup.exe` | 20,643,804 B | `4D97C864DE6C96D3466570FEEA479F55195CE9FEA51E72054597DE2B011908E6` | **当前 Latest**；清单已备好，**等 3.5.1 合并后再提 PR** |
+
+- 3.5.1 那轮改的是 `bundle.publisher` → `kizemo`（Tauri v2 默认取 identifier 第二段
+  `sigma-file-manager`，对不上 ARP 发布者 ⇒ 包管理器不认领、升级不接管），
+  版本 3.5.0 → 3.5.1，CHANGELOG 补条目（`verify-changelog` 是门禁）。
+- 3.6.1 只修一个问题：**窗口最大化时把文件拖进别的程序拖不进去**。
+- 三个版本的安装包**都没代码签名**（`NotSigned`）。
 
 ### 3.3 winget（主线）
 
@@ -148,6 +155,7 @@
 | # | 事项 | 现状 | 谁来做 | 下一动作 |
 |---|---|---|---|---|
 | 1 | **winget 版主评审与合并** | 校验全绿，等社区版主（机器人留言：版主是社区志愿者，要有耐心） | 上游版主 | 每周查一次 PR 状态；**合并后立刻回 README 加 winget 徽章 + `winget install` 命令**（现在故意没放，见第 5.1 节） |
+| 1b | **提 3.6.1 的 winget PR** | 清单四件套已备好在 `docs/winget/manifests/k/kizemo/AlphaFileManager/3.6.1/`（sha256 与 3.6.1 安装包一致） | agent | **等 3.5.1 合并后再提**（同一包 ID 先提新版本会造成版本冲突） |
 | 2 | **安装包代码签名** | `NotSigned`，评审通常会要求 | **用户**（自备证书） | 拿到证书后：改签名流程 → 重新打包 → 换哈希 → 更新清单 → 提新 PR |
 | 3 | 3 个 awesome PR | 全 open 未合并，维护者还没回应 | 各榜维护者 | 若被问「是不是 fork / 能不能提供下载」，PR 正文里已写好 fork 关系与 GPL 归属 |
 | 4 | 收藏页签的分类侧栏 | **待用户拍板** | 用户 | 见第 5.5 节 |
@@ -169,6 +177,12 @@
 
 ⚠️ **在包真正发布前不要放 winget 徽章** —— 那是虚假承诺。放之前用
 `gh api repos/microsoft/winget-pkgs/contents/manifests/k/kizemo/AlphaFileManager` 确认包已在 master 上。
+
+**紧接着要做的第二件事**：3.5.1 合并后，把 3.6.1 的清单也提上去
+（目录 `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\winget\manifests\k\kizemo\AlphaFileManager\3.6.1\`，
+4 个文件，sha256 `4D97C864DE6C96D3466570FEEA479F55195CE9FEA51E72054597DE2B011908E6`）。
+**不要在 3.5.1 合并前提** —— 同一个包 ID 的两个版本目录同时存在会判版本冲突。
+⚠️ 提 3.6.1 = 又一轮完整校验（沙箱试装 ~35 分钟），所以时机上等 3.5.1 合并、确认流程跑通后再提。
 
 ### 5.2 曝光扩展
 
@@ -336,8 +350,8 @@ git -C 'F:\soft\00selfmade\filemanager' status -sb
 cd 'F:\soft\00selfmade\filemanager\sigma-file-manager'; npx vitest run; npx eslint .
 ```
 
-> ⚠️ 本文档写于 2026-10-24 21:4x（Asia/Shanghai）。
-> 第 3 节的「校验全绿」是**当时的快照**；接手时**以第 9 节第 1 步的实时查询为准**。
+⚠️ 本文写于 2026-10-24 晚，**版本相关事实已于 2026-10-25 刷新**（当时最新已到 3.6.1）。
+第 3 节的「校验全绿」是 **2026-10-24 21:4x 的快照**；接手时**以第 9 节第 1 步的实时查询为准**。
 
 ---
 
