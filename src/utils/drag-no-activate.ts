@@ -182,6 +182,43 @@ export function isOutboundDragActive(): boolean {
 }
 
 /**
+ * 指针探针的读数：指针现在压在什么窗口上。
+ */
+export interface PointerProbe {
+  /** 指针是不是停在 AFM 之外、且能接收拖放的窗口上。 */
+  overExternalWindow: boolean;
+  /** 命中窗口的类名（诊断用）。 */
+  hitClass: string;
+  /** 命中窗口所属进程（诊断用）。 */
+  hitPid: number;
+  /** 顶层窗口的类名（诊断用）。 */
+  rootClass: string;
+  /** 顶层窗口所属进程（诊断用）。 */
+  rootPid: number;
+}
+
+/**
+ * 指针现在是不是停在 AFM 之外、且能接收拖放的窗口上。
+ *
+ * 回答的是「用户是不是正把文件拖到别的程序上去」。
+ *
+ * 出站 OLE 拖拽原先只有一个触发条件：「指针移出了 AFM 的视口」。
+ * 那个条件在 **AFM 最大化**时不成立 —— 视口铺满全屏，指针移到盖在
+ * AFM 上面的聊天窗口时，坐标仍在视口内，于是永远不会切到出站拖拽，
+ * 文件就拖不进聊天窗口。这条探针改用系统事实回答同一个问题。
+ *
+ * 问不到时返回 `null`（后端命令不可用），调用方按「不在外部窗口」处理。
+ */
+export async function probePointerOverExternalWindow(): Promise<PointerProbe | null> {
+  try {
+    return await invoke<PointerProbe>('probe_pointer_over_external_window');
+  }
+  catch {
+    return null;
+  }
+}
+
+/**
  * 装上「抬手补焦点」的兜底。
  *
  * 后端抑制激活时，普通点击的激活时机从「按下」推迟到了「抬手」。

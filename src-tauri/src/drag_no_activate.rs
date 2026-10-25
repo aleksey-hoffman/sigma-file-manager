@@ -48,6 +48,24 @@ pub struct DragNoActivateStatus {
     pub hover_reaches_background: bool,
 }
 
+/// 指针探针的读数：指针现在压在什么窗口上。
+///
+/// 用来回答「用户是不是正把文件拖到别的程序上去」。
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PointerProbe {
+    /// 指针是不是停在 AFM 之外、且能接收拖放的窗口上。
+    pub over_external_window: bool,
+    /// 命中窗口的类名（诊断用）。
+    pub hit_class: String,
+    /// 命中窗口所属进程（诊断用）。
+    pub hit_pid: u32,
+    /// 顶层窗口的类名（诊断用）。
+    pub root_class: String,
+    /// 顶层窗口所属进程（诊断用）。
+    pub root_pid: u32,
+}
+
 #[cfg(windows)]
 mod win {
     use std::collections::HashMap;
@@ -60,13 +78,13 @@ mod win {
     use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON};
     use windows::Win32::UI::WindowsAndMessaging::{
         CallWindowProcW, GetAncestor, GetClassNameW, GetCursorPos, GetForegroundWindow,
-        GetWindowLongPtrW, GetWindowThreadProcessId, IsWindow, IsWindowVisible, PostMessageW,
-        SetForegroundWindow, SetWindowLongPtrW, SwitchToThisWindow, WindowFromPoint, GA_ROOT,
-        GWL_EXSTYLE, GWLP_WNDPROC, WA_ACTIVE, WA_CLICKACTIVE, WM_ACTIVATE, WS_EX_NOACTIVATE,
-        WNDPROC,
+        GetWindowLongPtrW, GetWindowThreadProcessId, IsChild, IsWindow, IsWindowVisible,
+        PostMessageW, SetForegroundWindow, SetWindowLongPtrW, SwitchToThisWindow, WindowFromPoint,
+        GA_ROOT, GWL_EXSTYLE, GWLP_WNDPROC, WA_ACTIVE, WA_CLICKACTIVE, WM_ACTIVATE,
+        WS_EX_NOACTIVATE, WNDPROC,
     };
 
-    use super::DragNoActivateStatus;
+    use super::{DragNoActivateStatus, PointerProbe};
 
     /// 自定义消息：把样式同步赶回 UI 线程上做。
     ///
@@ -95,6 +113,9 @@ mod win {
 
     /// 拖拽期间是否还在盯着鼠标下的窗口（要把目标窗口提到前面）。
     static OUTBOUND_ACTIVATION_WATCH: AtomicBool = AtomicBool::new(false);
+
+    /// 上一次指针探针的答案 —— 只在变化时打日志，避免刷屏。
+    static POINTER_PROBE_LAST: AtomicBool = AtomicBool::new(false);
 
     /// 已被我们子类化的窗口 → 原始窗口过程。
     static SUBCLASSED: OnceLock<Mutex<HashMap<isize, WNDPROC>>> = OnceLock::new();
@@ -505,6 +526,149 @@ mod win {
         }
     }
 
+    /// 指针探针：指针现在是不是停在「AFM 之外、且能接收拖放」的窗口上。
+    ///
+    /// 回答的是「用户是不是正把文件拖到别的程序上去」。
+    ///
+    /// ## 为什么需要这条探针
+    ///
+    /// 出站 OLE 拖拽原先只有一个触发条件：「指针移出了 AFM 的视口」。
+    /// 那个条件在 **AFM 最大化**时不成立 —— 视口铺满全屏，指针移到
+    /// 盖在 AFM 上面的聊天窗口时，指针坐标仍在视口内，于是永远不会
+    /// 切到出站拖拽，文件就拖不进聊天窗口。
+    ///
+    /// 这条探针改用系统事实回答同一个问题：「指针下面那个窗口，
+    /// 是不是别的程序」。
+    ///
+    /// ## 判定分三步
+    ///
+    /// 1. `GetCursorPos` + `WindowFromPoint` 拿到指针下的窗口。
+    ///    `WindowFromPoint` 考虑 z 序 —— 指针落在聊天窗口上时拿到的是
+    ///    聊天窗口，而不是被它盖住的 AFM。
+    /// 2. 排除「自己家的窗口」。AFM 的 webview 渲染窗口跑在
+    ///    `msedgewebview2.exe` 进程里，但它**是主窗口的后代**
+    ///    （`WRY_WEBVIEW` → `Chrome_WidgetWin_0` → `Chrome_WidgetWin_1`
+    ///    → `Chrome_RenderWidgetHostHWND`），所以用 `IsChild` 判定，
+    ///    不依赖 `GA_ROOT` 恰好落在哪一层。
+    /// 3. 剩下的交给 `is_activatable_drop_target`：不可见、本进程、
+    ///    桌面、任务栏 一律不算。
+    pub fn pointer_probe() -> PointerProbe {
+        let mut probe = PointerProbe {
+            over_external_window: false,
+            hit_class: String::new(),
+            hit_pid: 0,
+            root_class: String::new(),
+            root_pid: 0,
+        };
+
+        let Some(own_window) = main_window() else {
+            return probe;
+        };
+
+        let mut point = POINT::default();
+
+        if unsafe { GetCursorPos(&mut point) }.is_err() {
+            return probe;
+        }
+
+        let hit = unsafe { WindowFromPoint(point) };
+
+        if hit == HWND(std::ptr::null_mut()) {
+            return probe;
+        }
+
+        let root = unsafe { GetAncestor(hit, GA_ROOT) };
+
+        probe.hit_class = window_class(hit);
+        probe.hit_pid = window_pid(hit);
+        probe.root_class = window_class(root);
+        probe.root_pid = window_pid(root);
+
+        if root != HWND(std::ptr::null_mut()) && !is_own_window(hit, root, own_window) {
+            probe.over_external_window = is_activatable_drop_target(root);
+        }
+
+        let changed = POINTER_PROBE_LAST.swap(probe.over_external_window, Ordering::SeqCst)
+            != probe.over_external_window;
+
+        if changed {
+            log::info!(
+                "drag_no_activate: pointer probe external={} hit={} (pid {}) root={} (pid {})",
+                probe.over_external_window,
+                probe.hit_class,
+                probe.hit_pid,
+                probe.root_class,
+                probe.root_pid,
+            );
+        }
+
+        probe
+    }
+
+    /// 这个窗口是不是「自己家的」。
+    ///
+    /// 判错的后果分两头：
+    ///
+    /// * 把外部窗口误判成自家的 → 出站拖拽永远起不来（就是这次的故障）；
+    /// * 把自家的窗口误判成外部 → 在 AFM **内部**拖文件时误起系统级拖拽，
+    ///   内建拖放（拖到别的文件夹）就彻底坏了。
+    fn is_own_window(hit: HWND, root: HWND, own_window: HWND) -> bool {
+        classify_own_window(
+            hit == own_window,
+            root == own_window,
+            unsafe { IsChild(own_window, hit) }.as_bool(),
+            unsafe { IsChild(own_window, root) }.as_bool(),
+        )
+    }
+
+    /// 「这是不是自家窗口」的判定本体。
+    ///
+    /// 拆成纯函数是为了能测：`HWND` 在单测里不好造，但这几个条件
+    /// （相等 / 是后代 / 都不是）可以穷举。
+    fn classify_own_window(
+        hit_is_own: bool,
+        root_is_own: bool,
+        hit_is_descendant: bool,
+        root_is_descendant: bool,
+    ) -> bool {
+        hit_is_own || root_is_own || hit_is_descendant || root_is_descendant
+    }
+
+    /// 窗口的类名。读不到时返回空串。
+    fn window_class(hwnd: HWND) -> String {
+        let mut buffer = [0u16; 64];
+        let length = unsafe { GetClassNameW(hwnd, &mut buffer) };
+
+        if length <= 0 {
+            return String::new();
+        }
+
+        String::from_utf16_lossy(&buffer[..length as usize])
+    }
+
+    /// 窗口所属的进程 id。
+    fn window_pid(hwnd: HWND) -> u32 {
+        let mut pid = 0;
+        unsafe { GetWindowThreadProcessId(hwnd, Some(&mut pid)) };
+
+        pid
+    }
+
+    /// 这些窗口不能被当成拖放目标。
+    ///
+    /// 桌面与任务栏尤其危险：激活桌面会把所有窗口最小化。
+    fn is_excluded_drop_class(class: &str) -> bool {
+        matches!(
+            class,
+            "Progman"
+                | "WorkerW"
+                | "Shell_TrayWnd"
+                | "Shell_SecondaryTrayWnd"
+                | "NotifyIconOverflowWindow"
+                | "Windows.UI.Core.CoreWindow"
+        )
+    }
+
     /// 这个窗口适合被提到前面吗？
     fn is_activatable_drop_target(hwnd: HWND) -> bool {
         if !unsafe { IsWindowVisible(hwnd) }.as_bool() {
@@ -526,24 +690,13 @@ mod win {
         }
 
         // 桌面与任务栏不能激活：激活桌面会把所有窗口最小化。
-        let mut buffer = [0u16; 64];
-        let length = unsafe { GetClassNameW(hwnd, &mut buffer) };
+        let class = window_class(hwnd);
 
-        if length <= 0 {
+        if class.is_empty() {
             return false;
         }
 
-        let class = String::from_utf16_lossy(&buffer[..length as usize]);
-
-        !matches!(
-            class.as_str(),
-            "Progman"
-                | "WorkerW"
-                | "Shell_TrayWnd"
-                | "Shell_SecondaryTrayWnd"
-                | "NotifyIconOverflowWindow"
-                | "Windows.UI.Core.CoreWindow"
-        )
+        !is_excluded_drop_class(class.as_str())
     }
 
     /// 出站拖拽结束后，把前台还给拖拽目标。
@@ -681,6 +834,60 @@ mod win {
         fn tracing_never_panics() {
             trace("unit-test");
         }
+
+        #[test]
+        fn a_descendant_window_counts_as_our_own() {
+            // 判错的后果有两头：
+            //
+            // * 把外部窗口误判成自家的 → 出站拖拽起不来（这次的故障）；
+            // * 把自家的窗口误判成外部 → 在 AFM 内部拖文件时误起系统级拖拽，
+            //   内建拖放（拖到别的文件夹）就彻底坏了。
+            //
+            // webview 的渲染窗口跑在 msedgewebview2 进程里，但它挂在主窗口底下，
+            // 所以「是后代」这一条必须算作自家窗口。
+            assert!(classify_own_window(true, false, false, false));
+            assert!(classify_own_window(false, true, false, false));
+            assert!(classify_own_window(false, false, true, false));
+            assert!(classify_own_window(false, false, false, true));
+
+            // 都不沾 → 是外部窗口。
+            assert!(!classify_own_window(false, false, false, false));
+        }
+
+        #[test]
+        fn the_desktop_and_the_taskbar_are_never_drop_targets() {
+            for class in [
+                "Progman",
+                "WorkerW",
+                "Shell_TrayWnd",
+                "Shell_SecondaryTrayWnd",
+                "NotifyIconOverflowWindow",
+                "Windows.UI.Core.CoreWindow",
+            ] {
+                assert!(
+                    is_excluded_drop_class(class),
+                    "{class} 不该被当成拖放目标"
+                );
+            }
+
+            // 普通的应用窗口当然要放行。
+            assert!(!is_excluded_drop_class("Chrome_WidgetWin_0"));
+            assert!(!is_excluded_drop_class("Tauri Window"));
+            assert!(!is_excluded_drop_class("Qt51514QWindowIcon"));
+        }
+
+        #[test]
+        fn the_pointer_probe_answers_without_panicking() {
+            // 单测二进制里没有主窗口 —— 不能瞎报「在外部窗口上」。
+            let probe = pointer_probe();
+
+            assert!(!probe.over_external_window);
+        }
+
+        #[test]
+        fn a_window_without_a_class_name_is_never_a_drop_target() {
+            assert!(window_class(HWND(std::ptr::null_mut())).is_empty());
+        }
     }
 }
 
@@ -706,6 +913,17 @@ mod stub {
     }
 
     pub fn trace(_event: &str) {}
+
+    /// 非 Windows 上没有「别的窗口」这回事，一律回答「不在外部窗口上」。
+    pub fn pointer_probe() -> PointerProbe {
+        PointerProbe {
+            over_external_window: false,
+            hit_class: String::new(),
+            hit_pid: 0,
+            root_class: String::new(),
+            root_pid: 0,
+        }
+    }
 
     /// 非 Windows 上没有前台窗口可管，两件事都是空操作。
     pub fn capture_outbound_drag_target() {}
@@ -770,6 +988,15 @@ pub fn left_mouse_button_down() -> bool {
 #[tauri::command]
 pub fn drag_no_activate_trace(event: String) {
     platform::trace(&event);
+}
+
+/// 指针探针：指针现在是不是停在 AFM 之外、且能接收拖放的窗口上。
+///
+/// 出站 OLE 拖拽的触发条件之一。AFM 最大化时「指针移出视口」永不成立，
+/// 全靠这条探针才能把文件拖到盖在上面的聊天窗口里去。
+#[tauri::command]
+pub fn probe_pointer_over_external_window() -> PointerProbe {
+    platform::pointer_probe()
 }
 
 /// 记下当前前台窗口，作为这一次出站拖拽的目标。

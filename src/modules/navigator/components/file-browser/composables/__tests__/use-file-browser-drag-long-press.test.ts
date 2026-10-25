@@ -25,10 +25,6 @@ const mocks = vi.hoisted(() => ({
   setOutboundDragActive: vi.fn(),
   focusMainWindow: vi.fn(),
   isLeftMouseButtonDown: vi.fn(),
-  captureOutboundDragTarget: vi.fn(),
-  restoreOutboundDragForeground: vi.fn(),
-  beginOutboundDragActivationWatch: vi.fn(),
-  endOutboundDragActivationWatch: vi.fn(),
   traceDragNoActivate: vi.fn(),
 }));
 
@@ -38,10 +34,6 @@ vi.mock('@/utils/drag-no-activate', () => ({
   setOutboundDragActive: mocks.setOutboundDragActive,
   focusMainWindow: mocks.focusMainWindow,
   isLeftMouseButtonDown: mocks.isLeftMouseButtonDown,
-  captureOutboundDragTarget: mocks.captureOutboundDragTarget,
-  restoreOutboundDragForeground: mocks.restoreOutboundDragForeground,
-  beginOutboundDragActivationWatch: mocks.beginOutboundDragActivationWatch,
-  endOutboundDragActivationWatch: mocks.endOutboundDragActivationWatch,
   shouldStartOutboundDrag: (state: boolean | null) => state !== false,
   traceDragNoActivate: mocks.traceDragNoActivate,
 }));
@@ -401,50 +393,5 @@ describe('出站拖拽收尾', () => {
     }));
 
     expect(mocks.startDragSession).not.toHaveBeenCalled();
-  });
-
-  it('起拖拽时记下前台，拖完把前台还给拖拽目标', async () => {
-    // 出站拖拽期间是「进行中」状态：拖拽没结束就不能还前台。
-    const deferred: { resolve?: () => void } = {};
-    mocks.startOutboundDragForEntries.mockImplementation(() => new Promise<void>((resolve) => {
-      deferred.resolve = resolve;
-    }));
-
-    const { handleDragMouseDown } = mountDragComposable();
-
-    handleDragMouseDown(entry, mouseEventAt(100, 200));
-    await vi.advanceTimersByTimeAsync(400);
-
-    expect(mocks.captureOutboundDragTarget).toHaveBeenCalled();
-    // 拖拽还没结束，不能急着还前台。
-    expect(mocks.restoreOutboundDragForeground).not.toHaveBeenCalled();
-
-    // 拖拽结束（promise resolve）之后才还。
-    deferred.resolve?.();
-    await vi.advanceTimersByTimeAsync(0);
-
-    expect(mocks.restoreOutboundDragForeground).toHaveBeenCalled();
-  });
-
-  it('拖拽期间盯着鼠标，把悬停到的目标窗口提到前面', async () => {
-    const deferred: { resolve?: () => void } = {};
-    mocks.startOutboundDragForEntries.mockImplementation(() => new Promise<void>((resolve) => {
-      deferred.resolve = resolve;
-    }));
-
-    const { handleDragMouseDown } = mountDragComposable();
-
-    handleDragMouseDown(entry, mouseEventAt(100, 200));
-    await vi.advanceTimersByTimeAsync(400);
-
-    // 拖拽期间必须盯着。
-    expect(mocks.beginOutboundDragActivationWatch).toHaveBeenCalled();
-    expect(mocks.endOutboundDragActivationWatch).not.toHaveBeenCalled();
-
-    deferred.resolve?.();
-    await vi.advanceTimersByTimeAsync(0);
-
-    // 拖完就撤掉。
-    expect(mocks.endOutboundDragActivationWatch).toHaveBeenCalled();
   });
 });

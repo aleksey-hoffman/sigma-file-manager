@@ -339,6 +339,7 @@ pub fn run() {
             drag_no_activate::drag_no_activate_status,
             drag_no_activate::left_mouse_button_down,
             drag_no_activate::drag_no_activate_trace,
+            drag_no_activate::probe_pointer_over_external_window,
             drag_no_activate::capture_outbound_drag_target,
             drag_no_activate::restore_outbound_drag_foreground,
             drag_no_activate::begin_outbound_drag_activation_watch,

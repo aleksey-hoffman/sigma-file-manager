@@ -12,13 +12,9 @@ import {
 } from '@/composables/use-drop-target-registry';
 import {
   armDragNoActivate,
-  beginOutboundDragActivationWatch,
-  captureOutboundDragTarget,
   disarmDragNoActivate,
-  endOutboundDragActivationWatch,
   focusMainWindow,
   isLeftMouseButtonDown,
-  restoreOutboundDragForeground,
   setOutboundDragActive,
   shouldStartOutboundDrag,
   traceDragNoActivate,
@@ -230,21 +226,9 @@ export function useFileBrowserDrag(options: {
     // 会拖出一个幽灵的内建拖拽会话。
     cleanupMouseActivation();
 
-    // 记下前台：这时前台是用户要拖进去的那个程序。OLE 拖拽结束的瞬间
-    // 系统会激活拖拽源窗口，AFM 会盖住它 —— 拖完再把前台还回去。
-    captureOutboundDragTarget();
-
-    // 拖拽期间盯着鼠标：悬停到哪个应用就把那个窗口提到前面。
-    // OLE 拖放自己不会这么做，而用户拖到微信/钉钉的对话窗口时，
-    // 需要那个窗口可见才看得到落点。
-    beginOutboundDragActivationWatch();
-
-    void dragSession
-      .startOutboundDragForEntries(items)
-      .finally(() => {
-        endOutboundDragActivationWatch();
-        restoreOutboundDragForeground();
-      });
+    // 记目标、拖拽期间盯着鼠标、拖完把前台还给目标 —— 这些统一由
+    // 拖拽会话负责：内建会话中途切出站时走的是同一套流程。
+    void dragSession.startOutboundDragForEntries(items);
   }
 
   /**

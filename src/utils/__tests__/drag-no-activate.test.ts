@@ -147,4 +147,24 @@ describe('抬手补焦点的兜底', () => {
     expect(() => mod.beginOutboundDragActivationWatch()).not.toThrow();
     expect(() => mod.endOutboundDragActivationWatch()).not.toThrow();
   });
+
+  it('指针探针问后端「指针是不是在外部窗口上」，问不到时返回 null', async () => {
+    const mod = await loadModule();
+
+    mocks.invoke.mockResolvedValueOnce({
+      overExternalWindow: true,
+      hitClass: 'Chrome_WidgetWin_1',
+      hitPid: 4242,
+      rootClass: 'Chrome_WidgetWin_1',
+      rootPid: 4242,
+    });
+
+    const probe = await mod.probePointerOverExternalWindow();
+
+    expect(probe?.overExternalWindow).toBe(true);
+    expect(mocks.invoke).toHaveBeenCalledWith('probe_pointer_over_external_window');
+
+    mocks.invoke.mockRejectedValueOnce(new Error('命令不存在'));
+    expect(await mod.probePointerOverExternalWindow()).toBeNull();
+  });
 });
