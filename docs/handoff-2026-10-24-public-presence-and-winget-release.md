@@ -154,6 +154,7 @@
 | 5 | upstream 同步剩余 2 项 | 见第 5.4 节 | agent 可做 | 按 `docs/audit-upstream-port` 的逐行命中率判据复核后补 |
 | 6 | 中文社区曝光 | 未做 | 需人工写作 | 少数派 / 掘金 / V2EX / 知乎 写一篇「在资源管理器之外」的实测文；各站规则不同，**先读规则再发** |
 | 7 | 更多分发渠道 | 未做 | 需各站账号 | Scoop bucket（`ScoopInstaller/Main`）、Chocolatey、AlternativeTo |
+| 8 | 清理账号下 4 个推广用 fork | **2026-10-25 用户拍板：先都保留** | agent（时机到了再删） | 见第 5.6 节 —— 删除前必须确认对应 PR 已有结论 |
 
 ---
 
@@ -217,6 +218,39 @@ node F:\soft\00selfmade\filemanager\sigma-file-manager\scripts\audit-upstream-po
   ③ 等 upstream 自己长出分类体系再对齐。
   背景与冲突清单见
   `F:\soft\00selfmade\filemanager\sigma-file-manager\docs\handoff-2026-10-24-dashboard-phase3-handoff.md` 第 5.3 节。
+
+### 5.6 fork 清理时机（2026-10-25 用户拍板：**先都保留**）
+
+用户账号 `kizemo` 名下有 4 个为 AFM 推广而建的 fork：
+
+| fork | 承载的 PR | 清理条件 |
+|---|---|---|
+| `kizemo/winget-pkgs` | `microsoft/winget-pkgs#460744` | **必须等 #460744 合并进上游 master 之后**（清单已在 master 里，fork 只剩历史分支） |
+| `kizemo/awesome-free-apps` | `Axorax/awesome-free-apps#429` | PR 合并**或**被关闭、确认不再收录后 |
+| `kizemo/awesome-tauri-apps` | `chrysler-stone/awesome-tauri-apps#36` | 同上 |
+| `kizemo/awesome-windows` | `thechampagne/awesome-windows#114` | 同上 |
+
+⚠️ **删除 fork 会自动关闭以其为 head 的未合并 PR** ⇒ 清理前先确认该 PR 已有结论
+（merged 或 closed），否则等于把 PR 撤了。
+
+确认之后再跑（**逐个跑，不要一次全删**）：
+
+```powershell
+gh repo delete kizemo/awesome-free-apps  --yes
+gh repo delete kizemo/awesome-tauri-apps --yes
+gh repo delete kizemo/awesome-windows    --yes
+# ⚠️ 这一条必须等 #460744 合并后才跑
+gh repo delete kizemo/winget-pkgs         --yes
+```
+
+本地清单原文**不依赖**这些 fork：
+`F:\soft\00selfmade\filemanager\sigma-file-manager\docs\winget\manifests\k\kizemo\AlphaFileManager\3.5.1\`
+（与 PR 上的 4 个文件逐字节一致；真要重建 fork 也就是一次 fork + 一次 push）。
+
+**当时为什么没直接删**：#460744 已通过上游全部 10 步校验（`Validation-Completed`），
+只等社区版主评审 —— 删掉 fork 会连带撤掉这个 PR，代价是重推清单 + 重跑校验
+（其中沙箱试装一轮就 ~35 分钟）。三个 awesome PR 则是 40 小时无维护者回应，
+属可选收录，优先级低，但同样在等一个结论。
 
 ---
 
