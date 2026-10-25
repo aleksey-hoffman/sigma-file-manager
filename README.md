@@ -187,49 +187,27 @@ GitHub releases carry the same installer and act as a fallback mirror:
 
 ---
 
-## 🆕 What's new in 3.6.0
+## 🆕 What's new in 3.6.1
 
-### 🔓 The right-click menu now tells you what is holding a file open
+### 🖱️ Dragging a file into another program works with a maximized window
 
-**Added.** Delete a file and Windows says *the operation cannot be completed
-because the file is open in another program*, and leaves you there. The new
-**Unlock file** entry asks Windows which programs have the file open and lists
-them with their process ids — so you can tell an editor from a backup tool from
-a stuck service. You can end one of them from the same dialog.
+**Fixed.** The system-level drag — the one that lets you pull a file into a chat
+window, a mail client or another file manager — used to begin only once the
+pointer left the Alpha File Manager window. With the window maximized that
+never happens: the window covers the whole screen, so a pointer sitting on a
+chat program in front of it is still within this window's coordinates, and the
+file was never handed over to Windows at all. The application now asks Windows
+what is actually under the pointer, and as soon as it rests on another program
+the file is handed to the system's own drag-and-drop.
 
-It never deletes anything itself. It clears what is in the way — the read-only
-flag and the programs holding the file — and then tells you the file can be
-deleted now.
+The answer has to hold for a moment before the drag begins, so that merely
+passing over a window on the way somewhere else does not start a drag by
+accident. Dragging *inside* this window is unaffected: a file dropped on a
+folder here is still moved the way it always was.
 
-![The unlock dialog](docs/screenshots/afm-file-unlock-dialog.png)
-
-### 🗑️ The right-click menu can now delete a file that will not delete
-
-**Added.** Some files refuse to be deleted no matter what you try: they are
-read-only, or a program holds them open without allowing the deletion. The new
-**Delete anyway** entry tries three things, cheapest first:
-
-1. clear the read-only flag;
-2. mark the file for deletion, so it disappears the moment the program holding
-   it closes — **no restart needed**;
-3. register the file with Windows to be deleted at the next restart, which needs
-   administrator rights.
-
-Every step reports what actually happened. A file that could not be deleted is
-reported as such — **not as a success**.
-
-### 🔧 A build breakage on the main branch is fixed
-
-**Fixed.** One test file used the wrong Node type, which produced five type
-errors and made `tauri build` fail before it ever reached the Rust compiler.
-The release pipeline is unblocked again.
-
-> Neither new entry needs anything extra installed — the Windows APIs that do
-> the work were already part of the application's own dependencies.
-
-> The full history — every release, every fix — is in the
-> [changelog](CHANGELOG.md) and on the
-> [releases page](https://github.com/kizemo/alpha-file-manager/releases).
+> The program you are dragging towards is now brought to the front while the
+> drag runs, and the foreground is handed back to it afterwards — Windows does
+> neither of those on its own.
 
 ---
 

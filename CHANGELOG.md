@@ -1,4 +1,13 @@
 # Changelog
+## [3.6.1] - October 2026
+
+**Summary:** Dragging a file out to another program now works whether this window is maximized or not. Until now the system-level drag only began once the pointer left this window, and a maximized window covers the whole screen, so the pointer was still "inside" the window while it sat over a chat program in front of it — the file was never handed to the system at all. The application now asks Windows what is actually under the pointer and switches to the system-level drag as soon as the pointer rests on another program. The same pass makes the window you are dragging towards come to the front while the drag runs, and hands the foreground back to it afterwards.
+
+### What changed
+
+**Fixed: a file could not be dragged into another program while this window was maximized.** The system-level drag used to start only when the pointer left the application window. With the window maximized that never happens: the window covers the screen, so a pointer sitting on a chat program in front of it is still within this window's coordinates, and nothing was ever dragged out — the drag simply ended when the button came up. The application now asks Windows what is under the pointer, and as soon as the pointer rests on a different program the file is handed over to the system's own drag-and-drop, which is what lets it land in a chat window. The answer has to hold for a moment before the drag begins, so that merely passing over a window on the way somewhere else does not start a drag by accident. Dragging inside this window is unaffected: a file dropped on a folder here is still moved the way it always was.
+
+**Fixed: the program you are dragging towards now comes to the front, and keeps the focus afterwards.** Windows does not raise the window under the pointer during a system-level drag, and when the drag ends it activates the window the drag came from — which put this application on top of the program you had just dropped the file into. On the new route the application raises the target while the drag is in progress and hands the foreground back to it when the drag ends, so the drop can be seen and the program you dropped into stays in front.
 
 ## [3.6.0] - October 2026
 
