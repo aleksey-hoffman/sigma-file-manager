@@ -39,6 +39,12 @@ import { disconnectDriveForEntry } from '@/utils/disconnect-drive';
 import { refreshDrives } from '@/modules/home/composables/use-drives';
 // FORK-MODIFICATION 2026-10-24：解除文件锁定 / 彻底删除。
 import { useFileLockWorkflow } from '@/composables/use-file-lock-workflow';
+// FORK-MODIFICATION 2026-10-26：粘到远程面板走远程通道。
+import {
+  handleRemotePaste,
+  remoteTransferItemsFromPaths,
+  toRemoteTransferItems,
+} from '@/modules/remote/utils/remote-transfer-service';
 
 export function useDirEntryActions() {
   const { t } = useI18n();
@@ -98,6 +104,24 @@ export function useDirEntryActions() {
 
     if (!systemClipboard?.paths.length) {
       if (clipboardStore.hasFileItems) {
+        // FORK-MODIFICATION 2026-10-26：粘到远程面板走远程通道。
+        //
+        // 右键菜单的「粘贴」与导航器的 Ctrl+V 是两条独立路径，
+        // 两处都要拦 —— 漏一处，那个入口就还是那句
+        // 「Destination path does not exist」。
+        const remoteOutcome = await handleRemotePaste(
+          toRemoteTransferItems(clipboardStore.clipboardItems),
+          destinationPath,
+        );
+
+        if (remoteOutcome !== null) {
+          if (remoteOutcome) {
+            clipboardStore.discardClipboard();
+          }
+
+          return remoteOutcome;
+        }
+
         const sourcePaths = clipboardStore.clipboardItems.map(item => item.path);
         const operation = clipboardStore.isCopyOperation ? 'copy' : 'move';
         const result = await performCopyMoveWithConflicts(sourcePaths, destinationPath, operation);
@@ -137,6 +161,16 @@ export function useDirEntryActions() {
       }
 
       return await pasteSystemClipboardImage(destinationPath);
+    }
+
+    // FORK-MODIFICATION 2026-10-26：系统剪贴板里的文件粘到远程面板。
+    const remoteOutcome = await handleRemotePaste(
+      remoteTransferItemsFromPaths(systemClipboard.paths),
+      destinationPath,
+    );
+
+    if (remoteOutcome !== null) {
+      return remoteOutcome;
     }
 
     const result = await performCopyMoveWithConflicts(

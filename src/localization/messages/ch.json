@@ -1510,7 +1510,9 @@
       "trash": "回收站",
       "deletePermanent": "删除",
       "archive": "归档",
-      "dirSize": "文件夹大小"
+      "dirSize": "文件夹大小",
+      "remoteUpload": "上传",
+      "remoteDownload": "下载"
     },
     "operationStatusShort": {
       "completed": "成功",
@@ -1672,7 +1674,30 @@
       "uploadSucceeded": "已上传 {files} 个文件到远程目录。",
       "uploadFailed": "上传没有完全成功：成功 {files} 个，跳过 {skipped} 个，失败 {failed} 个。",
       "downloadSucceeded": "已下载 {files} 个文件到本地目录。",
-      "downloadFailed": "下载没有完全成功：成功 {files} 个，跳过 {skipped} 个，失败 {failed} 个。"
+      "downloadFailed": "下载没有完全成功：成功 {files} 个，跳过 {skipped} 个，失败 {failed} 个。",
+      "uploading": "正在上传到远程",
+      "downloading": "正在从远程下载",
+      "progressFiles": "已传输 {done} / {total} 个文件",
+      "progressBytes": "已传输 {done} / {total}",
+      "progressCurrent": "当前：{name}",
+      "resultTitle": "传输结果",
+      "resultSummary": "成功 {files} 个，跳过 {skipped} 个，失败 {failed} 个",
+      "failureSection": "失败的文件",
+      "skippedSection": "跳过的文件",
+      "skipReasonAlreadyExists": "目标已存在，未覆盖",
+      "conflictTitle": "目标已存在",
+      "conflictMessage": "目标目录里已有 {count} 个同名文件，要覆盖它们吗？",
+      "conflictOverwrite": "覆盖",
+      "conflictSkipExisting": "跳过已存在的",
+      "noRemotePane": "对面那一格不在远程上",
+      "uploadFailedTitle": "上传没有完全成功",
+      "downloadFailedTitle": "下载没有完全成功",
+      "pasteToRemoteFailed": "复制到远程失败",
+      "remoteToRemoteNotSupported": "暂不支持在两个远程之间复制。",
+      "pasteFromRemoteFailed": "从远程复制失败",
+      "conflictApplyToAll": "对所有同名文件使用相同处理",
+      "conflictContinue": "继续",
+      "skipReasonUserSkipped": "你选择了跳过"
     },
     "permissions": {
       "menuItem": "权限设置...",

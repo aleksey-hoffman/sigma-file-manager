@@ -33,10 +33,10 @@ import {
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  downloadFromRemote,
+  downloadPathsFromRemote,
   getRemotePermissions,
   setRemotePermissions,
-  uploadToRemote,
+  uploadPathsToRemote,
 } from '../remote-transfer';
 
 const { invokeMock } = vi.hoisted(() => {
@@ -126,28 +126,42 @@ describe('远程传输的 invoke 参数名契约', () => {
     invokeMock.mockResolvedValue({});
   });
 
-  it('remote_upload_path 传的键与 Rust 参数名逐条对上', async () => {
-    await uploadToRemote('C:/Users/Duanyi/a.txt', 'sfm://remote/conn-1/dir');
+  it('remote_upload_paths 传的键与 Rust 参数名逐条对上', async () => {
+    await uploadPathsToRemote(
+      ['C:/Users/Duanyi/a.txt', 'C:/Users/Duanyi/b.txt'],
+      'sfm://remote/conn-1/dir',
+      ['C:/Users/Duanyi/a.txt'],
+      'job-1',
+    );
 
     const { command, payload } = lastCall();
-    const expected = rustParameterNames('remote_upload_path').map(toTauriArgumentKey);
+    const expected = rustParameterNames('remote_upload_paths').map(toTauriArgumentKey);
 
-    expect(command).toBe('remote_upload_path');
+    expect(command).toBe('remote_upload_paths');
     expect(Object.keys(payload).sort()).toEqual([...expected].sort());
-    expect(payload.localPath).toBe('C:/Users/Duanyi/a.txt');
+    expect(payload.localPaths).toEqual(['C:/Users/Duanyi/a.txt', 'C:/Users/Duanyi/b.txt']);
     expect(payload.remoteDir).toBe('sfm://remote/conn-1/dir');
+    expect(payload.overwritePaths).toEqual(['C:/Users/Duanyi/a.txt']);
+    expect(payload.jobId).toBe('job-1');
   });
 
-  it('remote_download_path 传的键与 Rust 参数名逐条对上', async () => {
-    await downloadFromRemote('sfm://remote/conn-1/a.txt', 'C:/Users/Duanyi');
+  it('remote_download_paths 传的键与 Rust 参数名逐条对上', async () => {
+    await downloadPathsFromRemote(
+      ['sfm://remote/conn-1/a.txt'],
+      'C:/Users/Duanyi',
+      [],
+      'job-2',
+    );
 
     const { command, payload } = lastCall();
-    const expected = rustParameterNames('remote_download_path').map(toTauriArgumentKey);
+    const expected = rustParameterNames('remote_download_paths').map(toTauriArgumentKey);
 
-    expect(command).toBe('remote_download_path');
+    expect(command).toBe('remote_download_paths');
     expect(Object.keys(payload).sort()).toEqual([...expected].sort());
-    expect(payload.remotePath).toBe('sfm://remote/conn-1/a.txt');
+    expect(payload.remotePaths).toEqual(['sfm://remote/conn-1/a.txt']);
     expect(payload.localDir).toBe('C:/Users/Duanyi');
+    expect(payload.overwritePaths).toEqual([]);
+    expect(payload.jobId).toBe('job-2');
   });
 
   it('remote_chmod 传的键与 Rust 参数名逐条对上', async () => {
@@ -184,8 +198,8 @@ describe('远程传输的 invoke 参数名契约', () => {
     );
 
     for (const command of [
-      'remote_upload_path',
-      'remote_download_path',
+      'remote_upload_paths',
+      'remote_download_paths',
       'remote_chmod',
       'remote_get_permissions',
     ]) {
@@ -193,6 +207,24 @@ describe('远程传输的 invoke 参数名契约', () => {
         libRs,
         `${command} 没有出现在 lib.rs 的 generate_handler! 里 —— 前端调它会报 "command not found"`,
       ).toContain(`remote::${command}`);
+    }
+  });
+
+  it('旧的单路径命令已经不存在了 —— 后端删了它们，lib.rs 里也不能留着', () => {
+    const libRs = fs.readFileSync(
+      path.join(findRepoRoot(), 'src-tauri', 'src', 'lib.rs'),
+      'utf8',
+    );
+
+    for (const command of ['remote_upload_path', 'remote_download_path']) {
+      // 用词边界：`remote::remote_upload_path` 是 `remote::remote_upload_paths`
+      // 的**前缀**，直接 toContain 会把新命令也当成旧命令。
+      const pattern = new RegExp(`remote::${command}\\b`);
+
+      expect(
+        pattern.test(libRs),
+        `${command} 已经从后端删掉了，lib.rs 里却还注册着 —— 前端调它会拿到一个行为不一致的旧接口`,
+      ).toBe(false);
     }
   });
 });

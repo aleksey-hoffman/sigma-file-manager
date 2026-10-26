@@ -16,28 +16,16 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 // FORK-MODIFICATION: 本地 ↔ 远程传输（上传 / 下载）与远程权限设置。
+//
+// 2026-10-26：上传 / 下载改走 `remote-transfer-service` ——
+// 冲突确认（要不要覆盖）、进度条、失败与跳过的原因都收在那儿。
 import {
-  downloadFromRemote,
-  uploadToRemote,
-  type RemoteTransferReport,
-} from '@/modules/remote/utils/remote-transfer';
+  downloadItemsFromRemote,
+  uploadItemsToRemote,
+  type RemoteTransferItem,
+} from '@/modules/remote/utils/remote-transfer-service';
 import { useRemoteTransferTargets } from '@/modules/remote/utils/remote-transfer-targets';
-// FORK-MODIFICATION 2026-10-20：传输完成后请「目标那一格」刷新。
-//
-// 用户反馈：下载到本地后本地那一格不出现新文件，上传后远程那一格也不刷新。
-// 通知的**内容**只有目标目录路径 —— 目标那一格自己判断「这是不是我现在所在的
-// 目录」，是就重新读一次。详见 `remote-transfer-refresh.ts` 顶部的说明。
-import {
-  notifyRemoteTransferCompleted,
-  shouldRefreshTargetPane,
-} from '@/modules/remote/utils/remote-transfer-refresh';
 import { openRemotePermissionsDialog } from '@/modules/remote/utils/remote-permissions-dialog-state';
-// FORK-MODIFICATION 2026-10-20：远程错误解包。
-//
-// Tauri 把后端的 `RemoteError` **原样 reject 过来**（`{ kind, message }` 对象，
-// 不是 `Error` 实例）。`error instanceof Error ? error.message : String(error)`
-// 在这里会得到 "[object Object]" —— 用户看到的是一句毫无信息量的提示。
-import { describeRemoteError } from '@/utils/remote-directory';
 
 type ContextMenuState = {
   targetEntry: DirEntry | null;
@@ -73,133 +61,31 @@ export function useFileBrowserActions(options: {
   const router = useRouter();
   const transferTargets = useRemoteTransferTargets();
 
-  /** 汇总多次传输的结果。 */
-  interface AggregatedTransfer {
-    files: number;
-    dirs: number;
-    bytes: number;
-    skipped: string[];
-    failures: string[];
-  }
-
-  function emptyAggregate(): AggregatedTransfer {
+  /** 条目 → 传输用的条目。 */
+  function toTransferItem(entry: DirEntry): RemoteTransferItem {
     return {
-      files: 0,
-      dirs: 0,
-      bytes: 0,
-      skipped: [],
-      failures: [],
+      path: entry.path,
+      name: entry.name,
+      isDirectory: entry.is_dir,
+      size: entry.size,
     };
   }
 
-  function mergeReport(aggregate: AggregatedTransfer, report: RemoteTransferReport) {
-    aggregate.files += report.transferred_files;
-    aggregate.dirs += report.transferred_dirs;
-    aggregate.bytes += report.total_bytes;
-    aggregate.skipped.push(...report.skipped);
-
-    for (const failure of report.failures) {
-      aggregate.failures.push(`${failure.path}: ${failure.message}`);
-    }
-  }
-
-  function reportTransferOutcome(
-    aggregate: AggregatedTransfer,
-    successKey: string,
-    failureKey: string,
-  ) {
-    if (aggregate.failures.length > 0) {
-      toast.error(t(failureKey, {
-        files: aggregate.files,
-        skipped: aggregate.skipped.length,
-        failed: aggregate.failures.length,
-      }));
-
-      return;
-    }
-
-    if (aggregate.skipped.length > 0) {
-      toast.warning(t(successKey, {
-        files: aggregate.files,
-        skipped: aggregate.skipped.length,
-        failed: 0,
-      }));
-
-      return;
-    }
-
-    toast.success(t(successKey, {
-      files: aggregate.files,
-      skipped: 0,
-      failed: 0,
-    }));
-  }
-
   /**
-   * 传输结束后的收尾：目标那一格要重新读一次目录。
+   * 逐个上传。
    *
-   * 只有「目标目录的内容可能变了」才通知 ——
-   * 见 `shouldRefreshTargetPane` 的三种情况说明。
-   */
-  function notifyTargetPane(aggregate: AggregatedTransfer, targetPath: string) {
-    const shouldRefresh = shouldRefreshTargetPane({
-      transferredFiles: aggregate.files,
-      transferredDirs: aggregate.dirs,
-      skippedCount: aggregate.skipped.length,
-      failureCount: aggregate.failures.length,
-    });
-
-    if (!shouldRefresh) {
-      return;
-    }
-
-    notifyRemoteTransferCompleted(targetPath);
-  }
-
-  /**
-   * 逐个上传。**顺序执行**，不并发 ——
-   * 并发开多条连接会打满服务器的并发连接数，而用户一次通常也就选几个条目。
+   * **顺序执行**，不并发 —— 并发开多条连接会打满服务器的并发连接数，
+   * 而用户一次通常也就选几个条目。
+   *
+   * 覆盖确认、进度条、失败与跳过的原因都在
+   * `remote-transfer-service` 里处理。
    */
   async function uploadEntries(entries: DirEntry[], remoteDir: string) {
-    const aggregate = emptyAggregate();
-
-    for (const entry of entries) {
-      try {
-        mergeReport(aggregate, await uploadToRemote(entry.path, remoteDir));
-      }
-      catch (error) {
-        aggregate.failures.push(`${entry.path}: ${describeRemoteError(error)}`);
-      }
-    }
-
-    reportTransferOutcome(
-      aggregate,
-      'remote.transfer.uploadSucceeded',
-      'remote.transfer.uploadFailed',
-    );
-
-    notifyTargetPane(aggregate, remoteDir);
+    await uploadItemsToRemote(entries.map(toTransferItem), remoteDir);
   }
 
   async function downloadEntries(entries: DirEntry[], localDir: string) {
-    const aggregate = emptyAggregate();
-
-    for (const entry of entries) {
-      try {
-        mergeReport(aggregate, await downloadFromRemote(entry.path, localDir));
-      }
-      catch (error) {
-        aggregate.failures.push(`${entry.path}: ${describeRemoteError(error)}`);
-      }
-    }
-
-    reportTransferOutcome(
-      aggregate,
-      'remote.transfer.downloadSucceeded',
-      'remote.transfer.downloadFailed',
-    );
-
-    notifyTargetPane(aggregate, localDir);
+    await downloadItemsFromRemote(entries.map(toTransferItem), localDir);
   }
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {

@@ -26,10 +26,11 @@
 //! 要测逻辑就测 `credentials.rs` 的内核，不要测这里。
 //! 完整背景见 `src-tauri/src/remote/mod.rs` 顶部与 `src-tauri/src/dir_reader.rs`。
 
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use serde::Deserialize;
-use tauri::Manager;
+use serde::{Deserialize, Serialize};
+use tauri::Emitter;
 
 use crate::dir_reader::{DirContents, DirEntry};
 
@@ -41,11 +42,11 @@ use super::error::{RemoteError, RemoteErrorKind};
 use super::ftp_provider::FtpRemoteProvider;
 use super::ftps_provider::FtpsRemoteProvider;
 use super::known_hosts::{self, KnownHostEntry, TrustKind};
-use super::path::parse_remote_path;
+use super::path::{normalize_remote_path, parse_remote_path};
 use super::provider::{RemoteEntry, RemoteProvider};
 use super::registry::{self, ResolvedConnection};
 use super::sftp_provider::SftpRemoteProvider;
-use super::transfer::{self, RemoteChmodReport, RemoteTransferReport};
+use super::transfer::{self, RemoteChmodReport, RemoteTransferReport, TransferProgressSink};
 use super::transport::ProxyConfig;
 
 /// 凭据存档与 `mcp-access.json` 同级，都在 app-data 目录根，不在 `user-data/` 下。
@@ -398,15 +399,27 @@ pub(crate) async fn provider_with_protocol(
     }
 }
 
-/// 上传：本地文件**或目录** → 远程目录（`sfm://remote/<id>/<path>`）。
+/// 上传：**一批**本地路径 → 远端目录（`sfm://remote/<id>/<path>`）。
 ///
 /// 目录会**递归**传整棵子树。本地符号链接既不跟随也不复制，原样进 `failures`。
-/// 「目标已存在同名文件」进 `skipped` 而不是被覆盖 —— 规格 §5 的硬要求。
+///
+/// ## 覆盖策略
+///
+/// `overwrite_paths` 里的本地路径允许**覆盖**远端同名项；
+/// 其余的同名项进 `skipped`（带 `already_exists` 原因），**绝不静默覆盖**。
+/// 这份名单由前端的冲突对话框决定 —— 用户没点头就不许覆盖。
+///
+/// ## 进度
+///
+/// 传输过程中通过 `remote-transfer-progress` 事件回报进度，
+/// 载荷带 `jobId`，前端据此把事件对上这一次传输。
 #[tauri::command]
-pub async fn remote_upload_path(
+pub async fn remote_upload_paths(
     app: tauri::AppHandle,
-    local_path: String,
+    local_paths: Vec<String>,
     remote_dir: String,
+    overwrite_paths: Vec<String>,
+    job_id: String,
 ) -> Result<RemoteTransferReport, RemoteError> {
     let (connection_id, remote_path) = split_remote_path(&remote_dir)?;
     let app_data_dir = app_data_dir(&app)?;
@@ -419,21 +432,69 @@ pub async fn remote_upload_path(
     let provider =
         provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
 
-    transfer::upload(&*provider, &connection_id, Path::new(&local_path), &remote_path).await
+    let paths: Vec<PathBuf> = local_paths.iter().map(PathBuf::from).collect();
+    let overwrite: HashSet<String> = overwrite_paths.into_iter().collect();
+    let sink = progress_sink(&app, job_id);
+
+    transfer::upload_many(
+        &*provider,
+        &connection_id,
+        transfer::UploadRequest {
+            local_paths: &paths,
+            remote_dir: &remote_path,
+            overwrite_paths: &overwrite,
+            progress: Some(sink),
+        },
+    )
+    .await
 }
 
-/// 下载：远程文件**或目录** → 本地目录（本地绝对路径）。
+/// 下载：**一批**远端路径 → 本地目录（本地绝对路径）。
 ///
-/// 与上传对称：远程符号链接不下载，本地同名文件进 `skipped`。
+/// 与上传对称：远程符号链接不下载，本地同名文件进 `skipped`
+/// （除非它在 `overwrite_paths` 里）。
 #[tauri::command]
-pub async fn remote_download_path(
+pub async fn remote_download_paths(
     app: tauri::AppHandle,
-    remote_path: String,
+    remote_paths: Vec<String>,
     local_dir: String,
+    overwrite_paths: Vec<String>,
+    job_id: String,
 ) -> Result<RemoteTransferReport, RemoteError> {
-    let (connection_id, remote_path) = split_remote_path(&remote_path)?;
     let app_data_dir = app_data_dir(&app)?;
     let user_data_dir = user_data_dir(&app)?;
+
+    // 先把「覆盖名单」拆成 (连接 id, 远端路径)：
+    // 后端比的是**规范化后的远端路径**（`/pub/readme.txt`），
+    // 而前端手里通常是 `sfm://remote/<id>/pub/readme.txt`。
+    // 两种写法都收下，省得前端自己拼。
+    let mut overwrite: HashSet<String> = HashSet::new();
+
+    for raw in overwrite_paths {
+        overwrite.insert(raw.clone());
+
+        if let Some(parsed) = parse_remote_path(&raw) {
+            if let Some(normalized) = normalize_remote_path(&parsed.remote_path) {
+                overwrite.insert(normalized);
+            }
+        }
+    }
+
+    let mut connection_id = String::new();
+    let mut normalized_paths: Vec<String> = Vec::with_capacity(remote_paths.len());
+
+    for raw in &remote_paths {
+        let (id, remote_path) = split_remote_path(raw)?;
+        let normalized = normalize_remote_path(&remote_path).ok_or_else(|| {
+            RemoteError::protocol(format!("远端路径不合法：{remote_path}"))
+        })?;
+
+        if connection_id.is_empty() {
+            connection_id = id;
+        }
+
+        normalized_paths.push(normalized);
+    }
 
     let resolved =
         resolve_connection_blocking(user_data_dir.clone(), app_data_dir.clone(), connection_id.clone())
@@ -442,7 +503,56 @@ pub async fn remote_download_path(
     let provider =
         provider_with_protocol(resolved.connection.protocol, &user_data_dir, &app_data_dir).await;
 
-    transfer::download(&*provider, &connection_id, &remote_path, Path::new(&local_dir)).await
+    let sink = progress_sink(&app, job_id);
+    let local_dir = PathBuf::from(local_dir);
+
+    transfer::download_many(
+        &*provider,
+        &connection_id,
+        transfer::DownloadRequest {
+            remote_paths: &normalized_paths,
+            local_dir: &local_dir,
+            overwrite_paths: &overwrite,
+            progress: Some(sink),
+        },
+    )
+    .await
+}
+
+/// 传输进度事件的载荷。
+///
+/// **字段名是 camelCase**：前端直接吃这份 JSON，
+/// 不做 snake_case → camelCase 的换算。
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RemoteTransferProgressPayload {
+    job_id: String,
+    files_done: u64,
+    files_total: u64,
+    bytes_done: u64,
+    bytes_total: u64,
+    current_path: String,
+}
+
+/// 造一个把传输进度发成 Tauri 事件的汇聚器。
+///
+/// 事件名固定为 `remote-transfer-progress`，载荷带 `jobId` ——
+/// 前端可能同时有多个传输在跑，靠 `jobId` 区分。
+fn progress_sink(app: &tauri::AppHandle, job_id: String) -> TransferProgressSink {
+    let emitter = app.clone();
+
+    TransferProgressSink::new(move |progress| {
+        let payload = RemoteTransferProgressPayload {
+            job_id: job_id.clone(),
+            files_done: progress.files_done,
+            files_total: progress.files_total,
+            bytes_done: progress.bytes_done,
+            bytes_total: progress.bytes_total,
+            current_path: progress.current_path.clone(),
+        };
+
+        let _ = emitter.emit("remote-transfer-progress", payload);
+    })
 }
 
 /// 权限设置。`mode` 是八进制数值（如 `0755` 传 `0o755` = `493`）。

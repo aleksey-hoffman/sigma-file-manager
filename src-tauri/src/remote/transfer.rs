@@ -26,10 +26,11 @@
 //! `GlobalRuntime<Wry>` 默认类型参数把 tao 拖进测试二进制，
 //! `tokio::task::spawn_blocking` 没有任何默认类型参数。
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
+use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
 
@@ -63,6 +64,168 @@ impl RemoteTransferFailure {
     }
 }
 
+/// 一个条目被**跳过**的原因。
+///
+/// 2026-10-26 真机验收的教训：跳过必须**带原因**。
+/// 之前 `skipped` 只是一串路径，前端把它折成一个数字，于是用户看到
+/// 「上传了 0 个文件」却不知道为什么 —— 而真实原因是
+/// 「远端已经有同名文件，策略是不覆盖」。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RemoteTransferSkipReason {
+    /// 目标已存在，且用户没有选择覆盖。
+    AlreadyExists,
+    /// 用户在冲突对话框里明确跳过了这一项。
+    UserSkipped,
+}
+
+impl RemoteTransferSkipReason {
+    /// 机器可读的短码。前端用它挑本地化文案。
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::AlreadyExists => "already_exists",
+            Self::UserSkipped => "user_skipped",
+        }
+    }
+}
+
+/// 一个被跳过的条目。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RemoteTransferSkip {
+    pub path: String,
+    pub reason: RemoteTransferSkipReason,
+}
+
+impl RemoteTransferSkip {
+    pub fn new(path: impl Into<String>, reason: RemoteTransferSkipReason) -> Self {
+        Self {
+            path: path.into(),
+            reason,
+        }
+    }
+}
+
+/// 一次传输的**进度快照**。
+///
+/// 前端拿它画进度条。`files_total` / `bytes_total` 是**分母**：
+/// 传输开始前就定下来（先扫一遍本地或远端的树），所以进度条从头到尾
+/// 都有真实的「离完成还有多远」，而不是中途突然出现一个分母。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TransferProgress {
+    /// 已经传完的文件数。
+    pub files_done: u64,
+    /// 一共要传多少个文件。
+    pub files_total: u64,
+    /// 已经传出去的字节数。
+    pub bytes_done: u64,
+    /// 一共要传多少字节。
+    pub bytes_total: u64,
+    /// 当前正在处理的文件（空串 = 还没开始）。
+    pub current_path: String,
+}
+
+/// 进度汇聚器。
+///
+/// 传输层把「这个文件已经写出去多少字节」交给它，它负责累加成全局计数，
+/// 并在每次变化时把快照发给上层。
+///
+/// **为什么需要单独一个类型**：provider 的回调是 `Fn(u64) + Send + Sync`
+/// （它可能被搬到别的线程上调用），而上层的回调是 `FnMut`（它要改自己的状态）。
+/// 两者形状对不上，中间必须有一层可共享的状态。
+///
+/// **它必须能被克隆**：递归的每一层都要拿到同一个汇聚器，
+/// 克隆的是 `Arc`，不是状态本身。
+#[derive(Clone)]
+pub struct TransferProgressSink {
+    state: Arc<Mutex<TransferProgressState>>,
+    publish: Arc<Mutex<Box<dyn FnMut(TransferProgress) + Send>>>,
+}
+
+#[derive(Debug, Clone, Default)]
+struct TransferProgressState {
+    files_done: u64,
+    files_total: u64,
+    bytes_done: u64,
+    bytes_total: u64,
+    current_path: String,
+    /// 当前文件开始传之前，已经传出去的字节数。
+    ///
+    /// provider 报的是「**这个文件**写了多少字节」，要换算成全局累计
+    /// 就得加上这个基数。
+    file_base: u64,
+}
+
+impl TransferProgressSink {
+    pub fn new(publish: impl FnMut(TransferProgress) + Send + 'static) -> Self {
+        Self {
+            state: Arc::new(Mutex::new(TransferProgressState::default())),
+            publish: Arc::new(Mutex::new(Box::new(publish))),
+        }
+    }
+
+    /// 定下分母。**必须在开始传输之前调用** —— 传输开始之后才知道分母，
+    /// 进度条会先冲到 100% 再掉下来。
+    pub fn set_totals(&self, files_total: u64, bytes_total: u64) {
+        let snapshot = {
+            let mut state = self.state.lock().expect("进度状态锁");
+            state.files_total = files_total;
+            state.bytes_total = bytes_total;
+            state.clone()
+        };
+
+        self.emit(&snapshot);
+    }
+
+    /// 开始传一个文件。
+    pub fn begin_file(&self, path: &str) {
+        let snapshot = {
+            let mut state = self.state.lock().expect("进度状态锁");
+            state.file_base = state.bytes_done;
+            state.current_path = path.to_string();
+            state.clone()
+        };
+
+        self.emit(&snapshot);
+    }
+
+    /// provider 回调：**这个文件**已经写了多少字节。
+    pub fn advance_file(&self, written: u64) {
+        let snapshot = {
+            let mut state = self.state.lock().expect("进度状态锁");
+            state.bytes_done = state.file_base.saturating_add(written);
+            state.clone()
+        };
+
+        self.emit(&snapshot);
+    }
+
+    /// 这个文件传完了。
+    pub fn finish_file(&self, size: u64) {
+        let snapshot = {
+            let mut state = self.state.lock().expect("进度状态锁");
+            state.bytes_done = state.file_base.saturating_add(size);
+            state.files_done = state.files_done.saturating_add(1);
+            state.current_path = String::new();
+            state.clone()
+        };
+
+        self.emit(&snapshot);
+    }
+
+    fn emit(&self, state: &TransferProgressState) {
+        let snapshot = TransferProgress {
+            files_done: state.files_done,
+            files_total: state.files_total,
+            bytes_done: state.bytes_done,
+            bytes_total: state.bytes_total,
+            current_path: state.current_path.clone(),
+        };
+
+        let mut publish = self.publish.lock().expect("进度回调锁");
+        publish(snapshot);
+    }
+}
+
 /// 一次上传或下载的结果。
 ///
 /// 字段名是前端契约的一部分，**刻意不加 `#[serde(rename_all = "camelCase")]`**。
@@ -74,12 +237,12 @@ pub struct RemoteTransferReport {
     pub transferred_dirs: u64,
     /// 总字节数
     pub total_bytes: u64,
-    /// 因「目标已存在」而跳过的条目（完整路径）。
+    /// 被跳过的条目（**带原因**）。
     ///
     /// 对**目录**来说，「已存在」指的是**没有去创建它**（`transferred_dirs`
     /// 不计它），但仍然会**继续往里合并** —— 否则把一个本地目录传到
     /// 一个已有的同名远端目录下会变成「什么都没传」，那不是用户以为的结果。
-    pub skipped: Vec<String>,
+    pub skipped: Vec<RemoteTransferSkip>,
     /// 失败条目
     pub failures: Vec<RemoteTransferFailure>,
 }
@@ -90,8 +253,10 @@ impl RemoteTransferReport {
         self.failures.push(RemoteTransferFailure::from_error(path, error));
     }
 
-    pub fn record_skip(&mut self, path: impl Into<String>) {
-        self.skipped.push(path.into());
+    /// 记一次跳过。**必须带原因** —— 只有路径的话，前端只能报一个数字，
+    /// 用户完全不知道为什么这个文件没传上去。
+    pub fn record_skip(&mut self, path: impl Into<String>, reason: RemoteTransferSkipReason) {
+        self.skipped.push(RemoteTransferSkip::new(path, reason));
     }
 
     pub fn record_file(&mut self, bytes: u64) {
@@ -344,20 +509,38 @@ fn remote_display_path(connection_id: &str, remote_path: &str) -> String {
 /// 只有「完全无法开始」才返回 `Err`：本地路径不存在、远端目录列不出来。
 /// 单个条目失败一律进 `failures` 并继续 —— 传 200 个文件时因为第 7 个
 /// 权限不足而丢掉另外 199 个，是不能接受的。
+/// 一次上传请求。
+pub struct UploadRequest<'a> {
+    /// 要上传的本地路径（文件或目录）。
+    pub local_paths: &'a [PathBuf],
+    /// 远端目标目录。
+    pub remote_dir: &'a str,
+    /// **允许覆盖**远端同名项的本地路径。
+    ///
+    /// 这里放的是**顶层本地路径**（用户选中的那些），
+    /// 目录里的所有文件都跟着这个决定走 ——
+    /// 「把这个目录传过去并覆盖同名文件」是一句话的事，
+    /// 不该要求用户为目录里的每一个文件单独表态。
+    pub overwrite_paths: &'a HashSet<String>,
+    /// 进度汇聚器（可选）。
+    pub progress: Option<TransferProgressSink>,
+}
+
+/// 上传：本地**文件或目录** → 远端目录。
+///
+/// 只有「完全无法开始」才返回 `Err`：本地路径不存在、远端目录列不出来。
+/// 单个条目失败一律进 `failures` 并继续 —— 传 200 个文件时因为第 7 个
+/// 权限不足而丢掉另外 199 个，是不能接受的。
+///
+/// **不覆盖**：目标已存在同名文件时进 `skipped`（带 `already_exists` 原因），
+/// 绝不静默覆盖。要覆盖走 [`upload_many`] 并把路径放进 `overwrite_paths`。
 pub async fn upload(
     provider: &dyn RemoteProvider,
     connection_id: &str,
     local_path: &Path,
     remote_dir: &str,
 ) -> Result<RemoteTransferReport, RemoteError> {
-    reject_path_control_characters(remote_dir)?;
-
-    let normalized = normalize_remote_path(remote_dir).ok_or_else(|| {
-        RemoteError::protocol(format!("远端目录路径不合法：{remote_dir}"))
-    })?;
-
-    // 上层先探一次存在性，好把「本地路径不存在」和「传了 0 个文件」区分开：
-    // 前者是用户传错了，后者是合法的空目录。
+    // 严格版：本地路径读不出来就直接报错，绝不「传了 0 个文件」蒙混过去。
     let local_path = local_path.to_path_buf();
     let probed = local_path.clone();
     let kind = blocking("读取本地路径", move || {
@@ -375,45 +558,258 @@ pub async fn upload(
         ));
     }
 
-    let name = local_path
-        .file_name()
-        .map(|name| name.to_string_lossy().to_string())
-        .ok_or_else(|| {
-            RemoteError::protocol(format!("本地路径没有文件名，无法上传：{local_path:?}"))
-        })?;
+    let local_paths = vec![local_path];
+    let overwrite_paths = HashSet::new();
 
-    let target = join_remote_child(&normalized, &name)?;
-    let existing = remote_child_names(provider, connection_id, &normalized).await?;
+    upload_many(
+        provider,
+        connection_id,
+        UploadRequest {
+            local_paths: &local_paths,
+            remote_dir,
+            overwrite_paths: &overwrite_paths,
+            progress: None,
+        },
+    )
+    .await
+}
+
+/// 上传：**一批**本地路径 → 远端目录。
+///
+/// 与 [`upload`] 的差别有三处：
+/// ① 一批路径共用**同一个**进度汇聚器 ⇒ 进度条的分母是整批的总和；
+/// ② `overwrite_paths` 里的路径允许**覆盖**远端同名项；
+/// ③ 某一个路径读不出来只记成一条 `failure`，**不拖累其余的**。
+pub async fn upload_many(
+    provider: &dyn RemoteProvider,
+    connection_id: &str,
+    request: UploadRequest<'_>,
+) -> Result<RemoteTransferReport, RemoteError> {
+    reject_path_control_characters(request.remote_dir)?;
+
+    let normalized = normalize_remote_path(request.remote_dir).ok_or_else(|| {
+        RemoteError::protocol(format!("远端目录路径不合法：{}", request.remote_dir))
+    })?;
+
     let mut report = RemoteTransferReport::default();
 
-    if kind.file_type().is_dir() {
-        if existing.contains(&name) {
-            report.record_skip(remote_display_path(connection_id, &target));
-        }
-        else if let Err(error) = provider.make_dir(connection_id, &target).await {
-            report.record_failure(remote_display_path(connection_id, &target), &error);
-            return Ok(report);
-        }
-        else {
-            report.record_dir();
+    // ---- 1. 逐个探本地路径，同时把总量算出来 ----------------------------
+    //
+    // 分母必须在传输**开始之前**定下来：进度条要是中途才出现分母，
+    // 用户会先看到 100% 再掉回 0%。
+    struct Prepared {
+        path: PathBuf,
+        is_dir: bool,
+    }
+
+    let mut prepared: Vec<Prepared> = Vec::new();
+    let mut files_total = 0u64;
+    let mut bytes_total = 0u64;
+
+    for local_path in request.local_paths {
+        let probed = local_path.clone();
+        let kind = blocking("读取本地路径", move || {
+            std::fs::symlink_metadata(&probed).map_err(|error| {
+                RemoteError::not_found(format!("本地路径不存在或读不出来：{error}"))
+            })
+        })
+        .await;
+
+        let kind = match kind {
+            Ok(kind) => kind,
+            Err(error) => {
+                report.record_failure(local_path.to_string_lossy().to_string(), &error);
+                continue;
+            }
+        };
+
+        if kind.file_type().is_symlink() {
+            report.record_failure(
+                local_path.to_string_lossy().to_string(),
+                &RemoteError::protocol(
+                    "暂不支持上传符号链接。请上传它指向的文件或目录。",
+                ),
+            );
+            continue;
         }
 
-        upload_directory(provider, connection_id, &local_path, &target, &mut report).await?;
+        let is_dir = kind.file_type().is_dir();
+
+        if is_dir {
+            let (files, bytes) = scan_local_tree(&local_path).await;
+            files_total += files;
+            bytes_total += bytes;
+        }
+        else {
+            files_total += 1;
+            bytes_total += kind.len();
+        }
+
+        prepared.push(Prepared {
+            path: local_path.clone(),
+            is_dir,
+        });
     }
-    else {
-        upload_file(provider, connection_id, &local_path, &target, &existing, &mut report).await?;
+
+    if let Some(sink) = &request.progress {
+        sink.set_totals(files_total, bytes_total);
+    }
+
+    // ---- 2. 逐个上传 ------------------------------------------------------
+    //
+    // 目标目录的条目清单**按目录缓存**：一批路径通常指向同一个目标目录，
+    // 每个路径都重新列一次是白花的网络往返。
+    let mut existing_cache: HashMap<String, HashSet<String>> = HashMap::new();
+
+    for item in prepared {
+        let Some(name) = item
+            .path
+            .file_name()
+            .map(|name| name.to_string_lossy().to_string())
+        else {
+            report.record_failure(
+                item.path.to_string_lossy().to_string(),
+                &RemoteError::protocol(format!(
+                    "本地路径没有文件名，无法上传：{:?}",
+                    item.path
+                )),
+            );
+            continue;
+        };
+
+        let target = match join_remote_child(&normalized, &name) {
+            Ok(target) => target,
+            Err(error) => {
+                report.record_failure(name.clone(), &error);
+                continue;
+            }
+        };
+
+        // 按**路径分量**比较，不是按字符串 ——
+        // 前端传回来的路径可能带尾斜杠或者大小写不同，
+        // 字符串相等会把「明明是同一个文件」判成两个。
+        let overwrite = request
+            .overwrite_paths
+            .iter()
+            .any(|candidate| Path::new(candidate) == item.path.as_path());
+
+        let existing = match existing_cache.get(&normalized) {
+            Some(existing) => existing.clone(),
+            None => match remote_child_names(provider, connection_id, &normalized).await {
+                Ok(existing) => {
+                    existing_cache.insert(normalized.clone(), existing.clone());
+                    existing
+                }
+                Err(error) => {
+                    report.record_failure(remote_display_path(connection_id, &normalized), &error);
+                    continue;
+                }
+            },
+        };
+
+        if item.is_dir {
+            if existing.contains(&name) {
+                // 目录已存在：**不重建**，但仍然往里合并。
+                // 只有「不覆盖」的时候才记成跳过 —— 覆盖时这是用户明确要的合并。
+                if !overwrite {
+                    report.record_skip(
+                        remote_display_path(connection_id, &target),
+                        RemoteTransferSkipReason::AlreadyExists,
+                    );
+                }
+            }
+            else if let Err(error) = provider.make_dir(connection_id, &target).await {
+                report.record_failure(remote_display_path(connection_id, &target), &error);
+                continue;
+            }
+            else {
+                report.record_dir();
+            }
+
+            upload_directory(
+                provider,
+                connection_id,
+                &item.path,
+                &target,
+                overwrite,
+                request.progress.clone(),
+                &mut report,
+            )
+            .await?;
+        }
+        else {
+            upload_file(
+                provider,
+                connection_id,
+                &item.path,
+                &target,
+                &existing,
+                overwrite,
+                request.progress.clone(),
+                &mut report,
+            )
+            .await?;
+        }
     }
 
     Ok(report)
 }
 
-/// 把一个本地文件传到远端。目标已存在则进 `skipped`，**不静默覆盖**。
+/// 统计一棵本地树里有多少个文件、一共多少字节。
+///
+/// **不跟随符号链接**：符号链接不会被上传（会被记成一条失败），
+/// 所以它也不该算进分母 —— 否则进度条永远到不了 100%。
+///
+/// 整棵树在**一次**阻塞调用里数完：每个文件单独 `spawn_blocking` 的话，
+/// 一万个文件就是一万次线程池调度。
+async fn scan_local_tree(root: &Path) -> (u64, u64) {
+    let owned = root.to_path_buf();
+
+    blocking("统计本地目录", move || {
+        let mut files = 0u64;
+        let mut bytes = 0u64;
+        let mut stack = vec![owned];
+
+        while let Some(directory) = stack.pop() {
+            let Ok(entries) = std::fs::read_dir(&directory) else {
+                continue;
+            };
+
+            for entry in entries.flatten() {
+                let Ok(file_type) = entry.file_type() else {
+                    continue;
+                };
+
+                if file_type.is_symlink() {
+                    continue;
+                }
+
+                if file_type.is_dir() {
+                    stack.push(entry.path());
+                    continue;
+                }
+
+                files += 1;
+                bytes += entry.metadata().map(|metadata| metadata.len()).unwrap_or(0);
+            }
+        }
+
+        Ok((files, bytes))
+    })
+    .await
+    .unwrap_or((0, 0))
+}
+
+/// 把一个本地文件传到远端。目标已存在则进 `skipped`，**不静默覆盖** ——
+/// 除非 `overwrite` 为真（用户在冲突对话框里明确说了要覆盖）。
 async fn upload_file(
     provider: &dyn RemoteProvider,
     connection_id: &str,
     local_path: &Path,
     target: &str,
     existing: &HashSet<String>,
+    overwrite: bool,
+    progress: Option<TransferProgressSink>,
     report: &mut RemoteTransferReport,
 ) -> Result<(), RemoteError> {
     let name = match local_path.file_name() {
@@ -421,8 +817,11 @@ async fn upload_file(
         None => return Ok(()),
     };
 
-    if existing.contains(&name) {
-        report.record_skip(remote_display_path(connection_id, target));
+    if existing.contains(&name) && !overwrite {
+        report.record_skip(
+            remote_display_path(connection_id, target),
+            RemoteTransferSkipReason::AlreadyExists,
+        );
         return Ok(());
     }
 
@@ -444,8 +843,34 @@ async fn upload_file(
 
     let bytes = content.len() as u64;
 
-    match provider.write_file(connection_id, target, content).await {
-        Ok(()) => report.record_file(bytes),
+    if let Some(sink) = &progress {
+        sink.begin_file(&display);
+    }
+
+    // 有进度汇聚器就走**分块写**：写完一块报一次，
+    // 大文件上传期间界面上的进度条才动得起来。
+    let outcome = match progress.as_ref() {
+        Some(sink) => {
+            let sink = sink.clone();
+            let on_progress = move |written: u64| {
+                sink.advance_file(written);
+            };
+
+            provider
+                .write_file_with_progress(connection_id, target, content, &on_progress)
+                .await
+        }
+        None => provider.write_file(connection_id, target, content).await,
+    };
+
+    match outcome {
+        Ok(()) => {
+            if let Some(sink) = &progress {
+                sink.finish_file(bytes);
+            }
+
+            report.record_file(bytes);
+        }
         Err(error) => report.record_failure(display, &error),
     }
 
@@ -461,6 +886,8 @@ fn upload_directory<'a>(
     connection_id: &'a str,
     local_dir: &'a Path,
     remote_dir: &'a str,
+    overwrite: bool,
+    progress: Option<TransferProgressSink>,
     report: &'a mut RemoteTransferReport,
 ) -> Recursive<'a, ()> {
     Box::pin(async move {
@@ -500,7 +927,14 @@ fn upload_directory<'a>(
         match kind {
             LocalEntry::Directory => {
                 if existing.contains(&name) {
-                    report.record_skip(remote_display_path(connection_id, &child_remote));
+                    // 目录已存在：不重建，但仍然往里合并。
+                    // 「不覆盖」时才记成跳过。
+                    if !overwrite {
+                        report.record_skip(
+                            remote_display_path(connection_id, &child_remote),
+                            RemoteTransferSkipReason::AlreadyExists,
+                        );
+                    }
                 }
                 else if let Err(error) = provider.make_dir(connection_id, &child_remote).await {
                     report.record_failure(
@@ -518,6 +952,8 @@ fn upload_directory<'a>(
                     connection_id,
                     &child_local,
                     &child_remote,
+                    overwrite,
+                    progress.clone(),
                     report,
                 )
                 .await?;
@@ -529,6 +965,8 @@ fn upload_directory<'a>(
                     &child_local,
                     &child_remote,
                     &existing,
+                    overwrite,
+                    progress.clone(),
                     report,
                 )
                 .await?;
@@ -550,23 +988,57 @@ fn upload_directory<'a>(
 // 下载
 // ---------------------------------------------------------------------------
 
+/// 一次下载请求。
+pub struct DownloadRequest<'a> {
+    /// 要下载的远端路径（文件或目录）。
+    pub remote_paths: &'a [String],
+    /// 本地目标目录。
+    pub local_dir: &'a Path,
+    /// **允许覆盖**本地同名项的远端路径。
+    pub overwrite_paths: &'a HashSet<String>,
+    /// 进度汇聚器（可选）。
+    pub progress: Option<TransferProgressSink>,
+}
+
 /// 下载：远程**文件或目录** → 本地目录。
 ///
 /// 本地目录不存在就创建 —— 用户在「下载到」里敲一个还没建过的文件夹名时，
 /// 让他自己先去建一遍是本末倒置。
+///
+/// **不覆盖**：本地已存在同名文件时进 `skipped`（带 `already_exists` 原因）。
 pub async fn download(
     provider: &dyn RemoteProvider,
     connection_id: &str,
     remote_path: &str,
     local_dir: &Path,
 ) -> Result<RemoteTransferReport, RemoteError> {
-    reject_path_control_characters(remote_path)?;
+    let remote_paths = vec![remote_path.to_string()];
+    let overwrite_paths = HashSet::new();
 
-    let normalized = normalize_remote_path(remote_path).ok_or_else(|| {
-        RemoteError::protocol(format!("远端路径不合法：{remote_path}"))
-    })?;
+    download_many(
+        provider,
+        connection_id,
+        DownloadRequest {
+            remote_paths: &remote_paths,
+            local_dir,
+            overwrite_paths: &overwrite_paths,
+            progress: None,
+        },
+    )
+    .await
+}
 
-    let local_dir = local_dir.to_path_buf();
+/// 下载：**一批**远端路径 → 本地目录。
+///
+/// 与 [`download`] 的差别：① 一批路径共用同一个进度汇聚器；
+/// ② `overwrite_paths` 里的路径允许覆盖本地同名项；
+/// ③ 某一个远端路径读不出来只记成一条 `failure`，不拖累其余的。
+pub async fn download_many(
+    provider: &dyn RemoteProvider,
+    connection_id: &str,
+    request: DownloadRequest<'_>,
+) -> Result<RemoteTransferReport, RemoteError> {
+    let local_dir = request.local_dir.to_path_buf();
     let prepared = local_dir.clone();
     blocking("准备本地目录", move || {
         std::fs::create_dir_all(&prepared).map_err(|error| {
@@ -575,45 +1047,185 @@ pub async fn download(
     })
     .await?;
 
-    let name = normalized
-        .rsplit('/')
-        .next()
-        .filter(|segment| !segment.is_empty())
-        .ok_or_else(|| {
-            RemoteError::protocol("下载的根是远程空间根，没有可下载的条目名")
-        })?
-        .to_string();
-
-    // 是目录还是文件，只能问远端 —— trait 没有 `stat`，
-    // 而列父目录拿不到「文件」这一项的大小以外的信息，够了。
-    let entry = remote_entry_of(provider, connection_id, &normalized).await?;
-
     let mut report = RemoteTransferReport::default();
 
-    if entry.is_dir {
-        let target = join_local_child(&local_dir, &name)?;
+    // ---- 1. 先把远端这一侧的总量数出来 ------------------------------------
+    struct Prepared {
+        normalized: String,
+        name: String,
+        is_dir: bool,
+    }
 
-        if target.exists() {
-            report.record_skip(target.to_string_lossy().to_string());
+    let mut prepared_items: Vec<Prepared> = Vec::new();
+    let mut files_total = 0u64;
+    let mut bytes_total = 0u64;
+
+    for remote_path in request.remote_paths {
+        reject_path_control_characters(remote_path)?;
+
+        let normalized = match normalize_remote_path(remote_path) {
+            Some(normalized) => normalized,
+            None => {
+                report.record_failure(
+                    remote_path.clone(),
+                    &RemoteError::protocol(format!("远端路径不合法：{remote_path}")),
+                );
+                continue;
+            }
+        };
+
+        let name = normalized
+            .rsplit('/')
+            .next()
+            .filter(|segment| !segment.is_empty())
+            .unwrap_or_default()
+            .to_string();
+
+        if name.is_empty() {
+            report.record_failure(
+                remote_path.clone(),
+                &RemoteError::protocol("下载的根是远程空间根，没有可下载的条目名"),
+            );
+            continue;
+        }
+
+        // 是目录还是文件，只能问远端 —— trait 没有 `stat`，
+        // 而列父目录拿不到「文件」这一项的大小以外的信息，够了。
+        let entry = match remote_entry_of(provider, connection_id, &normalized).await {
+            Ok(entry) => entry,
+            Err(error) => {
+                report.record_failure(remote_display_path(connection_id, &normalized), &error);
+                continue;
+            }
+        };
+
+        if entry.is_dir {
+            let (files, bytes) = scan_remote_tree(provider, connection_id, &normalized).await;
+            files_total += files;
+            bytes_total += bytes;
         }
         else {
-            let created = target.clone();
-            blocking("创建本地目录", move || {
-                std::fs::create_dir_all(&created).map_err(|error| {
-                    RemoteError::unknown(format!("创建本地目录失败：{error}"))
-                })
-            })
-            .await?;
-            report.record_dir();
+            files_total += 1;
+            bytes_total += entry.size;
         }
 
-        download_directory(provider, connection_id, &normalized, &target, &mut report).await?;
+        prepared_items.push(Prepared {
+            normalized,
+            name,
+            is_dir: entry.is_dir,
+        });
     }
-    else {
-        download_file(provider, connection_id, &normalized, &local_dir, &name, &mut report).await?;
+
+    if let Some(sink) = &request.progress {
+        sink.set_totals(files_total, bytes_total);
+    }
+
+    // ---- 2. 逐个下载 ------------------------------------------------------
+    for item in prepared_items {
+        let overwrite = request.overwrite_paths.contains(&item.normalized);
+        let target = match join_local_child(&local_dir, &item.name) {
+            Ok(target) => target,
+            Err(error) => {
+                report.record_failure(item.name.clone(), &error);
+                continue;
+            }
+        };
+
+        if item.is_dir {
+            if target.exists() {
+                if !overwrite {
+                    report.record_skip(
+                        target.to_string_lossy().to_string(),
+                        RemoteTransferSkipReason::AlreadyExists,
+                    );
+                }
+            }
+            else {
+                let created = target.clone();
+                let outcome = blocking("创建本地目录", move || {
+                    std::fs::create_dir_all(&created).map_err(|error| {
+                        RemoteError::unknown(format!("创建本地目录失败：{error}"))
+                    })
+                })
+                .await;
+
+                if let Err(error) = outcome {
+                    report.record_failure(
+                        remote_display_path(connection_id, &item.normalized),
+                        &error,
+                    );
+                    continue;
+                }
+
+                report.record_dir();
+            }
+
+            download_directory(
+                provider,
+                connection_id,
+                &item.normalized,
+                &target,
+                overwrite,
+                request.progress.clone(),
+                &mut report,
+            )
+            .await?;
+        }
+        else {
+            download_file(
+                provider,
+                connection_id,
+                &item.normalized,
+                &local_dir,
+                &item.name,
+                overwrite,
+                request.progress.clone(),
+                &mut report,
+            )
+            .await?;
+        }
     }
 
     Ok(report)
+}
+
+/// 数一棵远端树里有多少个文件、一共多少字节。
+///
+/// **不跟随符号链接**：符号链接不会被下载（会记成一条失败），
+/// 所以它也不该算进分母。
+async fn scan_remote_tree(
+    provider: &dyn RemoteProvider,
+    connection_id: &str,
+    remote_path: &str,
+) -> (u64, u64) {
+    let mut files = 0u64;
+    let mut bytes = 0u64;
+    let mut stack = vec![remote_path.to_string()];
+
+    while let Some(directory) = stack.pop() {
+        let entries = match provider.read_dir(connection_id, &directory).await {
+            Ok(entries) => entries,
+            Err(_) => continue,
+        };
+
+        for entry in entries {
+            if entry.is_symlink {
+                continue;
+            }
+
+            if entry.is_dir {
+                if let Ok(child) = join_remote_child(&directory, &entry.name) {
+                    stack.push(child);
+                }
+                continue;
+            }
+
+            files += 1;
+            bytes += entry.size;
+        }
+    }
+
+    (files, bytes)
 }
 
 /// 在父目录里按名字找出条目。
@@ -644,20 +1256,23 @@ async fn remote_entry_of(
         .ok_or_else(|| RemoteError::not_found(format!("远端没有这个条目：{remote_path}")))
 }
 
-/// 下载一个远程文件。目标已存在则进 `skipped`，**不静默覆盖**。
+/// 下载一个远程文件。目标已存在则进 `skipped`，**不静默覆盖** ——
+/// 除非 `overwrite` 为真（用户在冲突对话框里明确说了要覆盖）。
 async fn download_file(
     provider: &dyn RemoteProvider,
     connection_id: &str,
     remote_path: &str,
     local_dir: &Path,
     name: &str,
+    overwrite: bool,
+    progress: Option<TransferProgressSink>,
     report: &mut RemoteTransferReport,
 ) -> Result<(), RemoteError> {
     let target = join_local_child(local_dir, name)?;
     let display = target.to_string_lossy().to_string();
 
-    if target.exists() {
-        report.record_skip(display);
+    if target.exists() && !overwrite {
+        report.record_skip(display, RemoteTransferSkipReason::AlreadyExists);
         return Ok(());
     }
 
@@ -670,6 +1285,11 @@ async fn download_file(
     };
 
     let bytes = content.len() as u64;
+
+    if let Some(sink) = &progress {
+        sink.begin_file(&display);
+    }
+
     let written = target.clone();
     let outcome = blocking("写入本地文件", move || {
         std::fs::write(&written, &content).map_err(|error| {
@@ -679,7 +1299,13 @@ async fn download_file(
     .await;
 
     match outcome {
-        Ok(()) => report.record_file(bytes),
+        Ok(()) => {
+            if let Some(sink) = &progress {
+                sink.finish_file(bytes);
+            }
+
+            report.record_file(bytes);
+        }
         Err(error) => report.record_failure(display, &error),
     }
 
@@ -692,6 +1318,8 @@ fn download_directory<'a>(
     connection_id: &'a str,
     remote_dir: &'a str,
     local_dir: &'a Path,
+    overwrite: bool,
+    progress: Option<TransferProgressSink>,
     report: &'a mut RemoteTransferReport,
 ) -> Recursive<'a, ()> {
     Box::pin(async move {
@@ -739,7 +1367,12 @@ fn download_directory<'a>(
 
         if entry.is_dir {
             if existing.contains(&entry.name) {
-                report.record_skip(child_local.to_string_lossy().to_string());
+                if !overwrite {
+                    report.record_skip(
+                        child_local.to_string_lossy().to_string(),
+                        RemoteTransferSkipReason::AlreadyExists,
+                    );
+                }
             }
             else {
                 let created = child_local.clone();
@@ -766,6 +1399,8 @@ fn download_directory<'a>(
                 connection_id,
                 &child_remote,
                 &child_local,
+                overwrite,
+                progress.clone(),
                 report,
             )
             .await?;
@@ -777,6 +1412,8 @@ fn download_directory<'a>(
                 &child_remote,
                 local_dir,
                 &entry.name,
+                overwrite,
+                progress.clone(),
                 report,
             )
             .await?;
@@ -1079,8 +1716,7 @@ mod tests {
 
     /// 规格 §5 的硬要求：**目标已存在同名文件时不得静默覆盖。**
     #[tokio::test]
-    async fn an_existing_remote_file_is_skipped_and_never_overwritten() {
-        let dir = local_tree();
+    async fn an_existing_remote_file_is_skipped_and_never_overwritten() {        let dir = local_tree();
         std::fs::write(dir.path().join("readme.txt"), b"local version").expect("write local");
 
         let provider = fake();
@@ -1091,7 +1727,11 @@ mod tests {
         assert_eq!(report.transferred_files, 0, "同名文件不能被当成传成功了");
         assert_eq!(
             report.skipped,
-            vec!["sfm://remote/conn-a/pub/readme.txt".to_string()]
+            vec![RemoteTransferSkip::new(
+                "sfm://remote/conn-a/pub/readme.txt".to_string(),
+                RemoteTransferSkipReason::AlreadyExists,
+            )],
+            "跳过的条目必须带原因 —— 前端要能说出「为什么不覆盖」"
         );
         assert_eq!(
             provider
@@ -1101,6 +1741,120 @@ mod tests {
             b"hello remote".to_vec(),
             "远端那份内容必须原封不动 —— 这是「不静默覆盖」的全部含义"
         );
+    }
+
+    /// 覆盖：用户在冲突对话框里点了「覆盖」，同名文件必须**真的被换掉**。
+    ///
+    /// 这是 2026-10-26 真机验收的直接后果：远端已经有 `index.html`，
+    /// 用户传新版本时看到的是「0 个文件上传成功」却不知道为什么。
+    #[tokio::test]
+    async fn an_overwrite_request_replaces_the_existing_remote_file() {
+        let dir = local_tree();
+        std::fs::write(dir.path().join("readme.txt"), b"local version").expect("write local");
+
+        let provider = fake();
+        let paths = vec![dir.path().join("readme.txt")];
+        let overwrite = HashSet::from([paths[0].to_string_lossy().to_string()]);
+
+        let report = upload_many(
+            &*provider,
+            "conn-a",
+            UploadRequest {
+                local_paths: &paths,
+                remote_dir: "/pub",
+                overwrite_paths: &overwrite,
+                progress: None,
+            },
+        )
+        .await
+        .expect("upload");
+
+        assert_eq!(report.transferred_files, 1, "点了覆盖就要真的传上去");
+        assert!(report.skipped.is_empty(), "{:?}", report.skipped);
+        assert_eq!(
+            provider
+                .read_file("conn-a", "/pub/readme.txt")
+                .await
+                .expect("read back"),
+            b"local version".to_vec(),
+            "远端那份必须换成新的 —— 这才是「覆盖」"
+        );
+    }
+
+    /// 覆盖名单**只作用于被点中的那个文件**，其余同名项仍然跳过。
+    #[tokio::test]
+    async fn an_overwrite_request_does_not_touch_the_other_entries() {
+        let dir = local_tree();
+        std::fs::write(dir.path().join("readme.txt"), b"local version").expect("write local");
+        std::fs::write(dir.path().join("other.txt"), b"other").expect("write local");
+
+        let provider = fake();
+        // 远端 `/pub` 里已经有 `readme.txt`，没有 `other.txt`。
+        let paths = vec![
+            dir.path().join("readme.txt"),
+            dir.path().join("other.txt"),
+        ];
+        let overwrite = HashSet::from([paths[0].to_string_lossy().to_string()]);
+
+        let report = upload_many(
+            &*provider,
+            "conn-a",
+            UploadRequest {
+                local_paths: &paths,
+                remote_dir: "/pub",
+                overwrite_paths: &overwrite,
+                progress: None,
+            },
+        )
+        .await
+        .expect("upload");
+
+        assert_eq!(report.transferred_files, 2, "两个都该传上去");
+        assert!(report.skipped.is_empty(), "{:?}", report.skipped);
+    }
+
+    /// 进度：**分母在传输开始前就定下来**，结束时分子必须等于分母。
+    ///
+    /// 分母要是在传到一半才出现，进度条会先冲到 100% 再掉回 0%。
+    #[tokio::test]
+    async fn the_progress_sink_reports_a_total_before_the_transfer_starts() {
+        let dir = local_tree();
+        std::fs::write(dir.path().join("a.txt"), b"aaa").expect("a");
+        std::fs::write(dir.path().join("b.txt"), b"bb").expect("b");
+
+        let recorded = Arc::new(Mutex::new(Vec::<TransferProgress>::new()));
+        let recorder = recorded.clone();
+        let sink = TransferProgressSink::new(move |progress| {
+            recorder.lock().expect("记录进度").push(progress);
+        });
+
+        let paths = vec![dir.path().join("a.txt"), dir.path().join("b.txt")];
+        let overwrite = HashSet::new();
+
+        let report = upload_many(
+            &*fake(),
+            "conn-a",
+            UploadRequest {
+                local_paths: &paths,
+                remote_dir: "/pub",
+                overwrite_paths: &overwrite,
+                progress: Some(sink),
+            },
+        )
+        .await
+        .expect("upload");
+
+        let snapshots = recorded.lock().expect("读进度").clone();
+        assert!(!snapshots.is_empty(), "一次都没报进度，进度条就永远是空的");
+
+        let first = &snapshots[0];
+        assert_eq!(first.files_total, 2, "分母必须在传输开始前就有");
+        assert_eq!(first.bytes_total, 5, "字节分母也要提前算好");
+
+        let last = snapshots.last().expect("有快照");
+        assert_eq!(last.files_done, last.files_total, "结束时分子必须等于分母");
+        assert_eq!(last.bytes_done, last.bytes_total);
+        assert_eq!(report.transferred_files, 2);
     }
 
     #[tokio::test]
@@ -1178,8 +1932,14 @@ mod tests {
         assert_eq!(
             report.skipped,
             vec![
-                format!("sfm://remote/conn-a/{root}"),
-                format!("sfm://remote/conn-a/{root}/locked"),
+                RemoteTransferSkip::new(
+                    format!("sfm://remote/conn-a/{root}"),
+                    RemoteTransferSkipReason::AlreadyExists,
+                ),
+                RemoteTransferSkip::new(
+                    format!("sfm://remote/conn-a/{root}/locked"),
+                    RemoteTransferSkipReason::AlreadyExists,
+                ),
             ],
             "已存在的同名项进 skipped，而不是被覆盖"
         );
@@ -1302,11 +2062,20 @@ mod tests {
     async fn downloading_an_unknown_remote_path_is_a_not_found_not_a_silent_zero() {
         let dir = local_tree();
 
-        let error = download(&*fake(), "conn-a", "/nope/missing.txt", dir.path())
+        // 2026-10-26：单路径下载不再整体报错，而是**报成一条 failure** ——
+        // 报告里带着 kind 与原因，前端能逐条显示出来。
+        // 但它**绝不能**变成「静悄悄的 0」：路径不存在必须被说出来。
+        let report = download(&*fake(), "conn-a", "/nope/missing.txt", dir.path())
             .await
-            .expect_err("must fail");
+            .expect("下载失败要变成一条 failure，而不是静悄悄的 0");
 
-        assert_eq!(error.kind, RemoteErrorKind::NotFound);
+        assert_eq!(report.transferred_files, 0);
+        assert_eq!(report.failures.len(), 1, "路径不存在必须报出来");
+        assert!(
+            report.failures[0].message.starts_with("[not_found]"),
+            "失败原因要带上类别：{:?}",
+            report.failures[0]
+        );
     }
 
     // -----------------------------------------------------------------

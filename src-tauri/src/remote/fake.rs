@@ -238,6 +238,23 @@ impl RemoteProvider for FakeRemoteProvider {
         Ok(())
     }
 
+    /// 带进度回报的写入。
+    ///
+    /// 假 provider 没有网络：一次就写完，所以进度只有「0」与「总长」两格。
+    /// **分块行为由真实 provider 自己的用例覆盖** —— 这里只保证
+    /// 「回调至少被叫过一次，且报的是总字节数」。
+    async fn write_file_with_progress(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        on_progress(content.len() as u64);
+
+        self.write_file(connection_id, remote_path, content).await
+    }
+
     async fn make_dir(&self, connection_id: &str, remote_path: &str) -> Result<(), RemoteError> {
         let normalized = self.lookup(connection_id, remote_path)?;
         let mut tree = self.tree.lock().map_err(|_| poisoned("目录树"))?;

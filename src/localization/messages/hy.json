@@ -135,7 +135,9 @@
       "trash": "Աղբարկղ",
       "deletePermanent": "Ջնջել",
       "archive": "Արխիվ",
-      "dirSize": "Պանակի չափսը"
+      "dirSize": "Պանակի չափսը",
+      "remoteUpload": "Upload",
+      "remoteDownload": "Download"
     },
     "operationStatusShort": {
       "completed": "Հաջողություն",
@@ -1668,7 +1670,30 @@
       "uploadSucceeded": "Uploaded {files} file(s) to the remote folder.",
       "uploadFailed": "Upload did not fully succeed: {files} uploaded, {skipped} skipped, {failed} failed.",
       "downloadSucceeded": "Downloaded {files} file(s) to the local folder.",
-      "downloadFailed": "Download did not fully succeed: {files} downloaded, {skipped} skipped, {failed} failed."
+      "downloadFailed": "Download did not fully succeed: {files} downloaded, {skipped} skipped, {failed} failed.",
+      "uploading": "Uploading to remote",
+      "downloading": "Downloading from remote",
+      "progressFiles": "{done} / {total} files transferred",
+      "progressBytes": "{done} / {total} transferred",
+      "progressCurrent": "Current: {name}",
+      "resultTitle": "Transfer result",
+      "resultSummary": "{files} file(s) succeeded, {skipped} skipped, {failed} failed",
+      "failureSection": "Failed items",
+      "skippedSection": "Skipped items",
+      "skipReasonAlreadyExists": "Target already exists (not overwritten)",
+      "conflictTitle": "Target already exists",
+      "conflictMessage": "{count} file(s) already exist in the target folder. Overwrite them?",
+      "conflictOverwrite": "Overwrite",
+      "conflictSkipExisting": "Skip existing",
+      "noRemotePane": "The other pane is not on a remote host",
+      "uploadFailedTitle": "Upload did not fully succeed",
+      "downloadFailedTitle": "Download did not fully succeed",
+      "pasteToRemoteFailed": "Copy to remote failed",
+      "remoteToRemoteNotSupported": "Copying between two remote locations is not supported.",
+      "pasteFromRemoteFailed": "Copy from remote failed",
+      "conflictApplyToAll": "Apply the same choice to all files",
+      "conflictContinue": "Continue",
+      "skipReasonUserSkipped": "Skipped by you"
     },
     "permissions": {
       "menuItem": "Permissions...",

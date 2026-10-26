@@ -24,6 +24,10 @@ pub struct RemoteEntry {
     pub is_symlink: bool,
 }
 
+/// 分块写的大小。256 KiB —— 足够小，进度条动得起来；
+/// 又足够大，不会把一次传输切成几千次系统调用。
+pub const REMOTE_WRITE_CHUNK_BYTES: usize = 256 * 1024;
+
 /// 所有远程协议（FTP / FTPS / SFTP）的统一入口。
 ///
 /// 刻意是 **async**：FTP 与 SFTP 库（`suppaftp` / `russh-sftp`）都是异步的。
@@ -67,6 +71,35 @@ pub trait RemoteProvider: Send + Sync {
         connection_id: &str,
         remote_path: &str,
         content: Vec<u8>,
+    ) -> Result<(), RemoteError>;
+
+    /// 写入远程文件（**覆盖**语义），并**在传输过程中回报进度**。
+    ///
+    /// `on_progress` 收到的是**这个文件已经写出去的字节数**（累计值，
+    /// 不是增量）：分块写完一块就报一次。
+    ///
+    /// ## 为什么要有这个方法
+    ///
+    /// 2026-10-26 真机验收：用户传一个几十兆的文件时，界面上什么动静都没有 ——
+    /// [`Self::write_file`] 一次写完，传输期间**一个字节的进度都报不出来**。
+    /// 「上传进度条」在大文件上就成了一句空话。
+    ///
+    /// ## 为什么不给默认实现
+    ///
+    /// 与 [`Self::set_permissions`] 同一条理由：默认实现会变成
+    /// 「新加一个 provider 时忘了写」→ 编译通过、进度永远停在 0、
+    /// 用户以为卡死了。宁可让编译器逼每个实现方表态。
+    ///
+    /// ## 与 `write_file` 的关系
+    ///
+    /// 两者的语义必须一致：`write_file_with_progress` 成功 ⇒ 远端文件内容
+    /// 与 `content` 逐字节相同。**不要**把「只写了一半」当成成功。
+    async fn write_file_with_progress(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
     ) -> Result<(), RemoteError>;
 
     /// 创建远程目录（父目录必须已存在；已存在视为成功）。

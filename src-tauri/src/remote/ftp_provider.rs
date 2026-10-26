@@ -53,7 +53,7 @@ use super::connection_test::{decode, read_reply, send_command};
 use super::error::{RemoteError, RemoteErrorKind};
 use super::ftp_parsing::{parse_epsv_port, parse_list_line, parse_mlsd_line, parse_pasv_endpoint};
 use super::path::build_remote_path;
-use super::provider::{RemoteEntry, RemoteProvider};
+use super::provider::{RemoteEntry, RemoteProvider, REMOTE_WRITE_CHUNK_BYTES};
 use super::registry::ResolvedConnection;
 use super::sftp_provider::{is_hidden_remote_name, SFTP_OPERATION_TIMEOUT};
 use super::transport::{self, ProxyConfig, Socks5CommandKind, TransportStream};
@@ -425,10 +425,14 @@ where
 /// ⚠️ **数据通道必须显式关掉写端。** 服务器读满之后才会回 `226`，
 /// 而我们接下来是去**控制通道**上读那条回复的 —— 不关的话服务器还在等下半截，
 /// 双方互等到超时。
+///
+/// **分块写**：每写完一块就报一次已写出的字节数。
+/// 一次 `write_all` 整份写出去的话，大文件上传期间界面上一点进度都看不到。
 pub(crate) async fn store_via_control<S>(
     control: &mut FtpControl<S>,
     remote_path: &str,
     content: &[u8],
+    on_progress: &(dyn Fn(u64) + Send + Sync),
 ) -> Result<(), RemoteError>
 where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send,
@@ -440,9 +444,17 @@ where
 
     send_transfer_command(&mut control.stream, "STOR", &name).await?;
 
-    data.write_all(content)
-        .await
-        .map_err(|error| RemoteError::disconnected(format!("上传数据时连接中断：{error}")))?;
+    let mut written = 0u64;
+
+    for chunk in content.chunks(REMOTE_WRITE_CHUNK_BYTES) {
+        data.write_all(chunk)
+            .await
+            .map_err(|error| RemoteError::disconnected(format!("上传数据时连接中断：{error}")))?;
+
+        written += chunk.len() as u64;
+        on_progress(written);
+    }
+
     data.flush()
         .await
         .map_err(|error| RemoteError::disconnected(format!("上传数据时连接中断：{error}")))?;
@@ -813,7 +825,33 @@ impl FtpRemoteProvider {
 
         let run = async {
             let mut control = Self::login(resolved).await?;
-            let outcome = store_via_control(&mut control, normalized, &content).await;
+            let outcome = store_via_control(&mut control, normalized, &content, &|_| {}).await;
+            let _ = control.command("QUIT", &[221, 226]).await;
+            outcome
+        };
+
+        match tokio::time::timeout(self.timeout, run).await {
+            Ok(result) => result,
+            Err(_) => Err(RemoteError::disconnected(format!(
+                "上传 FTP 文件超过 {} 秒仍未完成，已放弃这次操作",
+                self.timeout.as_secs()
+            ))),
+        }
+    }
+
+    /// 上传一个远程文件（覆盖语义），**分块写并回报进度**。
+    pub async fn write_file_with_progress(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        super::path::reject_path_control_characters(normalized)?;
+
+        let run = async {
+            let mut control = Self::login(resolved).await?;
+            let outcome = store_via_control(&mut control, normalized, &content, on_progress).await;
             let _ = control.command("QUIT", &[221, 226]).await;
             outcome
         };
@@ -957,6 +995,26 @@ impl RemoteProvider for FtpRemoteProvider {
         )?;
 
         self.write_file(&resolved, &normalized, content).await
+    }
+
+    async fn write_file_with_progress(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        let normalized = super::path::normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved = super::registry::resolve_connection(
+            &self.user_data_dir,
+            &self.app_data_dir,
+            connection_id,
+        )?;
+
+        self.write_file_with_progress(&resolved, &normalized, content, on_progress)
+            .await
     }
 
     async fn make_dir(

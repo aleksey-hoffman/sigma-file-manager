@@ -3,15 +3,19 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 //
-// FORK-MODIFICATION 2026-10-20：传输结束后通知「目标那一格」刷新。
+// FORK-MODIFICATION 2026-10-26：右键「上传到远程 / 下载到本地」的**接线**。
 //
-// 用户反馈：远程文件点「下载到本地」之后，本地那一格没有立刻出现新下载的文件；
-// 上传同理。
+// 2026-10-20 那一版的接线测的是「传输完通知对面那一格刷新」；
+// 2026-10-26 起，传输逻辑整体搬进了 `remote-transfer-service`
+// （冲突确认 + 进度条 + 失败/跳过原因），通知也归它管。
+// 于是分工变成：
 //
-// 这条用例盯的是**接线**：动作执行完，通知发出去，且路径是**对面那一格**
-// 当前所在的目录（下载 → 本地目录；上传 → 远程目录）。
-// 通知本身的语义在 `remote-transfer-refresh.test.ts` 里测；
-// 「这一格收到通知之后刷新自己」在 `use-remote-transfer-refresh.test.ts` 里测。
+// - **这里**：右键菜单项 → 服务层的**参数**对不对（目标目录、条目列表）。
+// - `remote-transfer-service.test.ts`：服务层自己的行为
+//   （冲突预检、覆盖名单、进度、通知、失败原因）。
+//
+// 「传输完通知对面那一格刷新」的语义本身在
+// `remote-transfer-refresh.test.ts` 里测。
 //
 
 import {
@@ -25,14 +29,12 @@ import { computed, ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 
 const {
-  downloadFromRemoteMock,
-  uploadToRemoteMock,
-  notifyMock,
+  downloadItemsFromRemoteMock,
+  uploadItemsToRemoteMock,
 } = vi.hoisted(() => {
   return {
-    downloadFromRemoteMock: vi.fn(),
-    uploadToRemoteMock: vi.fn(),
-    notifyMock: vi.fn(),
+    downloadItemsFromRemoteMock: vi.fn(),
+    uploadItemsToRemoteMock: vi.fn(),
   };
 });
 
@@ -81,25 +83,10 @@ vi.mock('@/modules/remote/utils/remote-permissions-dialog-state', () => ({
   openRemotePermissionsDialog: vi.fn(),
 }));
 
-vi.mock('@/utils/remote-directory', () => ({
-  describeRemoteError: (error: unknown) => String(error),
+vi.mock('@/modules/remote/utils/remote-transfer-service', () => ({
+  uploadItemsToRemote: uploadItemsToRemoteMock,
+  downloadItemsFromRemote: downloadItemsFromRemoteMock,
 }));
-
-vi.mock('@/modules/remote/utils/remote-transfer', () => ({
-  downloadFromRemote: downloadFromRemoteMock,
-  uploadToRemote: uploadToRemoteMock,
-}));
-
-vi.mock('@/modules/remote/utils/remote-transfer-refresh', async () => {
-  const actual = await vi.importActual<typeof import('@/modules/remote/utils/remote-transfer-refresh')>(
-    '@/modules/remote/utils/remote-transfer-refresh',
-  );
-
-  return {
-    ...actual,
-    notifyRemoteTransferCompleted: notifyMock,
-  };
-});
 
 const { useFileBrowserActions } = await import('../use-file-browser-actions');
 const { setRemoteTransferTargets } = await import('@/modules/remote/utils/remote-transfer-targets');
@@ -149,46 +136,16 @@ function createActions(selectedEntries: DirEntry[]) {
   return actions;
 }
 
-function emptyReport(overrides: Record<string, unknown> = {}) {
-  return {
-    transferred_files: 0,
-    transferred_dirs: 0,
-    total_bytes: 0,
-    skipped: [],
-    failures: [],
-    ...overrides,
-  };
-}
-
-describe('传输结束后通知目标那一格刷新', () => {
+describe('右键「上传到远程 / 下载到本地」的接线', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    uploadItemsToRemoteMock.mockResolvedValue(true);
+    downloadItemsFromRemoteMock.mockResolvedValue(true);
     // 左本地、右远程 —— 与导航器分屏时登记的顺序一致。
     setRemoteTransferTargets([LOCAL_DIR, REMOTE_DIR]);
   });
 
-  it('下载到本地 → 通知的是**本地**那一格当前所在的目录', async () => {
-    downloadFromRemoteMock.mockResolvedValue(emptyReport({ transferred_files: 1 }));
-
-    const actions = createActions([
-      makeEntry(`${REMOTE_DIR}/a.txt`, 'a.txt', false),
-    ]);
-
-    actions.onContextMenuAction('download-to-local');
-
-    await vi.waitFor(() => {
-      expect(downloadFromRemoteMock).toHaveBeenCalled();
-    });
-    await vi.waitFor(() => {
-      expect(notifyMock).toHaveBeenCalledWith(LOCAL_DIR);
-    });
-
-    expect(downloadFromRemoteMock).toHaveBeenCalledWith(`${REMOTE_DIR}/a.txt`, LOCAL_DIR);
-  });
-
-  it('上传到远程 → 通知的是**远程**那一格当前所在的目录', async () => {
-    uploadToRemoteMock.mockResolvedValue(emptyReport({ transferred_files: 1 }));
-
+  it('上传到远程 → 目标是**远程**那一格当前所在的目录', async () => {
     const actions = createActions([
       makeEntry(`${LOCAL_DIR}/b.txt`, 'b.txt', false),
     ]);
@@ -196,32 +153,23 @@ describe('传输结束后通知目标那一格刷新', () => {
     actions.onContextMenuAction('upload-to-remote');
 
     await vi.waitFor(() => {
-      expect(uploadToRemoteMock).toHaveBeenCalled();
-    });
-    await vi.waitFor(() => {
-      expect(notifyMock).toHaveBeenCalledWith(REMOTE_DIR);
+      expect(uploadItemsToRemoteMock).toHaveBeenCalled();
     });
 
-    expect(uploadToRemoteMock).toHaveBeenCalledWith(`${LOCAL_DIR}/b.txt`, REMOTE_DIR);
-  });
+    const [items, target] = uploadItemsToRemoteMock.mock.calls[0];
 
-  it('下载目录同样通知（目录是递归传的，落地后目标目录内容变了）', async () => {
-    downloadFromRemoteMock.mockResolvedValue(emptyReport({ transferred_dirs: 3 }));
-
-    const actions = createActions([
-      makeEntry(`${REMOTE_DIR}/dir`, 'dir', true),
+    expect(target).toBe(REMOTE_DIR);
+    expect(items).toEqual([
+      {
+        path: `${LOCAL_DIR}/b.txt`,
+        name: 'b.txt',
+        isDirectory: false,
+        size: 12,
+      },
     ]);
-
-    actions.onContextMenuAction('download-to-local');
-
-    await vi.waitFor(() => {
-      expect(notifyMock).toHaveBeenCalledWith(LOCAL_DIR);
-    });
   });
 
-  it('目标已存在而跳过 → 不通知（目录内容没变，刷新只是白读一次盘）', async () => {
-    downloadFromRemoteMock.mockResolvedValue(emptyReport({ skipped: ['a.txt'] }));
-
+  it('下载到本地 → 目标是**本地**那一格当前所在的目录', async () => {
     const actions = createActions([
       makeEntry(`${REMOTE_DIR}/a.txt`, 'a.txt', false),
     ]);
@@ -229,28 +177,48 @@ describe('传输结束后通知目标那一格刷新', () => {
     actions.onContextMenuAction('download-to-local');
 
     await vi.waitFor(() => {
-      expect(downloadFromRemoteMock).toHaveBeenCalled();
+      expect(downloadItemsFromRemoteMock).toHaveBeenCalled();
     });
-    // 等一轮微任务，确认没有迟到的通知
+
+    const [items, target] = downloadItemsFromRemoteMock.mock.calls[0];
+
+    expect(target).toBe(LOCAL_DIR);
+    expect(items).toEqual([
+      {
+        path: `${REMOTE_DIR}/a.txt`,
+        name: 'a.txt',
+        isDirectory: false,
+        size: 12,
+      },
+    ]);
+  });
+
+  it('多选时整批一次交给服务层（不是逐个调用）', async () => {
+    const actions = createActions([
+      makeEntry(`${LOCAL_DIR}/b.txt`, 'b.txt', false),
+      makeEntry(`${LOCAL_DIR}/dir`, 'dir', true),
+    ]);
+
+    actions.onContextMenuAction('upload-to-remote');
+
+    await vi.waitFor(() => {
+      expect(uploadItemsToRemoteMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(uploadItemsToRemoteMock.mock.calls[0][0]).toHaveLength(2);
+  });
+
+  it('没有对面那一格 → 什么都不做（菜单项压根不该出现）', async () => {
+    setRemoteTransferTargets([]);
+
+    const actions = createActions([
+      makeEntry(`${LOCAL_DIR}/b.txt`, 'b.txt', false),
+    ]);
+
+    actions.onContextMenuAction('upload-to-remote');
+
     await new Promise(resolve => setTimeout(resolve, 0));
 
-    expect(notifyMock).not.toHaveBeenCalled();
-  });
-
-  it('传输失败 → 仍然通知（目录上传是递归的，可能已经写进去一部分）', async () => {
-    downloadFromRemoteMock.mockRejectedValue({
-      kind: 'permission',
-      message: '拒绝',
-    });
-
-    const actions = createActions([
-      makeEntry(`${REMOTE_DIR}/a.txt`, 'a.txt', false),
-    ]);
-
-    actions.onContextMenuAction('download-to-local');
-
-    await vi.waitFor(() => {
-      expect(notifyMock).toHaveBeenCalledWith(LOCAL_DIR);
-    });
+    expect(uploadItemsToRemoteMock).not.toHaveBeenCalled();
   });
 });

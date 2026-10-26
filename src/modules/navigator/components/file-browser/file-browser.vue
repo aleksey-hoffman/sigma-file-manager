@@ -35,6 +35,10 @@ import FileLockDialog from './file-lock-dialog.vue';
 // FORK-MODIFICATION 2026-10-20：远程删除的确认框。
 import RemoteDeleteConfirmDialog from '@/modules/remote/components/remote-delete-confirm-dialog.vue';
 import HostKeyTrustDialog from '@/modules/remote/components/host-key-trust-dialog.vue';
+// FORK-MODIFICATION 2026-10-26：远程传输的覆盖确认框与进度 / 结果框。
+import RemoteTransferConflictDialog from '@/modules/remote/components/remote-transfer-conflict-dialog.vue';
+import RemoteTransferProgressDialog from '@/modules/remote/components/remote-transfer-progress-dialog.vue';
+import { useRemoteTransferDialogStates } from '@/modules/remote/utils/remote-transfer-state';
 import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode } from './address-bar-editor-utils';
 import ArchiveOptionsDialog, { type ArchiveOptions } from './archive-options-dialog.vue';
@@ -224,6 +228,9 @@ async function revealAddressBarEntry(parentPath: string, entryPath: string) {
 }
 
 const userStatsStore = useUserStatsStore();
+// FORK-MODIFICATION 2026-10-26：远程传输的两个对话框是**全局单例**（模块级状态），
+// 这里只是把「开没开」接到界面上。
+const { conflictDialogState, progressDialogState } = useRemoteTransferDialogStates();
 
 // FORK-MODIFICATION: 右键「添加到收藏」→ 选分类 → 真正落盘。
 // 决策逻辑（三条规则：新分类优先 / 重名落未分类 / 跳过已收藏）在
@@ -539,6 +546,16 @@ defineExpose({
       :prompt="hostKeyPrompt"
       @confirm="confirmHostKeyTrust"
       @cancel="dismissHostKeyTrust"
+    />
+
+    <!-- FORK-MODIFICATION 2026-10-26：远端同名文件的覆盖确认框（可整批同策略）。 -->
+    <RemoteTransferConflictDialog
+      v-model:open="conflictDialogState.isOpen"
+    />
+
+    <!-- FORK-MODIFICATION 2026-10-26：远程传输的进度条与结果明细。 -->
+    <RemoteTransferProgressDialog
+      v-model:open="progressDialogState.isOpen"
     />
 
     <ArchiveOptionsDialog

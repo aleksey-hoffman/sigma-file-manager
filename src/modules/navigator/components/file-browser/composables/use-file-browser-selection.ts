@@ -57,6 +57,17 @@ import { refreshDrives } from '@/modules/home/composables/use-drives';
 // 与 `use-dir-entry-actions.ts` 共用同一份流程，避免破坏性动作的确认框漏一处。
 import { useFileLockWorkflow } from '@/composables/use-file-lock-workflow';
 import { shouldOpenFavoriteCategoryDialog } from '@/modules/navigator/components/file-browser/utils/file-browser-favorites';
+// FORK-MODIFICATION 2026-10-26：粘到远程面板走远程通道。
+//
+// 旧行为是把 `sfm://remote/...` 丢给本地复制引擎，引擎拿 `Path::exists()`
+// 问本地文件系统 —— 永远问不到，于是报一句
+// 「Destination path does not exist」，用户完全看不懂。
+// 现在这一趟由远程通道自己处理，**绝不再落回本地复制**。
+import {
+  handleRemotePaste,
+  remoteTransferItemsFromPaths,
+  toRemoteTransferItems,
+} from '@/modules/remote/utils/remote-transfer-service';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -551,7 +562,14 @@ export function useFileBrowserSelection(
       if (clipboardStore.hasFileItems) {
         const sourcePaths = clipboardStore.clipboardItems.map(item => item.path);
         const operation = clipboardStore.isCopyOperation ? 'copy' : 'move';
-        const pasted = await handleExternalDrop(sourcePaths, targetPath, operation);
+        // FORK-MODIFICATION 2026-10-26：把条目本身传下去 ——
+        // 远程通道要知道名字与「是不是目录」，光有路径不够。
+        const pasted = await handleExternalDrop(
+          sourcePaths,
+          targetPath,
+          operation,
+          clipboardStore.clipboardItems,
+        );
 
         if (pasted) {
           clipboardStore.discardClipboard();
@@ -618,9 +636,33 @@ export function useFileBrowserSelection(
     return true;
   }
 
-  async function handleExternalDrop(sourcePaths: string[], targetPath: string, operation: 'copy' | 'move' = 'copy'): Promise<boolean> {
+  async function handleExternalDrop(
+    sourcePaths: string[],
+    targetPath: string,
+    operation: 'copy' | 'move' = 'copy',
+    // FORK-MODIFICATION 2026-10-26：条目本身（可选）。
+    // 有条目时远程通道能拿到「名字 / 是不是目录」，没有就退回按路径末段推。
+    sourceItems?: DirEntry[],
+  ): Promise<boolean> {
     if (isVirtualLocationPath(targetPath)) {
       return false;
+    }
+
+    // FORK-MODIFICATION 2026-10-26：粘到远程面板（或从远程面板粘出来）走远程通道。
+    //
+    // 返回 `null` = 这一趟与远程无关，交给本地复制；
+    // 返回 `true` / `false` = 远程通道已经处理过了（成功 / 失败）。
+    // **失败时绝不能落回本地复制** —— 那正是
+    // 「Destination path does not exist」的来处。
+    const remoteOutcome = await handleRemotePaste(
+      sourceItems
+        ? toRemoteTransferItems(sourceItems)
+        : remoteTransferItemsFromPaths(sourcePaths),
+      targetPath,
+    );
+
+    if (remoteOutcome !== null) {
+      return remoteOutcome;
     }
 
     const shouldFocusPaste = targetPath === currentPathRef.value;

@@ -44,7 +44,7 @@ use super::path::{
     build_remote_path, join_remote_parent_and_name, normalize_remote_path,
     reject_path_control_characters, split_remote_parent_and_name, validate_remote_entry_name,
 };
-use super::provider::{RemoteEntry, RemoteProvider};
+use super::provider::{RemoteEntry, RemoteProvider, REMOTE_WRITE_CHUNK_BYTES};
 use super::registry::{self, ResolvedConnection};
 use super::transport::{self, Socks5CommandKind};
 
@@ -500,6 +500,50 @@ impl SftpRemoteProvider {
         with_timeout(self.timeout, "上传远程文件", work).await
     }
 
+    /// 上传一个远程文件（**覆盖**语义），**分块写并回报进度**。
+    ///
+    /// 与 [`Self::write_file`] 的唯一区别是**分块**：每写完一块就报一次
+    /// 已经写出去的字节数。
+    ///
+    /// 没有这一步，一个几十兆的文件上传期间，界面上**一个字节的进度都报不出来** ——
+    /// 用户只能看着一个不动的界面猜它是不是卡死了。
+    pub async fn write_file_with_progress(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        let work = async {
+            let (sftp, _session) =
+                open_sftp_session(resolved, Arc::clone(&self.known_hosts)).await?;
+
+            let mut file = sftp
+                .create(normalized.to_string())
+                .await
+                .map_err(map_sftp_error)?;
+
+            let mut written = 0u64;
+
+            for chunk in content.chunks(REMOTE_WRITE_CHUNK_BYTES) {
+                file.write_all(chunk).await.map_err(|error| {
+                    RemoteError::disconnected(format!("写入远端文件失败：{error}"))
+                })?;
+
+                written += chunk.len() as u64;
+                on_progress(written);
+            }
+
+            file.close().await.map_err(|error| {
+                RemoteError::disconnected(format!("关闭远端文件失败：{error}"))
+            })?;
+
+            Ok(())
+        };
+
+        with_timeout(self.timeout, "上传远程文件", work).await
+    }
+
     /// 建一个远程目录。**已存在视为成功。**
     ///
     /// 「先问一次」而不是把失败当成功：服务器在「目录已存在」时回的是
@@ -703,6 +747,18 @@ impl RemoteProvider for SftpRemoteProvider {
     ) -> Result<(), RemoteError> {
         let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
         self.write_file(&resolved, &normalized, content).await
+    }
+
+    async fn write_file_with_progress(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        let (resolved, normalized) = self.prepare(connection_id, remote_path)?;
+        self.write_file_with_progress(&resolved, &normalized, content, on_progress)
+            .await
     }
 
     async fn make_dir(

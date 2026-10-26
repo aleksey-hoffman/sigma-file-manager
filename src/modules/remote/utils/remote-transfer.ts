@@ -5,10 +5,13 @@
 // FORK-MODIFICATION: 本地 ↔ 远程传输的前端调用层。
 //
 // 参数名是 **camelCase**：Tauri 会把它换算成 Rust 侧的 snake_case
-// （`localPath` → `local_path`）。与既有的 `check_for_updates` 调用同一条规矩。
+// （`localPaths` → `local_paths`）。与既有的 `check_for_updates` 调用同一条规矩。
 //
 // 返回体字段是 **snake_case**：后端那几个结构体没有加
 // `#[serde(rename_all = "camelCase")]`。
+//
+// ⚠️ **进度事件的载荷是 camelCase**：那是后端在 `commands.rs` 里单独定义的
+// 事件结构体，它加了 `rename_all = "camelCase"`。
 
 import { invoke } from '@tauri-apps/api/core';
 
@@ -16,6 +19,15 @@ import { invoke } from '@tauri-apps/api/core';
 export interface RemoteTransferFailure {
   path: string;
   message: string;
+}
+
+/** 跳过的原因（机器可读短码）。 */
+export type RemoteTransferSkipReason = 'already_exists' | 'user_skipped';
+
+/** 一个被跳过的条目。 */
+export interface RemoteTransferSkip {
+  path: string;
+  reason: RemoteTransferSkipReason;
 }
 
 /** 一次传输的结果。 */
@@ -26,47 +38,61 @@ export interface RemoteTransferReport {
   transferred_dirs: number;
   /** 总字节数 */
   total_bytes: number;
-  /** 因「目标已存在」而跳过的条目（完整路径） */
-  skipped: string[];
+  /** 被跳过的条目（**带原因**） */
+  skipped: RemoteTransferSkip[];
   /** 失败的条目 */
   failures: RemoteTransferFailure[];
 }
 
-/** 一次权限设置的结果。 */
-export interface RemoteChmodReport {
-  /** 实际改动过的条目数 */
-  changed: number;
-  /** 失败的条目 */
-  failures: RemoteTransferFailure[];
+/** 传输进度（后端事件 `remote-transfer-progress` 的载荷）。 */
+export interface RemoteTransferProgress {
+  /** 这一次传输的标识。多条传输同时在跑时靠它区分。 */
+  jobId: string;
+  filesDone: number;
+  filesTotal: number;
+  bytesDone: number;
+  bytesTotal: number;
+  /** 当前正在传的文件（空串 = 还没开始）。 */
+  currentPath: string;
 }
 
 /**
- * 上传：本地文件**或目录** → 远程目录。
+ * 上传：**一批**本地路径 → 远程目录。
  *
- * 目录会**递归**上传。目标已存在同名文件时**不覆盖**，记进 `skipped`。
+ * 目录会**递归**上传。`overwritePaths` 里的路径允许覆盖远端同名项；
+ * 其余的同名项会被后端记成 `skipped`（带 `already_exists` 原因），
+ * **绝不静默覆盖**。
  */
-export function uploadToRemote(
-  localPath: string,
+export function uploadPathsToRemote(
+  localPaths: string[],
   remoteDir: string,
+  overwritePaths: string[],
+  jobId: string,
 ): Promise<RemoteTransferReport> {
-  return invoke<RemoteTransferReport>('remote_upload_path', {
-    localPath,
+  return invoke<RemoteTransferReport>('remote_upload_paths', {
+    localPaths,
     remoteDir,
+    overwritePaths,
+    jobId,
   });
 }
 
 /**
- * 下载：远程文件**或目录** → 本地目录。
+ * 下载：**一批**远程路径 → 本地目录。
  *
- * 目录会**递归**下载。目标已存在同名文件时**不覆盖**，记进 `skipped`。
+ * 目录会**递归**下载。`overwritePaths` 里的路径允许覆盖本地同名项。
  */
-export function downloadFromRemote(
-  remotePath: string,
+export function downloadPathsFromRemote(
+  remotePaths: string[],
   localDir: string,
+  overwritePaths: string[],
+  jobId: string,
 ): Promise<RemoteTransferReport> {
-  return invoke<RemoteTransferReport>('remote_download_path', {
-    remotePath,
+  return invoke<RemoteTransferReport>('remote_download_paths', {
+    remotePaths,
     localDir,
+    overwritePaths,
+    jobId,
   });
 }
 
@@ -86,6 +112,14 @@ export function setRemotePermissions(
     mode,
     recursive,
   });
+}
+
+/** 一次权限设置的结果。 */
+export interface RemoteChmodReport {
+  /** 实际改动过的条目数 */
+  changed: number;
+  /** 失败的条目 */
+  failures: RemoteTransferFailure[];
 }
 
 /**
@@ -134,8 +168,8 @@ export function removeRemotePath(remotePath: string, isDir: boolean): Promise<vo
  *
  * ⚠️ 参数名是 `remotePath` —— Rust 侧是 `remote_path`，
  * Tauri 按「Rust 参数名的 camelCase 形式」匹配 JS 传进来的键。
- * 传 `path` 会被换算成 `path`，与 Rust 的 `remote_path` 对不上，
- * 命令直接报「unknown field」。
+ * 传 `path` 会换算成 `path`，与 Rust 的 `remote_path` 对不上，命令直接报
+ * 「unknown field」。
  *
  * `remotePath` 是**要创建的目录的完整路径**（含新名字），
  * 不是父目录 —— 父目录与名字在后端拼好之后才发给协议层。
@@ -155,7 +189,7 @@ export function makeRemoteDirectory(remotePath: string): Promise<void> {
  * 传 `path` 给 `from_path` 会被换算成 `path`，与 `from_path` 对不上，
  * 命令直接报「unknown field」。
  *
- * 第二 个参数是**新名字**，不是完整路径：改名就是**在原目录内换个名字**，
+ * 第 二 个参数是**新名字**，不是完整路径：改名就是**在原目录内换个名字**，
  * 不是移动。目标路径由后端从源路径的父目录推导，
  * 这样「跨目录移动」在协议层就不可能被误触发。
  */

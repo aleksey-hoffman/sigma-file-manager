@@ -475,8 +475,30 @@ impl FtpsRemoteProvider {
         content: Vec<u8>,
     ) -> Result<(), RemoteError> {
         let mut control = self.session(resolved, normalized).await?;
+        let outcome = super::ftp_provider::store_via_control(
+            &mut control,
+            normalized,
+            &content,
+            &|_| {},
+        )
+        .await;
+        let _ = control.command("QUIT", &[221, 226]).await;
+
+        outcome
+    }
+
+    /// 上传一个远程文件（覆盖语义），**分块写并回报进度**。
+    pub async fn write_file_with_progress(
+        &self,
+        resolved: &ResolvedConnection,
+        normalized: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        let mut control = self.session(resolved, normalized).await?;
         let outcome =
-            super::ftp_provider::store_via_control(&mut control, normalized, &content).await;
+            super::ftp_provider::store_via_control(&mut control, normalized, &content, on_progress)
+                .await;
         let _ = control.command("QUIT", &[221, 226]).await;
 
         outcome
@@ -596,6 +618,23 @@ impl RemoteProvider for FtpsRemoteProvider {
             registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
 
         self.write_file(&resolved, &normalized, content).await
+    }
+
+    async fn write_file_with_progress(
+        &self,
+        connection_id: &str,
+        remote_path: &str,
+        content: Vec<u8>,
+        on_progress: &(dyn Fn(u64) + Send + Sync),
+    ) -> Result<(), RemoteError> {
+        let normalized = normalize_remote_path(remote_path)
+            .ok_or_else(|| RemoteError::protocol(format!("远端路径不合法：{remote_path}")))?;
+
+        let resolved =
+            registry::resolve_connection(&self.user_data_dir, &self.app_data_dir, connection_id)?;
+
+        self.write_file_with_progress(&resolved, &normalized, content, on_progress)
+            .await
     }
 
     async fn make_dir(
