@@ -1,7 +1,7 @@
 [package]
 name = "alpha-file-manager"
 description = "Alpha File Manager"
-version = "3.6.1"
+version = "3.6.2"
 license = "GPL-3.0-or-later"
 authors = ["kizemo"]
 repository = "https://github.com/kizemo/alpha-file-manager"

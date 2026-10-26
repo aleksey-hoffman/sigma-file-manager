@@ -9,7 +9,8 @@
 |---|---|---|
 | 3.5.1 | https://github.com/microsoft/winget-pkgs/pull/460744 | 校验 10 步全绿（`Validation-Completed`），等版主评审（2026-10-26 复查仍为 OPEN） |
 | 3.6.0 | 不提交 | 清单留在 `manifests/.../3.6.0/` 备查，但**跳过这一版**（2026-10-26 决定） |
-| 3.6.1 | 尚未提交 | 清单**已备好**（`manifests/.../3.6.1/`），**3.5.1 合并后开 PR** |
+| 3.6.1 | 不提交 | 清单留在 `manifests/.../3.6.1/` 备查，但**跳过这一版**（2026-10-26 决定：3.6.2 已发布，直接提 3.6.2） |
+| 3.6.2 | 尚未提交 | 清单**已备好**（`manifests/.../3.6.2/`），**3.5.1 合并后开 PR** |
 
 目录结构与上游仓库一致：
 
@@ -152,22 +153,24 @@ WebView2 就跑不起来。当前配置已通过上游校验，暂不需要动�
 **我们加不了，也不该加**。版主的名单见
 `doc/Moderation.md#moderators`。`@wingetbot run` 也只有版主能发。
 
-## 3.6.1 的清单：已备好，等 3.5.1 合并
+## 3.6.2 的清单：已备好，等 3.5.1 合并
 
 2026-10-25 决定：**不与 3.5.1 并行提交**。3.5.1 还没被版主合并，
 同时提下一版有可能被要求「等前一版合了再提」；先合并、再提，链路更干净。
 
-2026-10-26 补充决定：**跳过 3.6.0，直接提 3.6.1。**
+2026-10-26 补充决定：**跳过 3.6.0 与 3.6.1，直接提 3.6.2。**
 
 - 3.6.0 带的是**已经修掉的缺陷**（文件拖到微信/钉钉/飞书发不出去，3.6.1 才修好），
   把有缺陷的那一版先铺给 winget 用户没有意义；
+- 3.6.2 已于 2026-10-26 发布，3.6.1 只比它早一天，再提一版等于让用户多等一轮评审；
 - winget 不要求版本号连续，多提一版就多一轮版主评审 ——
-  先合 3.6.0 再合 3.6.1 等于让用户多等两轮；
+  先合 3.6.0 再合 3.6.1 再合 3.6.2 等于让用户多等三轮；
 - 一次到位，用户装到的就是能用的版本。
 
-`manifests/k/kizemo/AlphaFileManager/3.6.0/` 的四个文件保留在仓库里备查，不删。
+`manifests/k/kizemo/AlphaFileManager/3.6.0/` 与 `.../3.6.1/` 下的四个文件
+保留在仓库里备查，不删。
 
-`manifests/k/kizemo/AlphaFileManager/3.6.1/` 下四个文件已经写好并入库，
+`manifests/k/kizemo/AlphaFileManager/3.6.2/` 下四个文件已经写好并入库，
 **3.5.1 一合并就可以直接提**，剩下的只是开 PR + 回 CLA + 等校验。
 
 ### 这一版清单的几个取舍
@@ -181,18 +184,16 @@ WebView2 就跑不起来。当前配置已通过上游校验，暂不需要动�
    想加新功能的标签必须先删一个。删掉的是 `file-management`
    （与 `file-manager`、`file-explorer` 语义重复），换上 `file-unlock`。
 
-3. **`ReleaseDate` 用 `2026-10-25`** —— 3.6.1 的 release 实际发布时刻是
-   `2026-10-25T06:41:28Z`，按本地（UTC+8）日期算就是 10-25；
+3. **`ReleaseDate` 用 `2026-10-26`** —— 3.6.2 的 release 实际发布时刻是
+   `2026-10-26T08:29:15Z`，按本地（UTC+8）日期算就是 10-26；
    且必须**严格晚于** 3.5.1 的 `2026-10-24`。
 
 4. **`ShortDescription` 与 `Description` 沿用 3.6.0 那一版**（解除文件锁定 / 彻底删除），
    长度远在 schema 上限内（256 / 10000）。
-   拖拽缺陷是**修复**不是新功能，没写进 `Description`。
+   远程传输的进度条与覆盖确认是**修复**不是新功能，没写进 `Description`。
 
-5. **`InstallerSha256` = `4D97C864…08E6`**，与 GitHub release v3.6.1 的资产、
-   `release/` 下的本地安装包、站点 `version.json` 四方一致（20,643,804 字节）。
-   2026-10-26 又用 GitHub API 核过 release 资产的 `digest` 字段
-   （`sha256:4d97c864…08e6`），与清单逐字符相同。
+5. **`InstallerSha256` = `65B3AF7C…DC89`**，与 GitHub release v3.6.2 的资产、
+   `release/` 下的本地安装包、站点 `version.json` 四方一致（20,671,224 字节）。
 
 ### 本地自检
 
@@ -218,10 +219,10 @@ locale 文件不重复声明 defaultLocale；locale 文件只带可翻译字段�
 ### 3.5.1 合并后要做的
 
 1. fork `microsoft/winget-pkgs`（本地还没有克隆，需要先 clone）；
-2. 从 `master` 拉分支，把 `manifests/k/kizemo/AlphaFileManager/3.6.1/` 四个文件放进去；
-3. 向 `master` 开 PR，标题 `Update kizemo.AlphaFileManager to 3.6.1`
+2. 从 `master` 拉分支，把 `manifests/k/kizemo/AlphaFileManager/3.6.2/` 四个文件放进去；
+3. 向 `master` 开 PR，标题 `Update kizemo.AlphaFileManager to 3.6.2`
    （3.5.1 合并后包已存在，属于版本更新；上游不校验标题，
-   沿用 3.5.1 的 `New package: kizemo.AlphaFileManager version 3.6.1` 也能过）；
+   沿用 3.5.1 的 `New package: kizemo.AlphaFileManager version 3.6.2` 也能过）；
 4. 机器人要求时回一行 `@microsoft-github-policy-service agree`；
 5. 等校验跑完（看标签，不看 check runs），再等版主评审。
 

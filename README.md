@@ -187,27 +187,45 @@ GitHub releases carry the same installer and act as a fallback mirror:
 
 ---
 
-## 🆕 What's new in 3.6.1
+## 🆕 What's new in 3.6.2
 
-### 🖱️ Dragging a file into another program works with a maximized window
+### 🔄 Remote transfers now say what happened
 
-**Fixed.** The system-level drag — the one that lets you pull a file into a chat
-window, a mail client or another file manager — used to begin only once the
-pointer left the Alpha File Manager window. With the window maximized that
-never happens: the window covers the whole screen, so a pointer sitting on a
-chat program in front of it is still within this window's coordinates, and the
-file was never handed over to Windows at all. The application now asks Windows
-what is actually under the pointer, and as soon as it rests on another program
-the file is handed to the system's own drag-and-drop.
+**Fixed.** Uploading to a remote server used to fail with nothing but a number
+in the way — no reason, and no way to tell whether the server had refused the
+file or the application had quietly skipped it. When the remote already held a
+file with the same name, the old policy was to skip it silently, and the reason
+never reached the interface.
 
-The answer has to hold for a moment before the drag begins, so that merely
-passing over a window on the way somewhere else does not start a drag by
-accident. Dragging *inside* this window is unaffected: a file dropped on a
-folder here is still moved the way it always was.
+The result dialog now reports what happened to every file: which ones were
+transferred, which ones were skipped, which ones failed, and why.
 
-> The program you are dragging towards is now brought to the front while the
-> drag runs, and the foreground is handed back to it afterwards — Windows does
-> neither of those on its own.
+### 📋 Pasting into the remote pane works
+
+**Fixed.** Pasting files into a remote pane reported *Destination path does not
+exist* — which was never a statement about the server. The remote path was
+being handed to the local copy engine, which asked the local file system
+whether it existed and of course found nothing there. Pasting into a remote
+pane now goes through the remote transfer channel, with the same rules as a
+transfer started from the toolbar.
+
+### ❓ Remote transfers ask before they overwrite
+
+**Added.** If the remote already has a file with the same name, a dialog lists
+them and lets you decide one by one — overwrite, or skip. Tick *use the same
+choice for all files with the same name* and one decision settles the whole
+batch, which is what you want when you are moving a folder of files across.
+The files you chose to overwrite are the only ones that get replaced; nothing
+else on the server is touched.
+
+### 📊 Remote transfers show a progress bar
+
+**Added.** Uploading or downloading a large tree used to be a wait with nothing
+to look at. The progress dialog says what is being transferred and how many
+items are done out of how many — and the totals are worked out before the
+transfer starts, so the bar moves forward instead of jumping to the end and
+back to the start again. Downloading a remote file is available from the
+right-click menu of the remote entry.
 
 ---
 

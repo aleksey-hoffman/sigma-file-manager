@@ -1,4 +1,18 @@
 # Değişiklik Günlüğü
+## [3.6.2] - October 2026
+
+**Summary:** Copying files to and from a remote server (SFTP, FTP or FTPS) now tells you what is actually happening. Uploading used to fail with nothing but a number in the way — no reason, and no way to tell whether the server had refused the file or the application had quietly skipped it. Pasting files into the remote pane reported *Destination path does not exist*, which was never a statement about the server at all: the remote path was being handed to the local copy engine, which asked the local file system and of course found nothing there. The remote transfer channel now has its own path, shows a progress bar while it works, and asks before it replaces anything.
+
+### What changed
+
+**Fixed: a failed upload now says why it failed.** When the remote already held a file with the same name, the old policy was to skip it silently — the file was left alone and the reason never reached the interface. The result dialog used to show counts and nothing else. It now reports what happened to every file: which ones were transferred, which ones were skipped, which ones failed, and why. A file you chose to skip is no longer listed twice.
+
+**Fixed: pasting into the remote pane no longer reports a path that does not exist.** Pasting into a remote panel sent a `sfm://remote/...` path to the local copy engine, which asked the local file system whether that path exists and was told no, every time. Pasting into a remote panel now goes through the remote transfer channel, and the same rules apply there as for a transfer started from the toolbar.
+
+**Added: a remote transfer now asks before it overwrites anything.** If the remote already has a file with the same name, a dialog lists them and lets you decide one by one — overwrite, or skip. Tick *use the same choice for all files with the same name* and one decision settles the whole batch, which is what you want when you are moving a folder of files across. The files you chose to overwrite are the only ones the application is allowed to replace; nothing else on the server is touched.
+
+**Added: remote transfers show a progress bar.** Uploading or downloading a large tree used to be a wait with nothing to look at. The progress dialog says what is being transferred, how many items are done out of how many, and the totals are worked out before the transfer starts — so the bar moves forward instead of jumping to the end and back to the start again. Downloading a remote file is available from the right-click menu of the remote entry.
+
 ## [3.6.1] - October 2026
 
 **Summary:** Dragging a file out to another program now works whether this window is maximized or not. Until now the system-level drag only began once the pointer left this window, and a maximized window covers the whole screen, so the pointer was still "inside" the window while it sat over a chat program in front of it — the file was never handed to the system at all. The application now asks Windows what is actually under the pointer and switches to the system-level drag as soon as the pointer rests on another program. The same pass makes the window you are dragging towards come to the front while the drag runs, and hands the foreground back to it afterwards.

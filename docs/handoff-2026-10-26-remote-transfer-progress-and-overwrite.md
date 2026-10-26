@@ -300,6 +300,18 @@
 14. **`.ps1` 里按 UI 结构定位元素，别写死坐标**：面板会随标签页数量左右挪。
     面包屑段与工具栏按钮的唯一可靠区分是**高度**（面包屑恰好 40 px，
     工具栏 54 px，窗格右侧按钮 42 px，兄弟目录箭头 30 px）。
+15. **打包前光「杀进程」不够，还得把 `target/release/alpha-file-manager.exe` 挪走**：
+    2026-10-26 发 3.6.2 时第一次打包死在链接阶段
+    `error: failed to remove file ...\target\release\alpha-file-manager.exe / 拒绝访问 (os error 5)`。
+    原因比「应用还开着」更具体：**用户从资源管理器双击了构建产物本身**
+    （父进程是 `explorer.exe`，命令行就是这个 exe），它把链接要写的目标文件锁住了。
+    ⇒ 只做 `Get-Process alpha-file-manager | Stop-Process` 挡不住下一次 ——
+    用户随时可能再双击一次。**杀完之后把这个 exe 挪到 `.superpowers/sdd/superseded/`**，
+    旧路径不存在了，用户再也点不到它，构建就锁不住了。
+    顺带：`src-tauri\target\release\bundle\nsis\` 里堆着**历次构建的安装包**，
+    `publish-bundle-to-release.mjs` 会把它们**逐个覆盖回 `release/`**——
+    验收用的重建版一旦顶着旧版本号被复制回去，**已发布版本的哈希就被改了**，
+    winget 清单会跟着红。⇒ 打包前把「同名的旧版本验收包」挪出 `bundle/nsis/`。
 
 ---
 
@@ -307,9 +319,9 @@
 
 | # | 事项 | 说明 |
 |---|---|---|
-| 1 | **要不要出 3.6.2** | 本轮改动在 3.6.1（**已发布**）之后。要发就得 bump `package.json` / `src-tauri/Cargo.toml` / `src-tauri/tauri.conf.json` 三处（**必须一致**），并补 CHANGELOG 段落。`npm run verify-changelog` 要求 CHANGELOG 覆盖**当前版本**且顺序正确 |
-| 2 | **3.6.2 的 winget 清单** | 新建 `docs/winget/manifests/k/kizemo/AlphaFileManager/3.6.2/` 四件套（**不是**改 3.6.1 那套）；等 3.5.1 合并后按 `docs/winget/README.md` 的流程提 |
-| 3 | winget PR #460744（**3.5.1**） | 仍是 `OPEN`，`REVIEW_REQUIRED` / `BLOCKED`，**0 条 review**。2026-10-24 15:46（北京）之后机器人只留了一句「The check-in policies require a moderator to approve PRs from the community」，再无动静。**3.6.1 的清单还没提 PR**（在本仓库备着，等 3.5.1 合并后提） |
+| 1 | ~~**要不要出 3.6.2**~~ **已出（2026-10-26）** | 本轮改动在 3.6.1（已发布）之后 ⇒ 已 bump 到 **3.6.2**，`package.json` / `src-tauri/Cargo.toml` / 两个子 crate 的 Cargo.toml 四处一致，`src-tauri/tauri.conf.json` 的 version 指向 `"../package.json"`（不用改）。根 CHANGELOG + 15 个语言包的 changelog 补了 3.6.2 条目（中文包为中文正文，其余沿用英文原文约定），`npm run verify-changelog` 绿。安装包 `Alpha File Manager_3.6.2_x64-setup.exe` = 20,671,224 B，sha256 `65B3AF7C…DC89` |
+| 2 | **3.6.2 的 winget 清单** | **已备好**：`docs/winget/manifests/k/kizemo/AlphaFileManager/3.6.2/` 四件套，`npm run check:winget` 全绿。**PR 提不了** —— 同一包 ID 已有 OPEN 的 #460744（3.5.1），winget 不允许同包两个 PR。等 3.5.1 合并后按 `docs/winget/README.md` 的流程提。顺带把 **3.6.0 与 3.6.1 都标成「不提交」**，直接提 3.6.2 |
+| 3 | winget PR #460744（**3.5.1**） | 仍是 `OPEN`，`REVIEW_REQUIRED` / `BLOCKED`，**0 条 review**。2026-10-24 15:46（北京）之后机器人只留了一句「The check-in policies require a moderator to approve PRs from the community」，再无动静。**3.6.2 的清单还没提 PR**（在本仓库备着，等 3.5.1 合并后提）。已挂 24 小时复查任务，下一次 2026-10-27 10:14（北京），提示词已改指向 3.6.2 |
 | 4 | 安装包代码签名 | 需用户自备证书 |
 | 5 | 远程格的 `copy`/`cut`/`paste` 要不要放开 | `entry-action-policy.ts:70` 的 `REMOTE_PHASE0_BLOCKED_ACTIONS` 至今挡着远程条目，注释说「阶段 7（跨边界拖拽/复制粘贴）会逐条从这里移出去」。放开后，「复制远端文件 → 粘到本地格」就自动能走下载通道（`handleRemotePaste` 的 remote→local 分支已经接好了），但**系统剪贴板**那条路要一起复核（6.6 末尾那条）。这是产品决定，不是本轮欠的活 |
 
