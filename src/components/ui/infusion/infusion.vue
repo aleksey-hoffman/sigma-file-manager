@@ -4,7 +4,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch, type CSSProperties } from 'vue';
+import { computed, ref, watch } from 'vue';
+import type { InfusionBlendTarget, MixBlendMode } from '@/types/user-settings';
 
 interface Props {
   src: string;
@@ -17,7 +18,9 @@ interface Props {
   noiseOpacity?: number;
   mediaContrast?: number;
   mediaBrightness?: number;
-  blendMode?: CSSProperties['mixBlendMode'];
+  blendMode?: MixBlendMode;
+  blendTarget?: InfusionBlendTarget;
+  blendTint?: string;
   relative?: boolean;
   type?: 'image' | 'video';
   pausePlayback?: boolean;
@@ -35,6 +38,8 @@ const props = withDefaults(defineProps<Props>(), {
   mediaContrast: 100,
   mediaBrightness: 100,
   blendMode: 'normal',
+  blendTarget: 'ui',
+  blendTint: '#3b82f6',
   relative: false,
   type: 'image',
   pausePlayback: false,
@@ -71,7 +76,23 @@ const imageStyle = computed(() => ({
   '--infusion-noise-opacity': props.noiseOpacity,
   '--infusion-media-contrast': `${props.mediaContrast}%`,
   '--infusion-media-brightness': `${props.mediaBrightness}%`,
-  'mixBlendMode': props.blendMode,
+}));
+
+const blendsWithInterface = computed(() => props.blendMode !== 'normal' && props.blendTarget === 'ui');
+const blendsWithFill = computed(() => props.blendMode !== 'normal' && props.blendTarget === 'fill');
+
+/**
+ * With the "ui" target the whole effect layer blends with the interface under it.
+ * With the "fill" target the layer is plain: the media blends with the fill color inside the isolated
+ * group only, and the finished group is laid over the interface with the chosen opacity.
+ */
+const containerStyle = computed(() => ({
+  ...imageStyle.value,
+  mixBlendMode: blendsWithInterface.value ? props.blendMode : undefined,
+}));
+
+const mediaWrapperStyle = computed(() => ({
+  mixBlendMode: blendsWithFill.value ? props.blendMode : undefined,
 }));
 
 const noiseDataUrl = computed(() => {
@@ -118,25 +139,39 @@ const containerClass = computed(() => [
 <template>
   <div
     :class="containerClass"
-    :style="imageStyle"
+    :style="containerStyle"
+    :data-blend-mode="props.blendMode"
+    :data-blend-target="props.blendTarget"
   >
-    <img
-      v-if="props.type === 'image'"
-      class="infusion-image"
-      :src="props.src"
-      alt=""
-    >
-    <video
-      v-if="props.type === 'video'"
-      ref="videoElementRef"
-      class="infusion-video"
-      :src="props.src"
-      autoplay
-      loop
-      muted
-      playsinline
-      alt=""
-    />
+    <div class="infusion-blend-group">
+      <div
+        v-if="blendsWithFill"
+        class="infusion-tint"
+        :style="{ backgroundColor: props.blendTint }"
+      />
+      <div
+        class="infusion-media"
+        :style="mediaWrapperStyle"
+      >
+        <img
+          v-if="props.type === 'image'"
+          class="infusion-image"
+          :src="props.src"
+          alt=""
+        >
+        <video
+          v-if="props.type === 'video'"
+          ref="videoElementRef"
+          class="infusion-video"
+          :src="props.src"
+          autoplay
+          loop
+          muted
+          playsinline
+          alt=""
+        />
+      </div>
+    </div>
     <div
       v-if="noiseIntensity > 0"
       class="infusion-noise"
@@ -166,28 +201,36 @@ const containerClass = computed(() => [
   height: 100%;
 }
 
-.infusion-image {
+.infusion-blend-group {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  isolation: isolate;
   opacity: var(--infusion-opacity);
-  transform: scale(1.1)
 }
 
-.dark .infusion-image {
+.dark .infusion-blend-group {
   opacity: var(--infusion-opacity-dark);
 }
 
+.infusion-tint,
+.infusion-media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.infusion-image,
 .infusion-video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: var(--infusion-opacity);
-  transform: scale(1.1)
-}
-
-.dark .infusion-video {
-  opacity: var(--infusion-opacity-dark);
+  transform: scale(1.1);
 }
 
 .infusion-noise {

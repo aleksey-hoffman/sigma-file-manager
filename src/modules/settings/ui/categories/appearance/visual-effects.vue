@@ -13,7 +13,9 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
-import { SparklesIcon, RefreshCcwIcon, ImageIcon, RotateCcwIcon } from '@lucide/vue';
+import {
+  SparklesIcon, RefreshCcwIcon, ImageIcon, RotateCcwIcon, CheckIcon,
+} from '@lucide/vue';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import type { ResolvedMediaSelection } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
@@ -24,6 +26,16 @@ import {
   getComboboxHighlightedOptionValue,
   type ComboboxHighlightPayload,
 } from '@/components/base/combobox-utils';
+import {
+  getSupportedInfusionBlendModeGroups,
+  INFUSION_BLEND_TINTS,
+  isInfusionBlendMode,
+  isInfusionBlendTarget,
+  normalizeInfusionBlendMode,
+  normalizeInfusionBlendTarget,
+  normalizeInfusionBlendTint,
+  parseInfusionBlendTint,
+} from '@/utils/infusion-blend';
 import BackgroundManagerDialog from '@/components/ui/background-manager/background-manager-dialog.vue';
 import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 
@@ -166,82 +178,37 @@ const noiseScaleValue = computed({
   },
 });
 
-const mixBlendModeOptions = computed<{
+type MixBlendModeOption = {
   name: string;
   value: MixBlendMode;
-}[]>(() => [
-  {
-    name: t('settings.visualEffects.mixBlendMode.normal'),
-    value: 'normal',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.multiply'),
-    value: 'multiply',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.screen'),
-    value: 'screen',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.overlay'),
-    value: 'overlay',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.darken'),
-    value: 'darken',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.lighten'),
-    value: 'lighten',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.color-dodge'),
-    value: 'color-dodge',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.color-burn'),
-    value: 'color-burn',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.hard-light'),
-    value: 'hard-light',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.soft-light'),
-    value: 'soft-light',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.difference'),
-    value: 'difference',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.exclusion'),
-    value: 'exclusion',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.hue'),
-    value: 'hue',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.saturation'),
-    value: 'saturation',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.color'),
-    value: 'color',
-  },
-  {
-    name: t('settings.visualEffects.mixBlendMode.luminosity'),
-    value: 'luminosity',
-  },
-]);
+};
+
+const supportedMixBlendModeGroups = getSupportedInfusionBlendModeGroups();
+
+const mixBlendModeOptionGroups = computed<{ options: MixBlendModeOption[] }[]>(() => {
+  return supportedMixBlendModeGroups.map(group => ({
+    options: group.map(mode => ({
+      name: t(`settings.visualEffects.mixBlendMode.${mode}`),
+      value: mode,
+    })),
+  }));
+});
+
+const mixBlendModeOptions = computed<MixBlendModeOption[]>(() => {
+  return mixBlendModeOptionGroups.value.flatMap(group => group.options);
+});
+
+const currentMixBlendMode = computed(() => normalizeInfusionBlendMode(currentPageSettings.value.mixBlendMode));
+const currentBlendTarget = computed(() => normalizeInfusionBlendTarget(currentPageSettings.value.blendTarget));
+const currentBlendTint = computed(() => normalizeInfusionBlendTint(currentPageSettings.value.blendTint));
+const isCustomBlendTint = computed(() => !INFUSION_BLEND_TINTS.includes(currentBlendTint.value));
 
 const selectedMixBlendMode = computed({
   get: () => mixBlendModeOptions.value.find(
-    option => option.value === currentPageSettings.value.mixBlendMode,
+    option => option.value === currentMixBlendMode.value,
   ) ?? mixBlendModeOptions.value[0],
   set: (option) => {
-    if (option) {
+    if (option && isInfusionBlendMode(option.value)) {
       const page = effectivePageToCustomize.value;
       userSettingsStore.userSettings.infusion.pages[page].mixBlendMode = option.value;
       userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mixBlendMode'), option.value);
@@ -249,10 +216,10 @@ const selectedMixBlendMode = computed({
   },
 });
 
-function onMixBlendModeComboboxKeyboardHighlight(payload: ComboboxHighlightPayload) {
+function onMixBlendModeComboboxHighlight(payload: ComboboxHighlightPayload) {
   const highlightedMixBlendMode = getComboboxHighlightedOptionValue<MixBlendMode>(payload);
 
-  if (highlightedMixBlendMode) {
+  if (highlightedMixBlendMode && isInfusionBlendMode(highlightedMixBlendMode)) {
     dropOverlayStore.setMixBlendModePreview(highlightedMixBlendMode);
   }
 }
@@ -263,6 +230,39 @@ function onMixBlendModeComboboxOpen(open: boolean) {
       dropOverlayStore.setMixBlendModePreview(null);
     });
   }
+}
+
+function onBlendTargetChange(value: unknown) {
+  if (!isInfusionBlendTarget(value)) {
+    return;
+  }
+
+  const page = effectivePageToCustomize.value;
+  userSettingsStore.userSettings.infusion.pages[page].blendTarget = value;
+  userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'blendTarget'), value);
+}
+
+function applyBlendTint(value: unknown, persist: boolean) {
+  const tint = parseInfusionBlendTint(value);
+
+  if (!tint) {
+    return;
+  }
+
+  const page = effectivePageToCustomize.value;
+  userSettingsStore.userSettings.infusion.pages[page].blendTint = tint;
+
+  if (persist) {
+    userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'blendTint'), tint);
+  }
+}
+
+function onCustomBlendTintInput(event: Event) {
+  applyBlendTint((event.target as HTMLInputElement).value, false);
+}
+
+function onCustomBlendTintChange(event: Event) {
+  applyBlendTint((event.target as HTMLInputElement).value, true);
 }
 
 async function onEnabledChange(checked: boolean) {
@@ -355,6 +355,8 @@ async function resetVisualEffectsSection(): Promise<void> {
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noise'), pageSettings.noise);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noiseScale'), pageSettings.noiseScale);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mixBlendMode'), pageSettings.mixBlendMode);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'blendTarget'), pageSettings.blendTarget);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'blendTint'), pageSettings.blendTint);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'background'), pageSettings.background);
   }
 }
@@ -569,13 +571,93 @@ async function resetVisualEffectsSection(): Promise<void> {
               <BaseCombobox
                 v-model="selectedMixBlendMode"
                 :options="mixBlendModeOptions"
+                :option-groups="mixBlendModeOptionGroups"
                 by="value"
                 :search-placeholder="t('search')"
                 :empty-text="t('noData')"
-                @keyboard-highlight="onMixBlendModeComboboxKeyboardHighlight"
+                @highlight="onMixBlendModeComboboxHighlight"
                 @update:open="onMixBlendModeComboboxOpen"
               />
             </div>
+
+            <template v-if="currentMixBlendMode !== 'normal'">
+              <div class="visual-effects-settings__row">
+                <span class="visual-effects-settings__label">
+                  {{ t('settings.visualEffects.blendTarget') }}
+                </span>
+                <Tabs
+                  :model-value="currentBlendTarget"
+                  class="visual-effects-settings__blend-target"
+                  @update:model-value="onBlendTargetChange"
+                >
+                  <TabsList class="visual-effects-settings__blend-target-list">
+                    <TabsTrigger value="ui">
+                      {{ t('settings.visualEffects.blendTargetUi') }}
+                    </TabsTrigger>
+                    <TabsTrigger value="fill">
+                      {{ t('settings.visualEffects.blendTargetFill') }}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              <div
+                v-if="currentBlendTarget === 'fill'"
+                class="visual-effects-settings__row"
+              >
+                <span class="visual-effects-settings__label">
+                  {{ t('settings.visualEffects.blendTint') }}
+                </span>
+                <div
+                  role="radiogroup"
+                  :aria-label="t('settings.visualEffects.blendTint')"
+                  class="visual-effects-settings__tints"
+                >
+                  <button
+                    v-for="tint in INFUSION_BLEND_TINTS"
+                    :key="tint"
+                    type="button"
+                    role="radio"
+                    :aria-checked="currentBlendTint === tint"
+                    :aria-label="tint"
+                    class="visual-effects-settings__tint"
+                    :class="{ 'visual-effects-settings__tint--selected': currentBlendTint === tint }"
+                    :style="{ backgroundColor: tint }"
+                    @click="applyBlendTint(tint, true)"
+                  >
+                    <CheckIcon
+                      v-if="currentBlendTint === tint"
+                      class="visual-effects-settings__tint-check"
+                    />
+                  </button>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <label
+                        class="visual-effects-settings__tint visual-effects-settings__tint--custom"
+                        :class="{ 'visual-effects-settings__tint--selected': isCustomBlendTint }"
+                        :style="isCustomBlendTint ? { background: currentBlendTint } : undefined"
+                      >
+                        <input
+                          type="color"
+                          class="visual-effects-settings__tint-input"
+                          :aria-label="t('settings.visualEffects.blendTintCustom')"
+                          :value="currentBlendTint"
+                          @input="onCustomBlendTintInput"
+                          @change="onCustomBlendTintChange"
+                        >
+                        <CheckIcon
+                          v-if="isCustomBlendTint"
+                          class="visual-effects-settings__tint-check"
+                        />
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {{ t('settings.visualEffects.blendTintCustom') }}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -645,6 +727,63 @@ async function resetVisualEffectsSection(): Promise<void> {
 
 .visual-effects-settings__background-manager-button {
   gap: 0.5rem;
+}
+
+.visual-effects-settings__blend-target-list {
+  min-width: 200px;
+}
+
+.visual-effects-settings__tints {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.125rem;
+  gap: 0.625rem;
+}
+
+.visual-effects-settings__tint {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid hsl(var(--foreground) / 15%);
+  border-radius: 9999px;
+  cursor: pointer;
+  outline: none;
+}
+
+.visual-effects-settings__tint:focus-visible,
+.visual-effects-settings__tint:focus-within {
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 50%);
+}
+
+.visual-effects-settings__tint--selected {
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--foreground));
+}
+
+.visual-effects-settings__tint--custom {
+  background: conic-gradient(#ef4444, #f59e0b, #22c55e, #14b8a6, #3b82f6, #a855f7, #ec4899, #ef4444);
+}
+
+.visual-effects-settings__tint-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  inset: 0;
+  opacity: 0;
+}
+
+.visual-effects-settings__tint-check {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #ffffff;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 60%));
+  pointer-events: none;
 }
 
 .visual-effects-settings__tabs {
