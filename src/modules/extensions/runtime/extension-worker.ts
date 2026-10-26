@@ -7,6 +7,7 @@ import { messages as appMessages } from '@/localization/data';
 import { pluralRules } from '@/localization/plural-rules';
 import { createPathAPI } from '@/modules/extensions/api/create-path-api';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
+import { lockDownWorkerGlobals } from '@/modules/extensions/runtime/worker-global-lockdown';
 import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 import { cloneForWorkerMessage } from '@/modules/extensions/utils/worker-message-clone';
 import {
@@ -40,51 +41,9 @@ type ExtensionModule = {
   deactivate?: () => Promise<void> | void;
 };
 
-type MutableWorkerGlobalKey
-  = | 'fetch'
-    | 'XMLHttpRequest'
-    | 'WebSocket'
-    | 'importScripts'
-    | 'localStorage'
-    | 'sessionStorage'
-    | 'indexedDB'
-    | 'document'
-    | 'window'
-    | 'parent'
-    | 'top'
-    | 'frames'
-    | 'opener'
-    | 'navigator'
-    | 'close'
-    | 'postMessage'
-    | 'addEventListener'
-    | 'removeEventListener'
-    | 'dispatchEvent'
-    | 'eval'
-    | 'Function'
-    | 'sigma';
-
 const workerScope = globalThis as typeof globalThis & {
   postMessage: (message: WorkerToHostMessage) => void;
   addEventListener: (type: string, listener: (event: MessageEvent<HostToWorkerMessage>) => void) => void;
-  sigma?: unknown;
-  fetch?: unknown;
-  XMLHttpRequest?: unknown;
-  WebSocket?: unknown;
-  importScripts?: unknown;
-  localStorage?: unknown;
-  sessionStorage?: unknown;
-  indexedDB?: unknown;
-  document?: unknown;
-  window?: unknown;
-  parent?: unknown;
-  top?: unknown;
-  frames?: unknown;
-  opener?: unknown;
-  navigator?: unknown;
-  close?: unknown;
-  removeEventListener?: unknown;
-  dispatchEvent?: unknown;
 };
 
 const emitToHost = workerScope.postMessage.bind(workerScope);
@@ -101,23 +60,6 @@ const workerI18n = createI18n({
   pluralRules,
 });
 let extensionNamespace = '';
-
-function setWorkerGlobal(name: MutableWorkerGlobalKey, value: unknown): void {
-  try {
-    Object.defineProperty(workerScope, name, {
-      configurable: true,
-      writable: true,
-      value,
-    });
-  }
-  catch {
-    try {
-      workerScope[name] = value as never;
-    }
-    catch {
-    }
-  }
-}
 
 function blockFunctionConstructors(): void {
   function noop() {
@@ -165,34 +107,7 @@ function blockFunctionConstructors(): void {
 }
 
 function restrictWorkerGlobals(): void {
-  const blockedGlobals: MutableWorkerGlobalKey[] = [
-    'fetch',
-    'XMLHttpRequest',
-    'WebSocket',
-    'importScripts',
-    'localStorage',
-    'sessionStorage',
-    'indexedDB',
-    'document',
-    'window',
-    'parent',
-    'top',
-    'frames',
-    'opener',
-    'navigator',
-    'close',
-    'postMessage',
-    'addEventListener',
-    'removeEventListener',
-    'dispatchEvent',
-    'eval',
-    'Function',
-  ];
-
-  for (const blockedGlobal of blockedGlobals) {
-    setWorkerGlobal(blockedGlobal, undefined);
-  }
-
+  lockDownWorkerGlobals(workerScope);
   blockFunctionConstructors();
 }
 
