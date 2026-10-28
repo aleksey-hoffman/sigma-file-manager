@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Sigma File Manager",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 500,
+        "minHeight": 300,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": false,
+        "shadow": true,
+        "visible": false,
+        "backgroundColor": "#242227"
+      },
+      {
+        "label": "quick-view",
+        "create": false,
+        "title": "Sigma File Manager | Quick View",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 300,
+        "minHeight": 200,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "shadow": true,
+        "visible": false,
+        "url": "/quick-view"
+      },
+      {
+        "label": "print-view",
+        "create": false,
+        "title": "Sigma File Manager | Print",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 300,
+        "minHeight": 200,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "shadow": true,
+        "visible": false,
+        "url": "/print-view"
+      }
+    ]
+  }
+}

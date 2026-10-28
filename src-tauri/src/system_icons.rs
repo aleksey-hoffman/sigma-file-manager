@@ -301,6 +301,50 @@ fn encode_icon_to_png_data_url(width: u32, height: u32, pixels: Vec<u8>) -> Resu
     Ok(format!("data:image/png;base64,{base64_png}"))
 }
 
+// The CEF runtime serves IPC commands from worker threads, but GTK (used by
+// file_icon_provider on Linux) may only be called from the thread that initialized it.
+#[cfg(all(feature = "cef", target_os = "linux"))]
+static GTK_THREAD: std::sync::OnceLock<(std::thread::ThreadId, tauri::AppHandle)> =
+    std::sync::OnceLock::new();
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+pub(crate) fn init_gtk_thread(app_handle: tauri::AppHandle) -> Result<(), gtk::glib::BoolError> {
+    gtk::init()?;
+    let _ = GTK_THREAD.set((std::thread::current().id(), app_handle));
+    Ok(())
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn get_file_icon_for_platform(
+    path: &Path,
+    size: u16,
+) -> Result<file_icon_provider::Icon, FileIconError> {
+    let Some((gtk_thread_id, app_handle)) = GTK_THREAD.get() else {
+        return Err(FileIconError::Failed);
+    };
+
+    if std::thread::current().id() == *gtk_thread_id {
+        return get_file_icon(path, size);
+    }
+
+    let (sender, receiver) = std::sync::mpsc::channel();
+    let path = path.to_path_buf();
+    app_handle
+        .run_on_main_thread(move || {
+            let _ = sender.send(get_file_icon(&path, size));
+        })
+        .map_err(|_| FileIconError::Failed)?;
+    receiver.recv().map_err(|_| FileIconError::Failed)?
+}
+
+#[cfg(not(all(feature = "cef", target_os = "linux")))]
+fn get_file_icon_for_platform(
+    path: &Path,
+    size: u16,
+) -> Result<file_icon_provider::Icon, FileIconError> {
+    get_file_icon(path, size)
+}
+
 fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> {
     let shell_path = normalize_shell_icon_path(path);
 
@@ -319,7 +363,7 @@ fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> 
         return Err("Unsupported shell icon path".to_string());
     }
 
-    let icon = match get_file_icon(&shell_path, size) {
+    let icon = match get_file_icon_for_platform(&shell_path, size) {
         Ok(icon) => icon,
         Err(FileIconError::PathDoesNotExist) => {
             return Err("Path does not exist".to_string());

@@ -19,7 +19,12 @@ name = "sigma_file_manager_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
+default = ["wry"]
 devtools = []
+# System webview runtime (WebView2, WKWebView, WebKitGTK). On Linux it uses the GTK3 file dialog.
+wry = ["tauri-plugin-dialog/gtk3"]
+# Bundled Chromium (CEF) runtime for Linux. Build with `npm run tauri:linux-cef`, see scripts/tauri-linux-cef.mjs.
+cef = ["dep:tauri-runtime-cef", "dep:gtk", "tauri-plugin-dialog/xdg-portal"]
 
 [build-dependencies]
 tauri-build = { version = "2.6", features = [] }
@@ -33,7 +38,7 @@ tauri-plugin-log = "2"
 tauri-plugin-store = "2"
 tauri-plugin-opener = "2.5.4"
 tauri-plugin-os = "2"
-tauri-plugin-dialog = "2"
+tauri-plugin-dialog = { version = "2", default-features = false }
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-system-fonts = "2"
 sysinfo = { version = "0.38", features = ["linux-netdevs"] }
@@ -81,6 +86,9 @@ arboard = "3.6.1"
 # Upstream: https://github.com/crabnebula-dev/drag-rs/issues/72
 [patch.crates-io]
 drag = { path = "./patches/drag" }
+# The CEF runtime crate exists only on Tauri's feat/cef branch. Other builds only need it to resolve.
+# `.cargo/cef.toml` replaces this stub with the real crate. See patches/tauri-runtime-cef-stub.
+tauri-runtime-cef = { path = "./patches/tauri-runtime-cef-stub" }
 
 [dev-dependencies]
 tempfile = "3"
@@ -88,6 +96,11 @@ tokio = { version = "1", features = ["macros", "test-util"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tauri-runtime-cef = { version = "0.1", optional = true }
+# The CEF runtime does not initialize GTK, which the tray icon menu needs. See `setup_handler`.
+gtk = { version = "0.18", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 sfm-default-file-manager-common = { path = "default-file-manager-common" }

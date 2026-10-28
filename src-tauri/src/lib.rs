@@ -253,7 +253,18 @@ fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg_attr(
+    all(feature = "cef", target_os = "linux"),
+    tauri_runtime_cef::cef_entry_point
+)]
 pub fn run() {
+    // Chromium helper processes are routed away by `cef_entry_point` before this point.
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    if let Err(message) = check_cef_display() {
+        eprintln!("{message}");
+        std::process::exit(1);
+    }
+
     app_dirs::prepare_isolated_environment();
 
     let mut window_state_plugin = tauri_plugin_window_state::Builder::default()
@@ -270,6 +281,11 @@ pub fn run() {
     // installed SFM that is already running with the real data.
     if !app_dirs::is_isolated() {
         builder = builder.plugin(tauri_plugin_single_instance::init(handle_second_instance));
+    }
+
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    {
+        builder = builder.runtime(build_cef_runtime());
     }
 
     builder
@@ -452,6 +468,38 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+/// The CEF runtime drives Chromium through X11 only, so a Wayland session needs XWayland.
+/// Without `DISPLAY` it would fail later with a bare `CreateWindow` error.
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn check_cef_display() -> Result<(), String> {
+    match std::env::var_os("DISPLAY") {
+        Some(display) if !display.is_empty() => Ok(()),
+        _ => Err(
+            "Sigma File Manager needs an X11 display (DISPLAY is not set). \
+             On a Wayland session, install and start XWayland."
+                .to_string(),
+        ),
+    }
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn build_cef_runtime() -> tauri_runtime_cef::Cef {
+    // Chromium's sandbox needs unprivileged user namespaces or a setuid `chrome-sandbox` helper.
+    // An AppImage cannot carry the helper, and Ubuntu 23.10+ restricts user namespaces, so the
+    // browser would abort at startup there. `Auto` drops the sandbox only in that case, and
+    // keeps it everywhere else.
+    let cef = tauri_runtime_cef::Cef::default().sandbox(tauri_runtime_cef::SandboxPolicy::Auto);
+
+    // `SFM_CDP_PORT=9222` starts the Chrome DevTools protocol server on 127.0.0.1 (debugging only).
+    match std::env::var("SFM_CDP_PORT").map(|port| port.parse::<u16>()) {
+        Ok(Ok(port)) => cef.remote_debugging(tauri_runtime_cef::RemoteDebugging::Port {
+            port,
+            allowed_origins: Vec::new(),
+        }),
+        _ => cef,
+    }
+}
+
 fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
         let mut log_plugin = tauri_plugin_log::Builder::default().level(log::LevelFilter::Info);
@@ -466,6 +514,11 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         }
         app.handle().plugin(log_plugin.build())?;
     }
+
+    // The CEF runtime runs on winit and never initializes GTK, but the tray icon menu
+    // and the system icon lookup are GTK based.
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    system_icons::init_gtk_thread(app.handle().clone())?;
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());

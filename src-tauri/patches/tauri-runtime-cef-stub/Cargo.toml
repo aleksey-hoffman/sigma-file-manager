@@ -1,0 +1,6 @@
+[package]
+name = "tauri-runtime-cef"
+version = "0.1.0"
+edition = "2021"
+description = "Empty stand-in so the optional CEF dependency resolves in builds that do not use CEF"
+publish = false

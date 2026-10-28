@@ -35,6 +35,7 @@
     "tauri:dev": "npm run sync-version && tauri dev",
     "tauri:dev:webkit-igpu": "npm run sync-version && env WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri dev",
     "tauri:build": "npm run sync-version && tauri build",
+    "tauri:linux-cef": "node ./scripts/tauri-linux-cef.mjs",
     "tauri:build:linux": "npm run sync-version && NO_STRIP=true tauri build",
     "flatpak:build": "bash ./flatpak/build-flatpak.sh",
     "tauri:gen-icons": "tauri icon ./src/assets/icons/logo-1024x1024.png",
