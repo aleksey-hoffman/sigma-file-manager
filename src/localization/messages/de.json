@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Dieser Ordner",
       "display": "Anzeige",
       "folderSettingsDifferFromGlobal": "Dieser Ordner hat eigene Einstellungen",
-      "useGlobalSettings": "Globale Einstellungen verwenden"
+      "useGlobalSettings": "Globale Einstellungen verwenden",
+      "showDirectoriesOnTop": "Verzeichnisse oben anzeigen",
+      "showDirectoriesOnTopDescription": "Wenn deaktiviert, werden Ordner und Dateien gemeinsam nach dem aktiven Sortierschlüssel sortiert."
     },
     "tabs": {
       "lastTabCloseBehavior": {

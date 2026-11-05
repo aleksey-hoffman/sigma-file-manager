@@ -457,7 +457,9 @@
       "settingsScopeThisFolder": "یہ فولڈر",
       "display": "نمائش",
       "folderSettingsDifferFromGlobal": "اس فولڈر کی اپنی سیٹنگز ہیں",
-      "useGlobalSettings": "عالمی سیٹنگز استعمال کریں"
+      "useGlobalSettings": "عالمی سیٹنگز استعمال کریں",
+      "showDirectoriesOnTop": "فولڈرز اوپر دکھائیں",
+      "showDirectoriesOnTopDescription": "بند ہونے پر فولڈرز اور فائلیں فعال ترتیب کلید کے مطابق اکٹھی ترتیب دی جاتی ہیں۔"
     },
     "tabs": {
       "lastTabCloseBehavior": {

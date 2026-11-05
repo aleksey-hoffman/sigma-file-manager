@@ -396,6 +396,7 @@ export type UserSettingsNavigator = {
   gridSortDirection: ListSortDirection;
   enableBoxSelection: boolean;
   increaseFileViewGaps: boolean;
+  showDirectoriesOnTop: boolean;
 };
 
 export type UserSettingsNavigatorNavigationPanel = {

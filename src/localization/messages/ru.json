@@ -457,7 +457,9 @@
       "settingsScopeThisFolder": "Эта папка",
       "display": "Отображение",
       "folderSettingsDifferFromGlobal": "У этой папки свои настройки",
-      "useGlobalSettings": "Использовать глобальные настройки"
+      "useGlobalSettings": "Использовать глобальные настройки",
+      "showDirectoriesOnTop": "Показывать папки сверху",
+      "showDirectoriesOnTopDescription": "Если выключить, папки и файлы сортируются вместе по активному ключу сортировки."
     },
     "tabs": {
       "lastTabCloseBehavior": {

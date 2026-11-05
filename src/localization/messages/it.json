@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Questa cartella",
       "display": "Visualizzazione",
       "folderSettingsDifferFromGlobal": "Questa cartella ha impostazioni proprie",
-      "useGlobalSettings": "Usa impostazioni globali"
+      "useGlobalSettings": "Usa impostazioni globali",
+      "showDirectoriesOnTop": "Mostra le cartelle in cima",
+      "showDirectoriesOnTopDescription": "Se disattivata, cartelle e file vengono ordinati insieme in base al criterio attivo."
     },
     "tabs": {
       "lastTabCloseBehavior": {

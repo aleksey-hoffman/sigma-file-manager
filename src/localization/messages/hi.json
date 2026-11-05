@@ -457,7 +457,9 @@
       "settingsScopeThisFolder": "यह फ़ोल्डर",
       "display": "प्रदर्शन",
       "folderSettingsDifferFromGlobal": "इस फ़ोल्डर की अपनी सेटिंग्स हैं",
-      "useGlobalSettings": "वैश्विक सेटिंग्स उपयोग करें"
+      "useGlobalSettings": "वैश्विक सेटिंग्स उपयोग करें",
+      "showDirectoriesOnTop": "निर्देशिकाओं को ऊपर दिखाएँ",
+      "showDirectoriesOnTopDescription": "बंद होने पर फ़ोल्डर और फ़ाइलें सक्रिय सॉर्ट कुंजी के अनुसार एक साथ क्रमबद्ध होती हैं।"
     },
     "tabs": {
       "lastTabCloseBehavior": {

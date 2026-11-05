@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "此文件夹",
       "display": "显示",
       "folderSettingsDifferFromGlobal": "此文件夹有自己的设置",
-      "useGlobalSettings": "使用全局设置"
+      "useGlobalSettings": "使用全局设置",
+      "showDirectoriesOnTop": "在顶部显示目录",
+      "showDirectoriesOnTopDescription": "关闭后，文件夹和文件会按当前排序条件混排。"
     },
     "tabs": {
       "lastTabCloseBehavior": {

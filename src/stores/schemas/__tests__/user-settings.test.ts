@@ -348,4 +348,28 @@ describe('migrateUserSettingsStorage', () => {
     expect(savedWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBe(320);
     expect(invalidWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBeNull();
   });
+
+  it('defaults directories on top when migrating from schema version 28', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 28,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.showDirectoriesOnTop')).toBe(true);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('preserves a disabled directories on top preference when migrating from schema version 28', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 28,
+      'navigator.showDirectoriesOnTop': false,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.showDirectoriesOnTop')).toBe(false);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+  });
 });

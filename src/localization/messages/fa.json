@@ -424,7 +424,9 @@
       "settingsScopeThisFolder": "این پوشه",
       "display": "نمایش",
       "folderSettingsDifferFromGlobal": "این پوشه تنظیمات خودش را دارد",
-      "useGlobalSettings": "استفاده از تنظیمات سراسری"
+      "useGlobalSettings": "استفاده از تنظیمات سراسری",
+      "showDirectoriesOnTop": "نمایش پوشه‌ها در بالا",
+      "showDirectoriesOnTopDescription": "اگر خاموش باشد، پوشه‌ها و فایل‌ها با هم بر اساس کلید مرتب‌سازی فعال مرتب می‌شوند."
     },
     "tabs": {
       "lastTabCloseBehavior": {

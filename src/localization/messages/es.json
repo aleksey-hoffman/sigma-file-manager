@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Esta carpeta",
       "display": "Visualización",
       "folderSettingsDifferFromGlobal": "Esta carpeta tiene sus propios ajustes",
-      "useGlobalSettings": "Usar ajustes globales"
+      "useGlobalSettings": "Usar ajustes globales",
+      "showDirectoriesOnTop": "Mostrar directorios en la parte superior",
+      "showDirectoriesOnTopDescription": "Si está desactivado, las carpetas y los archivos se ordenan juntos según el criterio activo."
     },
     "tabs": {
       "lastTabCloseBehavior": {

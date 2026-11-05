@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Ce dossier",
       "display": "Affichage",
       "folderSettingsDifferFromGlobal": "Ce dossier a ses propres paramètres",
-      "useGlobalSettings": "Utiliser les paramètres globaux"
+      "useGlobalSettings": "Utiliser les paramètres globaux",
+      "showDirectoriesOnTop": "Afficher les répertoires en haut",
+      "showDirectoriesOnTopDescription": "Si désactivé, les dossiers et les fichiers sont triés ensemble selon le critère actif."
     },
     "tabs": {
       "lastTabCloseBehavior": {

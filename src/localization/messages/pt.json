@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Esta pasta",
       "display": "Exibição",
       "folderSettingsDifferFromGlobal": "Esta pasta tem as suas próprias configurações",
-      "useGlobalSettings": "Usar configurações globais"
+      "useGlobalSettings": "Usar configurações globais",
+      "showDirectoriesOnTop": "Mostrar diretórios no topo",
+      "showDirectoriesOnTopDescription": "Quando desativado, pastas e arquivos são ordenados juntos pela chave de ordenação ativa."
     },
     "tabs": {
       "lastTabCloseBehavior": {

@@ -457,7 +457,9 @@
       "settingsScopeThisFolder": "התיקייה הזו",
       "display": "תצוגה",
       "folderSettingsDifferFromGlobal": "לתיקייה הזו יש הגדרות משלה",
-      "useGlobalSettings": "השתמש בהגדרות גלובליות"
+      "useGlobalSettings": "השתמש בהגדרות גלובליות",
+      "showDirectoriesOnTop": "הצג תיקיות למעלה",
+      "showDirectoriesOnTopDescription": "כשהאפשרות כבויה, תיקיות וקבצים ממוינים יחד לפי מפתח המיון הפעיל."
     },
     "tabs": {
       "lastTabCloseBehavior": {

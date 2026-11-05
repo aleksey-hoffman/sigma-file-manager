@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Thư mục này",
       "display": "Hiển thị",
       "folderSettingsDifferFromGlobal": "Thư mục này có cài đặt riêng",
-      "useGlobalSettings": "Dùng cài đặt toàn cục"
+      "useGlobalSettings": "Dùng cài đặt toàn cục",
+      "showDirectoriesOnTop": "Hiển thị thư mục ở trên cùng",
+      "showDirectoriesOnTopDescription": "Khi tắt, thư mục và tệp được sắp xếp chung theo khóa sắp xếp hiện tại."
     },
     "tabs": {
       "lastTabCloseBehavior": {

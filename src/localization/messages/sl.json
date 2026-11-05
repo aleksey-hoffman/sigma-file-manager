@@ -457,7 +457,9 @@
       "settingsScopeThisFolder": "Ta mapa",
       "display": "Prikaz",
       "folderSettingsDifferFromGlobal": "Ta mapa ima lastne nastavitve",
-      "useGlobalSettings": "Uporabi globalne nastavitve"
+      "useGlobalSettings": "Uporabi globalne nastavitve",
+      "showDirectoriesOnTop": "Prikaži mape na vrhu",
+      "showDirectoriesOnTopDescription": "Če je izklopljeno, se mape in datoteke razvrstijo skupaj po aktivnem ključu razvrščanja."
     },
     "tabs": {
       "lastTabCloseBehavior": {

@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "このフォルダー",
       "display": "表示",
       "folderSettingsDifferFromGlobal": "このフォルダーには独自の設定があります",
-      "useGlobalSettings": "グローバル設定を使用"
+      "useGlobalSettings": "グローバル設定を使用",
+      "showDirectoriesOnTop": "ディレクトリを一番上に表示",
+      "showDirectoriesOnTopDescription": "オフにすると、フォルダーとファイルが現在の並べ替えキーでまとめて並びます。"
     },
     "tabs": {
       "lastTabCloseBehavior": {

@@ -10,6 +10,7 @@ import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   sortFileBrowserEntries,
@@ -37,7 +38,11 @@ export function useFileBrowserEntries(
   const dirSizesStore = useDirSizesStore();
   const itemCountsStore = useItemCountsStore();
   const linkMetadataStore = useLinkMetadataStore();
+  const userSettingsStore = useUserSettingsStore();
   const userStatsStore = useUserStatsStore();
+  const showDirectoriesOnTop = computed(
+    () => userSettingsStore.userSettings.navigator.showDirectoriesOnTop,
+  );
   const quickSearchCache = shallowRef(createFileBrowserQuickSearchCache());
 
   watch(dirContents, () => {
@@ -90,6 +95,9 @@ export function useFileBrowserEntries(
         column,
         sortDirection.value,
         sortContext,
+        {
+          showDirectoriesOnTop: showDirectoriesOnTop.value,
+        },
       );
     }
 

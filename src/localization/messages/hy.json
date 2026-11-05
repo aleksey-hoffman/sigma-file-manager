@@ -457,7 +457,9 @@
       "settingsScopeThisFolder": "Այս թղթապանակ",
       "display": "Ցուցադրում",
       "folderSettingsDifferFromGlobal": "Այս թղթապանակն ունի իր կարգավորումները",
-      "useGlobalSettings": "Օգտագործել գլոբալ կարգավորումները"
+      "useGlobalSettings": "Օգտագործել գլոբալ կարգավորումները",
+      "showDirectoriesOnTop": "Ցուցադրել պանակները վերևում",
+      "showDirectoriesOnTopDescription": "Անջատված լինելու դեպքում պանակները և ֆայլերը խառնվում են ըստ գործող տեսակավորման բանալու։"
     },
     "tabs": {
       "lastTabCloseBehavior": {

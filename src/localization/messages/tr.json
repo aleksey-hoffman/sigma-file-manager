@@ -428,7 +428,9 @@
       "settingsScopeThisFolder": "Bu klasör",
       "display": "Görünüm",
       "folderSettingsDifferFromGlobal": "Bu klasörün kendi ayarları var",
-      "useGlobalSettings": "Genel ayarları kullan"
+      "useGlobalSettings": "Genel ayarları kullan",
+      "showDirectoriesOnTop": "Klasörleri üstte göster",
+      "showDirectoriesOnTopDescription": "Kapalıyken klasörler ve dosyalar etkin sıralama anahtarına göre birlikte sıralanır."
     },
     "tabs": {
       "lastTabCloseBehavior": {
