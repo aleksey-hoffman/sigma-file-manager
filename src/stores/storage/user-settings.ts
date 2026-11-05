@@ -133,6 +133,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         muteVideoPreviewByDefault: false,
         autoplayVideoPreview: false,
       },
+      navigationPanel: {
+        show: false,
+        widthPx: null,
+      },
       showHiddenFiles: false,
       splitViewMode: 'split',
       folderSettings: {},

@@ -212,6 +212,7 @@ onBeforeUnmount(() => {
       @pointerdown.capture="handleToolbarPointerDown"
     >
       <LanShareReplaceDialog />
+      <div class="window-toolbar-leading-teleport-target" />
       <CommandPaletteToolbarButton />
       <div class="window-toolbar-extension-embed-teleport-target" />
       <div class="window-toolbar-primary-teleport-target" />
@@ -228,6 +229,17 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.window-toolbar-leading-teleport-target {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  align-self: stretch;
+}
+
+.window-toolbar-leading-teleport-target:empty {
+  display: none;
+}
+
 .window-toolbar-extension-embed-teleport-target {
   display: flex;
   flex: 0 0 auto;

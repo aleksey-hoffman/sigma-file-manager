@@ -2,26 +2,50 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { INFO_PANEL_LAYOUT } from '@/modules/navigator/constants/info-panel';
+import { INFO_PANEL_LAYOUT, INFO_PANEL_VISIBILITY_EASE } from '@/modules/navigator/constants/info-panel';
 
 export type AnimatablePanelInstance = {
   getSize: () => number;
   resize: (size: number) => void;
 };
 
-function getInfoPanelResizeEaseProgress(progress: number): number {
+function sampleCubicBezierCoordinate(time: number, control1: number, control2: number): number {
+  const inverse = 1 - time;
+
+  return (3 * inverse * inverse * time * control1)
+    + (3 * inverse * time * time * control2)
+    + (time * time * time);
+}
+
+export function getPanelSizeEaseProgress(progress: number): number {
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
 
-  if (clampedProgress === 1) {
-    return 1;
+  if (clampedProgress === 0 || clampedProgress === 1) {
+    return clampedProgress;
   }
 
-  const overshoot = INFO_PANEL_LAYOUT.SIZE_TRANSITION_BACK_OVERSHOOT;
-  const overshootPlusOne = overshoot + 1;
+  let rangeStart = 0;
+  let rangeEnd = 1;
+  let time = clampedProgress;
 
-  return 1
-    + overshootPlusOne * (clampedProgress - 1) ** 3
-    + overshoot * (clampedProgress - 1) ** 2;
+  for (let step = 0; step < 12; step += 1) {
+    const x = sampleCubicBezierCoordinate(time, INFO_PANEL_VISIBILITY_EASE.x1, INFO_PANEL_VISIBILITY_EASE.x2);
+
+    if (Math.abs(x - clampedProgress) < 0.0001) {
+      break;
+    }
+
+    if (x < clampedProgress) {
+      rangeStart = time;
+    }
+    else {
+      rangeEnd = time;
+    }
+
+    time = (rangeStart + rangeEnd) / 2;
+  }
+
+  return sampleCubicBezierCoordinate(time, INFO_PANEL_VISIBILITY_EASE.y1, INFO_PANEL_VISIBILITY_EASE.y2);
 }
 
 function runPanelSizeAnimation(
@@ -43,15 +67,8 @@ function runPanelSizeAnimation(
     function step(now: number) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / durationMs, 1);
-      const easedProgress = getInfoPanelResizeEaseProgress(progress);
-      const delta = roundedTarget - startSize;
-      const overshootAllowance = Math.abs(delta) * 0.1;
-      const minSize = Math.min(startSize, roundedTarget) - overshootAllowance;
-      const maxSize = Math.max(startSize, roundedTarget) + overshootAllowance;
-      const currentSize = Math.min(
-        maxSize,
-        Math.max(0, minSize, startSize + delta * easedProgress),
-      );
+      const easedProgress = getPanelSizeEaseProgress(progress);
+      const currentSize = Math.max(0, startSize + (roundedTarget - startSize) * easedProgress);
 
       panel.resize(currentSize);
 

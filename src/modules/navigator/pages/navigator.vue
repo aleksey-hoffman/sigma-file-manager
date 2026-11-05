@@ -7,6 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {
   computed,
   markRaw,
+  provide,
   ref,
   onMounted,
   onUnmounted,
@@ -46,6 +47,11 @@ import {
   useInfoPanelLayout,
 } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
+import { NavigationPanelFrame, NavigationPanelToggle } from '@/modules/navigator/components/navigation-panel';
+import {
+  navigationPanelLayoutKey,
+  useNavigationPanelLayout,
+} from '@/modules/navigator/components/navigation-panel/composables/use-navigation-panel-layout';
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
@@ -99,6 +105,7 @@ type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
 };
 
 const workspacesStore = useWorkspacesStore();
+const userSettingsStore = useUserSettingsStore();
 const clipboardStore = useClipboardStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const globalSearchStore = useGlobalSearchStore();
@@ -191,14 +198,10 @@ const {
   requestLayoutReset,
 } = useInfoPanelLayout();
 
+const navigationPanelLayout = useNavigationPanelLayout();
+provide(navigationPanelLayoutKey, navigationPanelLayout);
 const showInfoPanel = ref(true);
 const infoPanelSlideVisible = ref(true);
-
-const mainPanelMinSize = computed(() => {
-  return showInfoPanel.value || isInfoPanelVisibilityAnimating.value
-    ? infoPanelLayout.MAIN_MIN_WIDTH_PERCENT
-    : 100;
-});
 
 const isInfoPanelHandleCollapsed = computed(() => {
   if (isInfoPanelVisibilityAnimating.value) {
@@ -260,6 +263,23 @@ const isSplitView = computed(() => {
   return (workspacesStore.currentTabGroup?.length ?? 0) > 1;
 });
 
+const activeSplitTab = computed(() => {
+  if (!isSplitView.value || !activeTabId.value) {
+    return undefined;
+  }
+
+  return workspacesStore.currentTabGroup?.find(tab => tab.id === activeTabId.value);
+});
+
+const navigationPanelTab = computed(() => {
+  return activeSplitTab.value ?? workspacesStore.currentTabGroup?.[0];
+});
+
+const navigationPanelPath = computed(() => {
+  const tab = navigationPanelTab.value;
+  return tab?.type === 'directory' ? tab.path : '';
+});
+
 const trackNavigatorRelativeTime = computed(() => !globalSearchStore.isOpen);
 
 const currentActivePath = computed(() => {
@@ -267,15 +287,8 @@ const currentActivePath = computed(() => {
 });
 
 const activeFolderSettingsPath = computed(() => {
-  if (isSplitView.value && activeTabId.value) {
-    const activeTab = workspacesStore.currentTabGroup?.find(tab => tab.id === activeTabId.value);
-
-    if (activeTab?.path) {
-      return activeTab.path;
-    }
-  }
-
-  return currentActivePath.value ?? workspacesStore.currentTabGroup?.[0]?.path;
+  return activeSplitTab.value?.path
+    || (currentActivePath.value ?? workspacesStore.currentTabGroup?.[0]?.path);
 });
 
 const canUseFolderSettingsForActivePath = computed(() => {
@@ -341,7 +354,6 @@ function handleToggleSplitView() {
   workspacesStore.toggleSplitView();
 }
 
-const userSettingsStore = useUserSettingsStore();
 const splitViewMode = computed(() => userSettingsStore.userSettings.navigator.splitViewMode);
 
 const isLinkedMode = computed(() => splitViewMode.value === 'linked' && isSplitView.value);
@@ -378,6 +390,18 @@ function syncLinkedPane(entries: DirEntry[], tabId: string) {
       },
     ),
   );
+}
+
+async function handleNavigationPanelNavigate(path: string) {
+  const tabId = navigationPanelTab.value?.id;
+  const pane = (tabId ? paneRefsMap.value.get(tabId) : undefined) ?? singlePaneRef.value;
+
+  try {
+    await pane?.navigateToPath?.(path);
+  }
+  catch (caughtError: unknown) {
+    console.error('Failed to open directory from navigation panel:', caughtError);
+  }
 }
 
 async function handleToggleInfoPanel() {
@@ -629,17 +653,7 @@ function getNavigatorActionContext(currentDirectoryPath?: string) {
 }
 
 function getTabGroupFallbackPath(): string | undefined {
-  if (isSplitView.value && activeTabId.value) {
-    const activeTab = workspacesStore.currentTabGroup?.find(
-      tab => tab.id === activeTabId.value,
-    );
-
-    if (activeTab?.path) {
-      return activeTab.path;
-    }
-  }
-
-  return workspacesStore.currentTabGroup?.[0]?.path;
+  return activeSplitTab.value?.path || workspacesStore.currentTabGroup?.[0]?.path;
 }
 
 function getActiveCurrentPath(): string | undefined {
@@ -1207,10 +1221,12 @@ onMounted(async () => {
 onUnmounted(() => {
   navigatorSelectionStore.setSelectedDirEntries([]);
   clearPanelRefs();
+  navigationPanelLayout.disposeNavigationPanelLayout();
 });
 </script>
 
 <template>
+  <NavigationPanelToggle />
   <NavigatorToolbarActions
     :is-split-view="isSplitView"
     :show-info-panel="showInfoPanel"
@@ -1237,161 +1253,177 @@ onUnmounted(() => {
           :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
         />
       </div>
-      <ResizablePanelGroup
+      <div
         v-if="!isSmallScreen"
-        :key="`info-panel-width-${infoPanelLayoutSizingKey}`"
-        direction="horizontal"
-        class="navigator-page__main-resizable"
-        :class="{ 'navigator-page__main-resizable--info-panel-closed': isInfoPanelHandleCollapsed }"
+        class="navigator-page__workspace"
         :style="infoPanelTransitionStyle"
       >
-        <ResizablePanel
-          :order="1"
-          :default-size="100"
-          :min-size="mainPanelMinSize"
+        <NavigationPanelFrame
+          :active-path="navigationPanelPath"
+          @navigate="handleNavigationPanelNavigate"
+        />
+        <ResizablePanelGroup
+          :key="`info-panel-width-${infoPanelLayoutSizingKey}`"
+          direction="horizontal"
+          class="navigator-page__main-resizable"
+          :class="{
+            'navigator-page__main-resizable--info-panel-closed': isInfoPanelHandleCollapsed,
+          }"
         >
-          <div class="navigator-page__panes-wrapper">
-            <div class="navigator-page__panes-container">
-              <GlobalSearchView
-                ref="globalSearchViewRef"
-                v-show="globalSearchStore.isOpen"
-                class="navigator-page__search-panel"
-                @close="globalSearchStore.close()"
-                @open-entry="handleGlobalSearchOpenEntry"
-                @update:selected-entries="handleSearchSelectionChange"
-              />
-              <ResizablePanelGroup
-                direction="horizontal"
-                class="navigator-page__panes"
-              >
-                <template v-if="workspacesStore.currentTabGroup && isSplitView">
-                  <template
-                    v-for="(tab, index) in workspacesStore.currentTabGroup"
-                    :key="tab.id"
-                  >
-                    <ResizablePanel
-                      :default-size="50"
-                      :min-size="15"
-                      @mousedown="handlePaneFocus(tab.id)"
+          <ResizablePanel
+            :order="1"
+            :default-size="100"
+            :min-size="infoPanelLayout.MAIN_MIN_WIDTH_PERCENT"
+          >
+            <div class="navigator-page__panes-wrapper">
+              <div class="navigator-page__panes-container">
+                <GlobalSearchView
+                  ref="globalSearchViewRef"
+                  v-show="globalSearchStore.isOpen"
+                  class="navigator-page__search-panel"
+                  @close="globalSearchStore.close()"
+                  @open-entry="handleGlobalSearchOpenEntry"
+                  @update:selected-entries="handleSearchSelectionChange"
+                />
+                <ResizablePanelGroup
+                  direction="horizontal"
+                  class="navigator-page__panes"
+                >
+                  <template v-if="workspacesStore.currentTabGroup && isSplitView">
+                    <template
+                      v-for="(tab, index) in workspacesStore.currentTabGroup"
+                      :key="tab.id"
                     >
+                      <ResizablePanel
+                        :default-size="50"
+                        :min-size="15"
+                        @mousedown="handlePaneFocus(tab.id)"
+                      >
+                        <FileBrowser
+                          :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
+                          :tab="tab"
+                          :pane-index="index"
+                          :layout="getLayoutForPath(tab.path)"
+                          :track-relative-time="trackNavigatorRelativeTime"
+                          :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
+                          :is-split-view="true"
+                          class="navigator-page__pane"
+                          @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                          @update:current-dir-entry="handleCurrentDirChange"
+                        />
+                      </ResizablePanel>
+                      <ResizableHandle
+                        v-if="index === 0"
+                        with-handle
+                      />
+                    </template>
+                  </template>
+                  <template v-else-if="workspacesStore.currentTabGroup">
+                    <ResizablePanel :default-size="100">
                       <FileBrowser
-                        :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
-                        :tab="tab"
-                        :pane-index="index"
-                        :layout="getLayoutForPath(tab.path)"
+                        :key="workspacesStore.currentTabGroup[0].id"
+                        :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
+                        :tab="workspacesStore.currentTabGroup[0]"
+                        :pane-index="0"
+                        :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
                         :track-relative-time="trackNavigatorRelativeTime"
-                        :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
-                        :is-split-view="true"
+                        :is-active-pane="true"
                         class="navigator-page__pane"
-                        @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                        @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
                         @update:current-dir-entry="handleCurrentDirChange"
                       />
                     </ResizablePanel>
-                    <ResizableHandle
-                      v-if="index === 0"
-                      with-handle
-                    />
                   </template>
-                </template>
-                <template v-else-if="workspacesStore.currentTabGroup">
-                  <ResizablePanel :default-size="100">
+                  <ResizablePanel
+                    v-else
+                    :default-size="100"
+                  >
                     <FileBrowser
-                      :key="workspacesStore.currentTabGroup[0].id"
-                      :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
-                      :tab="workspacesStore.currentTabGroup[0]"
-                      :pane-index="0"
-                      :layout="getLayoutForPath(workspacesStore.currentTabGroup[0].path)"
+                      ref="singlePaneRef"
+                      :layout="getLayoutForPath(currentActivePath)"
                       :track-relative-time="trackNavigatorRelativeTime"
                       :is-active-pane="true"
                       class="navigator-page__pane"
-                      @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
+                      @update:selected-entries="(entries) => handleSelectionChange(entries)"
                       @update:current-dir-entry="handleCurrentDirChange"
                     />
                   </ResizablePanel>
-                </template>
-                <ResizablePanel
-                  v-else
-                  :default-size="100"
-                >
-                  <FileBrowser
-                    ref="singlePaneRef"
-                    :layout="getLayoutForPath(currentActivePath)"
-                    :track-relative-time="trackNavigatorRelativeTime"
-                    :is-active-pane="true"
-                    class="navigator-page__pane"
-                    @update:selected-entries="(entries) => handleSelectionChange(entries)"
-                    @update:current-dir-entry="handleCurrentDirChange"
-                  />
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                </ResizablePanelGroup>
+              </div>
+              <ClipboardToolbar
+                :current-path="currentActivePath"
+                :is-split-view="isSplitView"
+                :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
+                :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
+                @paste="handlePasteShortcut"
+                @paste-to-pane="handlePasteToPane"
+              />
+              <FileBrowserDragOverlay
+                :is-active="activeFileBrowserDragState.isActive"
+                :item-count="activeFileBrowserDragState.items.length"
+                :operation-type="activeFileBrowserDragState.operationType"
+                :cursor-x="activeFileBrowserDragState.cursorX"
+                :cursor-y="activeFileBrowserDragState.cursorY"
+              />
+              <FileBrowserConflictDialog
+                v-model:open="internalDropConflictDialogState.isOpen"
+                :conflicts="internalDropConflictDialogState.conflicts"
+                :operation-type="internalDropConflictDialogState.operationType"
+                :is-checking-conflicts="internalDropConflictDialogState.isCheckingConflicts"
+                @resolve="handleInternalDropConflictResolution"
+                @cancel="handleInternalDropConflictCancel"
+              />
+              <FileBrowserTopLevelConflictDialog
+                v-model:open="internalDropTopLevelNameConflictDialogState.isOpen"
+                :conflicts="internalDropTopLevelNameConflictDialogState.conflicts"
+                @rename="handleInternalDropTopLevelNameConflictRename"
+                @merge="handleInternalDropTopLevelNameConflictMerge"
+                @cancel="handleInternalDropTopLevelNameConflictCancel"
+              />
             </div>
-            <ClipboardToolbar
-              :current-path="currentActivePath"
-              :is-split-view="isSplitView"
-              :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
-              :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
-              @paste="handlePasteShortcut"
-              @paste-to-pane="handlePasteToPane"
-            />
-            <FileBrowserDragOverlay
-              :is-active="activeFileBrowserDragState.isActive"
-              :item-count="activeFileBrowserDragState.items.length"
-              :operation-type="activeFileBrowserDragState.operationType"
-              :cursor-x="activeFileBrowserDragState.cursorX"
-              :cursor-y="activeFileBrowserDragState.cursorY"
-            />
-            <FileBrowserConflictDialog
-              v-model:open="internalDropConflictDialogState.isOpen"
-              :conflicts="internalDropConflictDialogState.conflicts"
-              :operation-type="internalDropConflictDialogState.operationType"
-              :is-checking-conflicts="internalDropConflictDialogState.isCheckingConflicts"
-              @resolve="handleInternalDropConflictResolution"
-              @cancel="handleInternalDropConflictCancel"
-            />
-            <FileBrowserTopLevelConflictDialog
-              v-model:open="internalDropTopLevelNameConflictDialogState.isOpen"
-              :conflicts="internalDropTopLevelNameConflictDialogState.conflicts"
-              @rename="handleInternalDropTopLevelNameConflictRename"
-              @merge="handleInternalDropTopLevelNameConflictMerge"
-              @cancel="handleInternalDropTopLevelNameConflictCancel"
-            />
-          </div>
-        </ResizablePanel>
-        <ResizableHandle
-          class="navigator-page__info-panel-handle"
-          :class="{ 'navigator-page__info-panel-handle--collapsed': isInfoPanelHandleCollapsed }"
-          with-handle
-          @dragging="handleInfoPanelWidthHandleDragging"
-        />
-        <ResizablePanel
-          :ref="setInfoPanelWidthPanelRef"
-          :order="2"
-          :default-size="infoPanelWidthDefault"
-          collapsible
-          :collapsed-size="0"
-          size-unit="px"
-          :min-size="0"
-          :max-size="infoPanelLayout.MAX_WIDTH_PX"
-        >
-          <div
-            class="navigator-page__info-panel-slide"
-            :class="{ 'navigator-page__info-panel-slide--visible': infoPanelSlideVisible }"
-            :style="{
-              ...infoPanelTransitionStyle,
-              '--info-panel-content-min-width': `${infoPanelLayout.MIN_WIDTH_PX}px`,
-            }"
+          </ResizablePanel>
+          <ResizableHandle
+            class="navigator-page__info-panel-handle"
+            :class="{ 'navigator-page__info-panel-handle--collapsed': isInfoPanelHandleCollapsed }"
+            with-handle
+            @dragging="handleInfoPanelWidthHandleDragging"
+          />
+          <ResizablePanel
+            :ref="setInfoPanelWidthPanelRef"
+            class="navigator-page__info-panel"
+            :order="2"
+            :default-size="infoPanelWidthDefault"
+            collapsible
+            :collapsed-size="0"
+            size-unit="px"
+            :min-size="0"
+            :max-size="infoPanelLayout.MAX_WIDTH_PX"
           >
-            <InfoPanel
-              :selected-entry="infoPanelEntry"
-              :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
-            />
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+            <div
+              class="navigator-page__info-panel-slide"
+              :class="{ 'navigator-page__info-panel-slide--visible': infoPanelSlideVisible }"
+              :style="{
+                ...infoPanelTransitionStyle,
+                '--info-panel-content-min-width': `${infoPanelLayout.MIN_WIDTH_PX}px`,
+              }"
+            >
+              <InfoPanel
+                :selected-entry="infoPanelEntry"
+                :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
+              />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
       <div
         v-else
         class="navigator-page__panes-wrapper"
       >
+        <NavigationPanelFrame
+          compact
+          :active-path="navigationPanelPath"
+          @navigate="handleNavigationPanelNavigate"
+        />
         <div class="navigator-page__panes-container">
           <GlobalSearchView
             ref="globalSearchViewRef"
@@ -1520,17 +1552,29 @@ onUnmounted(() => {
   gap: 6px;
 }
 
+.navigator-page__workspace {
+  --navigator-workspace-gap: 6px;
+
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  gap: var(--navigator-workspace-gap);
+}
+
 .navigator-page__main-resizable {
   overflow: hidden;
   min-width: 0;
   min-height: 0;
   flex: 1;
-  gap: 6px;
+  gap: var(--navigator-workspace-gap);
   transition: gap var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
 }
 
-.navigator-page__main-resizable--info-panel-closed {
-  gap: 0;
+.navigator-page__main-resizable--info-panel-closed :deep(.navigator-page__info-panel),
+.navigator-page__main-resizable--info-panel-closed :deep(.navigator-page__info-panel-handle) {
+  margin-inline-start: calc(-1 * var(--navigator-workspace-gap));
 }
 
 .navigator-page__main-resizable :deep(.navigator-page__info-panel-handle) {
@@ -1541,6 +1585,7 @@ onUnmounted(() => {
   opacity: 1;
   transition:
     max-width var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing),
+    margin-inline var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing),
     opacity var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
 }
 
@@ -1549,6 +1594,10 @@ onUnmounted(() => {
   max-width: 0;
   opacity: 0;
   pointer-events: none;
+}
+
+.navigator-page__main-resizable :deep(.navigator-page__info-panel) {
+  transition: margin-inline var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
 }
 
 .navigator-page__main-resizable :deep([data-panel]) {

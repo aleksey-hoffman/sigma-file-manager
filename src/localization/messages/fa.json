@@ -161,6 +161,10 @@
     "newDirectoryFile": "دایرکتوری / فایل جدید",
     "newDirectory": "دایرکتوری جدید",
     "newFile": "فایل جدید",
+    "navigationPanel": "پانل ناوبری",
+    "navigationPanelTree": "درخت",
+    "navigationPanelEmpty": "پوشه‌ای نیست",
+    "navigationPanelNoNestedDirs": "پوشه تودرتو نیست",
     "reloadCurrentDirectory": "بارگیری مجدد فهرست فعلی"
   },
   "dashboard": {

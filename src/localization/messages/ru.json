@@ -194,6 +194,10 @@
     "newDirectoryFile": "Новая папка / файл",
     "newDirectory": "Новая директория",
     "newFile": "Новый файл",
+    "navigationPanel": "Панель навигации",
+    "navigationPanelTree": "Дерево",
+    "navigationPanelEmpty": "Нет папок",
+    "navigationPanelNoNestedDirs": "Нет вложенных папок",
     "reloadCurrentDirectory": "Перезагрузить текущую папку"
   },
   "dashboard": {

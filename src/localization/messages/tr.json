@@ -165,6 +165,10 @@
     "newDirectoryFile": "Yeni dizin / dosya",
     "newDirectory": "Yeni direktör",
     "newFile": "Yeni dosya",
+    "navigationPanel": "Gezinme paneli",
+    "navigationPanelTree": "Ağaç",
+    "navigationPanelEmpty": "Klasör yok",
+    "navigationPanelNoNestedDirs": "İç içe klasör yok",
     "reloadCurrentDirectory": "Geçerli dizini yeniden yükle"
   },
   "dashboard": {

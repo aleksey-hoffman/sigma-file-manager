@@ -194,6 +194,10 @@
     "newDirectoryFile": "نیا فولڈر / فائل",
     "newDirectory": "نیا فولڈر",
     "newFile": "نئی فائل",
+    "navigationPanel": "نیویگیشن پینل",
+    "navigationPanelTree": "درخت",
+    "navigationPanelEmpty": "کوئی فولڈر نہیں",
+    "navigationPanelNoNestedDirs": "کوئی اندرونی فولڈر نہیں",
     "reloadCurrentDirectory": "موجودہ فولڈر دوبارہ لوڈ کریں"
   },
   "dashboard": {

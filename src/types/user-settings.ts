@@ -379,6 +379,7 @@ export type UserSettingsNavigator = {
   boldActiveTabTitle: boolean;
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
+  navigationPanel: UserSettingsNavigatorNavigationPanel;
   showHiddenFiles: boolean;
   splitViewMode: SplitViewMode;
   folderSettings: NavigatorFolderSettingsMap;
@@ -395,6 +396,11 @@ export type UserSettingsNavigator = {
   gridSortDirection: ListSortDirection;
   enableBoxSelection: boolean;
   increaseFileViewGaps: boolean;
+};
+
+export type UserSettingsNavigatorNavigationPanel = {
+  show: boolean;
+  widthPx: number | null;
 };
 
 export type UserSettingsNavigatorInfoPanel = {

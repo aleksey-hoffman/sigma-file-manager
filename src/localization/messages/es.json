@@ -165,6 +165,10 @@
     "newDirectoryFile": "Nuevo directorio/archivo",
     "newDirectory": "Nuevo directorio",
     "newFile": "Archivo nuevo",
+    "navigationPanel": "Panel de navegación",
+    "navigationPanelTree": "Árbol",
+    "navigationPanelEmpty": "No hay carpetas",
+    "navigationPanelNoNestedDirs": "No hay carpetas anidadas",
     "reloadCurrentDirectory": "Recargar directorio actual"
   },
   "dashboard": {

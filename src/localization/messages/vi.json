@@ -165,6 +165,10 @@
     "newDirectoryFile": "Thư mục/tệp mới",
     "newDirectory": "Thư mục mới",
     "newFile": "Tệp mới",
+    "navigationPanel": "Bảng điều hướng",
+    "navigationPanelTree": "Cây",
+    "navigationPanelEmpty": "Không có thư mục",
+    "navigationPanelNoNestedDirs": "Không có thư mục lồng nhau",
     "reloadCurrentDirectory": "Tải lại thư mục hiện tại"
   },
   "dashboard": {

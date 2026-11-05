@@ -165,6 +165,10 @@
     "newDirectoryFile": "Nouveau répertoire/fichier",
     "newDirectory": "Nouveau répertoire",
     "newFile": "Nouveau fichier",
+    "navigationPanel": "Panneau de navigation",
+    "navigationPanelTree": "Arbre",
+    "navigationPanelEmpty": "Aucun dossier",
+    "navigationPanelNoNestedDirs": "Aucun dossier imbriqué",
     "reloadCurrentDirectory": "Recharger le répertoire courant"
   },
   "dashboard": {

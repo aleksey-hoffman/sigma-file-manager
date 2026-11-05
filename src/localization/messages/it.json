@@ -165,6 +165,10 @@
     "newDirectoryFile": "Nuova cartella/file",
     "newDirectory": "Nuova cartella",
     "newFile": "Nuovo file",
+    "navigationPanel": "Pannello di navigazione",
+    "navigationPanelTree": "Albero",
+    "navigationPanelEmpty": "Nessuna cartella",
+    "navigationPanelNoNestedDirs": "Nessuna cartella nidificata",
     "reloadCurrentDirectory": "Ricarica la cartella corrente"
   },
   "dashboard": {

@@ -194,6 +194,10 @@
     "newDirectoryFile": "Nova mapa / datoteka",
     "newDirectory": "Nova mapa",
     "newFile": "Nova datoteka",
+    "navigationPanel": "Navigacijski panel",
+    "navigationPanelTree": "Drevo",
+    "navigationPanelEmpty": "Ni map",
+    "navigationPanelNoNestedDirs": "Ni ugnezdenih map",
     "reloadCurrentDirectory": "Ponovno naloži trenutno mapo"
   },
   "dashboard": {

@@ -68,6 +68,7 @@ const itemName = computed(() => {
   gap: 8px;
   text-align: start;
   transition: background-color 0.15s ease;
+  user-select: none;
 }
 
 .quick-access-panel__item:hover {

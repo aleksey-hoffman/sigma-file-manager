@@ -194,6 +194,10 @@
     "newDirectoryFile": "Նոր պանակ / ֆայլ",
     "newDirectory": "Նոր պանակ",
     "newFile": "Նոր ֆայլ",
+    "navigationPanel": "Նավիգացիայի վահանակ",
+    "navigationPanelTree": "Ծառ",
+    "navigationPanelEmpty": "Թղթապանակներ չկան",
+    "navigationPanelNoNestedDirs": "Ներդրված թղթապանակներ չկան",
     "reloadCurrentDirectory": "Թարմացնել այս պանակը"
   },
   "dashboard": {

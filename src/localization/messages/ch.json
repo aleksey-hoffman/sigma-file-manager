@@ -165,6 +165,10 @@
     "newDirectoryFile": "新建目录/文件",
     "newDirectory": "新建目录",
     "newFile": "新建文件",
+    "navigationPanel": "导航面板",
+    "navigationPanelTree": "树",
+    "navigationPanelEmpty": "没有文件夹",
+    "navigationPanelNoNestedDirs": "没有嵌套文件夹",
     "reloadCurrentDirectory": "重新加载当前目录"
   },
   "dashboard": {

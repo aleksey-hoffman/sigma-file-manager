@@ -194,6 +194,10 @@
     "newDirectoryFile": "תיקייה / קובץ חדש",
     "newDirectory": "תיקייה חדשה",
     "newFile": "קובץ חדש",
+    "navigationPanel": "חלונית ניווט",
+    "navigationPanelTree": "עץ",
+    "navigationPanelEmpty": "אין תיקיות",
+    "navigationPanelNoNestedDirs": "אין תיקיות מקוננות",
     "reloadCurrentDirectory": "טען מחדש את התיקייה הנוכחית"
   },
   "dashboard": {

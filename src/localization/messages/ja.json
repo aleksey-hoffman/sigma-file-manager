@@ -165,6 +165,10 @@
     "newDirectoryFile": "新しいディレクトリ/ファイル",
     "newDirectory": "新しいディレクトリ",
     "newFile": "新しいファイル",
+    "navigationPanel": "ナビゲーションパネル",
+    "navigationPanelTree": "ツリー",
+    "navigationPanelEmpty": "フォルダがありません",
+    "navigationPanelNoNestedDirs": "ネストしたフォルダはありません",
     "reloadCurrentDirectory": "現在のディレクトリをリロード"
   },
   "dashboard": {

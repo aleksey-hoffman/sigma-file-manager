@@ -165,6 +165,10 @@
     "newDirectoryFile": "Neues Verzeichnis / Datei",
     "newDirectory": "Neues Verzeichnis",
     "newFile": "Neue Datei",
+    "navigationPanel": "Navigationsbereich",
+    "navigationPanelTree": "Baum",
+    "navigationPanelEmpty": "Keine Ordner",
+    "navigationPanelNoNestedDirs": "Keine verschachtelten Ordner",
     "reloadCurrentDirectory": "Aktuelles Verzeichnis neu laden"
   },
   "dashboard": {

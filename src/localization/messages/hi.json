@@ -194,6 +194,10 @@
     "newDirectoryFile": "नई निर्देशिका/फ़ाइल",
     "newDirectory": "नई निर्देशिका",
     "newFile": "नई फ़ाइल",
+    "navigationPanel": "नेविगेशन पैनल",
+    "navigationPanelTree": "ट्री",
+    "navigationPanelEmpty": "कोई फ़ोल्डर नहीं",
+    "navigationPanelNoNestedDirs": "कोई नेस्टेड फ़ोल्डर नहीं",
     "reloadCurrentDirectory": "वर्तमान निर्देशिका पुनः लोड करें"
   },
   "dashboard": {

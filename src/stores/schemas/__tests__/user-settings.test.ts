@@ -317,4 +317,35 @@ describe('migrateUserSettingsStorage', () => {
     expect(storage.values.get('infusion.pages.global.opacity')).toBe(20);
     expect([...storage.values.keys()].filter(key => /blendTarget|blendTint/.test(key))).toEqual([]);
   });
+
+  it('adds navigation panel defaults when upgrading the settings schema', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 27,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.navigationPanel.show')).toBe(false);
+    expect(storage.values.get('navigator.navigationPanel.widthPx')).toBeNull();
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+  });
+
+  it('keeps a saved navigation panel width and resets an invalid one', async () => {
+    const savedWidthStorage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 27,
+      'navigator.navigationPanel.show': true,
+      'navigator.navigationPanel.widthPx': 320,
+    });
+    const invalidWidthStorage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 27,
+      'navigator.navigationPanel.widthPx': '320px',
+    });
+
+    await migrateUserSettingsStorage(savedWidthStorage);
+    await migrateUserSettingsStorage(invalidWidthStorage);
+
+    expect(savedWidthStorage.values.get('navigator.navigationPanel.show')).toBe(true);
+    expect(savedWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBe(320);
+    expect(invalidWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBeNull();
+  });
 });

@@ -43,15 +43,13 @@ import {
   createDefaultDirectoryResolveInput,
   resolveDefaultDirectory,
 } from '@/utils/resolve-default-directory';
-
-interface DirChangePayload {
-  watchedPath: string;
-  changedPath: string;
-  kind: string;
-}
+import {
+  DIR_CHANGE_EVENT,
+  DIR_WATCHER_DEBOUNCE_MS,
+  type DirChangePayload,
+} from '@/modules/navigator/constants/dir-watcher';
 
 const DIRECTORY_DWELL_TIME_MS = 3000;
-const WATCHER_DEBOUNCE_MS = 500;
 
 function dirWatcherDiagEnabled(): boolean {
   return import.meta.env.DEV && localStorage.getItem('SFM_DIR_WATCHER_DIAG') === '1';
@@ -290,7 +288,7 @@ export function useFileBrowserNavigation(
         logDirWatcherDiag('startWatching complete', { path: normalizedPath });
 
         if (!dirChangeUnlisten) {
-          const unlisten = await listen<DirChangePayload>('dir-change', (event) => {
+          const unlisten = await listen<DirChangePayload>(DIR_CHANGE_EVENT, (event) => {
             if (event.payload.watchedPath === watchedPath) {
               if (watcherRefreshTimer) {
                 clearTimeout(watcherRefreshTimer);
@@ -302,7 +300,7 @@ export function useFileBrowserNavigation(
                 }
 
                 watcherRefreshTimer = null;
-              }, WATCHER_DEBOUNCE_MS);
+              }, DIR_WATCHER_DEBOUNCE_MS);
             }
             else if (currentPath.value) {
               if (watcherValidationTimer) {
@@ -312,7 +310,7 @@ export function useFileBrowserNavigation(
               watcherValidationTimer = setTimeout(() => {
                 validateCurrentPath();
                 watcherValidationTimer = null;
-              }, WATCHER_DEBOUNCE_MS);
+              }, DIR_WATCHER_DEBOUNCE_MS);
             }
           });
 

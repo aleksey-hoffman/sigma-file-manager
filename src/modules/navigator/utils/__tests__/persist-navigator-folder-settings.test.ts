@@ -66,6 +66,10 @@ function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSe
       muteVideoPreviewByDefault: false,
       autoplayVideoPreview: false,
     },
+    navigationPanel: {
+      show: false,
+      widthPx: null,
+    },
     showHiddenFiles: false,
     folderSettings: {},
     folderIconTheme: 'sigma',

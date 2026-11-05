@@ -194,6 +194,10 @@
     "newDirectoryFile": "New directory / file",
     "newDirectory": "New directory",
     "newFile": "New file",
+    "navigationPanel": "Navigation panel",
+    "navigationPanelTree": "Tree",
+    "navigationPanelEmpty": "No folders",
+    "navigationPanelNoNestedDirs": "No nested dirs",
     "reloadCurrentDirectory": "Reload current directory"
   },
   "dashboard": {

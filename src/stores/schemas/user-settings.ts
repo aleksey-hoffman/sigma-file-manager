@@ -17,7 +17,7 @@ import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 import { isInfusionBlendMode, normalizeInfusionBlendMode } from '@/utils/infusion-blend';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 27;
+export const USER_SETTINGS_SCHEMA_VERSION = 28;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -481,6 +481,15 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
 
   if (fromVersion === 26 && toVersion === 27) {
     await migrateInfusionBlendModes(storage);
+  }
+
+  if (fromVersion === 27 && toVersion === 28) {
+    await setDefaultBooleanIfMissing(storage, 'navigator.navigationPanel.show', false);
+    const navigationPanelWidth = await storage.get<unknown>('navigator.navigationPanel.widthPx');
+
+    if (typeof navigationPanelWidth !== 'number' && navigationPanelWidth !== null) {
+      await storage.set('navigator.navigationPanel.widthPx', null);
+    }
   }
 
   if (fromVersion === 6 && toVersion === 7) {
