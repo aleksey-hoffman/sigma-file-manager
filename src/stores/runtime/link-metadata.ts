@@ -20,6 +20,7 @@ export type LinkMetadataCacheEntry = DirEntryLinkMetadata & {
   status: LinkMetadataStatus;
   includeShortcutTargets: boolean;
   includeHardLinkCounts: boolean;
+  isStale?: boolean;
   requestId?: number;
   loadingStartedAt?: number;
   showSkeleton: boolean;
@@ -91,14 +92,18 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
       return false;
     }
 
-    const hasRequestedOptions = (!options.includeShortcutTargets || metadata.includeShortcutTargets)
-      && (!options.includeHardLinkCounts || metadata.includeHardLinkCounts);
+    const hasRequestedOptions = coversRequestedOptions(metadata, options);
 
     if (metadata.status === 'loading') {
       return hasRequestedOptions && Date.now() - (metadata.loadingStartedAt ?? 0) < LINK_METADATA_LOADING_RETRY_MS;
     }
 
-    return hasRequestedOptions;
+    return hasRequestedOptions && !metadata.isStale;
+  }
+
+  function coversRequestedOptions(metadata: LinkMetadataCacheEntry, options: ReadDirOptions): boolean {
+    return (!options.includeShortcutTargets || metadata.includeShortcutTargets)
+      && (!options.includeHardLinkCounts || metadata.includeHardLinkCounts);
   }
 
   function hasSufficientMetadata(path: string, options: ReadDirOptions): boolean {
@@ -118,6 +123,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
   ): void {
     const normalizedPath = normalizePath(path);
     const existing = metadataByPath.get(normalizedPath);
+    const keepsPreviousValue = existing?.isStale === true && coversRequestedOptions(existing, options);
 
     cancelSkeletonDelay(normalizedPath);
 
@@ -131,12 +137,13 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
       status: 'loading',
       includeShortcutTargets: options.includeShortcutTargets,
       includeHardLinkCounts: options.includeHardLinkCounts,
+      isStale: keepsPreviousValue,
       requestId,
       loadingStartedAt: Date.now(),
       showSkeleton: false,
     });
 
-    if (showSkeleton) {
+    if (showSkeleton && !keepsPreviousValue) {
       scheduleSkeletonDisplay(normalizedPath, requestId);
     }
   }
@@ -364,20 +371,43 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
   }
 
   function invalidate(paths: string[]): void {
+    let didRemoveEntries = false;
+
     for (const path of paths) {
       const normalizedPath = normalizePath(path);
+      const existing = metadataByPath.get(normalizedPath);
 
-      metadataByPath.delete(normalizedPath);
-      sortMetadataScopePaths.delete(normalizedPath);
       cancelSkeletonDelay(normalizedPath);
       stopSkeletonVisibility(normalizedPath);
+
+      if (existing?.status === 'loaded' || (existing?.status === 'loading' && existing.isStale)) {
+        metadataByPath.set(normalizedPath, {
+          path: normalizedPath,
+          link_type: existing.link_type,
+          link_target: existing.link_target,
+          link_status: existing.link_status,
+          hard_link_count: existing.hard_link_count,
+          status: 'loaded',
+          includeShortcutTargets: existing.includeShortcutTargets,
+          includeHardLinkCounts: existing.includeHardLinkCounts,
+          isStale: true,
+          showSkeleton: false,
+        });
+        continue;
+      }
+
+      sortMetadataScopePaths.delete(normalizedPath);
+      didRemoveEntries = metadataByPath.delete(normalizedPath) || didRemoveEntries;
     }
 
     trimCache();
-    bumpRevision({
-      display: true,
-      sort: true,
-    });
+
+    if (didRemoveEntries) {
+      bumpRevision({
+        display: true,
+        sort: true,
+      });
+    }
   }
 
   function setSortMetadataScope(paths: string[]): void {

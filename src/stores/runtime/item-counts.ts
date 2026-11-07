@@ -12,6 +12,7 @@ export type ItemCountStatus = 'loading' | 'loaded' | 'error';
 
 export type ItemCountCacheEntry = DirEntryItemCount & {
   status: ItemCountStatus;
+  isStale?: boolean;
   requestId?: number;
   loadingStartedAt?: number;
 };
@@ -45,8 +46,15 @@ export const useItemCountsStore = defineStore('item-counts', () => {
       return undefined;
     }
 
-    const entry = countsByPath.get(normalizePath(path));
-    return entry?.status === 'loaded' ? entry.item_count : undefined;
+    return getDisplayedItemCount(countsByPath.get(normalizePath(path)));
+  }
+
+  function getDisplayedItemCount(entry: ItemCountCacheEntry | undefined): number | undefined {
+    if (entry?.status === 'loaded' || (entry?.status === 'loading' && entry.isStale)) {
+      return entry.item_count;
+    }
+
+    return undefined;
   }
 
   function isLoading(path: string): boolean {
@@ -68,7 +76,7 @@ export const useItemCountsStore = defineStore('item-counts', () => {
       return Date.now() - (entry.loadingStartedAt ?? 0) < ITEM_COUNT_LOADING_RETRY_MS;
     }
 
-    return true;
+    return !entry.isStale;
   }
 
   function getPathsNeedingItemCounts(paths: string[]): string[] {
@@ -135,11 +143,14 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     const requestId = ++requestSequence;
 
     for (const path of pathsToFetch) {
+      const previousItemCount = getDisplayedItemCount(countsByPath.get(path));
+
       countsByPath.delete(path);
       countsByPath.set(path, {
         path,
-        item_count: 0,
+        item_count: previousItemCount ?? 0,
         status: 'loading',
+        isStale: previousItemCount !== undefined,
         requestId,
         loadingStartedAt: Date.now(),
       });
@@ -208,13 +219,26 @@ export const useItemCountsStore = defineStore('item-counts', () => {
   }
 
   function invalidate(paths: string[]): void {
-    let didInvalidate = false;
+    let didRemoveEntries = false;
 
     for (const path of paths) {
-      didInvalidate = countsByPath.delete(normalizePath(path)) || didInvalidate;
+      const normalizedPath = normalizePath(path);
+      const previousItemCount = getDisplayedItemCount(countsByPath.get(normalizedPath));
+
+      if (previousItemCount === undefined) {
+        didRemoveEntries = countsByPath.delete(normalizedPath) || didRemoveEntries;
+        continue;
+      }
+
+      countsByPath.set(normalizedPath, {
+        path: normalizedPath,
+        item_count: previousItemCount,
+        status: 'loaded',
+        isStale: true,
+      });
     }
 
-    if (didInvalidate) {
+    if (didRemoveEntries) {
       displayRevision.value++;
     }
   }
