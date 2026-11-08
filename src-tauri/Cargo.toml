@@ -22,13 +22,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 devtools = []
 
 [build-dependencies]
-tauri-build = { version = "2.6", features = [] }
+tauri-build = { version = "2.7", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.11", features = [ "protocol-asset", "tray-icon", "image-png", "devtools"] }
+tauri = { version = "2.12", features = [ "protocol-asset", "tray-icon", "image-png", "devtools"] }
 tauri-plugin-log = "2"
 tauri-plugin-store = "2"
 tauri-plugin-opener = "2.5.4"
@@ -93,8 +93,8 @@ libc = "0.2"
 sfm-default-file-manager-common = { path = "default-file-manager-common" }
 winreg = "0.56"
 roxmltree = "0.21"
-webview-com-bindings-core = { package = "windows-core", version = "0.61.2" }
-webview2-com = "0.38.2"
+webview-com-bindings-core = { package = "windows-core", version = "0.62.2" }
+webview2-com = "0.39.1"
 windows-core = "0.58"
 windows = { version = "0.58", features = [
     "implement",
