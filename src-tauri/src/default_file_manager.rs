@@ -41,15 +41,34 @@ const MICROSOFT_STORE_UNAVAILABLE_ERROR: &str =
     "Setting Sigma File Manager as the default file manager is not available in the Microsoft Store version.";
 
 #[cfg(windows)]
-fn default_file_manager_is_supported_for_installation(is_windows_store_installation: bool) -> bool {
-    !is_windows_store_installation
+const PORTABLE_UNAVAILABLE_ERROR: &str =
+    "Setting Sigma File Manager as the default file manager is not available in the portable version.";
+
+#[cfg(windows)]
+fn default_file_manager_unavailable_reason_for_installation(
+    is_windows_store_installation: bool,
+    is_portable: bool,
+) -> Option<&'static str> {
+    if is_windows_store_installation {
+        return Some(MICROSOFT_STORE_UNAVAILABLE_ERROR);
+    }
+    if is_portable {
+        return Some(PORTABLE_UNAVAILABLE_ERROR);
+    }
+    None
+}
+
+#[cfg(windows)]
+fn default_file_manager_unavailable_reason() -> Option<&'static str> {
+    default_file_manager_unavailable_reason_for_installation(
+        windows_installation::is_windows_store_installation(),
+        crate::app_dirs::is_portable(),
+    )
 }
 
 #[cfg(windows)]
 fn default_file_manager_is_supported() -> bool {
-    default_file_manager_is_supported_for_installation(
-        windows_installation::is_windows_store_installation(),
-    )
+    default_file_manager_unavailable_reason().is_none()
 }
 
 #[cfg(windows)]
@@ -487,8 +506,8 @@ fn apply_default_file_manager(
     app_handle: &tauri::AppHandle,
     enabled: bool,
 ) -> Result<bool, String> {
-    if !default_file_manager_is_supported() {
-        return Err(MICROSOFT_STORE_UNAVAILABLE_ERROR.to_string());
+    if let Some(reason) = default_file_manager_unavailable_reason() {
+        return Err(reason.to_string());
     }
 
     if enabled {
@@ -527,9 +546,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_file_manager_is_disabled_for_store_installations() {
-        assert!(!default_file_manager_is_supported_for_installation(true));
-        assert!(default_file_manager_is_supported_for_installation(false));
+    fn default_file_manager_is_disabled_for_store_and_portable_installations() {
+        assert_eq!(
+            default_file_manager_unavailable_reason_for_installation(true, false),
+            Some(MICROSOFT_STORE_UNAVAILABLE_ERROR)
+        );
+        assert_eq!(
+            default_file_manager_unavailable_reason_for_installation(false, true),
+            Some(PORTABLE_UNAVAILABLE_ERROR)
+        );
+        assert_eq!(
+            default_file_manager_unavailable_reason_for_installation(false, false),
+            None
+        );
     }
 
     #[test]

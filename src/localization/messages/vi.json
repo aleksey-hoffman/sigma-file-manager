@@ -495,7 +495,8 @@
         "description": "Tùy chọn này sửa đổi sổ đăng ký hệ thống và có thể gây ra tác dụng phụ ngoài ý muốn trên thiết bị của bạn. Hãy tiếp tục với rủi ro của riêng bạn.",
         "unavailableInMicrosoftStore": "Không khả dụng trong phiên bản Microsoft Store"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Không khả dụng trong phiên bản portable"
   },
   "projectGithubButtons": {
     "projectPage": "Trang dự án",
@@ -709,6 +710,7 @@
     "updateAvailable": "Có bản cập nhật",
     "updateDownloaded": "Đã tải xuống bản cập nhật",
     "installerSavedAs": "Đã lưu dưới dạng: {name}",
+    "portableUpdateSavedNextToApp": "Đã lưu vào thư mục ứng dụng. Hãy đóng ứng dụng và thay thế bằng phiên bản mới. Thư mục dữ liệu của bạn vẫn được giữ nguyên.",
     "quickViewFileIsNotSupported": "Xem nhanh: tệp không được hỗ trợ",
     "printViewFileIsNotSupported": "In: tập tin không được hỗ trợ",
     "removedFromFavorites": "Đã xóa 0 mục khỏi mục yêu thích | Đã xóa 1 mục khỏi mục yêu thích | Đã xóa {n} mục khỏi mục yêu thích | Đã xóa {n} mục khỏi mục yêu thích",

@@ -490,7 +490,8 @@
         "description": "این گزینه رجیستری سیستم را تغییر می دهد و ممکن است عوارض جانبی غیرمنتظره ای روی دستگاه شما داشته باشد. با مسئولیت خود ادامه دهید.",
         "unavailableInMicrosoftStore": "در نسخه Microsoft Store در دسترس نیست"
       }
-    }
+    },
+    "unavailableInPortableVersion": "در نسخه قابل حمل در دسترس نیست"
   },
   "projectGithubButtons": {
     "projectPage": "صفحه پروژه",
@@ -704,6 +705,7 @@
     "updateAvailable": "بروزرسانی موجود است",
     "updateDownloaded": "به روز رسانی دانلود شد",
     "installerSavedAs": "ذخیره شده به عنوان: {name}",
+    "portableUpdateSavedNextToApp": "در پوشه برنامه ذخیره شد. برنامه را ببندید و نسخه جدید را جایگزین آن کنید. پوشه داده‌های شما حفظ می‌شود.",
     "quickViewFileIsNotSupported": "نمایش سریع: فایل پشتیبانی نمی شود",
     "printViewFileIsNotSupported": "چاپ: فایل پشتیبانی نمی‌شود",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",

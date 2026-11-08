@@ -495,7 +495,8 @@
         "description": "Bu seçenek sistem kaydını değiştirir ve cihazınızda beklenmedik yan etkilere neden olabilir. Riski kabul ederek devam edin.",
         "unavailableInMicrosoftStore": "Microsoft Store sürümünde kullanılamaz"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Taşınabilir sürümde kullanılamaz"
   },
   "projectGithubButtons": {
     "projectPage": "Proje sayfası",
@@ -709,6 +710,7 @@
     "updateAvailable": "Güncelleme mevcut",
     "updateDownloaded": "Güncelleme indirildi",
     "installerSavedAs": "Şu adla kaydedildi: {name}",
+    "portableUpdateSavedNextToApp": "Uygulama klasörüne kaydedildi. Uygulamayı kapatın ve yeni sürümle değiştirin. Veri klasörünüz korunur.",
     "quickViewFileIsNotSupported": "Hızlı görünüm: dosya desteklenmiyor",
     "printViewFileIsNotSupported": "Yazdırma: dosya desteklenmiyor",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",

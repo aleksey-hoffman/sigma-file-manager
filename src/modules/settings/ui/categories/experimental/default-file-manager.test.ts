@@ -57,8 +57,23 @@ describe('default file manager setting', () => {
 
     const wrapper = mount(DefaultFileManager);
 
-    expect(wrapper.get('.default-file-manager__availability-badge').text()).toBe(
+    expect(wrapper.get('.settings-availability-badge').text()).toBe(
       'settings.experimental.defaultFileManager.unavailableInMicrosoftStore',
+    );
+    expect(wrapper.get('[role="switch"]').attributes('disabled')).toBeDefined();
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it('shows an unavailable badge and disabled switch for the portable version', () => {
+    const platformStore = usePlatformStore();
+    platformStore.currentPlatform = 'windows';
+    platformStore.isPortable = true;
+    platformStore.supportsDefaultFileManager = false;
+
+    const wrapper = mount(DefaultFileManager);
+
+    expect(wrapper.get('.settings-availability-badge').text()).toBe(
+      'settings.unavailableInPortableVersion',
     );
     expect(wrapper.get('[role="switch"]').attributes('disabled')).toBeDefined();
     expect(invokeMock).not.toHaveBeenCalled();
@@ -73,7 +88,7 @@ describe('default file manager setting', () => {
     const wrapper = mount(DefaultFileManager);
     await flushPromises();
 
-    expect(wrapper.find('.default-file-manager__availability-badge').exists()).toBe(false);
+    expect(wrapper.find('.settings-availability-badge').exists()).toBe(false);
     expect(wrapper.get('[role="switch"]').attributes('disabled')).toBeUndefined();
     expect(invokeMock).toHaveBeenCalledWith('is_default_file_manager');
   });

@@ -524,7 +524,8 @@
         "description": "Эта опция изменяет системный реестр и может вызвать неожиданные побочные эффекты на вашем устройстве. Продолжайте на свой страх и риск.",
         "unavailableInMicrosoftStore": "Недоступно в версии из Microsoft Store"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Недоступно в портативной версии"
   },
   "projectGithubButtons": {
     "projectPage": "Страница проекта",
@@ -740,6 +741,7 @@
     "updateAvailable": "Доступно обновление",
     "updateDownloaded": "Обновление загружено",
     "installerSavedAs": "Сохранено как: {name}",
+    "portableUpdateSavedNextToApp": "Сохранено в папку приложения. Закройте приложение и замените его новой версией. Папка с данными сохранится.",
     "quickViewFileIsNotSupported": "Быстрый просмотр: файл не поддерживается",
     "printViewFileIsNotSupported": "Печать: файл не поддерживается",
     "createdNLinks": "Создано 0 ссылок | Создана 1 ссылка | Создано {n} ссылки | Создано {n} ссылок",

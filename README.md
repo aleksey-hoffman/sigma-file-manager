@@ -152,11 +152,23 @@ The funding will be used for funding the development of this and my other big pr
       </td>
     </tr>
     <tr>
+      <td>Windows | Portable (experimental)</td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
+          Portable (.zip)
+        </a>
+        <br>
+        Keeps its data in the <code>data</code> folder next to the app. Requires the WebView2 runtime (included in Windows 11)
+      </td>
+    </tr>
+    <tr>
       <td>Linux | Portable (experimental)</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
           Portable (.AppImage)
         </a>
+        <br>
+        To keep its data next to the AppImage, create a <code>sigma-file-manager-data</code> folder beside it
       </td>
     </tr>
     <tr>

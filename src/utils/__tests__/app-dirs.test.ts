@@ -21,6 +21,7 @@ const defaultAppDirs = {
   appCacheDir: 'C:\\Users\\user\\AppData\\Local\\com.sigma-file-manager.app',
   appLogDir: 'C:\\Users\\user\\AppData\\Local\\com.sigma-file-manager.app\\logs',
   isolatedRoot: null,
+  portableRoot: null,
 };
 
 async function importAppDirs() {
@@ -43,6 +44,7 @@ describe('app-dirs', () => {
     expect(await appDirs.appCacheDir()).toBe(defaultAppDirs.appCacheDir);
     expect(await appDirs.appLogDir()).toBe(defaultAppDirs.appLogDir);
     expect(await appDirs.isIsolatedDataDir()).toBe(false);
+    expect(await appDirs.isPortableDataDir()).toBe(false);
     expect(invokeMock).toHaveBeenCalledTimes(1);
     expect(invokeMock).toHaveBeenCalledWith('get_app_dirs');
   });
@@ -55,6 +57,17 @@ describe('app-dirs', () => {
     const appDirs = await importAppDirs();
 
     expect(await appDirs.isIsolatedDataDir()).toBe(true);
+  });
+
+  it('reports a portable data folder', async () => {
+    invokeMock.mockResolvedValue({
+      ...defaultAppDirs,
+      portableRoot: 'D:\\Sigma File Manager\\data',
+    });
+    const appDirs = await importAppDirs();
+
+    expect(await appDirs.isPortableDataDir()).toBe(true);
+    expect(await appDirs.isIsolatedDataDir()).toBe(false);
   });
 
   it('retries after a failed backend call', async () => {

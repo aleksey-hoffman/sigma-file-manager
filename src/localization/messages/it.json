@@ -495,7 +495,8 @@
         "description": "Questa opzione modifica il registro di sistema e può avere effetti collaterali imprevisti sul dispositivo. Continua a tuo rischio.",
         "unavailableInMicrosoftStore": "Non disponibile nella versione Microsoft Store"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Non disponibile nella versione portatile"
   },
   "projectGithubButtons": {
     "projectPage": "Pagina del progetto",
@@ -707,6 +708,7 @@
     "updateAvailable": "Aggiornamento disponibile",
     "updateDownloaded": "Aggiornamento scaricato",
     "installerSavedAs": "Salvato come: {name}",
+    "portableUpdateSavedNextToApp": "Salvato nella cartella dell'app. Chiudi l'app e sostituiscila con la nuova versione. La cartella dei dati viene mantenuta.",
     "quickViewFileIsNotSupported": "Visualizzazione rapida: il file non è supportato",
     "printViewFileIsNotSupported": "Stampa: file non supportato",
     "trashedNItems": "Spostati nel cestino {totalAmount} elementi",

@@ -97,6 +97,7 @@ fn parse_github_releases(body: &str) -> Vec<GithubRelease> {
 fn pick_best_installable_upgrade(
     releases: Vec<GithubRelease>,
     current_version: &str,
+    portable: bool,
 ) -> Option<(GithubRelease, String, String)> {
     let current_version_number = parse_version_to_number(current_version);
 
@@ -109,7 +110,7 @@ fn pick_best_installable_upgrade(
             }
 
             let (installer_download_url, installer_file_name) =
-                pick_release_installer_asset(release.assets.as_slice())?;
+                pick_release_installer_asset(release.assets.as_slice(), portable)?;
 
             Some((
                 release_version_number,
@@ -248,7 +249,11 @@ fn build_http_client(timeout_secs: u64) -> Result<reqwest::Client, reqwest::Erro
 }
 
 #[cfg(target_os = "windows")]
-fn pick_release_installer_asset(assets: &[Value]) -> Option<(String, String)> {
+fn pick_release_installer_asset(assets: &[Value], portable: bool) -> Option<(String, String)> {
+    if portable {
+        return pick_windows_portable_asset(assets);
+    }
+
     let mut fallback: Option<(String, String)> = None;
 
     for asset in assets {
@@ -271,8 +276,21 @@ fn pick_release_installer_asset(assets: &[Value]) -> Option<(String, String)> {
     fallback
 }
 
+#[cfg(target_os = "windows")]
+fn pick_windows_portable_asset(assets: &[Value]) -> Option<(String, String)> {
+    assets.iter().find_map(|asset| {
+        let name = asset.get("name")?.as_str()?;
+        let lower = name.to_lowercase();
+        if !lower.ends_with(".zip") || !lower.contains("portable") {
+            return None;
+        }
+        let url = asset.get("browser_download_url")?.as_str()?.to_string();
+        Some((url, name.to_string()))
+    })
+}
+
 #[cfg(target_os = "linux")]
-fn pick_release_installer_asset(assets: &[Value]) -> Option<(String, String)> {
+fn pick_release_installer_asset(assets: &[Value], _portable: bool) -> Option<(String, String)> {
     for asset in assets {
         let name = asset.get("name")?.as_str()?;
         if !name.to_lowercase().ends_with(".appimage") {
@@ -285,7 +303,7 @@ fn pick_release_installer_asset(assets: &[Value]) -> Option<(String, String)> {
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "linux")))]
-fn pick_release_installer_asset(_assets: &[Value]) -> Option<(String, String)> {
+fn pick_release_installer_asset(_assets: &[Value], _portable: bool) -> Option<(String, String)> {
     None
 }
 
@@ -335,7 +353,7 @@ pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckRes
     let releases = parse_github_releases(&body);
 
     let Some((release, installer_download_url, installer_file_name)) =
-        pick_best_installable_upgrade(releases, &current_version)
+        pick_best_installable_upgrade(releases, &current_version, crate::app_dirs::is_portable())
     else {
         return Ok(UpdateCheckResult {
             update_available: false,
@@ -371,8 +389,12 @@ pub async fn download_release_installer(
     let validated_url = validate_github_release_download_url(&download_url)?;
     let safe_file_name = sanitize_download_file_name(&file_name)?;
 
-    let download_dir =
-        dirs::download_dir().ok_or_else(|| "Could not resolve Downloads folder".to_string())?;
+    let download_dir = match crate::app_dirs::portable_mode() {
+        Some(mode) => mode.app_dir.clone(),
+        None => {
+            dirs::download_dir().ok_or_else(|| "Could not resolve Downloads folder".to_string())?
+        }
+    };
 
     if !download_dir.exists() {
         fs::create_dir_all(&download_dir)
@@ -506,6 +528,7 @@ mod tests {
                 })],
             }],
             "2.1.0",
+            false,
         );
         assert!(upgrade.is_none());
     }
@@ -533,6 +556,7 @@ mod tests {
                 },
             ],
             "2.0.0-alpha.6",
+            false,
         )
         .expect("expected upgrade");
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
@@ -541,6 +565,67 @@ mod tests {
             upgrade.2,
             "Sigma-File-Manager-2.0.0-beta.2-windows-setup.exe"
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    fn release_with_setup_and_portable_assets() -> GithubRelease {
+        GithubRelease {
+            tag: "v2.3.0".to_string(),
+            url: "https://example.com/v2.3.0".to_string(),
+            assets: vec![
+                serde_json::json!({
+                    "name": "Sigma-File-Manager-2.3.0-windows-portable.zip",
+                    "browser_download_url": "https://example.com/portable.zip"
+                }),
+                serde_json::json!({
+                    "name": "Sigma-File-Manager-2.3.0-windows-setup.exe",
+                    "browser_download_url": "https://example.com/setup.exe"
+                }),
+            ],
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn portable_copy_is_offered_the_portable_zip() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![release_with_setup_and_portable_assets()],
+            "2.2.0",
+            true,
+        )
+        .expect("expected upgrade");
+        assert_eq!(upgrade.1, "https://example.com/portable.zip");
+        assert_eq!(upgrade.2, "Sigma-File-Manager-2.3.0-windows-portable.zip");
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn installed_copy_is_offered_the_setup_exe() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![release_with_setup_and_portable_assets()],
+            "2.2.0",
+            false,
+        )
+        .expect("expected upgrade");
+        assert_eq!(upgrade.1, "https://example.com/setup.exe");
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn portable_copy_skips_releases_without_a_portable_zip() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![GithubRelease {
+                tag: "v2.3.0".to_string(),
+                url: "https://example.com/v2.3.0".to_string(),
+                assets: vec![serde_json::json!({
+                    "name": "Sigma-File-Manager-2.3.0-windows-setup.exe",
+                    "browser_download_url": "https://example.com/setup.exe"
+                })],
+            }],
+            "2.2.0",
+            true,
+        );
+        assert!(upgrade.is_none());
     }
 
     #[test]
@@ -566,6 +651,7 @@ mod tests {
                 },
             ],
             "2.0.0-alpha.6",
+            false,
         )
         .expect("expected upgrade");
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");

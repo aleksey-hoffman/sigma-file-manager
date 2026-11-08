@@ -255,6 +255,8 @@ fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     app_dirs::prepare_isolated_environment();
+    let mut context = tauri::generate_context!();
+    app_dirs::apply_portable_mode(&mut context);
 
     let mut window_state_plugin = tauri_plugin_window_state::Builder::default()
         .with_state_flags(main_window_state::state_flags())
@@ -448,7 +450,7 @@ pub fn run() {
             }
         })
         .on_menu_event(system_tray::handle_menu_event)
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
 
