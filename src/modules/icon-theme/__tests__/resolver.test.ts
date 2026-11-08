@@ -45,6 +45,46 @@ describe('icon theme resolver', () => {
     expect(icon).toBe('readme-docs.svg');
   });
 
+  it('uses a parent-specific file name only inside that parent, regardless of key order', () => {
+    const theme: LoadedIconThemeDefinition = {
+      ...createTheme(),
+      fileNames: {
+        'docs/README.md': 'readmeDocs',
+        'README.md': 'readme',
+      },
+    };
+
+    expect(resolveLoadedIconThemeIcon(theme, {
+      name: 'README.md',
+      parentName: 'docs',
+      extension: 'md',
+      isDirectory: false,
+    })).toBe('readme-docs.svg');
+    expect(resolveLoadedIconThemeIcon(theme, {
+      name: 'README.md',
+      parentName: 'src',
+      extension: 'md',
+      isDirectory: false,
+    })).toBe('readme.svg');
+  });
+
+  it('uses the last generic association when keys differ only by case', () => {
+    const theme: LoadedIconThemeDefinition = {
+      ...createTheme(),
+      fileNames: {
+        'readme.md': 'readmeDocs',
+        'README.md': 'readme',
+      },
+    };
+
+    expect(resolveLoadedIconThemeIcon(theme, {
+      name: 'Readme.md',
+      parentName: null,
+      extension: 'md',
+      isDirectory: false,
+    })).toBe('readme.svg');
+  });
+
   it('matches multi-part file extensions before shorter extensions', () => {
     const icon = resolveLoadedIconThemeIcon(createTheme(), {
       name: 'index.d.ts',

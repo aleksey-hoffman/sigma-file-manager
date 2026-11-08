@@ -2,9 +2,10 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { computed, type Ref } from 'vue';
+import { computed, ref, watch, type Ref } from 'vue';
 import type { Component } from 'vue';
 import { HardDriveIcon } from '@lucide/vue';
+import NavigatorItemIconPlaceholder from '@/components/icons/navigator-item-icon-placeholder.vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useNavigatorIconsStore } from '@/stores/runtime/navigator-icons';
 import { useSystemIcon } from './use-system-icon';
@@ -88,15 +89,6 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
     return parsedTheme.value?.kind === 'builtin'
       && parsedTheme.value.themeId === BUILTIN_NAVIGATOR_ICON_THEME_IDS.system;
   });
-  const extensionThemeFailed = computed(() => {
-    if (parsedTheme.value?.kind !== 'extension') {
-      return false;
-    }
-
-    return navigatorIconsStore.isExtensionThemeSettled(selectedIconTheme.value)
-      && navigatorIconsStore.getLoadedExtensionTheme(selectedIconTheme.value) === null;
-  });
-
   const loadedExtensionTheme = computed(() => {
     if (parsedTheme.value?.kind !== 'extension') {
       return null;
@@ -111,12 +103,12 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
     return loadedTheme;
   });
 
-  const { systemIconSrc } = useSystemIcon({
+  const { systemIconSrc, isSystemIconPending } = useSystemIcon({
     path,
     isDir,
     extension,
     size,
-    enabled: computed(() => useSystemIcons.value || extensionThemeFailed.value),
+    enabled: useSystemIcons,
   });
 
   const extensionThemeIconSrc = computed(() => {
@@ -137,11 +129,40 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
       return null;
     }
 
-    if (useSystemIcons.value || extensionThemeFailed.value) {
+    if (useSystemIcons.value) {
       return systemIconSrc.value;
     }
 
     return extensionThemeIconSrc.value;
+  });
+
+  const isIconPending = computed(() => {
+    if (driveMetadata.value || isVirtualLocationPath(path.value)) {
+      return false;
+    }
+
+    if (useSystemIcons.value) {
+      return isSystemIconPending.value;
+    }
+
+    return parsedTheme.value?.kind === 'extension'
+      && navigatorIconsStore.getLoadedExtensionTheme(selectedIconTheme.value) === undefined;
+  });
+
+  const wasIconPending = ref(false);
+
+  watch(isIconPending, (pending) => {
+    if (pending) {
+      wasIconPending.value = true;
+    }
+  }, { immediate: true });
+
+  const iconRevealClass = computed(() => {
+    if (wasIconPending.value && !isIconPending.value) {
+      return 'animate-fade-in-fast';
+    }
+
+    return undefined;
   });
 
   const fallbackIconComponent = computed<Component>(() => {
@@ -153,6 +174,10 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
       return HardDriveIcon;
     }
 
+    if (isIconPending.value) {
+      return NavigatorItemIconPlaceholder;
+    }
+
     return getDefaultFileIconComponent({
       isDirectory: isDir.value,
       extension: extension.value,
@@ -162,5 +187,6 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
   return {
     iconSrc,
     fallbackIconComponent,
+    iconRevealClass,
   };
 }

@@ -81,6 +81,25 @@ describe('extensions storage shared binaries', () => {
     });
   });
 
+  it('shares one storage load between concurrent init calls', async () => {
+    const storageStore = useExtensionsStorageStore();
+    const bootstrapFile = {
+      path: '/tmp/user-data/user-extensions.json',
+      status: 'missing' as const,
+      data: null,
+      schemaVersion: null,
+      error: null,
+    };
+
+    await Promise.all([
+      storageStore.init(bootstrapFile),
+      storageStore.init(bootstrapFile),
+    ]);
+
+    expect(lazyStoreSaveMock).toHaveBeenCalledTimes(1);
+    expect(storageStore.isInitialized).toBe(true);
+  });
+
   it('hydrates from startup bootstrap without reading from LazyStore', async () => {
     const storageStore = useExtensionsStorageStore();
 
