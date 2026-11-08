@@ -5,8 +5,8 @@
 import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import {
-  getFileBrowserGridEntryOrder,
-  getFileBrowserVisualEntryOrder,
+  getFileBrowserEntryOrder,
+  getFileBrowserEntrySections,
   groupFileBrowserEntries,
 } from '../file-browser-entry-groups';
 import { sortFileBrowserEntries } from '../utils/file-browser-sort';
@@ -66,7 +66,7 @@ describe('file browser entry groups', () => {
       createEntry('readme.md', { ext: 'md' }),
     ];
 
-    expect(getFileBrowserGridEntryOrder(entries).map(entry => entry.name)).toEqual([
+    expect(getFileBrowserEntryOrder(entries, 'kind').map(entry => entry.name)).toEqual([
       'folder',
       'image.webp',
       'video.webm',
@@ -108,14 +108,31 @@ describe('file browser entry groups', () => {
     ], 'name', 'asc');
 
     expect(sortedEntries.map(entry => entry.name)).toEqual(['clips', 'notes.txt', 'photo.png']);
-    expect(getFileBrowserGridEntryOrder(sortedEntries).map(entry => entry.name)).toEqual([
+    expect(getFileBrowserEntryOrder(sortedEntries, 'kind').map(entry => entry.name)).toEqual([
       'clips',
       'photo.png',
       'notes.txt',
     ]);
   });
 
-  it('returns flat order for list layout and grid order for grid layout', () => {
+  it('keeps sorted order when grouping is none', () => {
+    const entries = [
+      createEntry('notes.txt', { ext: 'txt' }),
+      createEntry('clips', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('photo.png', { ext: 'png' }),
+    ];
+
+    expect(getFileBrowserEntryOrder(entries, 'none').map(entry => entry.name)).toEqual([
+      'notes.txt',
+      'clips',
+      'photo.png',
+    ]);
+  });
+
+  it('uses kind groups for list and grid', () => {
     const entries = [
       createEntry('photo.png', { ext: 'png' }),
       createEntry('clips', {
@@ -125,15 +142,54 @@ describe('file browser entry groups', () => {
       createEntry('notes.txt', { ext: 'txt' }),
     ];
 
-    expect(getFileBrowserVisualEntryOrder(entries, 'list').map(entry => entry.name)).toEqual([
-      'photo.png',
+    expect(getFileBrowserEntryOrder(entries, 'kind').map(entry => entry.name)).toEqual([
       'clips',
+      'photo.png',
       'notes.txt',
     ]);
-    expect(getFileBrowserVisualEntryOrder(entries, 'grid').map(entry => entry.name)).toEqual([
+    expect(getFileBrowserEntryOrder(entries, 'kind').map(entry => entry.name)).toEqual([
       'clips',
       'photo.png',
       'notes.txt',
+    ]);
+  });
+
+  it('puts directories first inside each modified section', () => {
+    const now = new Date(2026, 5, 10, 15).getTime();
+    const entries = [
+      createEntry('notes.txt', {
+        ext: 'txt',
+        modified_time: new Date(2026, 5, 10, 9).getTime(),
+      }),
+      createEntry('docs', {
+        is_dir: true,
+        is_file: false,
+        modified_time: new Date(2026, 5, 10, 8).getTime(),
+      }),
+      createEntry('archive.zip', {
+        ext: 'zip',
+        modified_time: new Date(2026, 4, 2, 8).getTime(),
+      }),
+      createEntry('1-readme.txt', { ext: 'txt' }),
+      createEntry('clips', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('photo.png', { ext: 'png' }),
+    ];
+
+    expect(getFileBrowserEntrySections(entries, 'modified', now).map(section => ({
+      id: section.id,
+      names: section.entries.map(entry => entry.name),
+    }))).toEqual([
+      {
+        id: 'today',
+        names: ['docs', 'notes.txt'],
+      },
+      {
+        id: 'older',
+        names: ['clips', 'archive.zip', '1-readme.txt', 'photo.png'],
+      },
     ]);
   });
 });

@@ -56,7 +56,7 @@ import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolb
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
-import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
+import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
@@ -286,33 +286,11 @@ const currentActivePath = computed(() => {
   return currentDirEntry.value?.path;
 });
 
-const activeFolderSettingsPath = computed(() => {
-  return activeSplitTab.value?.path
-    || (currentActivePath.value ?? workspacesStore.currentTabGroup?.[0]?.path);
-});
-
-const canUseFolderSettingsForActivePath = computed(() => {
-  if (!activeFolderSettingsPath.value) {
-    return false;
-  }
-
-  const activeTab = workspacesStore.currentTabGroup?.find(tab => tab.id === activeTabId.value)
-    ?? workspacesStore.currentTab;
-
-  return activeTab?.type !== 'search';
-});
-
-const {
-  activePath: folderSettingsActivePath,
-  canUseFolderSettings,
-  resolveForPath,
-} = useNavigatorFolderSettings(
-  () => activeFolderSettingsPath.value,
-  () => canUseFolderSettingsForActivePath.value,
-);
-
 function getLayoutForPath(path: string | undefined): 'list' | 'grid' {
-  return resolveForPath(path).layout;
+  return resolveNavigatorFolderSettings(
+    userSettingsStore.userSettings.navigator,
+    path ?? '',
+  ).layout;
 }
 
 const wasSplitViewBeforeSearch = ref(false);
@@ -1231,8 +1209,6 @@ onUnmounted(() => {
     :is-split-view="isSplitView"
     :show-info-panel="showInfoPanel"
     :is-global-search-open="globalSearchStore.isOpen"
-    :active-path="folderSettingsActivePath"
-    :can-use-folder-settings="canUseFolderSettings"
     @toggle-split-view="handleToggleSplitView"
     @toggle-info-panel="handleToggleInfoPanel"
   />

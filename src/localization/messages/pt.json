@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Nenhuma guia fechada para restaurar"
   },
   "splitView": "Visualização dividida",
-  "splitViewMode": "Modo de visualização dividida",
   "splitViewModeSplit": "Dividida",
+  "splitViewModeSplitTooltip": "Os painéis funcionam em separado",
   "splitViewModeLinked": "Vinculada",
+  "splitViewModeLinkedTooltip": "O segundo painel segue o primeiro",
   "filter": {
     "filter": "filtro",
     "showHiddenItems": "Mostrar itens ocultos",
@@ -423,12 +424,17 @@
       "sorting": "Ordenação",
       "sortAscending": "Ascendente",
       "sortDescending": "Descendente",
-      "settingsScope": "Escopo",
-      "settingsScopeGlobal": "Global",
-      "settingsScopeThisFolder": "Esta pasta",
-      "display": "Exibição",
-      "folderSettingsDifferFromGlobal": "Esta pasta tem as suas próprias configurações",
-      "useGlobalSettings": "Usar configurações globais"
+      "thisFolderOptions": "Opções desta pasta",
+      "setAsDefault": "Definir as opções atuais como predefinição",
+      "savedAsDefault": "Guardado como predefinição",
+      "thisFolderDefaultActions": "Esta pasta substitui as predefinições",
+      "useGlobalSettings": "Repor predefinições",
+      "grouping": "Agrupar",
+      "groupingToday": "Hoje",
+      "groupingYesterday": "Ontem",
+      "groupingThisWeek": "Esta semana",
+      "groupingThisMonth": "Este mês",
+      "groupingOlder": "Mais antigo"
     },
     "tabs": {
       "lastTabCloseBehavior": {

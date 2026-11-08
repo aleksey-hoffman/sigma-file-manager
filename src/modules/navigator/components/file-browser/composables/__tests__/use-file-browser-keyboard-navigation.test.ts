@@ -10,7 +10,8 @@ import {
   applyRangeSelection,
   getEntriesInInclusiveRange,
 } from '../../utils/file-browser-range-selection';
-import { getFileBrowserVisualEntryOrder } from '../../file-browser-entry-groups';
+import type { NavigatorGrouping } from '@/types/user-settings';
+import { getFileBrowserEntryOrder } from '../../file-browser-entry-groups';
 
 function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
   const isDirectory = options.is_dir ?? false;
@@ -36,6 +37,7 @@ function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
 function createKeyboardNavigationHarness(options: {
   entries: DirEntry[];
   layout?: () => 'list' | 'grid' | undefined;
+  grouping?: () => NavigatorGrouping;
   initialSelection?: DirEntry;
   getGridNavigationEntry?: (path: string, direction: 'up' | 'down') => DirEntry | null;
 }) {
@@ -62,7 +64,7 @@ function createKeyboardNavigationHarness(options: {
 
   const selectRange = vi.fn((fromEntry: DirEntry, toEntry: DirEntry, additive = false) => {
     const rangeEntries = getEntriesInInclusiveRange(
-      getFileBrowserVisualEntryOrder(entries.value, layout()),
+      getFileBrowserEntryOrder(entries.value, options.grouping?.() ?? 'kind'),
       fromEntry,
       toEntry,
     );
@@ -86,6 +88,7 @@ function createKeyboardNavigationHarness(options: {
     lastSelectedEntry,
     focusedEntry,
     layout,
+    grouping: options.grouping ?? (() => 'kind'),
     selectEntryByPath,
     selectRange,
     scrollToPath: vi.fn(async () => true),
@@ -141,6 +144,29 @@ describe('useFileBrowserKeyboardNavigation', () => {
     expect(selectedEntries.value.map(entry => entry.name)).toEqual(['movie.mp4']);
   });
 
+  it('follows sort order in an ungrouped grid', () => {
+    const notes = createEntry('notes.txt', { ext: 'txt' });
+    const clips = createEntry('clips', {
+      is_dir: true,
+      is_file: false,
+    });
+    const photo = createEntry('photo.png', {
+      ext: 'png',
+      mime: 'image/png',
+    });
+    const { navigation, selectedEntries } = createKeyboardNavigationHarness({
+      entries: [notes, clips, photo],
+      grouping: () => 'none',
+      initialSelection: notes,
+    });
+
+    navigation.navigateRight();
+    expect(selectedEntries.value.map(entry => entry.name)).toEqual(['clips']);
+
+    navigation.navigateRight();
+    expect(selectedEntries.value.map(entry => entry.name)).toEqual(['photo.png']);
+  });
+
   it('uses flat entry order in list layout', () => {
     const first = createEntry('alpha.txt', { ext: 'txt' });
     const second = createEntry('beta.png', {
@@ -150,6 +176,7 @@ describe('useFileBrowserKeyboardNavigation', () => {
     const { navigation, selectedEntries } = createKeyboardNavigationHarness({
       entries: [first, second],
       layout: () => 'list',
+      grouping: () => 'none',
       initialSelection: first,
     });
 
@@ -167,6 +194,7 @@ describe('useFileBrowserKeyboardNavigation', () => {
     const { navigation, selectedEntries, lastSelectedEntry, focusedEntry } = createKeyboardNavigationHarness({
       entries: [first, second, third],
       layout: () => 'list',
+      grouping: () => 'none',
       initialSelection: first,
     });
 
@@ -199,6 +227,7 @@ describe('useFileBrowserKeyboardNavigation', () => {
     const { navigation, selectedEntries, lastSelectedEntry, focusedEntry } = createKeyboardNavigationHarness({
       entries: [first, second, third],
       layout: () => 'list',
+      grouping: () => 'none',
       initialSelection: second,
     });
 
@@ -222,6 +251,7 @@ describe('useFileBrowserKeyboardNavigation', () => {
     const { navigation, selectedEntries, lastSelectedEntry } = createKeyboardNavigationHarness({
       entries: [first, second, third],
       layout: () => 'list',
+      grouping: () => 'none',
       initialSelection: first,
     });
 

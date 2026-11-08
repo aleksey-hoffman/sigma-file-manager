@@ -37,6 +37,7 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       entries,
       layout: 'list',
       viewportWidth: 800,
+      grouping: 'none',
     });
     const contentRect = new DOMRect(100, 200, 800, 600);
     const viewportRect = new DOMRect(100, 200, 800, 600);
@@ -71,6 +72,7 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       entries,
       layout: 'grid',
       viewportWidth: 800,
+      grouping: 'kind',
     });
     const contentOffset = 20;
     const contentRect = new DOMRect(100 + contentOffset, 200, 800, 600);
@@ -127,6 +129,7 @@ describe('collectFileBrowserBoxSelectionEntries', () => {
       entries,
       layout: 'list',
       viewportWidth: 800,
+      grouping: 'none',
     });
     const contentRect = new DOMRect(100, 200, 800, 600);
     const viewportRect = new DOMRect(100, 200, 800, 600);

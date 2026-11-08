@@ -362,6 +362,12 @@ export type SplitViewMode = 'split' | 'linked';
 
 export type NavigatorFolderLayoutName = 'list' | 'grid';
 
+export type NavigatorGrouping = 'none' | 'kind' | 'modified';
+
+export function isNavigatorGrouping(value: unknown): value is NavigatorGrouping {
+  return value === 'none' || value === 'kind' || value === 'modified';
+}
+
 export type NavigatorFolderSettings = {
   layout: NavigatorFolderLayoutName;
   listSortColumn: ListSortColumn | null;
@@ -369,6 +375,7 @@ export type NavigatorFolderSettings = {
   gridSortColumn: ListSortColumn | null;
   gridSortDirection: ListSortDirection;
   showHiddenFiles: boolean;
+  grouping: NavigatorGrouping;
 };
 
 export type NavigatorFolderSettingsMap = Record<string, NavigatorFolderSettings>;
@@ -396,6 +403,7 @@ export type UserSettingsNavigator = {
   gridSortDirection: ListSortDirection;
   enableBoxSelection: boolean;
   increaseFileViewGaps: boolean;
+  grouping: NavigatorGrouping;
 };
 
 export type UserSettingsNavigatorNavigationPanel = {

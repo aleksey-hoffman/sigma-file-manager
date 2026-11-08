@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
@@ -21,39 +20,24 @@ import {
 } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   FlipHorizontalIcon,
   PanelLeftRightDashedIcon,
+  PanelRightIcon,
   PanelRightOpenIcon,
-  LayoutGridIcon,
-  ListIcon,
   CircleHelpIcon,
   EllipsisVerticalIcon,
-  EyeOffIcon,
-  InfoIcon,
-  PanelRightIcon,
 } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { SplitViewMode } from '@/types/user-settings';
-import { useNavigatorFolderSettings } from '@/modules/navigator/composables/use-navigator-folder-settings';
-import type {
-  NavigatorFolderSettingsPatch,
-  NavigatorOptionsScope,
-} from '@/modules/navigator/utils/resolve-navigator-folder-settings';
-import NavigatorLayoutSortControls from './navigator-layout-sort-controls.vue';
-
-type LayoutType = 'list' | 'grid';
 
 const props = defineProps<{
   isSplitView: boolean;
   showInfoPanel: boolean;
   isGlobalSearchOpen: boolean;
-  activePath?: string;
-  canUseFolderSettings?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -65,29 +49,6 @@ const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const shortcutsStore = useShortcutsStore();
 
-const settingsScope = ref<NavigatorOptionsScope>('global');
-const {
-  applied: appliedFolderSettings,
-  canUseFolderSettings,
-  clearFolderSettings,
-  globalSnapshot,
-  hasFolderSettings,
-  persistForScope,
-} = useNavigatorFolderSettings(
-  () => props.activePath,
-  () => Boolean(props.canUseFolderSettings),
-);
-const showFolderSettingsReset = computed(() => (
-  settingsScope.value === 'folder' && hasFolderSettings.value
-));
-const showGlobalOnlySettings = computed(() => settingsScope.value === 'global');
-const scopedSettings = computed(() => (
-  settingsScope.value === 'folder'
-    ? appliedFolderSettings.value
-    : globalSnapshot.value
-));
-const currentLayout = computed(() => scopedSettings.value.layout);
-const showHiddenFiles = computed(() => scopedSettings.value.showHiddenFiles);
 const infoPanelDynamicSize = computed(() => (
   userSettingsStore.userSettings.navigator.infoPanel.dynamicSize
 ));
@@ -95,60 +56,31 @@ const splitViewMode = computed(() => (
   userSettingsStore.userSettings.navigator.splitViewMode
 ));
 
-function selectDefaultSettingsScope() {
-  settingsScope.value = hasFolderSettings.value ? 'folder' : 'global';
-}
-
-function handleMenuOpenChange(isOpen: boolean) {
-  if (isOpen) {
-    selectDefaultSettingsScope();
-  }
-}
-
-watch(canUseFolderSettings, (isEnabled) => {
-  if (!isEnabled) {
-    settingsScope.value = 'global';
-  }
-});
-
-function persistScopedPatch(patch: NavigatorFolderSettingsPatch) {
-  return persistForScope(settingsScope.value, patch);
-}
-
-function setSplitViewMode(mode: SplitViewMode) {
-  if (props.isGlobalSearchOpen || settingsScope.value === 'folder') {
+async function setSplitViewMode(mode: SplitViewMode) {
+  if (props.isGlobalSearchOpen) {
     return;
   }
 
-  userSettingsStore.set('navigator.splitViewMode', mode);
+  await userSettingsStore.set('navigator.splitViewMode', mode);
 }
 
-async function setLayout(layoutName: LayoutType) {
-  await persistScopedPatch({ layout: layoutName });
-}
+async function handleSplitViewModeChange(value: string | number) {
+  if (value !== 'split' && value !== 'linked') {
+    return;
+  }
 
-function handleToggleHiddenFiles(checked: boolean) {
-  persistScopedPatch({ showHiddenFiles: checked });
+  await setSplitViewMode(value);
 }
 
 async function handleToggleInfoPanelDynamicSize(enabled: boolean) {
   await userSettingsStore.set('navigator.infoPanel.dynamicSize', enabled);
-}
-
-function handleUseGlobalSettings() {
-  clearFolderSettings();
-  settingsScope.value = 'global';
-}
-
-function handleSettingsScopeChange(value: string | number) {
-  settingsScope.value = value === 'folder' ? 'folder' : 'global';
 }
 </script>
 
 <template>
   <Teleport to=".window-toolbar-secondary-teleport-target">
     <div class="navigator-toolbar-actions animate-fade-in">
-      <DropdownMenu @update:open="handleMenuOpenChange">
+      <DropdownMenu>
         <Tooltip>
           <TooltipTrigger as-child>
             <DropdownMenuTrigger as-child>
@@ -173,215 +105,92 @@ function handleSettingsScopeChange(value: string | number) {
               class="navigator-settings-menu__scroll"
             >
               <div class="navigator-settings-menu__scroll-content">
+                <div class="navigator-settings-menu__title">
+                  {{ t('settings.navigator.navigatorOptions') }}
+                </div>
                 <DropdownMenuItem
                   @select.prevent
-                  class="navigator-settings-menu__item navigator-settings-menu__item--scope"
+                  class="navigator-settings-menu__item navigator-settings-menu__row"
                 >
-                  <div class="navigator-settings-menu__layout-label">
-                    {{ t('settings.navigator.settingsScope') }}
-                  </div>
+                  <span class="navigator-settings-menu__row-label">
+                    <FlipHorizontalIcon
+                      :size="16"
+                      class="navigator-settings-menu__row-icon"
+                    />
+                    {{ t('splitView') }}
+                  </span>
                   <Tabs
-                    :model-value="settingsScope"
-                    class="navigator-settings-menu__scope-tabs"
-                    @update:model-value="handleSettingsScopeChange"
+                    :model-value="splitViewMode"
+                    class="navigator-settings-menu__choice-tabs"
+                    @update:model-value="handleSplitViewModeChange"
                   >
-                    <TabsList class="navigator-settings-menu__scope-tabs-list">
-                      <TabsTrigger
-                        value="global"
-                        class="navigator-settings-menu__scope-tab"
-                      >
-                        {{ t('settings.navigator.settingsScopeGlobal') }}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="folder"
-                        class="navigator-settings-menu__scope-tab"
-                        :disabled="!canUseFolderSettings"
-                      >
-                        {{ t('settings.navigator.settingsScopeThisFolder') }}
-                      </TabsTrigger>
+                    <TabsList class="sigma-ui-tabs-list--page">
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <TabsTrigger
+                            value="split"
+                            :disabled="isGlobalSearchOpen"
+                          >
+                            {{ t('splitViewModeSplit') }}
+                          </TabsTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {{ t('splitViewModeSplitTooltip') }}
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger as-child>
+                          <TabsTrigger
+                            value="linked"
+                            :disabled="isGlobalSearchOpen"
+                          >
+                            {{ t('splitViewModeLinked') }}
+                          </TabsTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {{ t('splitViewModeLinkedTooltip') }}
+                        </TooltipContent>
+                      </Tooltip>
                     </TabsList>
                   </Tabs>
-                  <Collapsible
-                    :open="showFolderSettingsReset"
-                    class="navigator-settings-menu__reset-collapsible"
-                  >
-                    <CollapsibleContent class="navigator-settings-menu__reset-content">
-                      <div class="navigator-settings-menu__reset-row">
-                        <Tooltip>
-                          <TooltipTrigger as-child>
-                            <button
-                              type="button"
-                              class="navigator-settings-menu__info-trigger navigator-settings-menu__info-trigger--folder"
-                              :aria-label="t('settings.navigator.folderSettingsDifferFromGlobal')"
-                              @click.stop
-                            >
-                              <InfoIcon :size="14" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            class="navigator-settings-menu__info-tooltip"
-                          >
-                            {{ t('settings.navigator.folderSettingsDifferFromGlobal') }}
-                          </TooltipContent>
-                        </Tooltip>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          class="navigator-settings-menu__reset-button"
-                          @click="handleUseGlobalSettings"
-                        >
-                          {{ t('settings.navigator.useGlobalSettings') }}
-                        </Button>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   @select.prevent
-                  class="navigator-settings-menu__item navigator-settings-menu__item--layout"
+                  class="navigator-settings-menu__item navigator-settings-menu__row"
                 >
-                  <div class="navigator-settings-menu__layout-label">
-                    {{ t('settings.navigator.navigatorViewLayout') }}
-                  </div>
-                  <div class="navigator-settings-menu__layout-row">
-                    <button
-                      type="button"
-                      class="navigator-settings-menu__layout-option"
-                      :class="{ 'navigator-settings-menu__layout-option--active': currentLayout === 'list' }"
-                      @click="setLayout('list')"
-                    >
-                      <ListIcon :size="24" />
-                      <span>{{ t('list') }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="navigator-settings-menu__layout-option"
-                      :class="{ 'navigator-settings-menu__layout-option--active': currentLayout === 'grid' }"
-                      @click="setLayout('grid')"
-                    >
-                      <LayoutGridIcon :size="24" />
-                      <span>{{ t('grid') }}</span>
-                    </button>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  @select.prevent
-                  class="navigator-settings-menu__item navigator-settings-menu__item--layout"
-                >
-                  <div class="navigator-settings-menu__layout-label">
-                    {{ t('settings.navigator.sorting') }}
-                  </div>
-                  <NavigatorLayoutSortControls
-                    :sort-layout="currentLayout"
-                    :sort-source="scopedSettings"
-                    @persist="persistScopedPatch"
-                  />
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  @select.prevent
-                  class="navigator-settings-menu__item navigator-settings-menu__item--layout"
-                >
-                  <div class="navigator-settings-menu__layout-label">
-                    {{ t('settings.navigator.display') }}
-                  </div>
-                  <div class="navigator-settings-menu__display-rows">
-                    <div class="navigator-settings-menu__toggle-row">
-                      <div class="navigator-settings-menu__item-start">
-                        <EyeOffIcon
-                          :size="16"
-                          class="navigator-settings-menu__item-icon"
-                        />
-                        <span class="navigator-settings-menu__item-label">{{ t('filter.showHiddenItems') }}</span>
-                      </div>
-                      <Switch
-                        class="navigator-settings-menu__switch"
-                        :model-value="showHiddenFiles"
-                        @update:model-value="handleToggleHiddenFiles(!showHiddenFiles)"
-                      />
-                    </div>
-                    <Collapsible
-                      :open="showGlobalOnlySettings"
-                      class="navigator-settings-menu__reset-collapsible"
-                    >
-                      <CollapsibleContent class="navigator-settings-menu__reset-content">
-                        <div class="navigator-settings-menu__toggle-row navigator-settings-menu__toggle-row--nested">
-                          <div class="navigator-settings-menu__item-start">
-                            <PanelRightIcon
-                              :size="16"
-                              class="navigator-settings-menu__item-icon"
-                            />
-                            <span class="navigator-settings-menu__item-label">{{ t('settings.infoPanel.dynamicSize') }}</span>
-                          </div>
-                          <div class="navigator-settings-menu__item-controls">
-                            <Tooltip>
-                              <TooltipTrigger as-child>
-                                <button
-                                  type="button"
-                                  class="navigator-settings-menu__info-trigger"
-                                  :aria-label="t('settings.infoPanel.dynamicSizeTooltip')"
-                                  @click.stop
-                                >
-                                  <CircleHelpIcon :size="14" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent
-                                side="top"
-                                class="navigator-settings-menu__info-tooltip"
-                              >
-                                {{ t('settings.infoPanel.dynamicSizeTooltip') }}
-                              </TooltipContent>
-                            </Tooltip>
-                            <Switch
-                              class="navigator-settings-menu__switch"
-                              :model-value="infoPanelDynamicSize"
-                              @update:model-value="handleToggleInfoPanelDynamicSize"
-                            />
-                          </div>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                </DropdownMenuItem>
-                <Collapsible
-                  :open="showGlobalOnlySettings"
-                  class="navigator-settings-menu__reset-collapsible"
-                >
-                  <CollapsibleContent class="navigator-settings-menu__reset-content">
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      @select.prevent
-                      class="navigator-settings-menu__item navigator-settings-menu__item--layout"
-                    >
-                      <div class="navigator-settings-menu__layout-label">
-                        {{ t('splitViewMode') }}
-                      </div>
-                      <div class="navigator-settings-menu__layout-row">
+                  <span class="navigator-settings-menu__row-label">
+                    <PanelRightIcon
+                      :size="16"
+                      class="navigator-settings-menu__row-icon"
+                    />
+                    {{ t('settings.infoPanel.dynamicSize') }}
+                  </span>
+                  <div class="navigator-settings-menu__item-controls">
+                    <Tooltip>
+                      <TooltipTrigger as-child>
                         <button
                           type="button"
-                          class="navigator-settings-menu__layout-option"
-                          :class="{ 'navigator-settings-menu__layout-option--active': splitViewMode === 'split' }"
-                          @click="setSplitViewMode('split')"
+                          class="navigator-settings-menu__info-trigger"
+                          :aria-label="t('settings.infoPanel.dynamicSizeTooltip')"
+                          @click.stop
                         >
-                          <FlipHorizontalIcon :size="24" />
-                          <span>{{ t('splitViewModeSplit') }}</span>
+                          <CircleHelpIcon :size="14" />
                         </button>
-                        <button
-                          type="button"
-                          class="navigator-settings-menu__layout-option"
-                          :class="{ 'navigator-settings-menu__layout-option--active': splitViewMode === 'linked' }"
-                          @click="setSplitViewMode('linked')"
-                        >
-                          <PanelLeftRightDashedIcon :size="24" />
-                          <span>{{ t('splitViewModeLinked') }}</span>
-                        </button>
-                      </div>
-                    </DropdownMenuItem>
-                  </CollapsibleContent>
-                </Collapsible>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        class="navigator-settings-menu__info-tooltip"
+                      >
+                        {{ t('settings.infoPanel.dynamicSizeTooltip') }}
+                      </TooltipContent>
+                    </Tooltip>
+                    <Switch
+                      class="navigator-settings-menu__switch"
+                      :model-value="infoPanelDynamicSize"
+                      @update:model-value="handleToggleInfoPanelDynamicSize"
+                    />
+                  </div>
+                </DropdownMenuItem>
               </div>
             </ScrollArea>
           </DropdownMenuContent>
@@ -473,69 +282,45 @@ function handleSettingsScopeChange(value: string | number) {
   stroke: hsl(var(--primary));
 }
 
-.navigator-settings-menu__layout-label {
-  padding-bottom: 4px;
+.navigator-settings-menu__title {
+  padding: 6px 8px 2px;
   color: hsl(var(--foreground));
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.25rem;
 }
 
-.navigator-settings-menu__layout-row {
+.navigator-settings-menu__row-label {
   display: flex;
-  width: 100%;
-  height: 56px;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.navigator-settings-menu__item--layout.sigma-ui-dropdown-menu-item,
-.navigator-settings-menu__item--scope.sigma-ui-dropdown-menu-item {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.navigator-settings-menu__layout-option {
-  display: flex;
-  height: 100%;
+  min-width: 0;
   flex: 1;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding-top: 4px;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  gap: 8px;
+  line-height: 1.25rem;
+}
+
+.navigator-settings-menu__row-icon {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.navigator-settings-menu__grouping-select.sigma-ui-select-trigger {
+  width: 7.5rem;
+  height: 28px;
+  flex-shrink: 0;
   border: none;
   border-radius: var(--radius-sm);
   background-color: hsl(var(--secondary) / 60%);
-  color: hsl(var(--foreground) / 60%);
-  cursor: pointer;
   font-size: 12px;
-  gap: 0;
-  transition: background-color 0.15s, color 0.15s;
 }
 
-.navigator-settings-menu__layout-option:focus-visible {
-  outline: 2px solid hsl(var(--ring) / 50%);
-  outline-offset: var(--ring-outline-offset);
-}
-
-.navigator-settings-menu__layout-option:hover {
+.navigator-settings-menu__grouping-select.sigma-ui-select-trigger:hover {
   background-color: hsl(var(--secondary));
 }
 
-.navigator-settings-menu__layout-option--active {
-  background-color: hsl(var(--muted));
-  box-shadow:
-    0 1px 3px 0 rgb(0 0 0 / 10%),
-    0 1px 2px -1px rgb(0 0 0 / 10%);
-  color: hsl(var(--foreground));
-}
-
-.navigator-settings-menu__layout-option--active:hover {
-  background-color: hsl(var(--muted));
-}
-
-.navigator-settings-menu__layout-option svg {
+.navigator-settings-menu__choice-tabs {
   flex-shrink: 0;
 }
 
@@ -545,7 +330,7 @@ function handleSettingsScopeChange(value: string | number) {
     var(--reka-dropdown-menu-content-available-height, calc(100vh - var(--window-toolbar-height) - 12px))
   );
 
-  width: 280px;
+  width: 320px;
   max-height: var(--navigator-settings-menu-scroll-max);
   padding: 0;
 }
@@ -563,99 +348,23 @@ function handleSettingsScopeChange(value: string | number) {
   padding: 0.25rem;
 }
 
-.navigator-settings-menu .sigma-ui-dropdown-menu-separator {
-  margin-inline: 0.5rem;
-}
-
-.navigator-settings-menu__item--scope.sigma-ui-dropdown-menu-item {
-  padding-block: 4px;
-}
-
-.navigator-settings-menu__scope-tabs {
-  width: 100%;
-}
-
-.navigator-settings-menu__scope-tabs-list.sigma-ui-tabs-list {
-  width: 100%;
-  height: 1.75rem;
-  padding: 1px;
-}
-
-.navigator-settings-menu__scope-tab {
-  min-width: 0;
-  flex: 1 1 0;
-  font-size: 12px;
-  padding-inline: 0.5rem;
-}
-
-.navigator-settings-menu__toggle-row {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.navigator-settings-menu__display-rows {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-
-.navigator-settings-menu__toggle-row--nested {
-  margin-top: 8px;
-}
-
-.navigator-settings-menu__reset-collapsible {
-  width: 100%;
-}
-
-.navigator-settings-menu__reset-content {
-  width: 100%;
-}
-
-.navigator-settings-menu__reset-row {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  margin-top: 6px;
-  gap: 8px;
-}
-
-.navigator-settings-menu__reset-button.sigma-ui-button {
-  height: 28px;
-  flex: 1;
-  font-size: 12px;
-}
-
 .navigator-settings-menu__item.sigma-ui-dropdown-menu-item {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   cursor: default;
-  gap: 8px;
+  gap: 12px;
+}
+
+.navigator-settings-menu__row.sigma-ui-dropdown-menu-item {
+  min-height: 36px;
+  padding-block: 4px;
 }
 
 .navigator-settings-menu__item.sigma-ui-dropdown-menu-item:focus,
 .navigator-settings-menu__item.sigma-ui-dropdown-menu-item:hover {
   background-color: transparent;
   color: inherit;
-}
-
-.navigator-settings-menu__item-start {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  align-items: center;
-  gap: 8px;
-}
-
-.navigator-settings-menu__item-icon {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.navigator-settings-menu__item-label {
-  flex: 1;
 }
 
 .navigator-settings-menu__item-controls {
@@ -676,14 +385,6 @@ function handleSettingsScopeChange(value: string | number) {
 
 .navigator-settings-menu__info-trigger:hover {
   color: hsl(var(--foreground));
-}
-
-.navigator-settings-menu__info-trigger--folder {
-  color: hsl(var(--primary));
-}
-
-.navigator-settings-menu__info-trigger--folder:hover {
-  color: hsl(var(--primary));
 }
 
 .navigator-settings-menu__info-trigger:focus-visible {

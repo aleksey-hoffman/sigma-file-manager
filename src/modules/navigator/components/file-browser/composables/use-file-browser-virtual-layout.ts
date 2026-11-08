@@ -12,14 +12,17 @@ import {
   type ComputedRef,
 } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
+import type { NavigatorGrouping } from '@/types/user-settings';
 import normalizePath from '@/utils/normalize-path';
 import { computeVerticalVirtualRange } from '@/composables/use-vertical-virtual-list';
-import { groupFileBrowserEntries } from '../file-browser-entry-groups';
+import {
+  getFileBrowserEntrySections,
+  type FileBrowserEntrySection,
+} from '../file-browser-entry-groups';
 import { getFileBrowserGridGap } from '../utils/file-browser-layout-gaps';
 import { getElementContentBoxWidth } from '../utils/file-browser-content-box';
 import {
   getGridColumnCount,
-  type FileBrowserGridEntryVariant,
   type FileBrowserGridItemsVirtualRow,
   type FileBrowserGridSectionKey,
   type FileBrowserGridSectionVirtualRow,
@@ -32,11 +35,13 @@ export type {
   FileBrowserGridItemsVirtualRow,
   FileBrowserGridSectionKey,
   FileBrowserGridSectionVirtualRow,
+  FileBrowserListSectionVirtualRow,
   FileBrowserListVirtualRow,
   FileBrowserVirtualRow,
 } from '../utils/file-browser-virtual-rows';
 export { getGridColumnCount } from '../utils/file-browser-virtual-rows';
 
+const LIST_SECTION_HEADER_HEIGHT = 42;
 const LIST_ENTRY_HEIGHT = 42;
 const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT = 56;
 const GRID_SECTION_HEADER_HEIGHT = 42;
@@ -54,10 +59,14 @@ const VIRTUAL_SPACER_SELECTOR = '.file-browser-list-view__list, .file-browser-gr
 
 interface GridSectionDefinition {
   key: FileBrowserGridSectionKey;
-  variant: FileBrowserGridEntryVariant;
+  showHeader: boolean;
+  labelKey: string | null;
+  icon: FileBrowserEntrySection['icon'];
   entries: DirEntry[];
   stickyIndex: number;
-  entryHeight: number;
+  cardHeight: FileBrowserEntrySection['cardHeight'];
+  headerPaddingTop: number;
+  gridLeadingPaddingTop: number;
 }
 
 function resolveScrollViewportElement(element: HTMLElement): HTMLElement {
@@ -91,13 +100,12 @@ function getRowEnd(row: FileBrowserVirtualRow): number {
 function getRowScrollMarginTop(
   row: FileBrowserVirtualRow,
   virtualContentOffset: number,
-  gridGap: number,
 ): number {
-  if (row.type === 'list-entry') {
+  if (row.type === 'list-entry' || row.type === 'list-section') {
     return virtualContentOffset;
   }
 
-  return row.type === 'grid-items' ? GRID_SECTION_HEADER_HEIGHT + gridGap : 0;
+  return row.type === 'grid-items' ? row.stickyHeaderSize : 0;
 }
 
 function getStatusBarOverlap(viewport: HTMLElement, statusBar: HTMLElement | null | undefined): number {
@@ -149,26 +157,104 @@ export function resolveViewportContentWidth(viewport: HTMLElement): number {
   return getElementContentBoxWidth(viewport);
 }
 
+function appendListEntryRow(
+  rows: FileBrowserVirtualRow[],
+  entry: DirEntry,
+  entryIndex: number,
+  offset: number,
+  entryDescription?: (entry: DirEntry) => string | undefined,
+): number {
+  const size = getEntryDescriptionHeight(entry, entryDescription);
+  const row: FileBrowserListVirtualRow = {
+    type: 'list-entry',
+    key: `list:${entry.path}`,
+    entry,
+    entryIndex,
+    start: offset,
+    size,
+  };
+
+  rows.push(row);
+  return offset + size;
+}
+
 function createListRows(
   entries: readonly DirEntry[],
+  grouping: NavigatorGrouping,
   entryDescription?: (entry: DirEntry) => string | undefined,
 ): FileBrowserVirtualRow[] {
+  const rows: FileBrowserVirtualRow[] = [];
   let offset = 0;
+  let entryIndex = 0;
 
-  return entries.map((entry, entryIndex) => {
-    const size = getEntryDescriptionHeight(entry, entryDescription);
-    const row: FileBrowserListVirtualRow = {
-      type: 'list-entry',
-      key: `list:${entry.path}`,
-      entry,
-      entryIndex,
+  for (const section of getFileBrowserEntrySections(entries, grouping)) {
+    if (section.showHeader) {
+      rows.push({
+        type: 'list-section',
+        key: `list-section:${section.id}`,
+        sectionKey: section.id,
+        labelKey: section.labelKey,
+        icon: section.icon,
+        contentPaddingTop: section.headerPaddingTop,
+        count: section.entries.length,
+        start: offset,
+        size: LIST_SECTION_HEADER_HEIGHT,
+      });
+      offset += LIST_SECTION_HEADER_HEIGHT;
+    }
+
+    for (const entry of section.entries) {
+      offset = appendListEntryRow(rows, entry, entryIndex, offset, entryDescription);
+      entryIndex += 1;
+    }
+  }
+
+  return rows;
+}
+
+function appendGridItemRows(
+  rows: FileBrowserVirtualRow[],
+  section: GridSectionDefinition,
+  entries: readonly DirEntry[],
+  entryHeight: number,
+  columnCount: number,
+  offset: number,
+  gridGap: number,
+  rowIndexStart: number,
+  leadingPadding: number,
+): {
+  offset: number;
+  rowIndex: number;
+} {
+  let rowIndex = rowIndexStart;
+  let remainingLeadingPadding = leadingPadding;
+
+  for (let entryIndex = 0; entryIndex < entries.length; entryIndex += columnCount) {
+    const rowEntries = entries.slice(entryIndex, entryIndex + columnCount);
+    const contentPaddingTop = remainingLeadingPadding;
+    remainingLeadingPadding = 0;
+    const size = entryHeight + gridGap + contentPaddingTop;
+
+    rows.push({
+      type: 'grid-items',
+      key: `grid-items:${section.key}:${rowIndex}:${rowEntries.map(entry => entry.path).join('|')}`,
+      sectionKey: section.key,
+      contentPaddingTop,
+      stickyHeaderSize: section.showHeader ? GRID_SECTION_HEADER_HEIGHT + gridGap : 0,
+      cardHeight: section.cardHeight,
+      entries: rowEntries,
+      rowIndex,
       start: offset,
       size,
-    };
-
+    });
     offset += size;
-    return row;
-  });
+    rowIndex += 1;
+  }
+
+  return {
+    offset,
+    rowIndex,
+  };
 }
 
 function createGridSectionRows(
@@ -187,41 +273,89 @@ function createGridSectionRows(
     };
   }
 
-  const rows: FileBrowserVirtualRow[] = [
-    {
+  const rows: FileBrowserVirtualRow[] = [];
+
+  if (section.showHeader) {
+    const headerHeight = GRID_SECTION_HEADER_HEIGHT;
+    rows.push({
       type: 'grid-section',
       key: `grid-section:${section.key}`,
       sectionKey: section.key,
-      variant: section.variant,
+      labelKey: section.labelKey,
+      icon: section.icon,
+      contentPaddingTop: section.headerPaddingTop,
       count: section.entries.length,
       stickyIndex: section.stickyIndex,
       start: offset,
-      size: GRID_SECTION_HEADER_HEIGHT + gridGap,
-    },
-  ];
-
-  offset += GRID_SECTION_HEADER_HEIGHT + gridGap;
-
-  for (let entryIndex = 0, rowIndex = 0; entryIndex < section.entries.length; entryIndex += columnCount, rowIndex += 1) {
-    const rowEntries = section.entries.slice(entryIndex, entryIndex + columnCount);
-
-    rows.push({
-      type: 'grid-items',
-      key: `grid-items:${section.key}:${rowIndex}:${rowEntries.map(entry => entry.path).join('|')}`,
-      sectionKey: section.key,
-      variant: section.variant,
-      entries: rowEntries,
-      rowIndex,
-      start: offset,
-      size: section.entryHeight + gridGap,
+      size: headerHeight + gridGap,
     });
-
-    offset += section.entryHeight + gridGap;
+    offset += headerHeight + gridGap;
   }
+
+  const leadingPadding = section.showHeader ? 0 : section.gridLeadingPaddingTop;
+
+  if (section.cardHeight === 'split') {
+    const directoryEntries = section.entries.filter(entry => entry.is_dir);
+    const fileEntries = section.entries.filter(entry => !entry.is_dir);
+    const directoryRows = appendGridItemRows(
+      rows,
+      section,
+      directoryEntries,
+      GRID_DIR_ENTRY_HEIGHT,
+      columnCount,
+      offset,
+      gridGap,
+      0,
+      leadingPadding,
+    );
+    const fileRows = appendGridItemRows(
+      rows,
+      section,
+      fileEntries,
+      GRID_ENTRY_HEIGHT,
+      columnCount,
+      directoryRows.offset,
+      gridGap,
+      directoryRows.rowIndex,
+      directoryEntries.length > 0 ? 0 : leadingPadding,
+    );
+
+    return {
+      rows,
+      offset: fileRows.offset,
+    };
+  }
+
+  const entryHeight = section.cardHeight === 'dir' ? GRID_DIR_ENTRY_HEIGHT : GRID_ENTRY_HEIGHT;
+  const itemRows = appendGridItemRows(
+    rows,
+    section,
+    section.entries,
+    entryHeight,
+    columnCount,
+    offset,
+    gridGap,
+    0,
+    leadingPadding,
+  );
 
   return {
     rows,
-    offset,
+    offset: itemRows.offset,
+  };
+}
+
+function toGridSectionDefinition(section: FileBrowserEntrySection, sectionIndex: number): GridSectionDefinition {
+  return {
+    key: section.id,
+    showHeader: section.showHeader,
+    labelKey: section.labelKey,
+    icon: section.icon,
+    entries: section.entries,
+    stickyIndex: 10 + sectionIndex,
+    cardHeight: section.cardHeight,
+    headerPaddingTop: section.headerPaddingTop,
+    gridLeadingPaddingTop: section.gridLeadingPaddingTop,
   };
 }
 
@@ -229,44 +363,21 @@ function createGridRows(
   entries: readonly DirEntry[],
   columnCount: number,
   gridGap: number,
+  grouping: NavigatorGrouping,
 ): FileBrowserVirtualRow[] {
-  const groupedEntries = groupFileBrowserEntries(entries);
-  const sections: GridSectionDefinition[] = [
-    {
-      key: 'dirs',
-      variant: 'dir',
-      entries: groupedEntries.dirs,
-      stickyIndex: 10,
-      entryHeight: GRID_DIR_ENTRY_HEIGHT,
-    },
-    {
-      key: 'images',
-      variant: 'image',
-      entries: groupedEntries.images,
-      stickyIndex: 11,
-      entryHeight: GRID_ENTRY_HEIGHT,
-    },
-    {
-      key: 'videos',
-      variant: 'video',
-      entries: groupedEntries.videos,
-      stickyIndex: 12,
-      entryHeight: GRID_ENTRY_HEIGHT,
-    },
-    {
-      key: 'others',
-      variant: 'other',
-      entries: groupedEntries.others,
-      stickyIndex: 13,
-      entryHeight: GRID_ENTRY_HEIGHT,
-    },
-  ];
+  const sections = getFileBrowserEntrySections(entries, grouping).map(toGridSectionDefinition);
 
   let offset = 0;
   const rows: FileBrowserVirtualRow[] = [];
 
   for (const section of sections) {
-    const result = createGridSectionRows(section, columnCount, offset, gridGap);
+    const result = createGridSectionRows(
+      section,
+      columnCount,
+      offset,
+      gridGap,
+    );
+
     rows.push(...result.rows);
     offset = result.offset;
   }
@@ -280,17 +391,21 @@ export function createFileBrowserVirtualRows(options: {
   viewportWidth: number;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: boolean;
+  grouping: NavigatorGrouping;
 }): FileBrowserVirtualRow[] {
+  const grouping = options.grouping;
+
   if (options.layout === 'grid') {
     const gridGap = getFileBrowserGridGap(!!options.increaseFileViewGaps);
     return createGridRows(
       options.entries,
       getGridColumnCount(options.viewportWidth, gridGap),
       gridGap,
+      grouping,
     );
   }
 
-  return createListRows(options.entries, options.entryDescription);
+  return createListRows(options.entries, grouping, options.entryDescription);
 }
 
 export function getFileBrowserGridNavigationEntry(
@@ -324,6 +439,7 @@ export function useFileBrowserVirtualLayout(options: {
   layout: () => 'list' | 'grid' | undefined;
   entryDescription?: (entry: DirEntry) => string | undefined;
   increaseFileViewGaps?: () => boolean;
+  grouping: () => NavigatorGrouping;
 }) {
   const scrollViewportRef = ref<HTMLElement | null>(null);
   const viewportHeight = ref(0);
@@ -343,6 +459,7 @@ export function useFileBrowserVirtualLayout(options: {
       viewportWidth: viewportWidth.value,
       entryDescription: options.entryDescription,
       increaseFileViewGaps: options.increaseFileViewGaps?.(),
+      grouping: options.grouping(),
     });
   });
 
@@ -519,7 +636,7 @@ export function useFileBrowserVirtualLayout(options: {
 
     const viewportRect = viewport.getBoundingClientRect();
     const entryRect = entryElement.getBoundingClientRect();
-    const minVisibleTop = viewportRect.top + getRowScrollMarginTop(row, virtualContentOffset.value, gridGap.value);
+    const minVisibleTop = viewportRect.top + getRowScrollMarginTop(row, virtualContentOffset.value);
     const maxVisibleBottom = viewportRect.bottom - bottomScrollMargin.value;
     let scrollAdjustment = 0;
 
@@ -587,7 +704,7 @@ export function useFileBrowserVirtualLayout(options: {
     const currentScrollTop = scrollTop.value;
     const rowStart = virtualContentOffset.value + row.start;
     const rowEnd = virtualContentOffset.value + getRowEnd(row);
-    const scrollMarginTop = getRowScrollMarginTop(row, virtualContentOffset.value, gridGap.value);
+    const scrollMarginTop = getRowScrollMarginTop(row, virtualContentOffset.value);
     const scrollMarginBottom = bottomScrollMargin.value;
 
     if (align === 'center') {

@@ -4,7 +4,8 @@
 
 import { nextTick, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
+import type { NavigatorGrouping } from '@/types/user-settings';
+import { getFileBrowserEntryOrder } from '../file-browser-entry-groups';
 
 const ROW_TOLERANCE_PX = 30;
 const OVERLAP_TOLERANCE_PX = 2;
@@ -15,6 +16,7 @@ export function useFileBrowserKeyboardNavigation(options: {
   lastSelectedEntry: Ref<DirEntry | null>;
   focusedEntry: Ref<DirEntry | null>;
   layout: () => 'list' | 'grid' | undefined;
+  grouping: () => NavigatorGrouping;
   selectEntryByPath: (path: string) => boolean;
   selectRange: (fromEntry: DirEntry, toEntry: DirEntry, additive?: boolean) => void;
   scrollToPath?: (path: string, align?: ScrollLogicalPosition) => Promise<boolean>;
@@ -64,7 +66,7 @@ export function useFileBrowserKeyboardNavigation(options: {
   }
 
   function getNavigationEntries(): DirEntry[] {
-    return getFileBrowserVisualEntryOrder(options.entries.value, options.layout());
+    return getFileBrowserEntryOrder(options.entries.value, options.grouping());
   }
 
   async function applyNavigationTarget(entry: DirEntry, extendSelection: boolean) {

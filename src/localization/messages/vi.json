@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Không có thẻ đã đóng nào để khôi phục"
   },
   "splitView": "Chế độ chia màn hình",
-  "splitViewMode": "Chế độ chia màn hình",
   "splitViewModeSplit": "Chia",
+  "splitViewModeSplitTooltip": "Các ngăn hoạt động độc lập",
   "splitViewModeLinked": "Liên kết",
+  "splitViewModeLinkedTooltip": "Ngăn thứ hai theo ngăn thứ nhất",
   "filter": {
     "filter": "Lọc",
     "showHiddenItems": "Hiển thị mục ẩn",
@@ -423,12 +424,17 @@
       "sorting": "Sắp xếp",
       "sortAscending": "Tăng dần",
       "sortDescending": "Giảm dần",
-      "settingsScope": "Phạm vi",
-      "settingsScopeGlobal": "Toàn cục",
-      "settingsScopeThisFolder": "Thư mục này",
-      "display": "Hiển thị",
-      "folderSettingsDifferFromGlobal": "Thư mục này có cài đặt riêng",
-      "useGlobalSettings": "Dùng cài đặt toàn cục"
+      "thisFolderOptions": "Tùy chọn thư mục này",
+      "setAsDefault": "Đặt các tùy chọn hiện tại làm mặc định",
+      "savedAsDefault": "Đã lưu làm mặc định",
+      "thisFolderDefaultActions": "Thư mục này ghi đè cài đặt mặc định",
+      "useGlobalSettings": "Đặt lại cài đặt mặc định",
+      "grouping": "Nhóm",
+      "groupingToday": "Hôm nay",
+      "groupingYesterday": "Hôm qua",
+      "groupingThisWeek": "Tuần này",
+      "groupingThisMonth": "Tháng này",
+      "groupingOlder": "Cũ hơn"
     },
     "tabs": {
       "lastTabCloseBehavior": {

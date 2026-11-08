@@ -56,12 +56,6 @@ export function sortFileBrowserEntries(
   const getLinkSortFields = tagContext?.getLinkSortFields;
 
   return [...items].sort((entryA, entryB) => {
-    const dirsFirst = (entryA.is_dir === entryB.is_dir) ? 0 : (entryA.is_dir ? -1 : 1);
-
-    if (dirsFirst !== 0) {
-      return dirsFirst;
-    }
-
     let comparison: number;
 
     if (column === 'name') {

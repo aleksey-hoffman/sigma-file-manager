@@ -8,6 +8,7 @@ import FileBrowserToolbarAddressBar from './file-browser-toolbar-address-bar.vue
 import FileBrowserToolbarNavButtons from './file-browser-toolbar-nav-buttons.vue';
 import FileBrowserToolbarCreateButton from './file-browser-toolbar-create-button.vue';
 import FileBrowserToolbarFilter from './file-browser-toolbar-filter.vue';
+import FileBrowserPaneOptionsMenu from './file-browser-pane-options-menu.vue';
 
 withDefaults(defineProps<{
   pathInput: string;
@@ -18,8 +19,10 @@ withDefaults(defineProps<{
   isLoading: boolean;
   isFilterOpen: boolean;
   focusFilterInput: boolean;
+  folderPath?: string;
   isSplitView?: boolean;
 }>(), {
+  folderPath: '',
   isSplitView: false,
 });
 
@@ -90,6 +93,7 @@ function handleAddressBarNavigate(path: string) {
           @update:is-filter-open="emit('update:isFilterOpen', $event)"
           @filter-input-focused="emit('filterInputFocused')"
         />
+        <FileBrowserPaneOptionsMenu :path="folderPath" />
       </div>
     </div>
   </div>

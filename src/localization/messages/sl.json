@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Ni zaprtih zavihkov za obnovitev"
   },
   "splitView": "Razdeljen pogled",
-  "splitViewMode": "Način razdeljenega pogleda",
   "splitViewModeSplit": "Razdeljen",
+  "splitViewModeSplitTooltip": "Podokna delujeta neodvisno",
   "splitViewModeLinked": "Povezan",
+  "splitViewModeLinkedTooltip": "Drugo podokno sledi prvemu",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Pokaži skrite predmete",
@@ -452,12 +453,17 @@
       "sorting": "Razvrščanje",
       "sortAscending": "Naraščajoče",
       "sortDescending": "Padajoče",
-      "settingsScope": "Obseg",
-      "settingsScopeGlobal": "Globalno",
-      "settingsScopeThisFolder": "Ta mapa",
-      "display": "Prikaz",
-      "folderSettingsDifferFromGlobal": "Ta mapa ima lastne nastavitve",
-      "useGlobalSettings": "Uporabi globalne nastavitve"
+      "thisFolderOptions": "Možnosti te mape",
+      "setAsDefault": "Nastavi trenutne možnosti kot privzete",
+      "savedAsDefault": "Shranjeno kot privzeto",
+      "thisFolderDefaultActions": "Ta mapa preglasi privzete nastavitve",
+      "useGlobalSettings": "Ponastavi na privzete nastavitve",
+      "grouping": "Združi",
+      "groupingToday": "Danes",
+      "groupingYesterday": "Včeraj",
+      "groupingThisWeek": "Ta teden",
+      "groupingThisMonth": "Ta mesec",
+      "groupingOlder": "Starejše"
     },
     "tabs": {
       "lastTabCloseBehavior": {

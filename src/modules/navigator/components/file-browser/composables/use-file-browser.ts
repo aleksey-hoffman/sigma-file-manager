@@ -25,6 +25,7 @@ import {
 } from '@/modules/extensions/builtin-commands';
 import { useScrollRestoration } from '@/composables/use-scroll-restoration';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
+import type { NavigatorGrouping } from '@/types/user-settings';
 import type { Tab } from '@/types/workspaces';
 import { useFileBrowserNavigation } from './use-file-browser-navigation';
 import { useFileBrowserSelection } from './use-file-browser-selection';
@@ -78,6 +79,7 @@ export interface UseFileBrowserOptions {
 
 interface DataSource {
   entries: ComputedRef<DirEntry[]>;
+  grouping: ComputedRef<NavigatorGrouping>;
   currentPath: ComputedRef<string>;
   isDirectoryEmpty: ComputedRef<boolean>;
   dirContents: Ref<DirContents | null>;
@@ -136,6 +138,7 @@ function setupNavigationDataSource(
     userSettingsStore.userSettings.navigator,
     navigation.currentPath.value,
   ));
+  const grouping = computed(() => appliedFolderSettings.value.grouping);
   const showHiddenFiles = computed(() => appliedFolderSettings.value.showHiddenFiles);
   const sortSettings = createNavigatorSortSettingsComputed(
     () => appliedFolderSettings.value,
@@ -168,6 +171,7 @@ function setupNavigationDataSource(
 
   return {
     entries: computed(() => filteredEntries.value),
+    grouping,
     currentPath: computed(() => navigation.currentPath.value),
     isDirectoryEmpty: computed(() => filteredIsDirectoryEmpty.value),
     dirContents: navigation.dirContents,
@@ -206,6 +210,10 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const getBasePath = options.basePath ?? (() => '');
 
   const externalDirContents = computed(() => ({ entries: getEntries() }));
+  const grouping = computed(() => resolveNavigatorFolderSettings(
+    userSettingsStore.userSettings.navigator,
+    getBasePath(),
+  ).grouping);
   const showAllEntries = computed(() => true);
   const emptyFilterQuery = ref('');
   const sortSettings = createNavigatorSortSettingsComputed(
@@ -229,6 +237,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
 
   return {
     entries: sortedEntries,
+    grouping,
     currentPath: computed(() => getBasePath()),
     isDirectoryEmpty,
     dirContents: ref(null),
@@ -282,6 +291,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         boxSelection.stopBoxSelection();
       });
   const visualEntries = computed(() => dataSource.entries.value);
+  const grouping = dataSource.grouping;
 
   let openPropertiesForSelection: (entries: DirEntry[]) => void = () => {};
 
@@ -306,7 +316,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       openPropertiesForSelection(entries);
     },
     dataSource.silentRefresh,
-    options.layout,
+    () => grouping.value,
   );
 
   const virtualLayout = useFileBrowserVirtualLayout({
@@ -314,6 +324,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     layout: options.layout,
     entryDescription: options.entryDescription,
     increaseFileViewGaps: () => increaseFileViewGaps.value,
+    grouping: () => grouping.value,
   });
   const scrollStateKey = computed(() => options.scrollStateKey?.());
 
@@ -449,6 +460,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     lastSelectedEntry: selection.lastSelectedEntry,
     focusedEntry: selection.focusedEntry,
     layout: options.layout,
+    grouping: () => grouping.value,
     selectEntryByPath: selection.selectEntryByPath,
     selectRange: selection.selectRange,
     scrollToPath: virtualLayout.scrollToPath,
@@ -559,6 +571,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   return {
     isExternalMode,
 
+    grouping,
     entries: visualEntries,
     currentPath: dataSource.currentPath,
     isDirectoryEmpty: dataSource.isDirectoryEmpty,

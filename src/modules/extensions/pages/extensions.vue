@@ -445,7 +445,7 @@ onUnmounted(() => {
       class="extensions-page__tabs"
     >
       <div class="extensions-page__header">
-        <TabsList class="extensions-page__tabs-list">
+        <TabsList class="extensions-page__tabs-list sigma-ui-tabs-list--page">
           <TabsTrigger
             value="marketplace"
             class="extensions-page__tab-trigger"
@@ -681,14 +681,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-}
-
-.extensions-page__tabs-list {
-  display: flex;
-  padding: 4px;
-  border-radius: var(--radius);
-  background-color: hsl(var(--muted) / 50%);
-  gap: 4px;
 }
 
 .extensions-page__tab-icon-wrap {

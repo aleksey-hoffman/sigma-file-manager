@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Нет закрытых вкладок для восстановления"
   },
   "splitView": "Разделённый вид",
-  "splitViewMode": "Режим разделённого вида",
   "splitViewModeSplit": "Разделённый",
+  "splitViewModeSplitTooltip": "Панели работают независимо",
   "splitViewModeLinked": "Связанный",
+  "splitViewModeLinkedTooltip": "Вторая панель следует за первой",
   "filter": {
     "filter": "Фильтр",
     "showHiddenItems": "Показать скрытые элементы",
@@ -452,12 +453,17 @@
       "sorting": "Сортировка",
       "sortAscending": "По возрастанию",
       "sortDescending": "По убыванию",
-      "settingsScope": "Область",
-      "settingsScopeGlobal": "Глобальные",
-      "settingsScopeThisFolder": "Эта папка",
-      "display": "Отображение",
-      "folderSettingsDifferFromGlobal": "У этой папки свои настройки",
-      "useGlobalSettings": "Использовать глобальные настройки"
+      "thisFolderOptions": "Параметры этой папки",
+      "setAsDefault": "Задать текущие параметры по умолчанию",
+      "savedAsDefault": "Сохранено по умолчанию",
+      "thisFolderDefaultActions": "Эта папка переопределяет настройки по умолчанию",
+      "useGlobalSettings": "Сбросить до настроек по умолчанию",
+      "grouping": "Группировать",
+      "groupingToday": "Сегодня",
+      "groupingYesterday": "Вчера",
+      "groupingThisWeek": "На этой неделе",
+      "groupingThisMonth": "В этом месяце",
+      "groupingOlder": "Ранее"
     },
     "tabs": {
       "lastTabCloseBehavior": {

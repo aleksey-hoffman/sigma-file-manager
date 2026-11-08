@@ -127,14 +127,15 @@ function toggleSortDirection() {
 <style>
 .navigator-layout-sort-controls {
   display: flex;
-  width: 100%;
+  flex-shrink: 0;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .navigator-layout-sort-controls__select.sigma-ui-select-trigger {
+  width: 7.5rem;
   height: 28px;
-  flex: 1;
+  flex: 0 0 auto;
   border: none;
   border-radius: var(--radius-sm);
   background-color: hsl(var(--secondary) / 60%);

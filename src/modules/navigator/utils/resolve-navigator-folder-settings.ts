@@ -5,20 +5,34 @@
 import { normalizePathForComparison } from '@/utils/file-operation-paths';
 import { isRecord } from '@/stores/schemas/schema-utils';
 import { isListSortColumn } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
-import type {
-  ListSortColumn,
-  ListSortDirection,
-  NavigatorFolderLayoutName,
-  NavigatorFolderSettings,
-  NavigatorLayout,
-  UserSettingsNavigator,
+import {
+  isNavigatorGrouping,
+  type ListSortColumn,
+  type ListSortDirection,
+  type NavigatorFolderLayoutName,
+  type NavigatorFolderSettings,
+  type NavigatorGrouping,
+  type NavigatorLayout,
+  type UserSettingsNavigator,
 } from '@/types/user-settings';
-
-export type NavigatorOptionsScope = 'global' | 'folder';
 
 export type NavigatorOptionsTarget = 'global' | { folder: string };
 
 export type NavigatorFolderSettingsPatch = Partial<NavigatorFolderSettings>;
+
+const NAVIGATOR_FOLDER_SETTING_FIELDS = {
+  layout: true,
+  listSortColumn: true,
+  listSortDirection: true,
+  gridSortColumn: true,
+  gridSortDirection: true,
+  showHiddenFiles: true,
+  grouping: true,
+} satisfies Record<keyof NavigatorFolderSettings, true>;
+
+const NAVIGATOR_FOLDER_SETTING_KEYS = Object.keys(
+  NAVIGATOR_FOLDER_SETTING_FIELDS,
+) as Array<keyof NavigatorFolderSettings>;
 
 export type StoredNavigatorFolderSettingsMap = Record<string, Record<string, unknown>>;
 
@@ -84,6 +98,10 @@ function resolveBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback;
 }
 
+function resolveGrouping(value: unknown, fallback: NavigatorGrouping): NavigatorGrouping {
+  return isNavigatorGrouping(value) ? value : fallback;
+}
+
 export function createNavigatorFolderSettingsSnapshot(
   navigator: UserSettingsNavigator,
 ): NavigatorFolderSettings {
@@ -94,6 +112,7 @@ export function createNavigatorFolderSettingsSnapshot(
     gridSortColumn: navigator.gridSortColumn,
     gridSortDirection: navigator.gridSortDirection,
     showHiddenFiles: navigator.showHiddenFiles,
+    grouping: navigator.grouping,
   };
 }
 
@@ -110,6 +129,7 @@ function mergeFolderSettingsWithGlobal(
     gridSortColumn: resolveSortColumn(folderSettings.gridSortColumn, globalSnapshot.gridSortColumn),
     gridSortDirection: resolveSortDirection(folderSettings.gridSortDirection, globalSnapshot.gridSortDirection),
     showHiddenFiles: resolveBoolean(folderSettings.showHiddenFiles, globalSnapshot.showHiddenFiles),
+    grouping: resolveGrouping(folderSettings.grouping, globalSnapshot.grouping),
   };
 }
 
@@ -168,11 +188,48 @@ function lookupStoredNavigatorFolderSettings(
   return null;
 }
 
+export function navigatorFolderSettingsDifferFromDefaults(
+  effective: NavigatorFolderSettings,
+  defaults: NavigatorFolderSettings,
+): boolean {
+  return NAVIGATOR_FOLDER_SETTING_KEYS.some(key => effective[key] !== defaults[key]);
+}
+
+export function createNavigatorFolderSettingsOverrideSnapshot(
+  navigator: UserSettingsNavigator,
+  path: string,
+  patch: NavigatorFolderSettingsPatch,
+): Record<string, unknown> | null {
+  const effective = mergeFolderSettingsWithGlobal(
+    createNavigatorFolderSettingsWriteSnapshot(navigator, path, patch),
+    navigator,
+  );
+  const defaults = createNavigatorFolderSettingsSnapshot(navigator);
+  const overrides: Record<string, unknown> = {};
+
+  for (const key of NAVIGATOR_FOLDER_SETTING_KEYS) {
+    if (effective[key] !== defaults[key]) {
+      overrides[key] = effective[key];
+    }
+  }
+
+  return Object.keys(overrides).length > 0 ? overrides : null;
+}
+
 export function hasNavigatorFolderSettings(
   navigator: UserSettingsNavigator,
   path: string,
 ): boolean {
-  return lookupStoredNavigatorFolderSettings(navigator, path) !== null;
+  const storedSettings = lookupStoredNavigatorFolderSettings(navigator, path);
+
+  if (!storedSettings) {
+    return false;
+  }
+
+  return navigatorFolderSettingsDifferFromDefaults(
+    mergeFolderSettingsWithGlobal(storedSettings, navigator),
+    createNavigatorFolderSettingsSnapshot(navigator),
+  );
 }
 
 export function resolveNavigatorFolderSettings(

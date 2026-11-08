@@ -348,4 +348,28 @@ describe('migrateUserSettingsStorage', () => {
     expect(savedWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBe(320);
     expect(invalidWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBeNull();
   });
+
+  it('sets kind grouping when migrating from schema version 28', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 28,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.grouping')).toBe('kind');
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('keeps an existing grouping when migrating from schema version 28', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 28,
+      'navigator.grouping': 'none',
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.grouping')).toBe('none');
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+  });
 });

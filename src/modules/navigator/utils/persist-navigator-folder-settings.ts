@@ -10,8 +10,7 @@ import type {
   NavigatorOptionsTarget,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 import {
-  createNavigatorFolderSettingsWriteSnapshot,
-  hasNavigatorFolderSettings,
+  createNavigatorFolderSettingsOverrideSnapshot,
   toNavigatorFolderLayoutType,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
@@ -68,6 +67,13 @@ function getGlobalNavigatorOptionEntries(
     });
   }
 
+  if (patch.grouping !== undefined) {
+    entries.push({
+      key: 'navigator.grouping',
+      value: patch.grouping,
+    });
+  }
+
   return entries;
 }
 
@@ -82,13 +88,20 @@ async function persistNavigatorFolderSettingsPatch(
     return;
   }
 
+  const overrides = createNavigatorFolderSettingsOverrideSnapshot(
+    userSettingsStore.userSettings.navigator,
+    comparisonPath,
+    patch,
+  );
+
+  if (!overrides) {
+    await clearNavigatorFolderSettings(path);
+    return;
+  }
+
   await userSettingsStore.updateFolderSettings(currentMap => ({
     ...currentMap,
-    [comparisonPath]: createNavigatorFolderSettingsWriteSnapshot(
-      userSettingsStore.userSettings.navigator,
-      comparisonPath,
-      patch,
-    ),
+    [comparisonPath]: overrides,
   }));
 }
 
@@ -117,18 +130,6 @@ export async function persistNavigatorOptions(
   }
 
   await persistNavigatorFolderSettingsPatch(target.folder, patch);
-}
-
-export async function persistAppliedNavigatorOptions(
-  path: string,
-  patch: NavigatorFolderSettingsPatch,
-) {
-  const userSettingsStore = useUserSettingsStore();
-  const target = hasNavigatorFolderSettings(userSettingsStore.userSettings.navigator, path)
-    ? { folder: path }
-    : 'global';
-
-  await persistNavigatorOptions(target, patch);
 }
 
 export async function clearNavigatorFolderSettings(path: string) {

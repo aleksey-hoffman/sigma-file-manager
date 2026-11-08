@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "بحال کرنے کے لیے کوئی بند ٹیب نہیں"
   },
   "splitView": "تقسیم شدہ منظر",
-  "splitViewMode": "تقسیم شدہ منظر کا موڈ",
   "splitViewModeSplit": "تقسیم شدہ",
+  "splitViewModeSplitTooltip": "پین آزادانہ کام کرتے ہیں",
   "splitViewModeLinked": "منسلک",
+  "splitViewModeLinkedTooltip": "دوسرا پین پہلے کی پیروی کرتا ہے",
   "filter": {
     "filter": "فلٹر",
     "showHiddenItems": "پوشیدہ اشیاء دکھائیں",
@@ -452,12 +453,17 @@
       "sorting": "ترتیب",
       "sortAscending": "چڑھتی",
       "sortDescending": "اترتی",
-      "settingsScope": "دائرہ",
-      "settingsScopeGlobal": "عالمی",
-      "settingsScopeThisFolder": "یہ فولڈر",
-      "display": "نمائش",
-      "folderSettingsDifferFromGlobal": "اس فولڈر کی اپنی سیٹنگز ہیں",
-      "useGlobalSettings": "عالمی سیٹنگز استعمال کریں"
+      "thisFolderOptions": "اس فولڈر کے اختیارات",
+      "setAsDefault": "موجودہ اختیارات کو بطور ڈیفالٹ سیٹ کریں",
+      "savedAsDefault": "بطور ڈیفالٹ محفوظ ہو گیا",
+      "thisFolderDefaultActions": "یہ فولڈر ڈیفالٹ سیٹنگز کو اوور رائیڈ کرتا ہے",
+      "useGlobalSettings": "ڈیفالٹ سیٹنگز پر ری سیٹ کریں",
+      "grouping": "گروپ",
+      "groupingToday": "آج",
+      "groupingYesterday": "کل",
+      "groupingThisWeek": "اس ہفتے",
+      "groupingThisMonth": "اس مہینے",
+      "groupingOlder": "پرانا"
     },
     "tabs": {
       "lastTabCloseBehavior": {

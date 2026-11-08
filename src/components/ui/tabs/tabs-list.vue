@@ -34,6 +34,14 @@ const props = defineProps<TabsListProps>();
   scrollbar-width: thin;
 }
 
+.sigma-ui-tabs-list.sigma-ui-tabs-list--page {
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius);
+  background-color: hsl(var(--muted) / 50%);
+  gap: 4px;
+}
+
 .sigma-ui-tabs-list::-webkit-scrollbar {
   height: 6px;
 }

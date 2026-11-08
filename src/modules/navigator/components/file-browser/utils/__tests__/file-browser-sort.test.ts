@@ -26,6 +26,66 @@ function createEntry(overrides: Partial<DirEntry>): DirEntry {
 }
 
 describe('sortFileBrowserEntries', () => {
+  it('sorts directories together with files by the active key', () => {
+    const entries = [
+      createEntry({
+        name: 'alpha.txt',
+        path: '/alpha.txt',
+      }),
+      createEntry({
+        name: 'zeta',
+        path: '/zeta',
+        is_file: false,
+        is_dir: true,
+      }),
+      createEntry({
+        name: 'beta',
+        path: '/beta',
+        is_file: false,
+        is_dir: true,
+      }),
+    ];
+    const sorted = sortFileBrowserEntries(entries, 'name', 'asc');
+
+    expect(sorted.map(entry => entry.name)).toEqual(['alpha.txt', 'beta', 'zeta']);
+  });
+
+  it('mixes directories and files by the active sort', () => {
+    const entries = [
+      createEntry({
+        name: 'zeta',
+        path: '/zeta',
+        is_file: false,
+        is_dir: true,
+        modified_time: 30,
+      }),
+      createEntry({
+        name: 'alpha.txt',
+        path: '/alpha.txt',
+        modified_time: 10,
+      }),
+      createEntry({
+        name: 'beta',
+        path: '/beta',
+        is_file: false,
+        is_dir: true,
+        modified_time: 20,
+      }),
+    ];
+
+    expect(sortFileBrowserEntries(entries, 'name', 'asc').map(entry => entry.name)).toEqual([
+      'alpha.txt',
+      'beta',
+      'zeta',
+    ]);
+
+    expect(sortFileBrowserEntries(entries, 'modified', 'asc').map(entry => entry.name)).toEqual([
+      'alpha.txt',
+      'beta',
+      'zeta',
+    ]);
+  });
+
   it('keeps directories in existing order for size sort', () => {
     const entries = [
       createEntry({

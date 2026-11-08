@@ -21,7 +21,7 @@ import {
 } from '@lucide/vue';
 import type { ListSortColumn } from '@/types/user-settings';
 import { getNextNavigatorSortDirection } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
-import { persistAppliedNavigatorOptions } from '@/modules/navigator/utils/persist-navigator-folder-settings';
+import { persistNavigatorOptions } from '@/modules/navigator/utils/persist-navigator-folder-settings';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -61,15 +61,15 @@ const showCheckedLinkColumnPerformanceWarning = computed(() => {
     && (visibility.kind || visibility.links || visibility.linkTarget || visibility.linkStatus);
 });
 
-function handleColumnHeaderClick(column: ListSortColumn) {
+async function handleColumnHeaderClick(column: ListSortColumn) {
   if (listSortColumn.value === column) {
-    persistAppliedNavigatorOptions(ctx.currentPath.value, {
+    await persistNavigatorOptions({ folder: ctx.currentPath.value }, {
       listSortDirection: getNextNavigatorSortDirection(listSortDirection.value),
     });
     return;
   }
 
-  persistAppliedNavigatorOptions(ctx.currentPath.value, {
+  await persistNavigatorOptions({ folder: ctx.currentPath.value }, {
     listSortColumn: column,
     listSortDirection: 'asc',
   });

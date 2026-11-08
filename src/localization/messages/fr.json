@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Aucun onglet fermé à restaurer"
   },
   "splitView": "Vue partagée",
-  "splitViewMode": "Mode vue partagée",
   "splitViewModeSplit": "Partagée",
+  "splitViewModeSplitTooltip": "Les volets fonctionnent séparément",
   "splitViewModeLinked": "Liée",
+  "splitViewModeLinkedTooltip": "Le second volet suit le premier",
   "filter": {
     "filter": "Filtre",
     "showHiddenItems": "Afficher les éléments cachés",
@@ -423,12 +424,17 @@
       "sorting": "Tri",
       "sortAscending": "Ascendant",
       "sortDescending": "Descendant",
-      "settingsScope": "Portée",
-      "settingsScopeGlobal": "Global",
-      "settingsScopeThisFolder": "Ce dossier",
-      "display": "Affichage",
-      "folderSettingsDifferFromGlobal": "Ce dossier a ses propres paramètres",
-      "useGlobalSettings": "Utiliser les paramètres globaux"
+      "thisFolderOptions": "Options de ce dossier",
+      "setAsDefault": "Définir les options actuelles par défaut",
+      "savedAsDefault": "Enregistré par défaut",
+      "thisFolderDefaultActions": "Ce dossier remplace les paramètres par défaut",
+      "useGlobalSettings": "Rétablir les paramètres par défaut",
+      "grouping": "Grouper",
+      "groupingToday": "Aujourd'hui",
+      "groupingYesterday": "Hier",
+      "groupingThisWeek": "Cette semaine",
+      "groupingThisMonth": "Ce mois-ci",
+      "groupingOlder": "Plus ancien"
     },
     "tabs": {
       "lastTabCloseBehavior": {
