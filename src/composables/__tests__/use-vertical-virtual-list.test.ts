@@ -194,6 +194,39 @@ describe('useVerticalVirtualList', () => {
     wrapper.unmount();
   });
 
+  it('measures the scroll-area viewport when given its content element', () => {
+    const viewport = createViewport(96);
+    viewport.setAttribute('data-reka-scroll-area-viewport', '');
+    const content = createViewport(3_200);
+    viewport.appendChild(content);
+    const viewportComponent = {
+      viewportElement: undefined,
+      $el: content,
+    } as unknown as ComponentPublicInstance;
+    let virtualList: NumberVerticalVirtualList | null = null;
+
+    const wrapper = mount(defineComponent({
+      setup() {
+        const items = computed(() =>
+          Array.from({ length: 100 }, (_, index) => index));
+        virtualList = useVerticalVirtualList({
+          items,
+          getItemSize: () => 32,
+          overscanPx: 0,
+        });
+        virtualList.setScrollViewportRef(viewportComponent);
+
+        return () => h('div');
+      },
+    }));
+
+    expect(virtualList!.scrollViewportRef.value).toBe(viewport);
+    expect(virtualList!.viewportHeight.value).toBe(96);
+    expect(virtualList!.visibleItems.value).toHaveLength(3);
+
+    wrapper.unmount();
+  });
+
   it('updates the visible range from scroll events', () => {
     const viewport = createViewport(96);
     const { virtualList, wrapper } = mountNumberVirtualList(viewport);
@@ -218,6 +251,37 @@ describe('useVerticalVirtualList', () => {
     const { virtualList, wrapper } = mountNumberVirtualList(viewport);
 
     expect(virtualList.viewportHeight.value).toBe(clientHeight);
+
+    wrapper.unmount();
+  });
+
+  it('offsets items and the total height by the list padding', () => {
+    const viewport = createViewport(96);
+    let virtualList: NumberVerticalVirtualList | null = null;
+    const wrapper = mount(defineComponent({
+      setup() {
+        virtualList = useVerticalVirtualList({
+          items: computed(() => [0, 1, 2]),
+          getItemSize: () => 32,
+          overscanPx: 0,
+          paddingStartPx: 6,
+          paddingEndPx: 4,
+        });
+        virtualList.setScrollViewportRef(viewport);
+
+        return () => h('div');
+      },
+    }));
+
+    if (!virtualList) {
+      throw new Error('Expected virtual list to mount');
+    }
+
+    const mountedList: NumberVerticalVirtualList = virtualList;
+
+    expect(mountedList.virtualItems.value.map(item => item.start)).toEqual([6, 38, 70]);
+    expect(mountedList.totalHeightPx.value).toBe(106);
+    expect(mountedList.windowStyle.value.transform).toBe('translate3d(0, 6px, 0)');
 
     wrapper.unmount();
   });

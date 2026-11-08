@@ -12,6 +12,7 @@ import {
   type ComputedRef,
   type Ref,
 } from 'vue';
+import { resolveScrollAreaViewportElement } from '@/modules/navigator/components/file-browser/utils/refresh-scroll-area-horizontal';
 
 const DEFAULT_OVERSCAN_PX = 256;
 
@@ -35,8 +36,9 @@ type VerticalVirtualViewportReference
 export function createVerticalVirtualItems<Item>(
   items: readonly Item[],
   getItemSize: (item: Item) => number,
+  paddingStartPx = 0,
 ): VerticalVirtualItem<Item>[] {
-  let start = 0;
+  let start = paddingStartPx;
 
   return items.map((item, index) => {
     const size = Math.max(0, getItemSize(item));
@@ -113,7 +115,7 @@ export function computeVerticalVirtualRange<PositionedItem extends VerticalVirtu
   };
 }
 
-function resolveElement(
+function resolveRawElement(
   element: VerticalVirtualViewportReference,
 ): HTMLElement | null {
   if (element instanceof HTMLElement) {
@@ -139,23 +141,34 @@ function resolveElement(
   return null;
 }
 
+function resolveElement(
+  element: VerticalVirtualViewportReference,
+): HTMLElement | null {
+  const rawElement = resolveRawElement(element);
+  return rawElement ? resolveScrollAreaViewportElement(rawElement) : null;
+}
+
 export function useVerticalVirtualList<Item>(options: {
   items: ComputedRef<readonly Item[]>;
   getItemSize: (item: Item) => number;
   overscanPx?: number;
+  paddingStartPx?: number;
+  paddingEndPx?: number;
 }) {
   const scrollViewportRef = ref<HTMLElement | null>(null);
   const scrollTop = ref(0);
   const viewportHeight = ref(0);
   const overscanPx = options.overscanPx ?? DEFAULT_OVERSCAN_PX;
+  const paddingStartPx = options.paddingStartPx ?? 0;
+  const paddingEndPx = options.paddingEndPx ?? 0;
   let resizeObserver: ResizeObserver | null = null;
 
   const virtualItems = computed(() =>
-    createVerticalVirtualItems(options.items.value, options.getItemSize));
+    createVerticalVirtualItems(options.items.value, options.getItemSize, paddingStartPx));
 
   const totalHeightPx = computed(() => {
     const lastItem = virtualItems.value[virtualItems.value.length - 1];
-    return lastItem ? lastItem.start + lastItem.size : 0;
+    return lastItem ? lastItem.start + lastItem.size + paddingEndPx : 0;
   });
 
   const visibleRange = computed(() =>
