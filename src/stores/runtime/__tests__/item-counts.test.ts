@@ -192,4 +192,73 @@ describe('item counts store', () => {
 
     expect(store.getItemCount('/folder')).toBe(5);
   });
+
+  it('keeps showing the last count while an invalidated path is refetched', async () => {
+    const refetchRequest = createDeferred<unknown[]>();
+    invokeMock
+      .mockResolvedValueOnce([
+        {
+          path: '/folder',
+          item_count: 2,
+        },
+      ])
+      .mockReturnValueOnce(refetchRequest.promise);
+    const store = useItemCountsStore();
+
+    await store.requestItemCountsBatch(['/folder']);
+    store.invalidate(['/folder']);
+
+    expect(store.getItemCount('/folder')).toBe(2);
+    expect(store.hasSufficientItemCount('/folder')).toBe(false);
+
+    const refetchPromise = store.requestItemCountsBatch(['/folder']);
+
+    expect(invokeMock).toHaveBeenCalledTimes(2);
+    expect(store.getItemCount('/folder')).toBe(2);
+
+    refetchRequest.resolve([
+      {
+        path: '/folder',
+        item_count: 5,
+      },
+    ]);
+    await refetchPromise;
+
+    expect(store.getItemCount('/folder')).toBe(5);
+  });
+
+  it('ignores a response that started before the path was invalidated', async () => {
+    const outdatedRequest = createDeferred<unknown[]>();
+    invokeMock
+      .mockResolvedValueOnce([
+        {
+          path: '/folder',
+          item_count: 2,
+        },
+      ])
+      .mockReturnValueOnce(outdatedRequest.promise)
+      .mockResolvedValueOnce([
+        {
+          path: '/folder',
+          item_count: 6,
+        },
+      ]);
+    const store = useItemCountsStore();
+
+    await store.requestItemCountsBatch(['/folder']);
+    store.invalidate(['/folder']);
+    const outdatedPromise = store.requestItemCountsBatch(['/folder']);
+    store.invalidate(['/folder']);
+    await store.requestItemCountsBatch(['/folder']);
+
+    outdatedRequest.resolve([
+      {
+        path: '/folder',
+        item_count: 4,
+      },
+    ]);
+    await outdatedPromise;
+
+    expect(store.getItemCount('/folder')).toBe(6);
+  });
 });

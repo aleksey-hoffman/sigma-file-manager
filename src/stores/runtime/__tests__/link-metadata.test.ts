@@ -240,6 +240,89 @@ describe('link metadata store', () => {
     expect(store.mergeEntry(createEntry({ path: '/item' })).hard_link_count).toBe(3);
   });
 
+  it('keeps invalidated metadata visible without a skeleton while it is refetched', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+    const refetchRequest = createDeferred<unknown[]>();
+    invokeMock
+      .mockResolvedValueOnce([
+        {
+          path: '/link',
+          link_type: 'symlink',
+          link_target: '/target',
+          link_status: 'valid',
+          hard_link_count: null,
+        },
+      ])
+      .mockReturnValueOnce(refetchRequest.promise);
+    const store = useLinkMetadataStore();
+    const requestOptions = {
+      includeShortcutTargets: true,
+      includeHardLinkCounts: true,
+    };
+
+    await store.requestMetadataBatch(['/link'], requestOptions);
+    store.invalidate(['/link']);
+
+    expect(store.hasSufficientMetadata('/link', requestOptions)).toBe(false);
+    expect(store.mergeEntry(createEntry({ path: '/link' })).link_status).toBe('valid');
+
+    const refetchPromise = store.requestMetadataBatch(['/link'], requestOptions);
+    vi.advanceTimersByTime(1000);
+
+    expect(invokeMock).toHaveBeenCalledTimes(2);
+    expect(store.isSkeletonVisible('/link')).toBe(false);
+    expect(store.mergeEntry(createEntry({ path: '/link' })).link_status).toBe('valid');
+
+    refetchRequest.resolve([
+      {
+        path: '/link',
+        link_type: 'symlink',
+        link_target: '/target',
+        link_status: 'broken',
+        hard_link_count: null,
+      },
+    ]);
+    await refetchPromise;
+
+    expect(store.isSkeletonVisible('/link')).toBe(false);
+    expect(store.mergeEntry(createEntry({ path: '/link' })).link_status).toBe('broken');
+  });
+
+  it('still shows a skeleton when cached metadata lacks newly requested options', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+    const shortcutRequest = createDeferred<unknown[]>();
+    invokeMock
+      .mockResolvedValueOnce([
+        {
+          path: '/shortcut.lnk',
+          link_type: 'shortcut',
+          link_target: null,
+          link_status: null,
+          hard_link_count: null,
+        },
+      ])
+      .mockReturnValueOnce(shortcutRequest.promise);
+    const store = useLinkMetadataStore();
+
+    await store.requestMetadataBatch(['/shortcut.lnk'], {
+      includeShortcutTargets: false,
+      includeHardLinkCounts: false,
+    });
+    store.invalidate(['/shortcut.lnk']);
+    const shortcutPromise = store.requestMetadataBatch(['/shortcut.lnk'], {
+      includeShortcutTargets: true,
+      includeHardLinkCounts: false,
+    });
+    vi.advanceTimersByTime(100);
+
+    expect(store.isSkeletonVisible('/shortcut.lnk')).toBe(true);
+
+    shortcutRequest.resolve([]);
+    await shortcutPromise;
+  });
+
   it('retries paths that previously failed to load', async () => {
     invokeMock
       .mockRejectedValueOnce(new Error('temporary failure'))
