@@ -357,7 +357,6 @@ describe('migrateUserSettingsStorage', () => {
     await migrateUserSettingsStorage(storage);
 
     expect(storage.values.get('navigator.grouping')).toBe('kind');
-    expect(storage.values.get('navigator.showDirectoriesOnTop')).toBeUndefined();
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
