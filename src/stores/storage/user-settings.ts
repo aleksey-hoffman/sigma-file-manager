@@ -163,7 +163,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       gridSortDirection: 'asc',
       enableBoxSelection: false,
       increaseFileViewGaps: false,
-      showDirectoriesOnTop: true,
+      grouping: 'kind',
     },
     globalSearch: {
       scanDepth: 7,

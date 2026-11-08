@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "पुनर्स्थापित करने के लिए कोई बंद टैब नहीं"
   },
   "splitView": "भाजित दृश्य",
-  "splitViewMode": "भाजित दृश्य मोड",
   "splitViewModeSplit": "भाजित",
+  "splitViewModeSplitTooltip": "पैन स्वतंत्र रूप से काम करते हैं",
   "splitViewModeLinked": "लिंक",
+  "splitViewModeLinkedTooltip": "दूसरा पैन पहले का अनुसरण करता है",
   "filter": {
     "filter": "फ़िल्टर",
     "showHiddenItems": "छुपे हुए आइटम दिखाएँ",
@@ -452,14 +453,17 @@
       "sorting": "छँटाई",
       "sortAscending": "आरोही",
       "sortDescending": "अवरोही",
-      "settingsScope": "दायरा",
-      "settingsScopeGlobal": "वैश्विक",
-      "settingsScopeThisFolder": "यह फ़ोल्डर",
-      "display": "प्रदर्शन",
-      "folderSettingsDifferFromGlobal": "इस फ़ोल्डर की अपनी सेटिंग्स हैं",
-      "useGlobalSettings": "वैश्विक सेटिंग्स उपयोग करें",
-      "showDirectoriesOnTop": "निर्देशिकाओं को ऊपर दिखाएँ",
-      "showDirectoriesOnTopDescription": "बंद होने पर फ़ोल्डर और फ़ाइलें सक्रिय सॉर्ट कुंजी के अनुसार एक साथ क्रमबद्ध होती हैं।"
+      "thisFolderOptions": "इस फ़ोल्डर के विकल्प",
+      "setAsDefault": "वर्तमान विकल्पों को डिफ़ॉल्ट के रूप में सेट करें",
+      "savedAsDefault": "डिफ़ॉल्ट के रूप में सहेजा गया",
+      "thisFolderDefaultActions": "यह फ़ोल्डर डिफ़ॉल्ट सेटिंग्स को बदलता है",
+      "useGlobalSettings": "डिफ़ॉल्ट सेटिंग्स पर रीसेट करें",
+      "grouping": "समूह",
+      "groupingToday": "आज",
+      "groupingYesterday": "कल",
+      "groupingThisWeek": "इस सप्ताह",
+      "groupingThisMonth": "इस महीने",
+      "groupingOlder": "पुराना"
     },
     "tabs": {
       "lastTabCloseBehavior": {

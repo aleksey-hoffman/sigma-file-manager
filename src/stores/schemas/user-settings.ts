@@ -493,7 +493,11 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   }
 
   if (fromVersion === 28 && toVersion === 29) {
-    await setDefaultBooleanIfMissing(storage, 'navigator.showDirectoriesOnTop', true);
+    const grouping = await storage.get<unknown>('navigator.grouping');
+
+    if (grouping === undefined || grouping === null) {
+      await storage.set('navigator.grouping', 'kind');
+    }
   }
 
   if (fromVersion === 6 && toVersion === 7) {

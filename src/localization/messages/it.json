@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Nessuna scheda chiusa da ripristinare"
   },
   "splitView": "Vista divisa",
-  "splitViewMode": "Modalità vista divisa",
   "splitViewModeSplit": "Divisa",
+  "splitViewModeSplitTooltip": "I riquadri funzionano separatamente",
   "splitViewModeLinked": "Collegata",
+  "splitViewModeLinkedTooltip": "Il secondo riquadro segue il primo",
   "filter": {
     "filter": "Filtro",
     "showHiddenItems": "Mostra elementi nascosti",
@@ -423,14 +424,17 @@
       "sorting": "Ordinamento",
       "sortAscending": "Crescente",
       "sortDescending": "Decrescente",
-      "settingsScope": "Ambito",
-      "settingsScopeGlobal": "Globale",
-      "settingsScopeThisFolder": "Questa cartella",
-      "display": "Visualizzazione",
-      "folderSettingsDifferFromGlobal": "Questa cartella ha impostazioni proprie",
-      "useGlobalSettings": "Usa impostazioni globali",
-      "showDirectoriesOnTop": "Mostra le cartelle in cima",
-      "showDirectoriesOnTopDescription": "Se disattivata, cartelle e file vengono ordinati insieme in base al criterio attivo."
+      "thisFolderOptions": "Opzioni di questa cartella",
+      "setAsDefault": "Imposta le opzioni attuali come predefinite",
+      "savedAsDefault": "Salvato come predefinito",
+      "thisFolderDefaultActions": "Questa cartella sostituisce le impostazioni predefinite",
+      "useGlobalSettings": "Reimposta le impostazioni predefinite",
+      "grouping": "Raggruppa",
+      "groupingToday": "Oggi",
+      "groupingYesterday": "Ieri",
+      "groupingThisWeek": "Questa settimana",
+      "groupingThisMonth": "Questo mese",
+      "groupingOlder": "Precedente"
     },
     "tabs": {
       "lastTabCloseBehavior": {

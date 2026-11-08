@@ -419,14 +419,17 @@
       "sorting": "مرتب‌سازی",
       "sortAscending": "صعودی",
       "sortDescending": "نزولی",
-      "settingsScope": "محدوده",
-      "settingsScopeGlobal": "سراسری",
-      "settingsScopeThisFolder": "این پوشه",
-      "display": "نمایش",
-      "folderSettingsDifferFromGlobal": "این پوشه تنظیمات خودش را دارد",
-      "useGlobalSettings": "استفاده از تنظیمات سراسری",
-      "showDirectoriesOnTop": "نمایش پوشه‌ها در بالا",
-      "showDirectoriesOnTopDescription": "اگر خاموش باشد، پوشه‌ها و فایل‌ها با هم بر اساس کلید مرتب‌سازی فعال مرتب می‌شوند."
+      "thisFolderOptions": "گزینه‌های این پوشه",
+      "setAsDefault": "تنظیم گزینه‌های فعلی به‌عنوان پیش‌فرض",
+      "savedAsDefault": "به‌عنوان پیش‌فرض ذخیره شد",
+      "thisFolderDefaultActions": "این پوشه تنظیمات پیش‌فرض را لغو می‌کند",
+      "useGlobalSettings": "بازنشانی به تنظیمات پیش‌فرض",
+      "grouping": "گروه‌بندی",
+      "groupingToday": "امروز",
+      "groupingYesterday": "دیروز",
+      "groupingThisWeek": "این هفته",
+      "groupingThisMonth": "این ماه",
+      "groupingOlder": "قدیمی‌تر"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -1246,9 +1249,10 @@
     "otherCommandsHeading": "سایر"
   },
   "splitView": "Split view",
-  "splitViewMode": "حالت نمای تقسیم‌شده",
   "splitViewModeSplit": "تقسیم",
+  "splitViewModeSplitTooltip": "بخش‌ها مستقل کار می‌کنند",
   "splitViewModeLinked": "پیوند",
+  "splitViewModeLinkedTooltip": "بخش دوم از بخش اول پیروی می‌کند",
   "statusCenter": {
     "title": "Status center",
     "clearCompleted": "Clear completed",

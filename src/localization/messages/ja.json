@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "復元できる閉じたタブはありません"
   },
   "splitView": "分割表示",
-  "splitViewMode": "分割表示モード",
   "splitViewModeSplit": "分割",
+  "splitViewModeSplitTooltip": "ペインは独立して動く",
   "splitViewModeLinked": "連動",
+  "splitViewModeLinkedTooltip": "2つ目のペインは1つ目に従う",
   "filter": {
     "filter": "フィルター",
     "showHiddenItems": "隠しアイテムを表示",
@@ -423,14 +424,17 @@
       "sorting": "並べ替え",
       "sortAscending": "昇順",
       "sortDescending": "降順",
-      "settingsScope": "範囲",
-      "settingsScopeGlobal": "グローバル",
-      "settingsScopeThisFolder": "このフォルダー",
-      "display": "表示",
-      "folderSettingsDifferFromGlobal": "このフォルダーには独自の設定があります",
-      "useGlobalSettings": "グローバル設定を使用",
-      "showDirectoriesOnTop": "ディレクトリを一番上に表示",
-      "showDirectoriesOnTopDescription": "オフにすると、フォルダーとファイルが現在の並べ替えキーでまとめて並びます。"
+      "thisFolderOptions": "このフォルダーのオプション",
+      "setAsDefault": "現在のオプションを既定にする",
+      "savedAsDefault": "既定として保存しました",
+      "thisFolderDefaultActions": "このフォルダーは既定の設定を上書きします",
+      "useGlobalSettings": "既定の設定に戻す",
+      "grouping": "グループ",
+      "groupingToday": "今日",
+      "groupingYesterday": "昨日",
+      "groupingThisWeek": "今週",
+      "groupingThisMonth": "今月",
+      "groupingOlder": "それ以前"
     },
     "tabs": {
       "lastTabCloseBehavior": {

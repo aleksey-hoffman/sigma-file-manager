@@ -190,6 +190,7 @@ describe('user settings folder settings path lifecycle', () => {
       gridSortColumn: 'name' as const,
       gridSortDirection: 'asc' as const,
       showHiddenFiles: true,
+      grouping: 'kind' as const,
     };
 
     await userSettingsStore.set('navigator.folderSettings', {
@@ -216,6 +217,7 @@ describe('user settings folder settings path lifecycle', () => {
       gridSortColumn: 'name' as const,
       gridSortDirection: 'asc' as const,
       showHiddenFiles: false,
+      grouping: 'none' as const,
     };
 
     await userSettingsStore.set('navigator.folderSettings', {
@@ -244,6 +246,7 @@ describe('user settings folder settings path lifecycle', () => {
       gridSortColumn: 'name' as const,
       gridSortDirection: 'asc' as const,
       showHiddenFiles: true,
+      grouping: 'modified' as const,
     };
 
     await userSettingsStore.set('navigator.folderSettings', {

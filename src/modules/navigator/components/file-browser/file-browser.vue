@@ -77,6 +77,14 @@ const fb = useFileBrowser({
   scrollStateKey: getScrollStateKey,
 });
 
+const folderOptionsPath = computed(() => {
+  if (props.tab?.type === 'search') {
+    return '';
+  }
+
+  return fb.currentPath.value;
+});
+
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
 const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
 
@@ -130,6 +138,7 @@ async function revealAddressBarEntry(parentPath: string, entryPath: string) {
 }
 
 provideFileBrowserContext({
+  grouping: fb.grouping,
   entries: fb.entries,
   directoryEntryCount: computed(() => fb.dirContents.value?.total_count ?? 0),
   currentPath: fb.currentPath,
@@ -234,6 +243,7 @@ defineExpose({
       :can-go-up="!!fb.parentPath.value"
       :is-loading="fb.isLoading.value || fb.isRefreshing.value"
       :is-split-view="props.isSplitView"
+      :folder-path="folderOptionsPath"
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"

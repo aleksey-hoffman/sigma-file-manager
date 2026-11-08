@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "אין לשוניות סגורות לשחזור"
   },
   "splitView": "תצוגה מפוצלת",
-  "splitViewMode": "מצב תצוגה מפוצלת",
   "splitViewModeSplit": "מפוצל",
+  "splitViewModeSplitTooltip": "החלונות פועלים בנפרד",
   "splitViewModeLinked": "מקושר",
+  "splitViewModeLinkedTooltip": "החלון השני עוקב אחרי הראשון",
   "filter": {
     "filter": "סינון",
     "showHiddenItems": "הצג פריטים מוסתרים",
@@ -452,14 +453,17 @@
       "sorting": "מיון",
       "sortAscending": "עולה",
       "sortDescending": "יורד",
-      "settingsScope": "היקף",
-      "settingsScopeGlobal": "גלובלי",
-      "settingsScopeThisFolder": "התיקייה הזו",
-      "display": "תצוגה",
-      "folderSettingsDifferFromGlobal": "לתיקייה הזו יש הגדרות משלה",
-      "useGlobalSettings": "השתמש בהגדרות גלובליות",
-      "showDirectoriesOnTop": "הצג תיקיות למעלה",
-      "showDirectoriesOnTopDescription": "כשהאפשרות כבויה, תיקיות וקבצים ממוינים יחד לפי מפתח המיון הפעיל."
+      "thisFolderOptions": "אפשרויות התיקייה הזו",
+      "setAsDefault": "קבע את האפשרויות הנוכחיות כברירת מחדל",
+      "savedAsDefault": "נשמר כברירת מחדל",
+      "thisFolderDefaultActions": "תיקייה זו דורסת את הגדרות ברירת המחדל",
+      "useGlobalSettings": "איפוס להגדרות ברירת המחדל",
+      "grouping": "קיבוץ",
+      "groupingToday": "היום",
+      "groupingYesterday": "אתמול",
+      "groupingThisWeek": "השבוע",
+      "groupingThisMonth": "החודש",
+      "groupingOlder": "ישן יותר"
     },
     "tabs": {
       "lastTabCloseBehavior": {

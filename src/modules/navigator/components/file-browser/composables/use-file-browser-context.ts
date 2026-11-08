@@ -6,6 +6,7 @@ import {
   provide, inject, type InjectionKey, type Ref, type ComputedRef, type ComponentPublicInstance,
 } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
+import type { NavigatorGrouping } from '@/types/user-settings';
 import type { ContextMenuAction, ContextMenuState } from '@/modules/navigator/components/file-browser/types';
 import type { LinkCreationKind } from '@/utils/link-operations';
 import type {
@@ -14,6 +15,7 @@ import type {
 } from './use-file-browser-virtual-layout';
 
 export interface FileBrowserContext {
+  grouping: ComputedRef<NavigatorGrouping>;
   entries: ComputedRef<DirEntry[]>;
   directoryEntryCount: ComputedRef<number>;
   currentPath: ComputedRef<string>;

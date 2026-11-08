@@ -36,8 +36,9 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { applyBackgroundContextMenu } from '@/modules/navigator/components/file-browser/utils/file-browser-background-context-menu';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import type { NavigatorGrouping } from '@/types/user-settings';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
-import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
+import { getFileBrowserEntryOrder } from '../file-browser-entry-groups';
 import {
   applyRangeSelection,
   getEntriesInInclusiveRange,
@@ -54,7 +55,7 @@ export function useFileBrowserSelection(
   onOpen: (entry: DirEntry) => void,
   onOpenProperties: (entries: DirEntry[]) => void,
   onRefresh: () => void,
-  layout?: () => 'list' | 'grid' | undefined,
+  grouping: () => NavigatorGrouping,
 ) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
@@ -172,7 +173,7 @@ export function useFileBrowserSelection(
   }
 
   function getOrderedEntries(): DirEntry[] {
-    return getFileBrowserVisualEntryOrder(entriesRef.value, layout?.());
+    return getFileBrowserEntryOrder(entriesRef.value, grouping());
   }
 
   function selectRange(fromEntry: DirEntry, toEntry: DirEntry, additive = false) {

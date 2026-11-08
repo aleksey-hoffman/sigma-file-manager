@@ -349,27 +349,28 @@ describe('migrateUserSettingsStorage', () => {
     expect(invalidWidthStorage.values.get('navigator.navigationPanel.widthPx')).toBeNull();
   });
 
-  it('defaults directories on top when migrating from schema version 28', async () => {
+  it('sets kind grouping when migrating from schema version 28', async () => {
     const storage = createStorageAdapter({
       [USER_SETTINGS_SCHEMA_VERSION_KEY]: 28,
     });
 
     await migrateUserSettingsStorage(storage);
 
-    expect(storage.values.get('navigator.showDirectoriesOnTop')).toBe(true);
+    expect(storage.values.get('navigator.grouping')).toBe('kind');
+    expect(storage.values.get('navigator.showDirectoriesOnTop')).toBeUndefined();
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
 
-  it('preserves a disabled directories on top preference when migrating from schema version 28', async () => {
+  it('keeps an existing grouping when migrating from schema version 28', async () => {
     const storage = createStorageAdapter({
       [USER_SETTINGS_SCHEMA_VERSION_KEY]: 28,
-      'navigator.showDirectoriesOnTop': false,
+      'navigator.grouping': 'none',
     });
 
     await migrateUserSettingsStorage(storage);
 
-    expect(storage.values.get('navigator.showDirectoriesOnTop')).toBe(false);
+    expect(storage.values.get('navigator.grouping')).toBe('none');
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
   });
 });

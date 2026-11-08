@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "No closed tabs to restore"
   },
   "splitView": "Split view",
-  "splitViewMode": "Split view mode",
   "splitViewModeSplit": "Split",
+  "splitViewModeSplitTooltip": "Panes work independently",
   "splitViewModeLinked": "Linked",
+  "splitViewModeLinkedTooltip": "Second pane follows the first",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Show Hidden Items",
@@ -452,14 +453,17 @@
       "sorting": "Sorting",
       "sortAscending": "Ascending",
       "sortDescending": "Descending",
-      "settingsScope": "Scope",
-      "settingsScopeGlobal": "Global",
-      "settingsScopeThisFolder": "This folder",
-      "display": "Display",
-      "folderSettingsDifferFromGlobal": "This folder has its own settings",
-      "useGlobalSettings": "Use global settings",
-      "showDirectoriesOnTop": "Show directories on top",
-      "showDirectoriesOnTopDescription": "When off, folders and files are sorted together by the active sort key."
+      "thisFolderOptions": "This folder options",
+      "setAsDefault": "Set current options as default",
+      "savedAsDefault": "Saved as default",
+      "thisFolderDefaultActions": "This folder overrides default settings",
+      "useGlobalSettings": "Reset to default settings",
+      "grouping": "Group by",
+      "groupingToday": "Today",
+      "groupingYesterday": "Yesterday",
+      "groupingThisWeek": "This week",
+      "groupingThisMonth": "This month",
+      "groupingOlder": "Older"
     },
     "tabs": {
       "lastTabCloseBehavior": {

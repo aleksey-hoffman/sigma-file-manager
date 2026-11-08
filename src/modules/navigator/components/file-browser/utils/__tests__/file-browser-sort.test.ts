@@ -26,7 +26,7 @@ function createEntry(overrides: Partial<DirEntry>): DirEntry {
 }
 
 describe('sortFileBrowserEntries', () => {
-  it('keeps directories on top by default', () => {
+  it('sorts directories together with files by the active key', () => {
     const entries = [
       createEntry({
         name: 'alpha.txt',
@@ -47,10 +47,10 @@ describe('sortFileBrowserEntries', () => {
     ];
     const sorted = sortFileBrowserEntries(entries, 'name', 'asc');
 
-    expect(sorted.map(entry => entry.name)).toEqual(['beta', 'zeta', 'alpha.txt']);
+    expect(sorted.map(entry => entry.name)).toEqual(['alpha.txt', 'beta', 'zeta']);
   });
 
-  it('mixes directories and files by the active sort when directories on top is off', () => {
+  it('mixes directories and files by the active sort', () => {
     const entries = [
       createEntry({
         name: 'zeta',
@@ -73,13 +73,17 @@ describe('sortFileBrowserEntries', () => {
       }),
     ];
 
-    expect(sortFileBrowserEntries(entries, 'name', 'asc', undefined, {
-      showDirectoriesOnTop: false,
-    }).map(entry => entry.name)).toEqual(['alpha.txt', 'beta', 'zeta']);
+    expect(sortFileBrowserEntries(entries, 'name', 'asc').map(entry => entry.name)).toEqual([
+      'alpha.txt',
+      'beta',
+      'zeta',
+    ]);
 
-    expect(sortFileBrowserEntries(entries, 'modified', 'asc', undefined, {
-      showDirectoriesOnTop: false,
-    }).map(entry => entry.name)).toEqual(['alpha.txt', 'beta', 'zeta']);
+    expect(sortFileBrowserEntries(entries, 'modified', 'asc').map(entry => entry.name)).toEqual([
+      'alpha.txt',
+      'beta',
+      'zeta',
+    ]);
   });
 
   it('keeps directories in existing order for size sort', () => {

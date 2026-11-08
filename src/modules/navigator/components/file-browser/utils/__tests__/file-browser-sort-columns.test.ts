@@ -74,7 +74,7 @@ function createNavigatorSettings(overrides: Partial<UserSettingsNavigator> = {})
     gridSortDirection: 'asc',
     enableBoxSelection: false,
     increaseFileViewGaps: false,
-    showDirectoriesOnTop: true,
+    grouping: 'kind',
     ...overrides,
   };
 }

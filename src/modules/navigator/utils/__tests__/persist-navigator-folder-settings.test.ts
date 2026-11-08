@@ -9,7 +9,6 @@ import type { NavigatorFolderSettings, NavigatorFolderSettingsMap, UserSettingsN
 import { normalizePathForComparison } from '@/utils/file-operation-paths';
 import {
   clearNavigatorFolderSettings,
-  persistAppliedNavigatorOptions,
   persistNavigatorOptions,
 } from '../persist-navigator-folder-settings';
 import { getStoredNavigatorFolderSettingsMap } from '../resolve-navigator-folder-settings';
@@ -95,7 +94,7 @@ function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSe
     gridSortDirection: 'asc',
     enableBoxSelection: false,
     increaseFileViewGaps: false,
-    showDirectoriesOnTop: true,
+    grouping: 'kind',
     ...overrides,
   };
 }
@@ -110,6 +109,7 @@ function createFolderSettings(
     gridSortColumn: 'size',
     gridSortDirection: 'asc',
     showHiddenFiles: true,
+    grouping: 'modified',
     ...overrides,
   };
 }
@@ -153,6 +153,128 @@ describe('persist navigator folder settings', () => {
     });
   });
 
+  it('drops the folder override when layout, sort, grouping, and hidden files match the defaults again', async () => {
+    userSettings.navigator = createNavigator({
+      folderSettings: {
+        'C:/Users/aleks/Documents': createFolderSettings({
+          layout: 'grid',
+          listSortColumn: 'modified',
+          listSortDirection: 'desc',
+          gridSortColumn: 'size',
+          gridSortDirection: 'desc',
+          showHiddenFiles: true,
+          grouping: 'none',
+        }),
+      },
+    });
+
+    await persistNavigatorOptions({ folder: 'C:/Users/aleks/Documents' }, {
+      layout: 'list',
+      listSortColumn: null,
+      listSortDirection: 'asc',
+      gridSortColumn: 'name',
+      gridSortDirection: 'asc',
+      showHiddenFiles: false,
+      grouping: 'kind',
+    });
+
+    expect(setManyMock).not.toHaveBeenCalled();
+    expect(setMock).toHaveBeenCalledWith('navigator.folderSettings', {});
+  });
+
+  it('prunes folder fields that match the defaults and keeps the ones that still differ', async () => {
+    userSettings.navigator = createNavigator({
+      folderSettings: {
+        'C:/Users/aleks/Documents': {
+          layout: 'grid',
+          listSortColumn: 'modified',
+          listSortDirection: 'desc',
+          showHiddenFiles: true,
+          grouping: 'none',
+        } as NavigatorFolderSettings,
+      },
+    });
+
+    await persistNavigatorOptions({ folder: 'C:/Users/aleks/Documents' }, {
+      layout: 'list',
+      listSortColumn: null,
+      listSortDirection: 'asc',
+      grouping: 'kind',
+    });
+
+    expect(setMock).toHaveBeenCalledWith('navigator.folderSettings', {
+      [normalizePathForComparison('C:/Users/aleks/Documents')]: {
+        showHiddenFiles: true,
+      },
+    });
+  });
+
+  it('writes grouping onto the folder the menu is editing', async () => {
+    await persistNavigatorOptions({ folder: 'C:\\Users\\aleks\\Documents\\' }, {
+      grouping: 'none',
+    });
+
+    expect(setManyMock).not.toHaveBeenCalled();
+    expect(setMock).toHaveBeenCalledWith('navigator.folderSettings', {
+      [normalizePathForComparison('C:/Users/aleks/Documents')]: {
+        grouping: 'none',
+      },
+    });
+  });
+
+  it('writes a global grouping change without a folder snapshot', async () => {
+    await persistNavigatorOptions('global', {
+      grouping: 'modified',
+    });
+
+    expect(updateFolderSettingsMock).not.toHaveBeenCalled();
+    expect(setManyMock).toHaveBeenCalledWith([
+      {
+        key: 'navigator.grouping',
+        value: 'modified',
+      },
+    ]);
+  });
+
+  it('copies layout, sort, grouping, and hidden files onto the global default', async () => {
+    await persistNavigatorOptions('global', createFolderSettings());
+
+    expect(updateFolderSettingsMock).not.toHaveBeenCalled();
+    expect(setManyMock).toHaveBeenCalledWith([
+      {
+        key: 'navigator.layout.type',
+        value: {
+          title: 'gridLayout',
+          name: 'grid',
+        },
+      },
+      {
+        key: 'navigator.listSortColumn',
+        value: 'modified',
+      },
+      {
+        key: 'navigator.listSortDirection',
+        value: 'desc',
+      },
+      {
+        key: 'navigator.gridSortColumn',
+        value: 'size',
+      },
+      {
+        key: 'navigator.gridSortDirection',
+        value: 'asc',
+      },
+      {
+        key: 'navigator.showHiddenFiles',
+        value: true,
+      },
+      {
+        key: 'navigator.grouping',
+        value: 'modified',
+      },
+    ]);
+  });
+
   it('writes a global multi-field patch in one setMany call', async () => {
     await persistNavigatorOptions('global', {
       layout: 'grid',
@@ -171,44 +293,6 @@ describe('persist navigator folder settings', () => {
       {
         key: 'navigator.showHiddenFiles',
         value: true,
-      },
-    ]);
-  });
-
-  it('writes applied patches to an existing folder snapshot', async () => {
-    userSettings.navigator = createNavigator({
-      folderSettings: {
-        'C:/Users/aleks/Documents': createFolderSettings(),
-      },
-    });
-
-    await persistAppliedNavigatorOptions('C:/Users/aleks/Documents', {
-      listSortColumn: 'size',
-    });
-
-    expect(setManyMock).not.toHaveBeenCalled();
-    expect(setMock).toHaveBeenCalledWith(
-      'navigator.folderSettings',
-      expect.objectContaining({
-        [normalizePathForComparison('C:/Users/aleks/Documents')]: expect.objectContaining({
-          layout: 'grid',
-          listSortColumn: 'size',
-          showHiddenFiles: true,
-        }),
-      }),
-    );
-  });
-
-  it('writes applied patches to global settings when no folder snapshot exists', async () => {
-    await persistAppliedNavigatorOptions('C:/Users/aleks/Documents', {
-      listSortColumn: 'size',
-    });
-
-    expect(updateFolderSettingsMock).not.toHaveBeenCalled();
-    expect(setManyMock).toHaveBeenCalledWith([
-      {
-        key: 'navigator.listSortColumn',
-        value: 'size',
       },
     ]);
   });

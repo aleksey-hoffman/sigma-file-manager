@@ -73,7 +73,7 @@ function createNavigator(overrides: Partial<UserSettingsNavigator> = {}): UserSe
     gridSortDirection: 'asc',
     enableBoxSelection: false,
     increaseFileViewGaps: false,
-    showDirectoriesOnTop: true,
+    grouping: 'kind',
     ...overrides,
   };
 }
@@ -88,6 +88,7 @@ function createFolderSettings(
     gridSortColumn: 'size',
     gridSortDirection: 'asc',
     showHiddenFiles: true,
+    grouping: 'modified',
     ...overrides,
   };
 }
@@ -106,8 +107,41 @@ describe('resolve navigator folder settings', () => {
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
       showHiddenFiles: true,
+      grouping: 'kind',
     });
     expect(hasNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents')).toBe(false);
+  });
+
+  it('ignores a stored folder snapshot that matches the defaults', () => {
+    const navigator = createNavigator({
+      folderSettings: {
+        'C:/Users/aleks/Documents': {
+          layout: 'list',
+          listSortColumn: null,
+          listSortDirection: 'asc',
+          gridSortColumn: 'name',
+          gridSortDirection: 'asc',
+          showHiddenFiles: false,
+          grouping: 'kind',
+        },
+      },
+    });
+
+    expect(hasNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents')).toBe(false);
+    expect(resolveNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents').layout).toBe('list');
+  });
+
+  it('counts an override when only one sort field differs from the default', () => {
+    const navigator = createNavigator({
+      folderSettings: {
+        'C:/Users/aleks/Documents': {
+          gridSortDirection: 'desc',
+        } as unknown as NavigatorFolderSettings,
+      },
+    });
+
+    expect(hasNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents')).toBe(true);
+    expect(resolveNavigatorFolderSettings(navigator, 'C:/Users/aleks/Documents').gridSortDirection).toBe('desc');
   });
 
   it('resolves a matching folder snapshot without cloning the full navigator', () => {
@@ -125,6 +159,7 @@ describe('resolve navigator folder settings', () => {
       gridSortColumn: 'size',
       gridSortDirection: 'asc',
       showHiddenFiles: true,
+      grouping: 'modified',
     });
   });
 
@@ -138,6 +173,7 @@ describe('resolve navigator folder settings', () => {
           layout: 'not-a-layout',
           showHiddenFiles: 'yes',
           listSortColumn: 'modified',
+          grouping: 'name',
         } as unknown as NavigatorFolderSettings,
       },
     });
@@ -147,6 +183,7 @@ describe('resolve navigator folder settings', () => {
     expect(resolved.layout).toBe('list');
     expect(resolved.showHiddenFiles).toBe(true);
     expect(resolved.listSortColumn).toBe('modified');
+    expect(resolved.grouping).toBe('kind');
   });
 
   it('canonicalizes slashes and trailing slashes when looking up a path', () => {
@@ -227,6 +264,7 @@ describe('resolve navigator folder settings', () => {
       gridSortColumn: 'name',
       gridSortDirection: 'asc',
       showHiddenFiles: true,
+      grouping: 'kind',
     });
   });
 

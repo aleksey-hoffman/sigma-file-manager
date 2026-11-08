@@ -3,13 +3,25 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import type { DirEntry } from '@/types/dir-entry';
+import type {
+  FileBrowserSectionCardHeight,
+  FileBrowserSectionIcon,
+  FileBrowserSectionId,
+} from '../file-browser-entry-groups';
 import { FILE_BROWSER_GRID_GAP_DEFAULT } from './file-browser-layout-gaps';
 
 export const GRID_MIN_COLUMN_WIDTH = 170;
 export const GRID_VIEW_PADDING_X = 0;
 
-export type FileBrowserGridSectionKey = 'dirs' | 'images' | 'videos' | 'others';
+export type FileBrowserGridSectionKey = FileBrowserSectionId;
 export type FileBrowserGridEntryVariant = 'dir' | 'image' | 'video' | 'other';
+
+interface FileBrowserSectionLabel {
+  sectionKey: FileBrowserGridSectionKey;
+  labelKey: string | null;
+  icon: FileBrowserSectionIcon;
+  contentPaddingTop: number;
+}
 
 interface FileBrowserVirtualRowBase {
   key: string;
@@ -23,10 +35,13 @@ export interface FileBrowserListVirtualRow extends FileBrowserVirtualRowBase {
   entryIndex: number;
 }
 
-export interface FileBrowserGridSectionVirtualRow extends FileBrowserVirtualRowBase {
+export interface FileBrowserListSectionVirtualRow extends FileBrowserVirtualRowBase, FileBrowserSectionLabel {
+  type: 'list-section';
+  count: number;
+}
+
+export interface FileBrowserGridSectionVirtualRow extends FileBrowserVirtualRowBase, FileBrowserSectionLabel {
   type: 'grid-section';
-  sectionKey: FileBrowserGridSectionKey;
-  variant: FileBrowserGridEntryVariant;
   count: number;
   stickyIndex: number;
 }
@@ -34,13 +49,16 @@ export interface FileBrowserGridSectionVirtualRow extends FileBrowserVirtualRowB
 export interface FileBrowserGridItemsVirtualRow extends FileBrowserVirtualRowBase {
   type: 'grid-items';
   sectionKey: FileBrowserGridSectionKey;
-  variant: FileBrowserGridEntryVariant;
+  contentPaddingTop: number;
+  stickyHeaderSize: number;
+  cardHeight: FileBrowserSectionCardHeight;
   entries: DirEntry[];
   rowIndex: number;
 }
 
 export type FileBrowserVirtualRow
   = FileBrowserListVirtualRow
+    | FileBrowserListSectionVirtualRow
     | FileBrowserGridSectionVirtualRow
     | FileBrowserGridItemsVirtualRow;
 

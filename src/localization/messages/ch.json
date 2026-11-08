@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "没有可恢复的已关闭标签页"
   },
   "splitView": "分屏视图",
-  "splitViewMode": "分屏模式",
   "splitViewModeSplit": "分割",
+  "splitViewModeSplitTooltip": "窗格各自独立",
   "splitViewModeLinked": "联动",
+  "splitViewModeLinkedTooltip": "第二个窗格跟随第一个",
   "filter": {
     "filter": "筛选",
     "showHiddenItems": "显示隐藏的项目",
@@ -423,14 +424,17 @@
       "sorting": "排序",
       "sortAscending": "升序",
       "sortDescending": "降序",
-      "settingsScope": "范围",
-      "settingsScopeGlobal": "全局",
-      "settingsScopeThisFolder": "此文件夹",
-      "display": "显示",
-      "folderSettingsDifferFromGlobal": "此文件夹有自己的设置",
-      "useGlobalSettings": "使用全局设置",
-      "showDirectoriesOnTop": "在顶部显示目录",
-      "showDirectoriesOnTopDescription": "关闭后，文件夹和文件会按当前排序条件混排。"
+      "thisFolderOptions": "此文件夹选项",
+      "setAsDefault": "将当前选项设为默认",
+      "savedAsDefault": "已保存为默认",
+      "thisFolderDefaultActions": "此文件夹覆盖默认设置",
+      "useGlobalSettings": "重置为默认设置",
+      "grouping": "分组",
+      "groupingToday": "今天",
+      "groupingYesterday": "昨天",
+      "groupingThisWeek": "本周",
+      "groupingThisMonth": "本月",
+      "groupingOlder": "更早"
     },
     "tabs": {
       "lastTabCloseBehavior": {

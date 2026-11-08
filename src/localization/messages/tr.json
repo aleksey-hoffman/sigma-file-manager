@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Geri yüklenecek kapatılmış sekme yok"
   },
   "splitView": "Bölünmüş görünüm",
-  "splitViewMode": "Bölünmüş görünüm modu",
   "splitViewModeSplit": "Bölünmüş",
+  "splitViewModeSplitTooltip": "Bölmeler bağımsız çalışır",
   "splitViewModeLinked": "Bağlı",
+  "splitViewModeLinkedTooltip": "İkinci bölme birinciyi izler",
   "filter": {
     "filter": "Filtre",
     "showHiddenItems": "Gizli Öğeleri Göster",
@@ -423,14 +424,17 @@
       "sorting": "Sıralama",
       "sortAscending": "Artan",
       "sortDescending": "Azalan",
-      "settingsScope": "Kapsam",
-      "settingsScopeGlobal": "Genel",
-      "settingsScopeThisFolder": "Bu klasör",
-      "display": "Görünüm",
-      "folderSettingsDifferFromGlobal": "Bu klasörün kendi ayarları var",
-      "useGlobalSettings": "Genel ayarları kullan",
-      "showDirectoriesOnTop": "Klasörleri üstte göster",
-      "showDirectoriesOnTopDescription": "Kapalıyken klasörler ve dosyalar etkin sıralama anahtarına göre birlikte sıralanır."
+      "thisFolderOptions": "Bu klasörün seçenekleri",
+      "setAsDefault": "Geçerli seçenekleri varsayılan yap",
+      "savedAsDefault": "Varsayılan olarak kaydedildi",
+      "thisFolderDefaultActions": "Bu klasör varsayılan ayarları geçersiz kılar",
+      "useGlobalSettings": "Varsayılan ayarlara sıfırla",
+      "grouping": "Grupla",
+      "groupingToday": "Bugün",
+      "groupingYesterday": "Dün",
+      "groupingThisWeek": "Bu hafta",
+      "groupingThisMonth": "Bu ay",
+      "groupingOlder": "Daha eski"
     },
     "tabs": {
       "lastTabCloseBehavior": {

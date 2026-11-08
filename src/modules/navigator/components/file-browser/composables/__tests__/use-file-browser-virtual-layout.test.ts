@@ -51,6 +51,7 @@ describe('createFileBrowserVirtualRows', () => {
       entries,
       layout: 'list',
       viewportWidth: 500,
+      grouping: 'none',
       entryDescription: entry => (entry.name === 'second' ? 'Description' : undefined),
     });
 
@@ -94,6 +95,7 @@ describe('createFileBrowserVirtualRows', () => {
       entries,
       layout: 'grid',
       viewportWidth: 500,
+      grouping: 'kind',
     });
 
     expect(rows.map(row => row.type)).toEqual([
@@ -106,6 +108,55 @@ describe('createFileBrowserVirtualRows', () => {
     ]);
     expect(rows.map(row => row.start)).toEqual([0, 54, 118, 182, 236, 368]);
     expect(rows.map(row => row.size)).toEqual([54, 64, 64, 54, 132, 132]);
+  });
+
+  it('lays out an ungrouped grid in sort order', () => {
+    const entries = [
+      createEntry('notes.txt', { ext: 'txt' }),
+      createEntry('clips', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('photo.png', { ext: 'png' }),
+    ];
+
+    const rows = createFileBrowserVirtualRows({
+      entries,
+      layout: 'grid',
+      viewportWidth: 500,
+      grouping: 'none',
+    });
+    const itemRows = rows.filter(row => row.type === 'grid-items');
+
+    expect(rows.some(row => row.type === 'grid-section')).toBe(false);
+    expect(itemRows.flatMap(row => row.type === 'grid-items' ? row.entries.map(entry => entry.name) : [])).toEqual([
+      'notes.txt',
+      'clips',
+      'photo.png',
+    ]);
+    expect(itemRows.map(row => row.size)).toEqual([148, 132]);
+  });
+
+  it('uses the file card height for directory rows when grouping is none', () => {
+    const entries = [
+      createEntry('clips', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('docs', {
+        is_dir: true,
+        is_file: false,
+      }),
+    ];
+
+    const rows = createFileBrowserVirtualRows({
+      entries,
+      layout: 'grid',
+      viewportWidth: 500,
+      grouping: 'none',
+    });
+
+    expect(rows.map(row => row.size)).toEqual([148]);
   });
 });
 
@@ -142,6 +193,7 @@ describe('getFileBrowserGridNavigationEntry', () => {
       entries,
       layout: 'grid',
       viewportWidth: 500,
+      grouping: 'kind',
     });
 
     expect(getFileBrowserGridNavigationEntry(rows, '/dir-2', 'down')?.path).toBe('/dir-4');
@@ -283,6 +335,7 @@ describe('resolveViewportContentWidth', () => {
           entries: computed(() => []),
           layout: () => 'list',
           increaseFileViewGaps: () => increaseFileViewGaps.value,
+          grouping: () => 'none',
         });
 
         viewportWidth = virtualLayout.viewportWidth;

@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Keine geschlossenen Tabs zum Wiederherstellen"
   },
   "splitView": "Geteilte Ansicht",
-  "splitViewMode": "Geteilte Ansicht-Modus",
   "splitViewModeSplit": "Geteilt",
+  "splitViewModeSplitTooltip": "Bereiche arbeiten unabhängig",
   "splitViewModeLinked": "Verknüpft",
+  "splitViewModeLinkedTooltip": "Zweiter Bereich folgt dem ersten",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Ausgeblendete Elemente anzeigen",
@@ -423,14 +424,17 @@
       "sorting": "Sortierung",
       "sortAscending": "Aufsteigend",
       "sortDescending": "Absteigend",
-      "settingsScope": "Bereich",
-      "settingsScopeGlobal": "Global",
-      "settingsScopeThisFolder": "Dieser Ordner",
-      "display": "Anzeige",
-      "folderSettingsDifferFromGlobal": "Dieser Ordner hat eigene Einstellungen",
-      "useGlobalSettings": "Globale Einstellungen verwenden",
-      "showDirectoriesOnTop": "Verzeichnisse oben anzeigen",
-      "showDirectoriesOnTopDescription": "Wenn deaktiviert, werden Ordner und Dateien gemeinsam nach dem aktiven Sortierschlüssel sortiert."
+      "thisFolderOptions": "Optionen für diesen Ordner",
+      "setAsDefault": "Aktuelle Optionen als Standard festlegen",
+      "savedAsDefault": "Als Standard gespeichert",
+      "thisFolderDefaultActions": "Dieser Ordner überschreibt die Standardeinstellungen",
+      "useGlobalSettings": "Auf Standardeinstellungen zurücksetzen",
+      "grouping": "Gruppieren",
+      "groupingToday": "Heute",
+      "groupingYesterday": "Gestern",
+      "groupingThisWeek": "Diese Woche",
+      "groupingThisMonth": "Dieser Monat",
+      "groupingOlder": "Älter"
     },
     "tabs": {
       "lastTabCloseBehavior": {

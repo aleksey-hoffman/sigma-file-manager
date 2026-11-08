@@ -86,9 +86,10 @@
     "noClosedTabsToRestore": "Փակված թաբ չկա վերաբացելու համար"
   },
   "splitView": "Կիսված տեսք",
-  "splitViewMode": "Կիսված տեսքի ռեժիմ",
   "splitViewModeSplit": "Կիսել",
+  "splitViewModeSplitTooltip": "Վահանակներն աշխատում են անկախ",
   "splitViewModeLinked": "Կապված",
+  "splitViewModeLinkedTooltip": "Երկրորդ վահանակը հետևում է առաջինին",
   "filter": {
     "filter": "Ֆիլտր",
     "showHiddenItems": "Ցուցադրել թաքնված իրերը",
@@ -452,14 +453,17 @@
       "sorting": "Դասավորում",
       "sortAscending": "Մեծացմամբ",
       "sortDescending": "Փոքրացմամբ",
-      "settingsScope": "Շրջանակ",
-      "settingsScopeGlobal": "Գլոբալ",
-      "settingsScopeThisFolder": "Այս թղթապանակ",
-      "display": "Ցուցադրում",
-      "folderSettingsDifferFromGlobal": "Այս թղթապանակն ունի իր կարգավորումները",
-      "useGlobalSettings": "Օգտագործել գլոբալ կարգավորումները",
-      "showDirectoriesOnTop": "Ցուցադրել պանակները վերևում",
-      "showDirectoriesOnTopDescription": "Անջատված լինելու դեպքում պանակները և ֆայլերը խառնվում են ըստ գործող տեսակավորման բանալու։"
+      "thisFolderOptions": "Այս թղթապանակի կարգավորումներ",
+      "setAsDefault": "Ընթացիկ ընտրանքները սահմանել որպես լռելյայն",
+      "savedAsDefault": "Պահվել է որպես լռելյայն",
+      "thisFolderDefaultActions": "Այս թղթապանակը փոխարինում է լռելյայն կարգավորումները",
+      "useGlobalSettings": "Վերականգնել լռելյայն կարգավորումները",
+      "grouping": "Խմբավորել",
+      "groupingToday": "Այսօր",
+      "groupingYesterday": "Երեկ",
+      "groupingThisWeek": "Այս շաբաթ",
+      "groupingThisMonth": "Այս ամիս",
+      "groupingOlder": "Ավելի հին"
     },
     "tabs": {
       "lastTabCloseBehavior": {
