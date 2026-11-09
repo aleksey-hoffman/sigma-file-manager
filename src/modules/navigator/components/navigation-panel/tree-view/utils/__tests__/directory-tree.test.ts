@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
 import {
+  flattenDirectoryTree,
   getDirectoryTreeAncestorPaths,
   toDirectoryTreeEntries,
   type DirectoryTreeOrder,
@@ -127,5 +128,57 @@ describe('toDirectoryTreeEntries', () => {
       'zeta',
       'alpha',
     ]);
+  });
+});
+
+describe('flattenDirectoryTree', () => {
+  const childrenByPath = new Map<string, DirEntry[]>([
+    ['/', [createEntry('/etc', 'etc'), createEntry('/home', 'home'), createEntry('/srv', 'srv')]],
+    ['/home', [createEntry('/home/user', 'user')]],
+    ['/srv', []],
+  ]);
+
+  function flatten(expandedPaths: string[]) {
+    return flattenDirectoryTree(
+      [createEntry('/', '/'), createEntry('/home/user', 'user')],
+      path => expandedPaths.includes(path),
+      path => childrenByPath.get(path),
+    );
+  }
+
+  it('lists loaded children of expanded directories in tree order', () => {
+    const rows = flatten(['/', '/home', '/srv', '/etc']);
+
+    expect(rows.map(row => [row.kind, row.depth, row.parentIndex, row.kind === 'entry' ? row.entry.path : null])).toEqual([
+      ['entry', 0, -1, '/'],
+      ['entry', 1, 0, '/etc'],
+      ['entry', 1, 0, '/home'],
+      ['entry', 2, 2, '/home/user'],
+      ['entry', 1, 0, '/srv'],
+      ['empty', 2, 4, null],
+      ['entry', 0, -1, '/home/user'],
+    ]);
+  });
+
+  it('marks an expanded directory whose children are still loading without adding rows', () => {
+    const rows = flatten(['/', '/etc']);
+    const etcRow = rows[1];
+
+    expect(etcRow.kind === 'entry' && etcRow.isExpanded).toBe(true);
+    expect(etcRow.kind === 'entry' && etcRow.subtreeEndIndex).toBe(2);
+    expect(rows[2].kind === 'entry' && rows[2].entry.path).toBe('/home');
+  });
+
+  it('records where each subtree ends', () => {
+    const rows = flatten(['/', '/home', '/srv']);
+
+    expect(rows.map(row => (row.kind === 'entry' ? row.subtreeEndIndex : null))).toEqual([6, 2, 4, 4, 6, null, 7]);
+  });
+
+  it('gives every row a unique key when a directory appears twice', () => {
+    const rows = flatten(['/', '/home', '/home/user']);
+    const keys = rows.map(row => row.key);
+
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });

@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import {
-  computed, inject, nextTick, ref, watch, onBeforeUnmount,
+  computed, inject, nextTick, ref, watch, onBeforeUnmount, type Ref,
 } from 'vue';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import DirEntryContextMenu from './dir-entry-context-menu.vue';
@@ -57,10 +57,33 @@ const contextMenuOpenCount = inject(CONTEXT_MENU_OPEN_COUNT_KEY, null);
 const showContextMenuContent = ref(false);
 const isContextMenuOpenForThisInstance = ref(false);
 const renameDialogOpen = ref(false);
+const isRenameDialogMounted = ref(false);
 const renameTarget = ref<DirEntry | null>(null);
 const newItemDialogOpen = ref(false);
+const isNewItemDialogMounted = ref(false);
 const newItemDialogType = ref<'file' | 'directory'>('directory');
 const newItemTargetPaths = ref<string[]>([]);
+const isConflictDialogMounted = useMountedOnceOpened(() => conflictDialogState.value.isOpen);
+const isTopLevelConflictDialogMounted = useMountedOnceOpened(() => topLevelNameConflictDialogState.value.isOpen);
+const isPermanentDeleteDialogMounted = useMountedOnceOpened(() => permanentDeleteIsOpen.value);
+
+function useMountedOnceOpened(isOpen: () => boolean) {
+  const isMounted = ref(false);
+
+  watch(isOpen, (open) => {
+    if (open) {
+      isMounted.value = true;
+    }
+  }, { immediate: true });
+
+  return isMounted;
+}
+
+async function openAfterMount(isMounted: Ref<boolean>, isOpen: Ref<boolean>) {
+  isMounted.value = true;
+  await nextTick();
+  isOpen.value = true;
+}
 
 function adjustOpenCount(delta: number) {
   if (contextMenuOpenCount) {
@@ -141,9 +164,9 @@ function closeContextMenu() {
   });
 }
 
-function handleRename(entry: DirEntry) {
+async function handleRename(entry: DirEntry) {
   renameTarget.value = entry;
-  renameDialogOpen.value = true;
+  await openAfterMount(isRenameDialogMounted, renameDialogOpen);
 }
 
 async function handleRenameConfirm(newName: string) {
@@ -166,10 +189,10 @@ function handlePaste(targetDir: string) {
   pasteItems(targetDir);
 }
 
-function handleCreateNewItem(type: 'file' | 'directory', targetPaths: string[]) {
+async function handleCreateNewItem(type: 'file' | 'directory', targetPaths: string[]) {
   newItemDialogType.value = type;
   newItemTargetPaths.value = targetPaths;
-  newItemDialogOpen.value = true;
+  await openAfterMount(isNewItemDialogMounted, newItemDialogOpen);
 }
 
 async function handleNewItemConfirm(name: string) {
@@ -221,6 +244,7 @@ function handleNewItemCancel() {
   </ContextMenu>
 
   <FileBrowserRenameDialog
+    v-if="isRenameDialogMounted"
     v-model:open="renameDialogOpen"
     :entry="renameTarget"
     @confirm="handleRenameConfirm"
@@ -228,6 +252,7 @@ function handleNewItemCancel() {
   />
 
   <FileBrowserNewItemDialog
+    v-if="isNewItemDialogMounted"
     v-model:open="newItemDialogOpen"
     :type="newItemDialogType"
     @confirm="handleNewItemConfirm"
@@ -235,6 +260,7 @@ function handleNewItemCancel() {
   />
 
   <FileBrowserConflictDialog
+    v-if="isConflictDialogMounted"
     v-model:open="conflictDialogState.isOpen"
     :conflicts="conflictDialogState.conflicts"
     :operation-type="conflictDialogState.operationType || 'copy'"
@@ -244,6 +270,7 @@ function handleNewItemCancel() {
   />
 
   <FileBrowserTopLevelConflictDialog
+    v-if="isTopLevelConflictDialogMounted"
     v-model:open="topLevelNameConflictDialogState.isOpen"
     :conflicts="topLevelNameConflictDialogState.conflicts"
     @rename="handleTopLevelNameConflictRename"
@@ -252,6 +279,7 @@ function handleNewItemCancel() {
   />
 
   <PermanentDeleteConfirmDialog
+    v-if="isPermanentDeleteDialogMounted"
     :open="permanentDeleteIsOpen"
     :entries="permanentDeletePendingEntries"
     @update:open="permanentDeleteConfirm.handleOpenChange"

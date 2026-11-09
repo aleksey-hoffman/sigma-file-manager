@@ -61,6 +61,7 @@ pub struct ReadDirOptions {
     include_hard_link_counts: bool,
     include_item_counts: Option<bool>,
     include_hidden_item_counts: Option<bool>,
+    directories_only: Option<bool>,
 }
 
 impl From<Option<ReadDirOptions>> for ReadEntryOptions {
@@ -895,9 +896,19 @@ pub async fn get_dir_entry_with_timeout(path: String, timeout_ms: u64) -> Result
     }
 }
 
+fn may_be_directory(entry: &fs::DirEntry) -> bool {
+    entry
+        .file_type()
+        .map(|file_type| !file_type.is_file())
+        .unwrap_or(true)
+}
+
 pub fn read_dir(path: String, options: Option<ReadDirOptions>) -> Result<DirContents, String> {
     let directory = Path::new(&path);
     let read_entry_options = ReadEntryOptions::from(options);
+    let directories_only = options
+        .and_then(|options| options.directories_only)
+        .unwrap_or(false);
 
     let self_metadata = match fs::metadata(directory) {
         Ok(metadata) => metadata,
@@ -916,19 +927,21 @@ pub fn read_dir(path: String, options: Option<ReadDirOptions>) -> Result<DirCont
     let (self_modified, self_accessed, self_created) = metadata_times_unix_ms(&self_metadata);
 
     let read_result = fs::read_dir(directory).map_err(|error| error.to_string())?;
-    let entry_paths: Vec<PathBuf> = read_result.flatten().map(|entry| entry.path()).collect();
+    let entry_paths: Vec<PathBuf> = read_result
+        .flatten()
+        .filter(|entry| !directories_only || may_be_directory(entry))
+        .map(|entry| entry.path())
+        .collect();
+    let read_listed_entry = |entry_path: &PathBuf| {
+        read_entry(entry_path, read_entry_options)
+            .filter(|entry| !directories_only || entry.is_dir)
+    };
 
     const PARALLEL_READ_THRESHOLD: usize = 64;
     let mut entries: Vec<DirEntry> = if entry_paths.len() >= PARALLEL_READ_THRESHOLD {
-        entry_paths
-            .par_iter()
-            .filter_map(|entry_path| read_entry(entry_path, read_entry_options))
-            .collect()
+        entry_paths.par_iter().filter_map(read_listed_entry).collect()
     } else {
-        entry_paths
-            .iter()
-            .filter_map(|entry_path| read_entry(entry_path, read_entry_options))
-            .collect()
+        entry_paths.iter().filter_map(read_listed_entry).collect()
     };
 
     entries.sort_by_cached_key(|entry| (!entry.is_dir, entry.name.to_lowercase()));
@@ -1025,6 +1038,7 @@ mod tests {
                 include_hard_link_counts: true,
                 include_item_counts: None,
                 include_hidden_item_counts: None,
+                directories_only: None,
             }),
         );
 
@@ -1048,6 +1062,7 @@ mod tests {
                 include_hard_link_counts: false,
                 include_item_counts: Some(false),
                 include_hidden_item_counts: None,
+                directories_only: None,
             }),
         )
         .expect("read dir");
@@ -1079,6 +1094,53 @@ mod tests {
     }
 
     #[test]
+    fn read_dir_can_list_only_directories() {
+        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        fs::create_dir(temp_dir.path().join("child")).expect("create child dir");
+        fs::create_dir(temp_dir.path().join(".hidden-child")).expect("create hidden child dir");
+        fs::write(temp_dir.path().join("file.txt"), b"contents").expect("write file");
+
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink(
+                temp_dir.path().join("child"),
+                temp_dir.path().join("child-link"),
+            )
+            .expect("create directory symlink");
+            std::os::unix::fs::symlink(
+                temp_dir.path().join("file.txt"),
+                temp_dir.path().join("file-link"),
+            )
+            .expect("create file symlink");
+        }
+
+        let contents = read_dir(
+            temp_dir.path().to_string_lossy().to_string(),
+            Some(ReadDirOptions {
+                include_shortcut_targets: false,
+                include_hard_link_counts: false,
+                include_item_counts: Some(false),
+                include_hidden_item_counts: None,
+                directories_only: Some(true),
+            }),
+        )
+        .expect("read dir");
+        let mut names: Vec<&str> = contents
+            .entries
+            .iter()
+            .map(|entry| entry.name.as_str())
+            .collect();
+        names.sort_unstable();
+
+        #[cfg(unix)]
+        assert_eq!(names, vec![".hidden-child", "child", "child-link"]);
+        #[cfg(not(unix))]
+        assert_eq!(names, vec![".hidden-child", "child"]);
+        assert_eq!(contents.file_count, 0);
+        assert_eq!(contents.dir_count, names.len());
+    }
+
+    #[test]
     fn read_dir_item_counts_can_exclude_hidden_entries() {
         let temp_dir = tempfile::tempdir().expect("create temp dir");
         let child_dir_path = temp_dir.path().join("child");
@@ -1093,6 +1155,7 @@ mod tests {
                 include_hard_link_counts: false,
                 include_item_counts: Some(true),
                 include_hidden_item_counts: Some(false),
+                directories_only: None,
             }),
         )
         .expect("read dir");

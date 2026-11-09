@@ -21,6 +21,25 @@ export type DirectoryTreeOrder
       tagContext: FileBrowserEntrySortTagContext;
     };
 
+export type DirectoryTreeEntryRow = {
+  kind: 'entry';
+  key: string;
+  entry: DirEntry;
+  depth: number;
+  parentIndex: number;
+  isExpanded: boolean;
+  subtreeEndIndex: number;
+};
+
+export type DirectoryTreeEmptyRow = {
+  kind: 'empty';
+  key: string;
+  depth: number;
+  parentIndex: number;
+};
+
+export type DirectoryTreeRow = DirectoryTreeEntryRow | DirectoryTreeEmptyRow;
+
 const directoryNameCollator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: 'base',
@@ -81,4 +100,53 @@ export function toDirectoryTreeEntries(
     .filter(entry => showHiddenFiles || !isHiddenDirectoryEntry(entry));
 
   return sortDirectoryTreeEntries(directories, order);
+}
+
+export function flattenDirectoryTree(
+  rootEntries: readonly DirEntry[],
+  isExpanded: (path: string) => boolean,
+  getChildren: (path: string) => readonly DirEntry[] | undefined,
+): DirectoryTreeRow[] {
+  const rows: DirectoryTreeRow[] = [];
+
+  function appendEntries(entries: readonly DirEntry[], depth: number, parentIndex: number, parentKey: string) {
+    for (const entry of entries) {
+      const index = rows.length;
+      const key = `${parentKey}\n${entry.path}`;
+      const expanded = isExpanded(entry.path);
+      const row: DirectoryTreeEntryRow = {
+        kind: 'entry',
+        key,
+        entry,
+        depth,
+        parentIndex,
+        isExpanded: expanded,
+        subtreeEndIndex: index + 1,
+      };
+      rows.push(row);
+
+      const children = expanded ? getChildren(entry.path) : undefined;
+
+      if (!children) {
+        continue;
+      }
+
+      if (children.length === 0) {
+        rows.push({
+          kind: 'empty',
+          key: `${key}\n`,
+          depth: depth + 1,
+          parentIndex: index,
+        });
+      }
+      else {
+        appendEntries(children, depth + 1, index, key);
+      }
+
+      row.subtreeEndIndex = rows.length;
+    }
+  }
+
+  appendEntries(rootEntries, 0, -1, '');
+  return rows;
 }
