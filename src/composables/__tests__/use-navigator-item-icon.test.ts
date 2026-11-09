@@ -6,14 +6,21 @@ import {
   beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { effectScope, ref } from 'vue';
+import { computed, effectScope, ref, type Ref } from 'vue';
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
+import NavigatorItemIconPlaceholder from '@/components/icons/navigator-item-icon-placeholder.vue';
 
 const {
   extensionsStoreMock,
   loadInstalledIconThemeMock,
+  systemIconState,
   userSettingsStoreMock,
 } = vi.hoisted(() => ({
+  systemIconState: {
+    isPending: false,
+    requestedWhileEnabled: false,
+    resolvePendingIcons: [] as Array<() => void>,
+  },
   extensionsStoreMock: {
     enabledExtensions: [],
     enabledIconThemeContributorsSignature: '',
@@ -37,10 +44,29 @@ vi.mock('@/stores/runtime/extensions', () => ({
   useExtensionsStore: () => extensionsStoreMock,
 }));
 
-vi.mock('@/composables/use-system-icon', () => ({
-  useSystemIcon: () => ({
-    systemIconSrc: ref('system-icon'),
+vi.mock('@/stores/storage/extensions', () => ({
+  useExtensionsStorageStore: () => ({
+    init: async () => {},
   }),
+}));
+
+vi.mock('@/composables/use-system-icon', () => ({
+  useSystemIcon: (params: { enabled: Ref<boolean> }) => {
+    const isSystemIconPending = ref(systemIconState.isPending);
+
+    if (params.enabled.value) {
+      systemIconState.requestedWhileEnabled = true;
+    }
+
+    systemIconState.resolvePendingIcons.push(() => {
+      isSystemIconPending.value = false;
+    });
+
+    return {
+      systemIconSrc: computed(() => (params.enabled.value && !isSystemIconPending.value ? 'system-icon' : null)),
+      isSystemIconPending: computed(() => params.enabled.value && isSystemIconPending.value),
+    };
+  },
 }));
 
 vi.mock('@/modules/icon-theme/extension-icon-themes', async (importOriginal) => {
@@ -56,6 +82,9 @@ describe('useNavigatorItemIcon', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     loadInstalledIconThemeMock.mockReset();
+    systemIconState.isPending = false;
+    systemIconState.requestedWhileEnabled = false;
+    systemIconState.resolvePendingIcons = [];
     userSettingsStoreMock.userSettings.navigator.folderIconTheme = BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
     userSettingsStoreMock.userSettings.navigator.fileIconTheme = BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
   });
@@ -152,9 +181,74 @@ describe('useNavigatorItemIcon', () => {
     fileScope.stop();
   });
 
-  it('falls back to system icons when the selected extension theme is unavailable', async () => {
+  it('uses the default icon without requesting system icons when the extension theme is unavailable', async () => {
     userSettingsStoreMock.userSettings.navigator.fileIconTheme = 'extension:acme.icons:missing';
     loadInstalledIconThemeMock.mockResolvedValue(null);
+
+    const { useNavigatorItemIcon } = await import('@/composables/use-navigator-item-icon');
+    const { useNavigatorIconsStore } = await import('@/stores/runtime/navigator-icons');
+    const fileScope = effectScope();
+    const fileResult = fileScope.run(() => useNavigatorItemIcon({
+      path: ref('C:/Projects/app.ts'),
+      name: ref('app.ts'),
+      isDir: ref(false),
+      extension: ref('ts'),
+      size: ref(32),
+    }));
+
+    await useNavigatorIconsStore().ensureExtensionThemeLoaded('extension:acme.icons:missing');
+    await flushPromises();
+
+    expect(fileResult?.iconSrc.value).toBeNull();
+    expect(fileResult?.fallbackIconComponent.value).not.toBe(NavigatorItemIconPlaceholder);
+    expect(systemIconState.requestedWhileEnabled).toBe(false);
+
+    fileScope.stop();
+  });
+
+  it('shows a placeholder instead of the default icon while the extension theme loads', async () => {
+    userSettingsStoreMock.userSettings.navigator.fileIconTheme = 'extension:acme.icons:files';
+
+    let finishThemeLoad: () => void = () => {};
+
+    loadInstalledIconThemeMock.mockImplementation(() => new Promise((resolveTheme) => {
+      finishThemeLoad = () => resolveTheme({
+        iconDefinitions: {
+          file: {
+            src: 'extension-file',
+          },
+        },
+        file: 'file',
+      });
+    }));
+
+    const { useNavigatorItemIcon } = await import('@/composables/use-navigator-item-icon');
+    const fileScope = effectScope();
+    const fileResult = fileScope.run(() => useNavigatorItemIcon({
+      path: ref('C:/Projects/app.ts'),
+      name: ref('app.ts'),
+      isDir: ref(false),
+      extension: ref('ts'),
+      size: ref(32),
+    }));
+    await flushPromises();
+
+    expect(fileResult?.iconSrc.value).toBeNull();
+    expect(fileResult?.fallbackIconComponent.value).toBe(NavigatorItemIconPlaceholder);
+    expect(fileResult?.iconRevealClass.value).toBeUndefined();
+
+    finishThemeLoad();
+    await waitForIcon(() => fileResult?.iconSrc.value, 'extension-file');
+
+    expect(fileResult?.iconRevealClass.value).toBe('animate-fade-in-fast');
+    expect(systemIconState.requestedWhileEnabled).toBe(false);
+
+    fileScope.stop();
+  });
+
+  it('shows a placeholder while the system icon is pending and fades it in once loaded', async () => {
+    userSettingsStoreMock.userSettings.navigator.fileIconTheme = BUILTIN_NAVIGATOR_ICON_THEME_IDS.system;
+    systemIconState.isPending = true;
 
     const { useNavigatorItemIcon } = await import('@/composables/use-navigator-item-icon');
     const fileScope = effectScope();
@@ -166,8 +260,33 @@ describe('useNavigatorItemIcon', () => {
       size: ref(32),
     }));
 
-    await waitForIcon(() => fileResult?.iconSrc.value, 'system-icon');
+    expect(fileResult?.iconSrc.value).toBeNull();
+    expect(fileResult?.fallbackIconComponent.value).toBe(NavigatorItemIconPlaceholder);
+
+    systemIconState.resolvePendingIcons.forEach(resolvePendingIcon => resolvePendingIcon());
+    await flushPromises();
+
     expect(fileResult?.iconSrc.value).toBe('system-icon');
+    expect(fileResult?.iconRevealClass.value).toBe('animate-fade-in-fast');
+
+    fileScope.stop();
+  });
+
+  it('does not animate a system icon that is ready on first render', async () => {
+    userSettingsStoreMock.userSettings.navigator.fileIconTheme = BUILTIN_NAVIGATOR_ICON_THEME_IDS.system;
+
+    const { useNavigatorItemIcon } = await import('@/composables/use-navigator-item-icon');
+    const fileScope = effectScope();
+    const fileResult = fileScope.run(() => useNavigatorItemIcon({
+      path: ref('C:/Projects/app.ts'),
+      name: ref('app.ts'),
+      isDir: ref(false),
+      extension: ref('ts'),
+      size: ref(32),
+    }));
+
+    expect(fileResult?.iconSrc.value).toBe('system-icon');
+    expect(fileResult?.iconRevealClass.value).toBeUndefined();
 
     fileScope.stop();
   });
@@ -184,4 +303,9 @@ async function waitForIcon(readValue: () => string | null | undefined, expectedV
   }
 
   expect(readValue()).toBe(expectedValue);
+}
+
+async function flushPromises() {
+  await Promise.resolve();
+  await new Promise(resolve => setTimeout(resolve, 0));
 }

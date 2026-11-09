@@ -42,7 +42,7 @@ const isActive = computed(() => {
 const isVirtualDirectory = computed(() => isVirtualDirectoryPath(entry.value.path));
 const isDragProhibited = computed(() => props.row.depth === 0 || isVirtualDirectory.value);
 
-const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
+const { iconSrc, fallbackIconComponent, iconRevealClass } = useNavigatorItemIcon({
   path: () => entry.value.path,
   name: () => displayName.value,
   isDir: () => true,
@@ -132,6 +132,7 @@ onBeforeUnmount(() => {
           height="16"
           draggable="false"
           class="tree-view-node__icon"
+          :class="iconRevealClass"
           alt=""
         >
         <component
@@ -139,6 +140,7 @@ onBeforeUnmount(() => {
           v-else
           :size="16"
           class="tree-view-node__icon"
+          :class="iconRevealClass"
         />
         <span class="tree-view-node__name">{{ displayName }}</span>
       </div>

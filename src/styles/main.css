@@ -207,6 +207,12 @@
     animation: sigma-ui-fade-in var(--animate-fade-in-duration) ease;
   }
 
+  .animate-fade-in-fast {
+    --animate-fade-in-duration: 0.15s;
+
+    animation: sigma-ui-fade-in var(--animate-fade-in-duration) ease;
+  }
+
   .animate-fade-in-x2 {
     --animate-fade-in-duration: 1s;
 

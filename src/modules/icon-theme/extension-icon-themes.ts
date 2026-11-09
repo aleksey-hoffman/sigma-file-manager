@@ -3,7 +3,6 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { convertFileSrc } from '@tauri-apps/api/core';
-import { join } from '@tauri-apps/api/path';
 import type { ExtensionIconThemeContribution } from '@sigma-file-manager/api';
 import type { InstalledExtension } from '@/types/extension';
 import {
@@ -16,7 +15,6 @@ import {
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 const iconThemeCache = new Map<string, Promise<LoadedIconThemeDefinition | null>>();
-const ICON_THEME_ASSET_CHECK_CONCURRENCY = 16;
 
 type IconDefinitionEntry = {
   definitionId: string;
@@ -93,30 +91,58 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-async function mapWithConcurrencyLimit<TInput, TOutput>(
-  items: TInput[],
-  concurrency: number,
-  worker: (item: TInput) => Promise<TOutput>,
-): Promise<TOutput[]> {
-  let nextItemIndex = 0;
-  const results: TOutput[] = [];
-  const workerCount = Math.min(concurrency, items.length);
+export function joinExtensionAssetPath(extensionPath: string, relativeAssetPath: string): string {
+  const separator = extensionPath.includes('\\') ? '\\' : '/';
+  const trimmedExtensionPath = extensionPath.replace(/[\\/]+$/, '');
+  return `${trimmedExtensionPath}${separator}${relativeAssetPath.split('/').join(separator)}`;
+}
 
-  await Promise.all(Array.from({ length: workerCount }, async () => {
-    while (nextItemIndex < items.length) {
-      const itemIndex = nextItemIndex;
-      nextItemIndex += 1;
-      const item = items[itemIndex];
+async function resolveIconDefinitions(
+  extensionId: string,
+  extensionPath: string,
+  themeFilePath: string,
+  definitionEntries: IconDefinitionEntry[],
+): Promise<Array<ResolvedIconDefinitionEntry | null>> {
+  const candidates: Array<{
+    definitionId: string;
+    relativeAssetPath: string;
+  }> = [];
 
-      if (item === undefined) {
-        return;
-      }
-
-      results.push(await worker(item));
+  for (const { definitionId, iconPath } of definitionEntries) {
+    try {
+      candidates.push({
+        definitionId,
+        relativeAssetPath: resolveThemeRelativePath(themeFilePath, iconPath),
+      });
     }
-  }));
+    catch {
+      continue;
+    }
+  }
 
-  return results;
+  if (candidates.length === 0) {
+    return [];
+  }
+
+  const existingAssets = await invokeAsExtension<boolean[]>(
+    extensionId,
+    'extension_paths_exist',
+    {
+      extensionId,
+      filePaths: candidates.map(candidate => candidate.relativeAssetPath),
+    },
+  );
+
+  return candidates.map((candidate, candidateIndex) => {
+    if (existingAssets[candidateIndex] !== true) {
+      return null;
+    }
+
+    return {
+      definitionId: candidate.definitionId,
+      src: convertFileSrc(joinExtensionAssetPath(extensionPath, candidate.relativeAssetPath)),
+    };
+  });
 }
 
 async function loadContributedIconTheme(
@@ -163,35 +189,11 @@ async function loadContributedIconTheme(
     });
   }
 
-  const resolvedDefinitions = await mapWithConcurrencyLimit(
+  const resolvedDefinitions = await resolveIconDefinitions(
+    extension.id,
+    extensionPath,
+    themeFilePath,
     definitionEntries,
-    ICON_THEME_ASSET_CHECK_CONCURRENCY,
-    async ({ definitionId, iconPath }): Promise<ResolvedIconDefinitionEntry | null> => {
-      try {
-        const relativeAssetPath = resolveThemeRelativePath(themeFilePath, iconPath);
-        const assetExists = await invokeAsExtension<boolean>(
-          extension.id,
-          'extension_path_exists',
-          {
-            extensionId: extension.id,
-            filePath: relativeAssetPath,
-          },
-        );
-
-        if (!assetExists) {
-          return null;
-        }
-
-        const assetPath = await join(extensionPath, relativeAssetPath);
-        return {
-          definitionId,
-          src: convertFileSrc(assetPath),
-        };
-      }
-      catch {
-        return null;
-      }
-    },
   );
 
   for (const resolvedDefinition of resolvedDefinitions) {

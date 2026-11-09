@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { computed, ref, watchEffect, type Ref } from 'vue';
-import { fetchSystemIconCached } from './system-icon-cache';
+import { fetchSystemIconCached, getCachedSystemIcon } from './system-icon-cache';
 
 interface SystemIconParams {
   path: Ref<string> | (() => string);
@@ -29,6 +29,7 @@ export function useSystemIcon(params: SystemIconParams) {
   });
 
   const systemIconSrc = ref<string | null>(null);
+  const isSystemIconPending = ref(false);
 
   watchEffect(async (onCleanup) => {
     let isCurrentRequest = true;
@@ -39,31 +40,42 @@ export function useSystemIcon(params: SystemIconParams) {
 
     if (!useSystemIcons.value) {
       systemIconSrc.value = null;
+      isSystemIconPending.value = false;
       return;
     }
 
-    const requestPath = path.value;
-    const requestIsDir = isDir.value;
-    const requestExtension = extension.value;
-    const requestSize = size.value;
-    const iconSrc = await fetchSystemIconCached({
-      path: requestPath,
-      isDir: requestIsDir,
-      extension: requestExtension,
-      size: requestSize,
-    });
+    const request = {
+      path: path.value,
+      isDir: isDir.value,
+      extension: extension.value,
+      size: size.value,
+    };
+
+    const cachedIconSrc = getCachedSystemIcon(request);
+
+    if (cachedIconSrc !== undefined) {
+      systemIconSrc.value = cachedIconSrc;
+      isSystemIconPending.value = false;
+      return;
+    }
+
+    systemIconSrc.value = null;
+    isSystemIconPending.value = true;
+    const iconSrc = await fetchSystemIconCached(request);
 
     if (isCurrentRequest
-      && requestPath === path.value
-      && requestIsDir === isDir.value
-      && requestExtension === extension.value
-      && requestSize === size.value) {
+      && request.path === path.value
+      && request.isDir === isDir.value
+      && request.extension === extension.value
+      && request.size === size.value) {
       systemIconSrc.value = iconSrc;
+      isSystemIconPending.value = false;
     }
   });
 
   return {
     systemIconSrc,
+    isSystemIconPending,
     useSystemIcons,
   };
 }
