@@ -966,6 +966,7 @@
     "itemsPrepared": "{count} items",
     "discardClipboard": "Discard",
     "copiedInAnotherApp": "Copied in another app",
+    "cutInAnotherApp": "Cut in another app",
     "cannotMoveToSameDirectory": "Cannot move items to the same directory",
     "cannotPasteIntoItself": "Cannot paste a folder into itself",
     "cannotCreateLinkInsideItself": "Cannot create a folder link inside itself",

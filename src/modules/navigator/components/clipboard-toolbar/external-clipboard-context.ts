@@ -22,6 +22,16 @@ export type ExternalClipboardContext = {
   copyClipboardImageTo: (destinationPath: string) => Promise<void>;
 };
 
+export function getPasteTargetLabelKey(target: ExternalClipboardPasteTarget): string {
+  if (target.paneIndex === null) {
+    return 'fileBrowser.actions.paste';
+  }
+
+  return target.paneIndex === 0
+    ? 'fileBrowser.actions.pasteToPane1'
+    : 'fileBrowser.actions.pasteToPane2';
+}
+
 export const externalClipboardContextKey: InjectionKey<ExternalClipboardContext> = Symbol('externalClipboardContext');
 
 export function provideExternalClipboardContext(context: ExternalClipboardContext) {

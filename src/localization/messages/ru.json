@@ -964,6 +964,7 @@
     "itemsPrepared": "{count} элементов",
     "discardClipboard": "Отменить",
     "copiedInAnotherApp": "Скопировано в другом приложении",
+    "cutInAnotherApp": "Вырезано в другом приложении",
     "cannotMoveToSameDirectory": "Невозможно переместить элементы в ту же папку",
     "cannotPasteIntoItself": "Невозможно вставить папку в саму себя",
     "cannotCreateLinkInsideItself": "Нельзя создать ссылку на папку внутри нее самой",

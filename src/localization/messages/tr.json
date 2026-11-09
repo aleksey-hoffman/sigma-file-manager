@@ -934,6 +934,7 @@
     "itemsPrepared": "{count} öğe",
     "discardClipboard": "İptal",
     "copiedInAnotherApp": "Başka bir uygulamada kopyalandı",
+    "cutInAnotherApp": "Başka bir uygulamada kesildi",
     "cannotMoveToSameDirectory": "Öğeler aynı dizine taşınamaz",
     "cannotPasteIntoItself": "Klasör kendisine yapıştırılamaz",
     "cannotCreateLinkInsideItself": "Bir klasör bağlantısı kendi içinde oluşturulamaz",

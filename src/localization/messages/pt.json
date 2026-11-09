@@ -933,6 +933,7 @@
     "itemsPrepared": "{count} itens",
     "discardClipboard": "Descartar",
     "copiedInAnotherApp": "Copiado em outro app",
+    "cutInAnotherApp": "Recortado em outro app",
     "cannotMoveToSameDirectory": "Não é possível mover itens para o mesmo diretório",
     "cannotPasteIntoItself": "Não é possível colar uma pasta em si mesma",
     "cannotCreateLinkInsideItself": "Não é possível criar um link de pasta dentro dela mesma",

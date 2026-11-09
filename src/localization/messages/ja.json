@@ -934,6 +934,7 @@
     "itemsPrepared": "{count} 項目",
     "discardClipboard": "破棄",
     "copiedInAnotherApp": "他のアプリでコピーされました",
+    "cutInAnotherApp": "他のアプリで切り取られました",
     "cannotMoveToSameDirectory": "同じディレクトリに移動できません",
     "cannotPasteIntoItself": "フォルダを自身に貼り付けることはできません",
     "cannotCreateLinkInsideItself": "フォルダリンクをそのフォルダ自身の中に作成できません",

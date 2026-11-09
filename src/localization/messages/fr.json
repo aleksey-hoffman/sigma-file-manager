@@ -936,6 +936,7 @@
     "itemsPrepared": "{count} éléments",
     "discardClipboard": "Abandonner",
     "copiedInAnotherApp": "Copié dans une autre app",
+    "cutInAnotherApp": "Coupé dans une autre app",
     "cannotMoveToSameDirectory": "Impossible de déplacer les éléments vers le même répertoire",
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
     "cannotCreateLinkInsideItself": "Impossible de créer un lien de dossier dans lui-même",

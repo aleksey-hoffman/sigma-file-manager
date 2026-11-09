@@ -966,6 +966,7 @@
     "itemsPrepared": "{count} פריטים",
     "discardClipboard": "בטל",
     "copiedInAnotherApp": "הועתק באפליקציה אחרת",
+    "cutInAnotherApp": "נגזר באפליקציה אחרת",
     "cannotMoveToSameDirectory": "לא ניתן להעביר פריטים לאותה תיקייה",
     "cannotPasteIntoItself": "לא ניתן להדביק תיקייה לתוך עצמה",
     "cannotCreateLinkInsideItself": "לא ניתן ליצור קישור לתיקייה בתוך עצמה",

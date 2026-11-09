@@ -50,12 +50,18 @@ export function useClipboardItemDrag(
   let mouseDownX = 0;
   let mouseDownY = 0;
 
-  function getDragEntry(item: ClipboardToolbarItem): DirEntry {
+  function getDragEntry(item: ClipboardToolbarItem): DirEntry | null {
     if (item.entry) {
       return item.entry;
     }
 
-    return createSystemImageDragEntry(item.name, clipboardStore.clipboardImage?.tempPath ?? '');
+    const savedImagePath = clipboardStore.clipboardImage?.tempPath;
+
+    if (!savedImagePath) {
+      return null;
+    }
+
+    return createSystemImageDragEntry(item.name, savedImagePath);
   }
 
   function handleItemMouseDown(item: ClipboardToolbarItem, event: MouseEvent) {
@@ -84,11 +90,18 @@ export function useClipboardItemDrag(
     }
 
     const item = pendingItem;
+    const dragEntry = getDragEntry(item);
+
+    if (!dragEntry) {
+      clipboardStore.ensureSystemClipboardImageSaved();
+      return;
+    }
+
     stopTracking();
 
     dragSession.startDragSession({
       sourcePaneId: CLIPBOARD_ITEM_DRAG_SOURCE_ID,
-      items: [getDragEntry(item)],
+      items: [dragEntry],
       operationType: 'copy',
       lockedOperationType: 'copy',
       cursorX: event.clientX,

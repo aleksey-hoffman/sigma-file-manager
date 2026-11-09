@@ -934,6 +934,7 @@
     "itemsPrepared": "{count} 个项目",
     "discardClipboard": "丢弃",
     "copiedInAnotherApp": "已在其他应用中复制",
+    "cutInAnotherApp": "已在其他应用中剪切",
     "cannotMoveToSameDirectory": "无法将项目移动到同一目录",
     "cannotPasteIntoItself": "无法将文件夹粘贴到自身",
     "cannotCreateLinkInsideItself": "无法在文件夹自身内部创建文件夹链接",

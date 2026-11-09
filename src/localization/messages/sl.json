@@ -964,6 +964,7 @@
     "itemsPrepared": "{count} predmetov",
     "discardClipboard": "Zavrzi",
     "copiedInAnotherApp": "Kopirano v drugi aplikaciji",
+    "cutInAnotherApp": "Izrezano v drugi aplikaciji",
     "cannotMoveToSameDirectory": "Ni mogoče premakniti elementov v isti imenik",
     "cannotPasteIntoItself": "Ni mogoče prilepiti mape v samo sebe",
     "cannotCreateLinkInsideItself": "Povezave do mape ni mogoče ustvariti znotraj nje same",

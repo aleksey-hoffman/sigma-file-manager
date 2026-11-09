@@ -964,6 +964,7 @@
     "itemsPrepared": "{count} اشیاء",
     "discardClipboard": "منسوخ",
     "copiedInAnotherApp": "کسی دوسری ایپ میں کاپی کیا گیا",
+    "cutInAnotherApp": "کسی دوسری ایپ میں کٹ کیا گیا",
     "cannotMoveToSameDirectory": "اسی فولڈر میں منتقل نہیں",
     "cannotPasteIntoItself": "فولڈر اپنے اندر نہیں چسپاں",
     "cannotCreateLinkInsideItself": "فولڈر لنک کو اسی کے اندر نہیں بنایا جا سکتا",

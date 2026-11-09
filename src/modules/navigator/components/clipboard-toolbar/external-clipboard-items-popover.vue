@@ -17,6 +17,7 @@ import {
 import { useClipboardItems } from './use-clipboard-items';
 import { useClipboardItemDrag } from './use-clipboard-item-drag';
 import {
+  getPasteTargetLabelKey,
   useExternalClipboardContext,
   type ExternalClipboardPasteTarget,
 } from './external-clipboard-context';
@@ -38,16 +39,6 @@ const hiddenClipboardItemCount = computed(() => clipboardToolbarItems.value.leng
 const pasteTargets = computed(() => externalClipboardContext?.pasteTargets.value ?? []);
 
 const { isDraggingItem, handleItemMouseDown } = useClipboardItemDrag(copyItemTo);
-
-function getPasteTargetLabel(target: ExternalClipboardPasteTarget): string {
-  if (target.paneIndex === null) {
-    return t('fileBrowser.actions.paste');
-  }
-
-  return target.paneIndex === 0
-    ? t('fileBrowser.actions.pasteToPane1')
-    : t('fileBrowser.actions.pasteToPane2');
-}
 
 async function copyItemTo(item: ClipboardToolbarItem, destinationPath: string) {
   if (!externalClipboardContext) {
@@ -120,8 +111,8 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
               type="button"
               class="external-clipboard-card__paste"
               :disabled="!canCopyClipboardItemTo(item, target.path)"
-              :aria-label="getPasteTargetLabel(target)"
-              :title="getPasteTargetLabel(target)"
+              :aria-label="t(getPasteTargetLabelKey(target))"
+              :title="t(getPasteTargetLabelKey(target))"
               @click="handlePasteTargetClick(item, target)"
             >
               <ClipboardPasteIcon :size="14" />
@@ -273,6 +264,11 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
   border-color: hsl(var(--success) / 50%);
   background-color: hsl(var(--success) / 16%);
   color: hsl(var(--success));
+}
+
+.external-clipboard-card__paste:focus-visible {
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .external-clipboard-card__paste:disabled {

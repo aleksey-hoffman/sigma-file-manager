@@ -934,6 +934,7 @@
     "itemsPrepared": "{count} mục",
     "discardClipboard": "Hủy bỏ",
     "copiedInAnotherApp": "Đã sao chép trong ứng dụng khác",
+    "cutInAnotherApp": "Đã cắt trong ứng dụng khác",
     "cannotMoveToSameDirectory": "Không thể di chuyển các mục vào cùng thư mục",
     "cannotPasteIntoItself": "Không thể dán thư mục vào chính nó",
     "cannotCreateLinkInsideItself": "Không thể tạo liên kết thư mục bên trong chính nó",

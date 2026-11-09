@@ -964,6 +964,7 @@
     "itemsPrepared": "{count} आइटम",
     "discardClipboard": "खारिज करना",
     "copiedInAnotherApp": "किसी अन्य ऐप में कॉपी किया गया",
+    "cutInAnotherApp": "किसी अन्य ऐप में कट किया गया",
     "cannotMoveToSameDirectory": "आइटमों को एक ही निर्देशिका में नहीं ले जाया जा सकता",
     "cannotPasteIntoItself": "किसी फ़ोल्डर को स्वयं में चिपकाया नहीं जा सकता",
     "cannotCreateLinkInsideItself": "किसी फ़ोल्डर लिंक को उसी के अंदर नहीं बना सकते",

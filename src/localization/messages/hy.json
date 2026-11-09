@@ -966,6 +966,7 @@
     "itemsPrepared": "{count} իր",
     "discardClipboard": "Չեղարկել",
     "copiedInAnotherApp": "Պատճենված է այլ ծրագրում",
+    "cutInAnotherApp": "Կտրված է այլ ծրագրում",
     "cannotMoveToSameDirectory": "Հնարավոր չէ իրերը տեղափոխել նույն պանակ",
     "cannotPasteIntoItself": "Անհնար է պանակը տեղադրել ինքն իր մեջ (աշխարհում անհնար բան կա :)",
     "cannotCreateLinkInsideItself": "Անհնար է ստեղծել պանակի հղում իր ներսում (աշխարհում անհնար բան կա փաստորեն :)",

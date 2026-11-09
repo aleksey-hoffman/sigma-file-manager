@@ -929,6 +929,7 @@
     "itemsPrepared": "{count} مورد",
     "discardClipboard": "لغو",
     "copiedInAnotherApp": "در برنامه‌ای دیگر کپی شده",
+    "cutInAnotherApp": "در برنامه‌ای دیگر برش داده شده",
     "cannotMoveToSameDirectory": "امکان انتقال موارد به همان پوشه نیست",
     "cannotPasteIntoItself": "امکان چسباندن پوشه در خودش نیست",
     "cannotCreateLinkInsideItself": "امکان ایجاد پیوند پوشه در داخل خودش نیست",

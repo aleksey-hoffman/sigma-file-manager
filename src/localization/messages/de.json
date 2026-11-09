@@ -936,6 +936,7 @@
     "itemsPrepared": "{count} Elemente",
     "discardClipboard": "Verwerfen",
     "copiedInAnotherApp": "In einer anderen App kopiert",
+    "cutInAnotherApp": "In einer anderen App ausgeschnitten",
     "cannotMoveToSameDirectory": "Elemente können nicht in dasselbe Verzeichnis verschoben werden",
     "cannotPasteIntoItself": "Ein Ordner kann nicht in sich selbst eingefügt werden",
     "cannotCreateLinkInsideItself": "Ein Ordner-Link kann nicht im Ordner selbst erstellt werden",

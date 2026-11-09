@@ -74,6 +74,11 @@ const SlotStub = defineComponent({
   template: '<div><slot /></div>',
 });
 
+type SavedClipboardImage = {
+  path: string;
+  sizeBytes: number;
+};
+
 function createDirEntry(overrides: Partial<DirEntry> = {}): DirEntry {
   return {
     name: 'file.txt',
@@ -356,6 +361,55 @@ describe('external clipboard items popover', () => {
     expect(context.copyEntriesTo).toHaveBeenCalledWith([entry], 'C:/Right');
     expect(clipboardStore.clipboardItems).toEqual([entry]);
     expect(wrapper.findAll('.external-clipboard-card')).toHaveLength(1);
+  });
+
+  it('waits for the clipboard image file before dragging an image card', async () => {
+    let resolveImageSave: (savedImage: SavedClipboardImage) => void = () => {};
+
+    invokeMock.mockImplementation((commandName: string) => {
+      if (commandName === 'save_system_clipboard_image_to_temp') {
+        return new Promise((resolve) => {
+          resolveImageSave = resolve;
+        });
+      }
+
+      return Promise.resolve(undefined);
+    });
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboardImage({
+      width: 252,
+      height: 358,
+      sizeBytes: 360864,
+      clipboardSequence: 3,
+    });
+    const wrapper = mountPopover(createContext(singlePaneTargets));
+    const dragSession = useFileBrowserDragSession();
+    document.elementFromPoint = vi.fn(() => null);
+
+    await wrapper.find('.external-clipboard-card').trigger('mousedown', {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    window.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: 40,
+      clientY: 40,
+    }));
+
+    expect(dragSession.dragState.value.isActive).toBe(false);
+
+    resolveImageSave({
+      path: 'C:/Temp/clipboard-image.png',
+      sizeBytes: 7864320,
+    });
+    await flushPromises();
+    window.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: 50,
+      clientY: 50,
+    }));
+
+    expect(dragSession.dragState.value.isActive).toBe(true);
+    expect(dragSession.dragState.value.items.map(item => item.path)).toEqual(['C:/Temp/clipboard-image.png']);
   });
 
   it('does not start a drag from the paste buttons', async () => {

@@ -136,13 +136,13 @@ const {
 } = useFileDropOperation();
 
 async function handleInternalDrop(items: DirEntry[], destinationPath: string, operation: DragOperationType) {
-  const didCompleteSuccessfully = await performInternalDrop(
+  const didTransferAnyItem = await performInternalDrop(
     items.map(item => item.path),
     destinationPath,
     operation,
   );
 
-  if (!didCompleteSuccessfully) {
+  if (!didTransferAnyItem) {
     return;
   }
 
