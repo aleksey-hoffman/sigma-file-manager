@@ -34,6 +34,7 @@ import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
+import { isFileBrowserEmptyAreaClickTarget } from '@/modules/navigator/components/file-browser/utils/file-browser-empty-area-click-target';
 import type { AddressBarEditorMode } from '@/modules/navigator/components/file-browser/address-bar-editor-utils';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
@@ -461,6 +462,14 @@ function handleCurrentDirChange(entry: DirEntry | null) {
 function handlePaneFocus(tabId: string) {
   activateTabPane(tabId);
   syncActivePaneSelectionToGlobal();
+}
+
+function handlePaneEmptyAreaPointerDown(tabId: string, event: PointerEvent) {
+  if (event.button !== 0 || !isFileBrowserEmptyAreaClickTarget(event.target)) {
+    return;
+  }
+
+  handlePaneFocus(tabId);
 }
 
 function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
@@ -1273,6 +1282,7 @@ onUnmounted(() => {
                       <ResizablePanel
                         :default-size="50"
                         :min-size="15"
+                        @pointerdown="handlePaneEmptyAreaPointerDown(tab.id, $event)"
                         @mousedown="handlePaneFocus(tab.id)"
                       >
                         <FileBrowser
@@ -1421,6 +1431,7 @@ onUnmounted(() => {
                 <ResizablePanel
                   :default-size="50"
                   :min-size="15"
+                  @pointerdown="handlePaneEmptyAreaPointerDown(tab.id, $event)"
                   @mousedown="handlePaneFocus(tab.id)"
                 >
                   <FileBrowser
