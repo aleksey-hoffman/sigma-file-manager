@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Presse-papiers",
-      "showToolbarForExternalImages": "Afficher la barre d'outils du presse-papiers pour les images copiées dans d'autres apps",
-      "showToolbarForExternalPaths": "Afficher la barre d'outils du presse-papiers pour les chemins de fichiers copiés dans d'autres apps",
-      "pasteStillWorksWhenHidden": "Coller avec {shortcut} fonctionnera toujours lorsque ces options sont désactivées. Vous ne verrez simplement pas la barre d'outils du presse-papiers."
+      "showToolbarForExternalImages": "Afficher le widget du presse-papiers pour les images copiées dans d'autres apps",
+      "showToolbarForExternalPaths": "Afficher le widget du presse-papiers pour les chemins de fichiers copiés dans d'autres apps",
+      "pasteStillWorksWhenHidden": "Coller avec {shortcut} fonctionnera toujours lorsque ces options sont désactivées. Vous ne verrez simplement pas le widget du presse-papiers."
     },
     "homePageMediaBanner": {
       "title": "Bannière média de la page d'accueil"
@@ -935,6 +935,7 @@
     "preparedForMoving": "Préparé pour le déplacement",
     "itemsPrepared": "{count} éléments",
     "discardClipboard": "Abandonner",
+    "copiedInAnotherApp": "Copié dans une autre app",
     "cannotMoveToSameDirectory": "Impossible de déplacer les éléments vers le même répertoire",
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
     "cannotCreateLinkInsideItself": "Impossible de créer un lien de dossier dans lui-même",

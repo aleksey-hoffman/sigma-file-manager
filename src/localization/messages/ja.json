@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "クリップボード",
-      "showToolbarForExternalImages": "他のアプリでコピーした画像のクリップボードツールバーを表示",
-      "showToolbarForExternalPaths": "他のアプリでコピーしたファイルパスのクリップボードツールバーを表示",
-      "pasteStillWorksWhenHidden": "これらのオプションを無効にしても {shortcut} による貼り付けは引き続き利用できます。クリップボードツールバーだけが表示されなくなります。"
+      "showToolbarForExternalImages": "他のアプリでコピーした画像のクリップボードウィジェットを表示",
+      "showToolbarForExternalPaths": "他のアプリでコピーしたファイルパスのクリップボードウィジェットを表示",
+      "pasteStillWorksWhenHidden": "これらのオプションを無効にしても {shortcut} による貼り付けは引き続き利用できます。クリップボードウィジェットだけが表示されなくなります。"
     },
     "homePageMediaBanner": {
       "title": "ホームページメディアバナー"
@@ -933,6 +933,7 @@
     "preparedForMoving": "移動準備完了",
     "itemsPrepared": "{count} 項目",
     "discardClipboard": "破棄",
+    "copiedInAnotherApp": "他のアプリでコピーされました",
     "cannotMoveToSameDirectory": "同じディレクトリに移動できません",
     "cannotPasteIntoItself": "フォルダを自身に貼り付けることはできません",
     "cannotCreateLinkInsideItself": "フォルダリンクをそのフォルダ自身の中に作成できません",

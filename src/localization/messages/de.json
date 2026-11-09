@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Zwischenablage",
-      "showToolbarForExternalImages": "Zwischenablage-Symbolleiste für in anderen Apps kopierte Bilder anzeigen",
-      "showToolbarForExternalPaths": "Zwischenablage-Symbolleiste für in anderen Apps kopierte Dateipfade anzeigen",
-      "pasteStillWorksWhenHidden": "Einfügen mit {shortcut} funktioniert weiterhin, wenn diese Optionen deaktiviert sind. Die Zwischenablage-Symbolleiste wird nur ausgeblendet."
+      "showToolbarForExternalImages": "Zwischenablage-Widget für in anderen Apps kopierte Bilder anzeigen",
+      "showToolbarForExternalPaths": "Zwischenablage-Widget für in anderen Apps kopierte Dateipfade anzeigen",
+      "pasteStillWorksWhenHidden": "Einfügen mit {shortcut} funktioniert weiterhin, wenn diese Optionen deaktiviert sind. Das Zwischenablage-Widget wird nur ausgeblendet."
     },
     "homePageMediaBanner": {
       "title": "Homepage-Medienbanner"
@@ -935,6 +935,7 @@
     "preparedForMoving": "Zum Verschieben vorbereitet",
     "itemsPrepared": "{count} Elemente",
     "discardClipboard": "Verwerfen",
+    "copiedInAnotherApp": "In einer anderen App kopiert",
     "cannotMoveToSameDirectory": "Elemente können nicht in dasselbe Verzeichnis verschoben werden",
     "cannotPasteIntoItself": "Ein Ordner kann nicht in sich selbst eingefügt werden",
     "cannotCreateLinkInsideItself": "Ein Ordner-Link kann nicht im Ordner selbst erstellt werden",

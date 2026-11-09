@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Pano",
-      "showToolbarForExternalImages": "Diğer uygulamalarda kopyalanan görseller için pano araç çubuğunu göster",
-      "showToolbarForExternalPaths": "Diğer uygulamalarda kopyalanan dosya yolları için pano araç çubuğunu göster",
-      "pasteStillWorksWhenHidden": "Bu seçenekler devre dışı bırakıldığında {shortcut} ile yapıştırma yine de çalışır. Yalnızca pano araç çubuğu görünmez."
+      "showToolbarForExternalImages": "Diğer uygulamalarda kopyalanan görseller için pano bileşenini göster",
+      "showToolbarForExternalPaths": "Diğer uygulamalarda kopyalanan dosya yolları için pano bileşenini göster",
+      "pasteStillWorksWhenHidden": "Bu seçenekler devre dışı bırakıldığında {shortcut} ile yapıştırma yine de çalışır. Yalnızca pano bileşeni görünmez."
     },
     "homePageMediaBanner": {
       "title": "Ana sayfa medya banner'ı"
@@ -933,6 +933,7 @@
     "preparedForMoving": "Taşımaya hazır",
     "itemsPrepared": "{count} öğe",
     "discardClipboard": "İptal",
+    "copiedInAnotherApp": "Başka bir uygulamada kopyalandı",
     "cannotMoveToSameDirectory": "Öğeler aynı dizine taşınamaz",
     "cannotPasteIntoItself": "Klasör kendisine yapıştırılamaz",
     "cannotCreateLinkInsideItself": "Bir klasör bağlantısı kendi içinde oluşturulamaz",

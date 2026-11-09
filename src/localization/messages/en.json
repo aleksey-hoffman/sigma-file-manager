@@ -396,9 +396,9 @@
     },
     "clipboard": {
       "title": "Clipboard",
-      "showToolbarForExternalImages": "Show clipboard toolbar for images copied in other apps",
-      "showToolbarForExternalPaths": "Show clipboard toolbar for file paths copied in other apps",
-      "pasteStillWorksWhenHidden": "Paste with {shortcut} will still work when these options are disabled. You just won't see the clipboard toolbar."
+      "showToolbarForExternalImages": "Show clipboard widget for images copied in other apps",
+      "showToolbarForExternalPaths": "Show clipboard widget for file paths copied in other apps",
+      "pasteStillWorksWhenHidden": "Paste with {shortcut} will still work when these options are disabled. You just won't see the clipboard widget."
     },
     "homePageMediaBanner": {
       "title": "Home page media banner"
@@ -965,6 +965,7 @@
     "preparedForMoving": "Prepared for moving",
     "itemsPrepared": "{count} items",
     "discardClipboard": "Discard",
+    "copiedInAnotherApp": "Copied in another app",
     "cannotMoveToSameDirectory": "Cannot move items to the same directory",
     "cannotPasteIntoItself": "Cannot paste a folder into itself",
     "cannotCreateLinkInsideItself": "Cannot create a folder link inside itself",

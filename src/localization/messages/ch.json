@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "剪贴板",
-      "showToolbarForExternalImages": "显示在其他应用中复制的图像的剪贴板工具栏",
-      "showToolbarForExternalPaths": "显示在其他应用中复制的文件路径的剪贴板工具栏",
-      "pasteStillWorksWhenHidden": "禁用这些选项后，使用 {shortcut} 粘贴仍然有效，只是不会显示剪贴板工具栏。"
+      "showToolbarForExternalImages": "显示在其他应用中复制的图像的剪贴板小组件",
+      "showToolbarForExternalPaths": "显示在其他应用中复制的文件路径的剪贴板小组件",
+      "pasteStillWorksWhenHidden": "禁用这些选项后，使用 {shortcut} 粘贴仍然有效，只是不会显示剪贴板小组件。"
     },
     "homePageMediaBanner": {
       "title": "主页媒体横幅"
@@ -933,6 +933,7 @@
     "preparedForMoving": "准备移动",
     "itemsPrepared": "{count} 个项目",
     "discardClipboard": "丢弃",
+    "copiedInAnotherApp": "已在其他应用中复制",
     "cannotMoveToSameDirectory": "无法将项目移动到同一目录",
     "cannotPasteIntoItself": "无法将文件夹粘贴到自身",
     "cannotCreateLinkInsideItself": "无法在文件夹自身内部创建文件夹链接",

@@ -34,6 +34,7 @@ import {
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { ContextMenuItemRegistration } from '@/types/extension';
 import type { ContextMenuAction } from './types';
+import { ExternalClipboardWidget } from '@/modules/navigator/components/clipboard-toolbar';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
 import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
@@ -49,11 +50,13 @@ const props = withDefaults(defineProps<{
   selectedEntries?: DirEntry[];
   isSplitView?: boolean;
   isActivePane?: boolean;
+  showExternalClipboardWidget?: boolean;
 }>(), {
   selectedCount: undefined,
   selectedEntries: undefined,
   isSplitView: false,
   isActivePane: false,
+  showExternalClipboardWidget: false,
 });
 
 const emit = defineEmits<{
@@ -273,6 +276,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
     class="file-browser-status-bar"
     :class="{ 'file-browser-status-bar--active-pane': showActivePaneIndicator }"
   >
+    <ExternalClipboardWidget v-if="showExternalClipboardWidget" />
     <Tooltip v-if="showActivePaneIndicator">
       <TooltipTrigger as-child>
         <span

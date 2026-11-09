@@ -396,9 +396,9 @@
     },
     "clipboard": {
       "title": "לוח העריכה",
-      "showToolbarForExternalImages": "הצג סרגל כלים של לוח העריכה לתמונות שהועתקו באפליקציות אחרות",
-      "showToolbarForExternalPaths": "הצג סרגל כלים של לוח העריכה לנתיבי קבצים שהועתקו באפליקציות אחרות",
-      "pasteStillWorksWhenHidden": "הדבקה עם {shortcut} תמשיך לעבוד גם כשהאפשרויות מושבתות. פשוט לא תראה את סרגל כלי לוח העריכה."
+      "showToolbarForExternalImages": "הצג ווידג'ט של לוח העריכה לתמונות שהועתקו באפליקציות אחרות",
+      "showToolbarForExternalPaths": "הצג ווידג'ט של לוח העריכה לנתיבי קבצים שהועתקו באפליקציות אחרות",
+      "pasteStillWorksWhenHidden": "הדבקה עם {shortcut} תמשיך לעבוד גם כשהאפשרויות מושבתות. פשוט לא תראה את הווידג'ט של לוח העריכה."
     },
     "homePageMediaBanner": {
       "title": "באנר המדיה של דף הבית"
@@ -965,6 +965,7 @@
     "preparedForMoving": "הוכן להעברה",
     "itemsPrepared": "{count} פריטים",
     "discardClipboard": "בטל",
+    "copiedInAnotherApp": "הועתק באפליקציה אחרת",
     "cannotMoveToSameDirectory": "לא ניתן להעביר פריטים לאותה תיקייה",
     "cannotPasteIntoItself": "לא ניתן להדביק תיקייה לתוך עצמה",
     "cannotCreateLinkInsideItself": "לא ניתן ליצור קישור לתיקייה בתוך עצמה",

@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Portapapeles",
-      "showToolbarForExternalImages": "Mostrar barra de herramientas del portapapeles para imágenes copiadas en otras apps",
-      "showToolbarForExternalPaths": "Mostrar barra de herramientas del portapapeles para rutas de archivos copiadas en otras apps",
-      "pasteStillWorksWhenHidden": "Pegar con {shortcut} seguirá funcionando cuando estas opciones estén desactivadas. Simplemente no verás la barra de herramientas del portapapeles."
+      "showToolbarForExternalImages": "Mostrar el widget del portapapeles para imágenes copiadas en otras apps",
+      "showToolbarForExternalPaths": "Mostrar el widget del portapapeles para rutas de archivos copiadas en otras apps",
+      "pasteStillWorksWhenHidden": "Pegar con {shortcut} seguirá funcionando cuando estas opciones estén desactivadas. Simplemente no verás el widget del portapapeles."
     },
     "homePageMediaBanner": {
       "title": "Banner de medios de la página de inicio"
@@ -935,6 +935,7 @@
     "preparedForMoving": "Preparado para mover",
     "itemsPrepared": "{count} elementos",
     "discardClipboard": "Descartar",
+    "copiedInAnotherApp": "Copiado en otra app",
     "cannotMoveToSameDirectory": "No se pueden mover elementos al mismo directorio",
     "cannotPasteIntoItself": "No se puede pegar una carpeta en sí misma",
     "cannotCreateLinkInsideItself": "No se puede crear un enlace de carpeta dentro de sí misma",

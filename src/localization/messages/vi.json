@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Bảng nhớ tạm",
-      "showToolbarForExternalImages": "Hiển thị thanh công cụ bảng nhớ tạm cho hình ảnh được sao chép trong ứng dụng khác",
-      "showToolbarForExternalPaths": "Hiển thị thanh công cụ bảng nhớ tạm cho đường dẫn tệp được sao chép trong ứng dụng khác",
-      "pasteStillWorksWhenHidden": "Dán bằng {shortcut} vẫn hoạt động khi các tùy chọn này bị tắt. Bạn chỉ sẽ không thấy thanh công cụ bảng nhớ tạm."
+      "showToolbarForExternalImages": "Hiển thị tiện ích bảng nhớ tạm cho hình ảnh được sao chép trong ứng dụng khác",
+      "showToolbarForExternalPaths": "Hiển thị tiện ích bảng nhớ tạm cho đường dẫn tệp được sao chép trong ứng dụng khác",
+      "pasteStillWorksWhenHidden": "Dán bằng {shortcut} vẫn hoạt động khi các tùy chọn này bị tắt. Bạn chỉ sẽ không thấy tiện ích bảng nhớ tạm."
     },
     "homePageMediaBanner": {
       "title": "Biểu ngữ truyền thông trang chủ"
@@ -933,6 +933,7 @@
     "preparedForMoving": "Đã chuẩn bị để di chuyển",
     "itemsPrepared": "{count} mục",
     "discardClipboard": "Hủy bỏ",
+    "copiedInAnotherApp": "Đã sao chép trong ứng dụng khác",
     "cannotMoveToSameDirectory": "Không thể di chuyển các mục vào cùng thư mục",
     "cannotPasteIntoItself": "Không thể dán thư mục vào chính nó",
     "cannotCreateLinkInsideItself": "Không thể tạo liên kết thư mục bên trong chính nó",

@@ -20,6 +20,7 @@ export interface DragState {
   isActive: boolean;
   items: DirEntry[];
   operationType: DragOperationType;
+  isOperationLocked: boolean;
   cursorX: number;
   cursorY: number;
   dropTargetPath: string;
@@ -44,12 +45,14 @@ export interface DragSessionOptions {
   cursorY: number;
   dropHandler: FileBrowserDragDropHandler;
   fallbackDropHandler?: FileBrowserDragDropHandler | null;
+  lockedOperationType?: DragOperationType;
 }
 
 interface ActiveDragSession {
   sourcePaneId: number;
   dropHandler: FileBrowserDragDropHandler;
   fallbackDropHandler?: FileBrowserDragDropHandler | null;
+  lockedOperationType?: DragOperationType;
   sourceDetached: boolean;
 }
 
@@ -58,6 +61,7 @@ function createInactiveDragState(): DragState {
     isActive: false,
     items: [],
     operationType: 'move',
+    isOperationLocked: false,
     cursorX: 0,
     cursorY: 0,
     dropTargetPath: '',
@@ -293,6 +297,14 @@ function updateTargetAtPosition(clientX: number, clientY: number) {
   }
 }
 
+function getOperationTypeForShiftKey(isShiftPressed: boolean): DragOperationType {
+  if (activeSession?.lockedOperationType) {
+    return activeSession.lockedOperationType;
+  }
+
+  return isShiftPressed ? 'copy' : 'move';
+}
+
 function handleMouseMove(event: MouseEvent) {
   if (!activeSession) return;
 
@@ -300,7 +312,7 @@ function handleMouseMove(event: MouseEvent) {
     ...dragState.value,
     cursorX: event.clientX,
     cursorY: event.clientY,
-    operationType: event.shiftKey ? 'copy' : 'move',
+    operationType: getOperationTypeForShiftKey(event.shiftKey),
   };
 
   collectDropTargets();
@@ -317,7 +329,7 @@ function handleMouseUp(event: MouseEvent) {
   if (!activeSession) return;
 
   const targetPath = dragState.value.dropTargetPath;
-  const operation = event.shiftKey ? 'copy' : dragState.value.operationType;
+  const operation = event.shiftKey ? getOperationTypeForShiftKey(true) : dragState.value.operationType;
 
   if (targetPath) {
     dropOn(targetPath, operation);
@@ -332,7 +344,7 @@ function handleKeyDown(event: KeyboardEvent) {
 
   dragState.value = {
     ...dragState.value,
-    operationType: 'copy',
+    operationType: getOperationTypeForShiftKey(true),
   };
 }
 
@@ -341,7 +353,7 @@ function handleKeyUp(event: KeyboardEvent) {
 
   dragState.value = {
     ...dragState.value,
-    operationType: 'move',
+    operationType: getOperationTypeForShiftKey(false),
   };
 }
 
@@ -377,12 +389,14 @@ function startDragSession(options: DragSessionOptions) {
     sourcePaneId: options.sourcePaneId,
     dropHandler: options.dropHandler,
     fallbackDropHandler: options.fallbackDropHandler,
+    lockedOperationType: options.lockedOperationType,
     sourceDetached: false,
   };
   dragState.value = {
     isActive: true,
     items: [...options.items],
-    operationType: options.operationType,
+    operationType: options.lockedOperationType ?? options.operationType,
+    isOperationLocked: Boolean(options.lockedOperationType),
     cursorX: options.cursorX,
     cursorY: options.cursorY,
     dropTargetPath: '',

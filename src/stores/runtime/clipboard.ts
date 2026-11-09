@@ -18,8 +18,8 @@ import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import { isTransientClipboardAccessError } from '@/utils/system-clipboard-errors';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import {
+  getClipboardUiKind,
   hasSameFileClipboardContent,
-  shouldShowClipboardUi,
   type ClipboardOrigin,
 } from '@/stores/runtime/clipboard-visibility';
 
@@ -102,13 +102,16 @@ export const useClipboardStore = defineStore('clipboard', () => {
   const hasFileItems = computed(() => clipboardItems.value.length > 0);
   const hasImageContent = computed(() => clipboardImage.value !== null);
   const hasItems = computed(() => hasFileItems.value || hasImageContent.value);
-  const showClipboardUi = computed(() => shouldShowClipboardUi({
+  const clipboardUiKind = computed(() => getClipboardUiKind({
     hasItems: hasItems.value,
     origin: clipboardOrigin.value,
     hasImageContent: hasImageContent.value,
     hasFileItems: hasFileItems.value,
     settings: userSettingsStore.userSettings.clipboard,
   }));
+  const showClipboardUi = computed(() => clipboardUiKind.value !== null);
+  const showClipboardToolbar = computed(() => clipboardUiKind.value === 'toolbar');
+  const showExternalClipboardWidget = computed(() => clipboardUiKind.value === 'external-widget');
   const itemCount = computed(() => hasImageContent.value ? 1 : clipboardItems.value.length);
   const isCopyOperation = computed(() => clipboardType.value === 'copy');
   const isMoveOperation = computed(() => clipboardType.value === 'move');
@@ -779,6 +782,8 @@ export const useClipboardStore = defineStore('clipboard', () => {
     hasImageContent,
     hasItems,
     showClipboardUi,
+    showClipboardToolbar,
+    showExternalClipboardWidget,
     itemCount,
     isCopyOperation,
     isMoveOperation,

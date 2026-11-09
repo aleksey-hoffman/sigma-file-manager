@@ -279,6 +279,7 @@ defineExpose({
       :selected-entries="fb.selectedEntries.value"
       :is-split-view="props.isSplitView"
       :is-active-pane="props.isActivePane ?? true"
+      :show-external-clipboard-widget="props.paneIndex === 0 || props.paneIndex === undefined"
       @select-all="fb.selectAll"
       @deselect-all="fb.clearSelection"
       @remove-from-selection="fb.removeFromSelection"
