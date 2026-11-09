@@ -10,7 +10,11 @@ import {
   it,
   vi,
 } from 'vitest';
-import { flushPromises, mount } from '@vue/test-utils';
+import {
+  enableAutoUnmount,
+  flushPromises,
+  mount,
+} from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
@@ -152,6 +156,10 @@ async function setExternalFileClipboard(entries: DirEntry[], operation: 'copy' |
   return clipboardStore;
 }
 
+function getPaneMenuItems() {
+  return Array.from(document.body.querySelectorAll<HTMLElement>('.external-clipboard-paste-menu__item'));
+}
+
 function mountPopover(context: ExternalClipboardContext, open = true) {
   return mount(ExternalClipboardItemsPopover, {
     attachTo: document.body,
@@ -168,6 +176,8 @@ function mountPopover(context: ExternalClipboardContext, open = true) {
   });
 }
 
+enableAutoUnmount(afterEach);
+
 describe('external clipboard items popover', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -178,7 +188,6 @@ describe('external clipboard items popover', () => {
 
   afterEach(() => {
     useFileBrowserDragSession().cancelDrag();
-    document.body.innerHTML = '';
   });
 
   it('renders each item as a card with one paste button and no discard', async () => {
@@ -203,7 +212,7 @@ describe('external clipboard items popover', () => {
     expect(cards[0].find('.external-clipboard-card__details').text()).toBe('Videos · 100 B');
     expect(cards[0].attributes('title')).toBe('C:/Users/aleks/Videos/infusion-demo.mp4');
     expect(cards[0].findAll('button')).toHaveLength(1);
-    expect(cards[0].find('button').attributes('aria-label')).toBe('fileBrowser.actions.paste');
+    expect(cards[0].find('button').text()).toBe('fileBrowser.actions.paste');
     expect(wrapper.text()).not.toContain('fileBrowser.removeFromClipboard');
   });
 
@@ -213,29 +222,38 @@ describe('external clipboard items popover', () => {
     const context = createContext(singlePaneTargets);
     const wrapper = mountPopover(context);
 
-    await wrapper.find('.external-clipboard-card__paste').trigger('click');
+    await wrapper.find('.external-clipboard-paste-button').trigger('click');
 
     expect(context.copyEntriesTo).toHaveBeenCalledWith([entry], 'C:/Target');
     expect(context.pasteClipboard).not.toHaveBeenCalled();
     expect(clipboardStore.clipboardItems.map(item => item.path)).toEqual(['C:/Source/one.txt', 'C:/Source/two.txt']);
   });
 
-  it('shows one paste button per pane in split view and targets that pane', async () => {
+  it('picks the pane from the card paste dropdown in split view', async () => {
     const entry = createDirEntry({ path: 'C:/Source/one.txt' });
-    await setExternalFileClipboard([entry]);
+    const clipboardStore = await setExternalFileClipboard([entry]);
     const context = createContext(splitViewTargets);
     const wrapper = mountPopover(context);
-    const pasteButtons = wrapper.findAll('.external-clipboard-card__paste');
+    const pasteButtons = wrapper.findAll('.external-clipboard-paste-button');
 
-    expect(pasteButtons.map(button => button.attributes('aria-label'))).toEqual([
+    expect(pasteButtons).toHaveLength(1);
+    expect(pasteButtons[0].text()).toBe('fileBrowser.actions.paste');
+    expect(pasteButtons[0].find('.external-clipboard-paste-button__chevron').exists()).toBe(true);
+
+    await pasteButtons[0].trigger('click');
+    await flushPromises();
+
+    expect(getPaneMenuItems().map(item => item.textContent?.trim())).toEqual([
       'fileBrowser.actions.pasteToPane1',
       'fileBrowser.actions.pasteToPane2',
     ]);
-    expect(pasteButtons.map(button => button.text())).toEqual(['1', '2']);
 
-    await pasteButtons[1].trigger('click');
+    getPaneMenuItems()[1].click();
+    await flushPromises();
 
     expect(context.copyEntriesTo).toHaveBeenCalledWith([entry], 'C:/Right');
+    expect(getPaneMenuItems()).toHaveLength(0);
+    expect(clipboardStore.clipboardItems).toEqual([entry]);
   });
 
   it('disables a pane paste target that is inside the copied folder', async () => {
@@ -249,10 +267,12 @@ describe('external clipboard items popover', () => {
     ]);
 
     const wrapper = mountPopover(createContext(splitViewTargets));
-    const pasteButtons = wrapper.findAll('.external-clipboard-card__paste');
 
-    expect(pasteButtons[0].attributes('disabled')).toBeDefined();
-    expect(pasteButtons[1].attributes('disabled')).toBeUndefined();
+    await wrapper.find('.external-clipboard-paste-button').trigger('click');
+    await flushPromises();
+
+    expect(getPaneMenuItems()[0].hasAttribute('data-disabled')).toBe(true);
+    expect(getPaneMenuItems()[1].hasAttribute('data-disabled')).toBe(false);
   });
 
   it('renders image clipboard content and copies it without discarding', async () => {
@@ -272,7 +292,7 @@ describe('external clipboard items popover', () => {
     expect(wrapper.find('.external-clipboard-card__details').text()).toBe('252 x 358 · 7.5 MB');
     expect(wrapper.find('.external-clipboard-card__preview-image').attributes('src')).toBe('asset://C:/Temp/clipboard-image.png?v=42');
 
-    await wrapper.find('.external-clipboard-card__paste').trigger('click');
+    await wrapper.find('.external-clipboard-paste-button').trigger('click');
 
     expect(context.copyClipboardImageTo).toHaveBeenCalledWith('C:/Target');
     expect(clipboardStore.hasImageContent).toBe(true);
@@ -417,7 +437,7 @@ describe('external clipboard items popover', () => {
     const wrapper = mountPopover(createContext(singlePaneTargets));
     const dragSession = useFileBrowserDragSession();
 
-    await wrapper.find('.external-clipboard-card__paste').trigger('mousedown', {
+    await wrapper.find('.external-clipboard-paste-button').trigger('mousedown', {
       button: 0,
       clientX: 10,
       clientY: 10,

@@ -11,11 +11,10 @@ import {
   watch,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useElementSize } from '@vueuse/core';
+import { useElementSize, useEventListener } from '@vueuse/core';
 import { PopoverAnchor } from 'reka-ui';
 import {
   ClipboardIcon,
-  ClipboardPasteIcon,
   ImageIcon,
   ScissorsIcon,
   XIcon,
@@ -23,9 +22,9 @@ import {
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import ExternalClipboardItemsPopover from './external-clipboard-items-popover.vue';
+import ExternalClipboardPasteButton from './external-clipboard-paste-button.vue';
 import { useClipboardItemDragActive } from './use-clipboard-item-drag';
 import {
-  getPasteTargetLabelKey,
   useExternalClipboardContext,
   type ExternalClipboardPasteTarget,
 } from './external-clipboard-context';
@@ -44,6 +43,8 @@ const expandedContentRef = ref<HTMLElement | null>(null);
 const isHovered = ref(false);
 const hasFocusWithin = ref(false);
 const isItemsPopoverOpen = ref(false);
+const isPasteMenuOpen = ref(false);
+const isPinnedOpen = ref(false);
 let collapseTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const restContentSize = useElementSize(restContentRef, undefined, { box: 'border-box' });
@@ -52,6 +53,8 @@ const expandedContentSize = useElementSize(expandedContentRef, undefined, { box:
 const isExpanded = computed(() => isHovered.value
   || hasFocusWithin.value
   || isItemsPopoverOpen.value
+  || isPasteMenuOpen.value
+  || isPinnedOpen.value
   || isClipboardItemDragActive.value);
 
 const restWidth = computed(() => restContentSize.width.value + PILL_BORDER_WIDTH);
@@ -94,6 +97,7 @@ function handleMouseEnter() {
 
 function handleMouseLeave() {
   clearCollapseTimeout();
+  isPinnedOpen.value = false;
   collapseTimeout = setTimeout(() => {
     isHovered.value = false;
     collapseTimeout = null;
@@ -118,6 +122,10 @@ function canPasteTo(target: ExternalClipboardPasteTarget): boolean {
 }
 
 async function pasteTo(target: ExternalClipboardPasteTarget) {
+  if (target.paneIndex !== null) {
+    isPinnedOpen.value = true;
+  }
+
   await externalClipboardContext?.pasteClipboard(target.paneIndex);
 }
 
@@ -129,9 +137,23 @@ function handlePopoverInteractOutside(event: CustomEvent<{ originalEvent: Event 
   }
 }
 
+useEventListener(window, 'pointerdown', (event: PointerEvent) => {
+  const interactionTarget = event.target as Element | null;
+
+  if (!isPinnedOpen.value || pillRef.value?.contains(interactionTarget)) {
+    return;
+  }
+
+  if (!interactionTarget?.closest('[data-dismissable-layer]')) {
+    isPinnedOpen.value = false;
+  }
+}, { capture: true });
+
 watch(() => clipboardStore.showExternalClipboardWidget, (isVisible) => {
   if (!isVisible) {
     isItemsPopoverOpen.value = false;
+    isPasteMenuOpen.value = false;
+    isPinnedOpen.value = false;
     isHovered.value = false;
     hasFocusWithin.value = false;
   }
@@ -168,9 +190,10 @@ onBeforeUnmount(clearCollapseTimeout);
           >
             <component
               :is="clipboardIcon"
-              :size="12"
+              :size="14"
+              class="external-clipboard-widget__icon"
             />
-            <span class="external-clipboard-widget__rest-count">{{ clipboardStore.itemCount }}</span>
+            <span class="external-clipboard-widget__badge">{{ clipboardStore.itemCount }}</span>
           </div>
           <div
             ref="expandedContentRef"
@@ -183,36 +206,29 @@ onBeforeUnmount(clearCollapseTimeout);
                 :aria-expanded="isItemsPopoverOpen"
                 :aria-label="`${titleLabel}, ${itemCountLabel}`"
               >
-                <component
-                  :is="clipboardIcon"
-                  :size="14"
-                  class="external-clipboard-widget__summary-icon"
-                />
-                <span class="external-clipboard-widget__title">{{ titleLabel }}</span>
-                <span class="external-clipboard-widget__count">{{ itemCountLabel }}</span>
+                <span class="external-clipboard-widget__summary-icon">
+                  <component
+                    :is="clipboardIcon"
+                    :size="16"
+                    class="external-clipboard-widget__icon"
+                  />
+                </span>
+                <span class="external-clipboard-widget__text">
+                  <span class="external-clipboard-widget__title">{{ titleLabel }}</span>
+                  <span class="external-clipboard-widget__subtitle">{{ itemCountLabel }}</span>
+                </span>
               </button>
             </PopoverTrigger>
             <span class="external-clipboard-widget__divider" />
-            <button
-              v-for="target in pasteTargets"
-              :key="target.paneIndex ?? 'active'"
-              type="button"
-              class="external-clipboard-widget__action external-clipboard-widget__action--paste"
-              :disabled="!canPasteTo(target)"
-              :aria-label="t(getPasteTargetLabelKey(target))"
-              :title="t(getPasteTargetLabelKey(target))"
-              @click="pasteTo(target)"
-            >
-              <ClipboardPasteIcon :size="14" />
-              <span class="external-clipboard-widget__paste-label">{{ t(getPasteTargetLabelKey(target)) }}</span>
-              <span
-                v-if="target.paneIndex !== null"
-                class="external-clipboard-widget__paste-pane"
-              >{{ target.paneIndex + 1 }}</span>
-            </button>
+            <ExternalClipboardPasteButton
+              v-model:menu-open="isPasteMenuOpen"
+              :targets="pasteTargets"
+              :can-paste-to="canPasteTo"
+              @paste="pasteTo"
+            />
             <button
               type="button"
-              class="external-clipboard-widget__action external-clipboard-widget__action--discard"
+              class="external-clipboard-widget__discard"
               :aria-label="t('fileBrowser.discardClipboard')"
               :title="t('fileBrowser.discardClipboard')"
               @click="clipboardStore.discardClipboard()"
@@ -235,19 +251,8 @@ onBeforeUnmount(clearCollapseTimeout);
   --external-clipboard-accent: var(--warning);
 
   position: relative;
-  height: 22px;
+  height: 32px;
   flex-shrink: 0;
-  margin-right: 8px;
-}
-
-.external-clipboard-widget::after {
-  position: absolute;
-  top: 5px;
-  right: -9px;
-  width: 1px;
-  height: 12px;
-  background-color: hsl(var(--border));
-  content: "";
 }
 
 .external-clipboard-widget__pill {
@@ -256,17 +261,14 @@ onBeforeUnmount(clearCollapseTimeout);
   bottom: 0;
   left: 0;
   overflow: hidden;
-  border: 1px solid hsl(var(--external-clipboard-accent) / 35%);
-  border-radius: 999px;
-  background:
-    linear-gradient(hsl(var(--external-clipboard-accent) / 12%), hsl(var(--external-clipboard-accent) / 12%)),
-    hsl(var(--background-2));
-  color: hsl(var(--external-clipboard-accent));
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  background-color: hsl(var(--background-2));
   transition:
-    width 0.28s cubic-bezier(0.32, 0.72, 0, 1),
-    height 0.28s cubic-bezier(0.32, 0.72, 0, 1),
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 0.24s ease;
 }
 
 .external-clipboard-widget__pill--move {
@@ -274,12 +276,9 @@ onBeforeUnmount(clearCollapseTimeout);
 }
 
 .external-clipboard-widget__pill--expanded {
-  border-color: hsl(var(--external-clipboard-accent) / 45%);
-  background:
-    linear-gradient(hsl(var(--external-clipboard-accent) / 9%), hsl(var(--external-clipboard-accent) / 9%)),
-    hsl(var(--background-2));
+  border-radius: 24px;
   box-shadow:
-    0 12px 32px -8px rgb(0 0 0 / 45%),
+    0 14px 36px -10px rgb(0 0 0 / 50%),
     0 4px 12px -6px rgb(0 0 0 / 30%);
 }
 
@@ -294,20 +293,34 @@ onBeforeUnmount(clearCollapseTimeout);
 }
 
 .external-clipboard-widget__rest {
-  height: 20px;
-  padding: 0 8px 0 7px;
+  height: 30px;
+  padding: 0 7px 0 10px;
+  gap: 7px;
+  transition: opacity 0.14s ease;
+}
+
+.external-clipboard-widget__icon {
+  flex-shrink: 0;
+  color: hsl(var(--external-clipboard-accent));
+}
+
+.external-clipboard-widget__badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background-color: hsl(var(--external-clipboard-accent) / 18%);
+  color: hsl(var(--external-clipboard-accent));
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  gap: 5px;
-  transition: opacity 0.12s ease;
+  font-weight: 600;
+  text-align: center;
 }
 
 .external-clipboard-widget__expanded {
   width: max-content;
-  max-width: calc(100cqw - 16px);
-  height: 38px;
-  padding: 0 5px;
+  max-width: calc(100cqw - 8px);
+  height: 46px;
+  padding: 0 7px 0 5px;
   gap: 2px;
   opacity: 0;
   pointer-events: none;
@@ -322,129 +335,96 @@ onBeforeUnmount(clearCollapseTimeout);
 .external-clipboard-widget__pill--expanded .external-clipboard-widget__expanded {
   opacity: 1;
   pointer-events: auto;
-  transition-delay: 0.06s;
+  transition-delay: 0.08s;
 }
 
 .external-clipboard-widget__summary {
   display: flex;
   min-width: 0;
-  height: 28px;
+  height: 36px;
   flex-shrink: 1;
   align-items: center;
-  padding: 0 8px 0 9px;
+  padding: 0 12px 0 4px;
   border-radius: 999px;
   cursor: pointer;
-  gap: 8px;
+  gap: 9px;
+  text-align: left;
   transition: background-color 0.15s ease;
 }
 
 .external-clipboard-widget__summary:hover,
 .external-clipboard-widget__summary[aria-expanded="true"] {
-  background-color: hsl(var(--foreground) / 8%);
+  background-color: hsl(var(--foreground) / 7%);
 }
 
 .external-clipboard-widget__summary-icon {
+  display: flex;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: hsl(var(--foreground) / 6%);
 }
 
-.external-clipboard-widget__title {
-  overflow: hidden;
+.external-clipboard-widget__text {
+  display: flex;
   min-width: 0;
-  color: hsl(var(--foreground));
-  font-size: 12px;
-  font-weight: 600;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.external-clipboard-widget__title,
+.external-clipboard-widget__subtitle {
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.external-clipboard-widget__count {
-  flex-shrink: 0;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background-color: hsl(var(--external-clipboard-accent) / 16%);
+.external-clipboard-widget__title {
+  color: hsl(var(--foreground));
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.external-clipboard-widget__subtitle {
+  color: hsl(var(--muted-foreground));
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
 }
 
 .external-clipboard-widget__divider {
   width: 1px;
-  height: 16px;
+  height: 18px;
   flex-shrink: 0;
   margin: 0 4px;
   background-color: hsl(var(--border));
 }
 
-.external-clipboard-widget__action {
+.external-clipboard-widget__discard {
   display: inline-flex;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  padding: 0 10px;
   border-radius: 999px;
-  color: hsl(var(--foreground));
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  gap: 6px;
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
 }
 
-.external-clipboard-widget__action--paste:not(:disabled):hover {
-  background-color: hsl(var(--success) / 16%);
-  color: hsl(var(--success));
-}
-
-.external-clipboard-widget__action--discard {
-  width: 28px;
-  padding: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.external-clipboard-widget__action--discard:hover {
+.external-clipboard-widget__discard:hover {
   background-color: hsl(var(--destructive) / 16%);
   color: hsl(var(--destructive));
 }
 
 .external-clipboard-widget__summary:focus-visible,
-.external-clipboard-widget__action:focus-visible {
+.external-clipboard-widget__discard:focus-visible {
   outline: 2px solid hsl(var(--ring) / 50%);
   outline-offset: var(--ring-outline-offset);
-}
-
-.external-clipboard-widget__paste-pane {
-  display: none;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.external-clipboard-widget__action:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-@container (width < 480px) {
-  .external-clipboard-widget__title,
-  .external-clipboard-widget__paste-label {
-    display: none;
-  }
-
-  .external-clipboard-widget__paste-pane {
-    display: inline;
-  }
-
-  .external-clipboard-widget__action--paste {
-    padding: 0 8px;
-    gap: 4px;
-  }
-}
-
-@container (width < 260px) {
-  .external-clipboard-widget__count {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -14,6 +14,7 @@ import { provideFileBrowserContext } from './composables/use-file-browser-contex
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
+import { ExternalClipboardWidget } from '@/modules/navigator/components/clipboard-toolbar';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
@@ -271,19 +272,22 @@ defineExpose({
       :track-relative-time="props.trackRelativeTime"
     />
 
-    <FileBrowserStatusBar
-      v-if="!hideStatusBar"
-      :dir-contents="fb.dirContents.value"
-      :filtered-count="fb.entries.value.length"
-      :selected-count="fb.selectedEntries.value.length"
-      :selected-entries="fb.selectedEntries.value"
-      :is-split-view="props.isSplitView"
-      :is-active-pane="props.isActivePane ?? true"
-      :show-external-clipboard-widget="props.paneIndex === 0 || props.paneIndex === undefined"
-      @select-all="fb.selectAll"
-      @deselect-all="fb.clearSelection"
-      @remove-from-selection="fb.removeFromSelection"
-    />
+    <div class="file-browser__footer">
+      <ExternalClipboardWidget v-if="props.paneIndex === 0 || props.paneIndex === undefined" />
+      <FileBrowserStatusBar
+        v-if="!hideStatusBar"
+        :dir-contents="fb.dirContents.value"
+        :filtered-count="fb.entries.value.length"
+        :selected-count="fb.selectedEntries.value.length"
+        :selected-entries="fb.selectedEntries.value"
+        :is-split-view="props.isSplitView"
+        :is-active-pane="props.isActivePane ?? true"
+        class="file-browser__status-bar"
+        @select-all="fb.selectAll"
+        @deselect-all="fb.clearSelection"
+        @remove-from-selection="fb.removeFromSelection"
+      />
+    </div>
 
     <FileBrowserRenameDialog
       v-model:open="fb.isRenameDialogOpen.value"
@@ -363,6 +367,19 @@ defineExpose({
   overflow: hidden;
   height: 100%;
   flex-direction: column;
+}
+
+.file-browser__footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  container-type: inline-size;
+  gap: 6px;
+}
+
+.file-browser__status-bar {
+  min-width: 0;
+  flex: 1;
 }
 
 .cross-pane-drop-overlay {

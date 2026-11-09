@@ -10,7 +10,11 @@ import {
   it,
   vi,
 } from 'vitest';
-import { mount } from '@vue/test-utils';
+import {
+  enableAutoUnmount,
+  flushPromises,
+  mount,
+} from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
@@ -157,8 +161,25 @@ function mountWidget(context = createContext([{
 }
 
 function getPasteButtons(wrapper: ReturnType<typeof mountWidget>) {
-  return wrapper.findAll('.external-clipboard-widget__action--paste');
+  return wrapper.findAll('.external-clipboard-paste-button');
 }
+
+function getPaneMenuItems() {
+  return Array.from(document.body.querySelectorAll<HTMLElement>('.external-clipboard-paste-menu__item'));
+}
+
+const splitViewTargets: ExternalClipboardPasteTarget[] = [
+  {
+    paneIndex: 0,
+    path: 'C:/Left',
+  },
+  {
+    paneIndex: 1,
+    path: 'C:/Right',
+  },
+];
+
+enableAutoUnmount(afterEach);
 
 describe('external clipboard widget', () => {
   beforeEach(() => {
@@ -171,7 +192,6 @@ describe('external clipboard widget', () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    document.body.innerHTML = '';
   });
 
   it('stays hidden for copies made in the app', () => {
@@ -201,8 +221,8 @@ describe('external clipboard widget', () => {
     expect(wrapper.find('.external-clipboard-widget__pill--expanded').exists()).toBe(false);
   });
 
-  it('expands into a pill with title, count, paste and discard on hover', async () => {
-    vi.useFakeTimers();
+  it('expands into a pill with title, item count subtitle, paste and discard on hover', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await setExternalFileClipboard([createDirEntry(), createDirEntry({ path: 'C:/Source/two.txt' })]);
     const wrapper = mountWidget();
     const pill = wrapper.find('.external-clipboard-widget__pill');
@@ -211,11 +231,10 @@ describe('external clipboard widget', () => {
 
     expect(pill.classes()).toContain('external-clipboard-widget__pill--expanded');
     expect(wrapper.find('.external-clipboard-widget__title').text()).toBe('fileBrowser.copiedInAnotherApp');
-    expect(wrapper.find('.external-clipboard-widget__count').text()).toBe('2 items');
-    expect(getPasteButtons(wrapper).map(button => button.attributes('aria-label'))).toEqual(['fileBrowser.actions.paste']);
-    expect(wrapper.find('.external-clipboard-widget__paste-label').text()).toBe('fileBrowser.actions.paste');
-    expect(wrapper.find('.external-clipboard-widget__paste-pane').exists()).toBe(false);
-    expect(wrapper.find('.external-clipboard-widget__action--discard').attributes('aria-label')).toBe('fileBrowser.discardClipboard');
+    expect(wrapper.find('.external-clipboard-widget__subtitle').text()).toBe('2 items');
+    expect(getPasteButtons(wrapper).map(button => button.text())).toEqual(['fileBrowser.actions.paste']);
+    expect(wrapper.find('.external-clipboard-paste-button__chevron').exists()).toBe(false);
+    expect(wrapper.find('.external-clipboard-widget__discard').attributes('aria-label')).toBe('fileBrowser.discardClipboard');
 
     await pill.trigger('mouseleave');
     vi.runAllTimers();
@@ -237,32 +256,42 @@ describe('external clipboard widget', () => {
     expect(context.pasteClipboard).toHaveBeenCalledWith(null);
   });
 
-  it('shows one paste button per pane in split view', async () => {
+  it('picks the pane from the paste dropdown in split view and stays expanded', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await setExternalFileClipboard([createDirEntry()]);
-    const context = createContext([
-      {
-        paneIndex: 0,
-        path: 'C:/Left',
-      },
-      {
-        paneIndex: 1,
-        path: 'C:/Right',
-      },
-    ]);
+    const context = createContext(splitViewTargets);
     const wrapper = mountWidget(context);
+    const pill = wrapper.find('.external-clipboard-widget__pill');
     const pasteButtons = getPasteButtons(wrapper);
 
-    expect(pasteButtons.map(button => button.attributes('aria-label'))).toEqual([
+    expect(pasteButtons).toHaveLength(1);
+    expect(pasteButtons[0].text()).toBe('fileBrowser.actions.paste');
+    expect(pasteButtons[0].find('.external-clipboard-paste-button__chevron').exists()).toBe(true);
+
+    await pill.trigger('mouseenter');
+    await pasteButtons[0].trigger('click');
+    await flushPromises();
+    await pill.trigger('mouseleave');
+    vi.runAllTimers();
+    await wrapper.vm.$nextTick();
+
+    expect(pill.classes()).toContain('external-clipboard-widget__pill--expanded');
+    expect(getPaneMenuItems().map(item => item.textContent?.trim())).toEqual([
       'fileBrowser.actions.pasteToPane1',
       'fileBrowser.actions.pasteToPane2',
     ]);
-    expect(pasteButtons.map(button => button.find('.external-clipboard-widget__paste-pane').text())).toEqual(['1', '2']);
 
-    await pasteButtons[1].trigger('click');
-    await pasteButtons[0].trigger('click');
+    getPaneMenuItems()[1].click();
+    await flushPromises();
 
-    expect(context.pasteClipboard).toHaveBeenNthCalledWith(1, 1);
-    expect(context.pasteClipboard).toHaveBeenNthCalledWith(2, 0);
+    expect(context.pasteClipboard).toHaveBeenCalledWith(1);
+    expect(getPaneMenuItems()).toHaveLength(0);
+    expect(pill.classes()).toContain('external-clipboard-widget__pill--expanded');
+
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await wrapper.vm.$nextTick();
+
+    expect(pill.classes()).not.toContain('external-clipboard-widget__pill--expanded');
   });
 
   it('labels a cut from another app as a cut and pastes it with the cut operation', async () => {
@@ -294,7 +323,7 @@ describe('external clipboard widget', () => {
     await setExternalFileClipboard([createDirEntry()]);
     const wrapper = mountWidget();
     const pill = wrapper.find('.external-clipboard-widget__pill');
-    const discardButton = wrapper.find<HTMLButtonElement>('.external-clipboard-widget__action--discard');
+    const discardButton = wrapper.find<HTMLButtonElement>('.external-clipboard-widget__discard');
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
     discardButton.element.focus();
@@ -321,36 +350,29 @@ describe('external clipboard widget', () => {
     expect(pill.classes()).not.toContain('external-clipboard-widget__pill--expanded');
   });
 
-  it('disables a pane paste target the clipboard cannot be pasted into', async () => {
+  it('disables a pane in the paste dropdown the clipboard cannot be pasted into', async () => {
     await setExternalFileClipboard([createDirEntry({ path: 'C:/Left/file.txt' })], 'move');
-    const wrapper = mountWidget(createContext([
-      {
-        paneIndex: 0,
-        path: 'C:/Left',
-      },
-      {
-        paneIndex: 1,
-        path: 'C:/Right',
-      },
-    ]));
-    const pasteButtons = getPasteButtons(wrapper);
+    const wrapper = mountWidget(createContext(splitViewTargets));
 
-    expect(pasteButtons[0].attributes('disabled')).toBeDefined();
-    expect(pasteButtons[1].attributes('disabled')).toBeUndefined();
+    await getPasteButtons(wrapper)[0].trigger('click');
+    await flushPromises();
+
+    expect(getPaneMenuItems()[0].hasAttribute('data-disabled')).toBe(true);
+    expect(getPaneMenuItems()[1].hasAttribute('data-disabled')).toBe(false);
   });
 
   it('discards the clipboard from the X button', async () => {
     const clipboardStore = await setExternalFileClipboard([createDirEntry()]);
     const wrapper = mountWidget();
 
-    await wrapper.find('.external-clipboard-widget__action--discard').trigger('click');
+    await wrapper.find('.external-clipboard-widget__discard').trigger('click');
 
     expect(clipboardStore.hasItems).toBe(false);
     expect(wrapper.find('.external-clipboard-widget').exists()).toBe(false);
   });
 
   it('opens the items popover from the title and keeps the pill expanded', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await setExternalFileClipboard([createDirEntry()]);
     const wrapper = mountWidget();
     const pill = wrapper.find('.external-clipboard-widget__pill');

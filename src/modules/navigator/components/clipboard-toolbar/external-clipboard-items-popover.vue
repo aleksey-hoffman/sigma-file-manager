@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ClipboardPasteIcon, ImageIcon } from '@lucide/vue';
+import { ImageIcon } from '@lucide/vue';
 import { PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -16,8 +16,8 @@ import {
 } from './clipboard-toolbar-items';
 import { useClipboardItems } from './use-clipboard-items';
 import { useClipboardItemDrag } from './use-clipboard-item-drag';
+import ExternalClipboardPasteButton from './external-clipboard-paste-button.vue';
 import {
-  getPasteTargetLabelKey,
   useExternalClipboardContext,
   type ExternalClipboardPasteTarget,
 } from './external-clipboard-context';
@@ -104,24 +104,12 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
             <span class="external-clipboard-card__name">{{ item.name }}</span>
             <span class="external-clipboard-card__details">{{ getClipboardItemCardDetails(item) }}</span>
           </span>
-          <span class="external-clipboard-card__actions">
-            <button
-              v-for="target in pasteTargets"
-              :key="target.paneIndex ?? 'active'"
-              type="button"
-              class="external-clipboard-card__paste"
-              :disabled="!canCopyClipboardItemTo(item, target.path)"
-              :aria-label="t(getPasteTargetLabelKey(target))"
-              :title="t(getPasteTargetLabelKey(target))"
-              @click="handlePasteTargetClick(item, target)"
-            >
-              <ClipboardPasteIcon :size="14" />
-              <span
-                v-if="target.paneIndex !== null"
-                class="external-clipboard-card__paste-pane"
-              >{{ target.paneIndex + 1 }}</span>
-            </button>
-          </span>
+          <ExternalClipboardPasteButton
+            size="small"
+            :targets="pasteTargets"
+            :can-paste-to="target => canCopyClipboardItemTo(item, target.path)"
+            @paste="target => handlePasteTargetClick(item, target)"
+          />
         </li>
       </ul>
       <div
@@ -229,51 +217,6 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.external-clipboard-card__actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 4px;
-}
-
-.external-clipboard-card__paste {
-  display: inline-flex;
-  min-width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 7px;
-  border: 1px solid hsl(var(--border) / 70%);
-  border-radius: 7px;
-  background-color: hsl(var(--background-3) / 60%);
-  color: hsl(var(--foreground));
-  cursor: pointer;
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  gap: 4px;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.external-clipboard-card__paste:not(:disabled):hover {
-  border-color: hsl(var(--success) / 50%);
-  background-color: hsl(var(--success) / 16%);
-  color: hsl(var(--success));
-}
-
-.external-clipboard-card__paste:focus-visible {
-  outline: 2px solid hsl(var(--ring) / 50%);
-  outline-offset: var(--ring-outline-offset);
-}
-
-.external-clipboard-card__paste:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
 }
 
 .external-clipboard-items-popover__hidden-note {
