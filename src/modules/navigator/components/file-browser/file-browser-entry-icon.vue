@@ -14,7 +14,7 @@ const props = defineProps<{
   size: number;
 }>();
 
-const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
+const { iconSrc, fallbackIconComponent, iconRevealClass } = useNavigatorItemIcon({
   path: () => props.entry.path,
   name: () => props.entry.name,
   isDir: () => props.entry.is_dir,
@@ -51,5 +51,6 @@ const rootProps = computed<Record<string, unknown>>(() => {
   <component
     :is="rootComponent"
     v-bind="rootProps"
+    :class="iconRevealClass"
   />
 </template>

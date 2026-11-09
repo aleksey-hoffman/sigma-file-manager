@@ -51,9 +51,21 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     return scope ?? 'local';
   }
 
+  let initPromise: Promise<void> | null = null;
+
   async function init(bootstrapFile?: StartupStorageFileBootstrap): Promise<void> {
     if (isInitialized.value) return;
 
+    if (!initPromise) {
+      initPromise = loadStorage(bootstrapFile).finally(() => {
+        initPromise = null;
+      });
+    }
+
+    await initPromise;
+  }
+
+  async function loadStorage(bootstrapFile?: StartupStorageFileBootstrap): Promise<void> {
     try {
       const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('extensions');
       const storagePath = userPathsStore.customPaths.appUserDataExtensionsPath;

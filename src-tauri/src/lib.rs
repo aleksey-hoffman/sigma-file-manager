@@ -403,6 +403,7 @@ pub fn run() {
             extensions::delete_file_binary,
             extensions::is_path_within_directory,
             extensions::extension_path_exists,
+            extensions::extension_paths_exist,
             extensions::run_extension_command,
             extensions::download_extension_file,
             extensions::extension_http_request,

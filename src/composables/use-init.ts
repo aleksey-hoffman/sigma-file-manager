@@ -26,6 +26,8 @@ import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
+import { useNavigatorIconsStore } from '@/stores/runtime/navigator-icons';
+import { withTimeout } from '@/utils/with-timeout';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
@@ -58,6 +60,7 @@ import {
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 const STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS = 1500;
 const STARTUP_DIR_ENTRY_TIMEOUT_MS = 2000;
+const STARTUP_ICON_THEME_PRELOAD_TIMEOUT_MS = 1000;
 
 export function useInit() {
   const router = useRouter();
@@ -77,6 +80,7 @@ export function useInit() {
   const deleteJobsStore = useDeleteJobsStore();
   const copyMoveJobsStore = useCopyMoveJobsStore();
   const quickViewStore = useQuickViewStore();
+  const navigatorIconsStore = useNavigatorIconsStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
   useClipboardFocusSync();
@@ -313,6 +317,15 @@ export function useInit() {
     await traceInitStep('userPathsStore.init', () => userPathsStore.init());
     await traceInitStep('userSettingsStore.init', () => userSettingsStore.init());
 
+    const iconThemePreload = traceInitStep(
+      'navigatorIconsStore.preloadConfiguredThemes',
+      () => withTimeout(
+        () => navigatorIconsStore.preloadConfiguredThemes(),
+        'navigator icon theme preload',
+        STARTUP_ICON_THEME_PRELOAD_TIMEOUT_MS,
+      ),
+    ).catch(() => undefined);
+
     let initialLaunchContext: LaunchContext | undefined;
     let openedInitialLaunchTargets = false;
     let loadedInitialTabGroup = false;
@@ -328,6 +341,8 @@ export function useInit() {
       'workspacesStore.init',
       () => workspacesStore.init(undefined, { loadInitialTabGroup: false }),
     );
+
+    await iconThemePreload;
 
     if (isMainWindow) {
       initialLaunchContext = await traceInitStep(
