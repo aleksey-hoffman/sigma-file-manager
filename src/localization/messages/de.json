@@ -368,8 +368,8 @@
     "clipboard": {
       "title": "Zwischenablage",
       "showToolbarForExternalImages": "Zwischenablage-Widget für in anderen Apps kopierte Bilder anzeigen",
-      "showToolbarForExternalPaths": "Zwischenablage-Widget für in anderen Apps kopierte Dateipfade anzeigen",
-      "pasteStillWorksWhenHidden": "Einfügen mit {shortcut} funktioniert weiterhin, wenn diese Optionen deaktiviert sind. Das Zwischenablage-Widget wird nur ausgeblendet."
+      "showToolbarForExternalPaths": "Zwischenablage-Widget für in anderen Apps kopierte oder ausgeschnittene Dateien anzeigen",
+      "pasteStillWorksWhenHidden": "Das Einfügen mit {shortcut} funktioniert auch im deaktivierten Zustand."
     },
     "homePageMediaBanner": {
       "title": "Homepage-Medienbanner"
@@ -933,10 +933,12 @@
     "removeFromClipboard": "Aus Zwischenablage entfernen",
     "preparedForCopying": "Zum Kopieren vorbereitet",
     "preparedForMoving": "Zum Verschieben vorbereitet",
-    "itemsPrepared": "{count} Elemente",
+    "itemsPrepared": "0 Elemente | 1 Element | {count} Elemente | {count} Elemente",
     "discardClipboard": "Verwerfen",
     "copiedInAnotherApp": "In einer anderen App kopiert",
     "cutInAnotherApp": "In einer anderen App ausgeschnitten",
+    "copiedInApp": "In {app} kopiert",
+    "cutInApp": "In {app} ausgeschnitten",
     "cannotMoveToSameDirectory": "Elemente können nicht in dasselbe Verzeichnis verschoben werden",
     "cannotPasteIntoItself": "Ein Ordner kann nicht in sich selbst eingefügt werden",
     "cannotCreateLinkInsideItself": "Ein Ordner-Link kann nicht im Ordner selbst erstellt werden",
@@ -957,6 +959,7 @@
       "copy": "Kopieren",
       "move": "Verschieben",
       "paste": "Einfügen",
+      "pasteAll": "Alles einfügen",
       "pasteToPane1": "In Bereich 1 einfügen",
       "pasteToPane2": "In Bereich 2 einfügen",
       "delete": "Löschen",

@@ -170,7 +170,7 @@ watch(() => props.open, (isOpen) => {
               <span class="clipboard-items-popover__item-name">{{ item.name }}</span>
               <span
                 class="clipboard-items-popover__item-path"
-                :title="item.path"
+                :title="item.kind === 'file' ? item.path : undefined"
               >{{ item.subtitle }}</span>
               <span
                 v-if="item.sizeLabel"

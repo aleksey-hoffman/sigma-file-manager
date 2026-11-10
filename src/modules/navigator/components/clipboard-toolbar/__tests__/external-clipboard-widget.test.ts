@@ -66,6 +66,18 @@ vi.mock('vue-i18n', () => ({
         return `${values?.count ?? 0} items`;
       }
 
+      if (key === 'image') {
+        return 'Image';
+      }
+
+      if (key === 'fileBrowser.copiedInApp') {
+        return `Copied in ${values?.app ?? ''}`;
+      }
+
+      if (key === 'fileBrowser.cutInApp') {
+        return `Cut in ${values?.app ?? ''}`;
+      }
+
       return key;
     },
   }),
@@ -112,8 +124,9 @@ function createDirEntry(overrides: Partial<DirEntry> = {}): DirEntry {
 function createContext(pasteTargets: ExternalClipboardPasteTarget[]): ExternalClipboardContext {
   return {
     pasteTargets: ref(pasteTargets),
+    restFootprintPx: ref(0),
     pasteClipboard: vi.fn(() => Promise.resolve()),
-    copyEntriesTo: vi.fn(() => Promise.resolve()),
+    transferEntriesTo: vi.fn(() => Promise.resolve(true)),
     copyClipboardImageTo: vi.fn(() => Promise.resolve()),
   };
 }
@@ -212,13 +225,22 @@ describe('external clipboard widget', () => {
     expect(wrapper.find('.external-clipboard-widget').exists()).toBe(false);
   });
 
-  it('shows only the item count at rest', async () => {
+  it('shows only the item count at rest and reports its footer footprint', async () => {
     await setExternalFileClipboard([createDirEntry(), createDirEntry({ path: 'C:/Source/two.txt' })]);
+    const context = createContext([{
+      paneIndex: null,
+      path: 'C:/Target',
+    }]);
 
-    const wrapper = mountWidget();
+    const wrapper = mountWidget(context);
 
-    expect(wrapper.find('.external-clipboard-widget__rest').text()).toBe('2');
+    expect(wrapper.find('.external-clipboard-widget__badge').text()).toBe('2');
     expect(wrapper.find('.external-clipboard-widget__pill--expanded').exists()).toBe(false);
+    expect(context.restFootprintPx.value).toBeGreaterThan(0);
+
+    wrapper.unmount();
+
+    expect(context.restFootprintPx.value).toBe(0);
   });
 
   it('expands into a pill with title, item count subtitle, paste and discard on hover', async () => {
@@ -232,7 +254,8 @@ describe('external clipboard widget', () => {
     expect(pill.classes()).toContain('external-clipboard-widget__pill--expanded');
     expect(wrapper.find('.external-clipboard-widget__title').text()).toBe('fileBrowser.copiedInAnotherApp');
     expect(wrapper.find('.external-clipboard-widget__subtitle').text()).toBe('2 items');
-    expect(getPasteButtons(wrapper).map(button => button.text())).toEqual(['fileBrowser.actions.paste']);
+    expect(wrapper.find('.external-clipboard-widget__disclosure').exists()).toBe(true);
+    expect(getPasteButtons(wrapper).map(button => button.text())).toEqual(['fileBrowser.actions.pasteAll']);
     expect(wrapper.find('.external-clipboard-paste-button__chevron').exists()).toBe(false);
     expect(wrapper.find('.external-clipboard-widget__discard').attributes('aria-label')).toBe('fileBrowser.discardClipboard');
 
@@ -265,7 +288,7 @@ describe('external clipboard widget', () => {
     const pasteButtons = getPasteButtons(wrapper);
 
     expect(pasteButtons).toHaveLength(1);
-    expect(pasteButtons[0].text()).toBe('fileBrowser.actions.paste');
+    expect(pasteButtons[0].text()).toBe('fileBrowser.actions.pasteAll');
     expect(pasteButtons[0].find('.external-clipboard-paste-button__chevron').exists()).toBe(true);
 
     await pill.trigger('mouseenter');
@@ -276,9 +299,13 @@ describe('external clipboard widget', () => {
     await wrapper.vm.$nextTick();
 
     expect(pill.classes()).toContain('external-clipboard-widget__pill--expanded');
-    expect(getPaneMenuItems().map(item => item.textContent?.trim())).toEqual([
+    expect(getPaneMenuItems().map(item => item.querySelector('.external-clipboard-paste-menu__item-label')?.textContent?.trim())).toEqual([
       'fileBrowser.actions.pasteToPane1',
       'fileBrowser.actions.pasteToPane2',
+    ]);
+    expect(getPaneMenuItems().map(item => item.querySelector('.external-clipboard-paste-menu__item-folder')?.textContent?.trim())).toEqual([
+      'Left',
+      'Right',
     ]);
 
     getPaneMenuItems()[1].click();
@@ -317,6 +344,40 @@ describe('external clipboard widget', () => {
 
     expect(wrapper.find('.external-clipboard-widget__title').text()).toBe('fileBrowser.copiedInAnotherApp');
     expect(wrapper.find('.external-clipboard-widget__pill').classes()).not.toContain('external-clipboard-widget__pill--move');
+  });
+
+  it('shows image dimensions in the pill subtitle for clipboard images', () => {
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboardImage({
+      width: 252,
+      height: 358,
+      sizeBytes: 360864,
+    });
+
+    const wrapper = mountWidget();
+
+    expect(wrapper.find('.external-clipboard-widget__subtitle').text()).toBe('Image · 252 x 358');
+  });
+
+  it('names the source app and shows its icon when detected', () => {
+    const clipboardStore = useClipboardStore();
+    clipboardStore.setClipboardImage(
+      {
+        width: 800,
+        height: 600,
+        sizeBytes: 40000,
+      },
+      'external',
+      {
+        processName: 'ScreenClippingHost.exe',
+        processIconUrl: 'data:image/png;base64,snip',
+      },
+    );
+
+    const wrapper = mountWidget();
+
+    expect(wrapper.find('.external-clipboard-widget__title').text()).toBe('Copied in Snipping Tool');
+    expect(wrapper.find('.external-clipboard-widget__source-icon').attributes('src')).toBe('data:image/png;base64,snip');
   });
 
   it('stays expanded while a control has keyboard focus', async () => {

@@ -368,8 +368,8 @@
     "clipboard": {
       "title": "Pano",
       "showToolbarForExternalImages": "Diğer uygulamalarda kopyalanan görseller için pano bileşenini göster",
-      "showToolbarForExternalPaths": "Diğer uygulamalarda kopyalanan dosya yolları için pano bileşenini göster",
-      "pasteStillWorksWhenHidden": "Bu seçenekler devre dışı bırakıldığında {shortcut} ile yapıştırma yine de çalışır. Yalnızca pano bileşeni görünmez."
+      "showToolbarForExternalPaths": "Diğer uygulamalarda kopyalanan veya kesilen dosyalar için pano bileşenini göster",
+      "pasteStillWorksWhenHidden": "Kapalı olduğunda {shortcut} ile yapıştırma yine çalışır."
     },
     "homePageMediaBanner": {
       "title": "Ana sayfa medya banner'ı"
@@ -931,10 +931,12 @@
     "removeFromClipboard": "Panodan kaldır",
     "preparedForCopying": "Kopyalamaya hazır",
     "preparedForMoving": "Taşımaya hazır",
-    "itemsPrepared": "{count} öğe",
+    "itemsPrepared": "0 öğe | 1 öğe | {count} öğe | {count} öğe",
     "discardClipboard": "İptal",
     "copiedInAnotherApp": "Başka bir uygulamada kopyalandı",
     "cutInAnotherApp": "Başka bir uygulamada kesildi",
+    "copiedInApp": "{app} içinde kopyalandı",
+    "cutInApp": "{app} içinde kesildi",
     "cannotMoveToSameDirectory": "Öğeler aynı dizine taşınamaz",
     "cannotPasteIntoItself": "Klasör kendisine yapıştırılamaz",
     "cannotCreateLinkInsideItself": "Bir klasör bağlantısı kendi içinde oluşturulamaz",
@@ -955,6 +957,7 @@
       "copy": "Kopyala",
       "move": "Taşı",
       "paste": "Yapıştır",
+      "pasteAll": "Tümünü yapıştır",
       "pasteToPane1": "Panel 1'e yapıştır",
       "pasteToPane2": "Panel 2'e yapıştır",
       "delete": "Sil",

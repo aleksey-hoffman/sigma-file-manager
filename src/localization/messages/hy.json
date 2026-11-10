@@ -397,8 +397,8 @@
     "clipboard": {
       "title": "Փոխանակման բուֆեր",
       "showToolbarForExternalImages": "Ցուցադրել փոխանակման բուֆերի վիջեթը այլ ծրագրերում պատճենված նկարների համար",
-      "showToolbarForExternalPaths": "Ցուցադրել փոխանակման բուֆերի վիջեթը այլ ծրագրերում պատճենված ֆայլերի ուղիների համար",
-      "pasteStillWorksWhenHidden": "Տեղադրումը {shortcut}-ով կաշխատի, նույնիսկ եթե այս ընտրանքներն անջատված են։ Դուք ուղղակի չեք տեսնի փոխանակման բուֆերի վիջեթը։"
+      "showToolbarForExternalPaths": "Ցուցադրել փոխանակման բուֆերի վիջեթը այլ ծրագրերում պատճենված կամ կտրված ֆայլերի համար",
+      "pasteStillWorksWhenHidden": "Տեղադրումը {shortcut}-ով շարունակում է աշխատել, երբ անջատված է։"
     },
     "homePageMediaBanner": {
       "title": "Գլխավոր էջի մեդիա բանները"
@@ -963,10 +963,12 @@
     "removeFromClipboard": "Ջնջել փոխանակման բուֆերից",
     "preparedForCopying": "Պատրաստ է պատճենելու համար",
     "preparedForMoving": "Պատրաստ է տեղափոխելու համար",
-    "itemsPrepared": "{count} իր",
+    "itemsPrepared": "0 իր | 1 իր | {count} իր | {count} իր",
     "discardClipboard": "Չեղարկել",
     "copiedInAnotherApp": "Պատճենված է այլ ծրագրում",
     "cutInAnotherApp": "Կտրված է այլ ծրագրում",
+    "copiedInApp": "Պատճենված է {app}-ում",
+    "cutInApp": "Կտրված է {app}-ում",
     "cannotMoveToSameDirectory": "Հնարավոր չէ իրերը տեղափոխել նույն պանակ",
     "cannotPasteIntoItself": "Անհնար է պանակը տեղադրել ինքն իր մեջ (աշխարհում անհնար բան կա :)",
     "cannotCreateLinkInsideItself": "Անհնար է ստեղծել պանակի հղում իր ներսում (աշխարհում անհնար բան կա փաստորեն :)",
@@ -988,6 +990,7 @@
       "move": "Տեղափոխել",
       "createLink": "Ստեղծել հղում",
       "paste": "Տեղադրել",
+      "pasteAll": "Տեղադրել բոլորը",
       "pasteToPane1": "Տեղադրել վահանակ 1-ում",
       "pasteToPane2": "Տեղադրել 2-րդ վահանակում",
       "delete": "Ջնջել",

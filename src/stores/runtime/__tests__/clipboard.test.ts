@@ -744,4 +744,55 @@ describe('clipboard store', () => {
     expect(store.showClipboardToolbar).toBe(true);
     expect(store.showExternalClipboardWidget).toBe(false);
   });
+
+  it('captures external clipboard source app and preserves it across focus resyncs of the same content', async () => {
+    let sourceContextResponse: Record<string, string> = {
+      processName: 'msedge.exe',
+      processIconUrl: 'data:image/png;base64,edge',
+    };
+    let currentPath = 'C:/External/report.pdf';
+
+    invokeMock.mockImplementation(async (commandName: string, args?: unknown) => {
+      if (commandName === 'read_system_clipboard_files') {
+        return {
+          paths: [currentPath],
+          operation: 'copy',
+        };
+      }
+
+      if (commandName === 'get_clipboard_source_context') {
+        return sourceContextResponse;
+      }
+
+      if (commandName === 'paths_are_directories') {
+        return [false];
+      }
+
+      if (commandName === 'get_dir_entry_with_timeout') {
+        return createEntry({
+          path: (args as { path: string }).path,
+        });
+      }
+
+      return undefined;
+    });
+
+    const store = useClipboardStore();
+    await store.syncFromSystemClipboard();
+
+    expect(store.clipboardSourceAppName).toBe('Edge');
+    expect(store.clipboardSourceIconUrl).toBe('data:image/png;base64,edge');
+
+    sourceContextResponse = {};
+    await store.syncFromSystemClipboard();
+
+    expect(store.clipboardSourceAppName).toBe('Edge');
+    expect(store.clipboardSourceIconUrl).toBe('data:image/png;base64,edge');
+
+    currentPath = 'C:/External/other.pdf';
+    await store.syncFromSystemClipboard();
+
+    expect(store.clipboardSourceAppName).toBeUndefined();
+    expect(store.clipboardSourceIconUrl).toBeUndefined();
+  });
 });

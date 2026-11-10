@@ -4,13 +4,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ImageIcon } from '@lucide/vue';
+import { ImageIcon, SearchIcon, XIcon } from '@lucide/vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useClipboardStore } from '@/stores/runtime/clipboard';
 import {
-  canCopyClipboardItemTo,
+  canTransferClipboardItemTo,
+  filterClipboardToolbarItems,
   getClipboardItemCardDetails,
   type ClipboardToolbarItem,
 } from './clipboard-toolbar-items';
@@ -20,27 +24,77 @@ import ExternalClipboardPasteButton from './external-clipboard-paste-button.vue'
 import {
   useExternalClipboardContext,
   type ExternalClipboardPasteTarget,
+  type ExternalClipboardTransferOperation,
 } from './external-clipboard-context';
+
+const FILTER_MIN_ITEMS = 5;
 
 const props = defineProps<{
   open: boolean;
 }>();
 
+const emit = defineEmits<{
+  interactOutside: [event: CustomEvent<{ originalEvent: Event }>];
+}>();
+
 const { t } = useI18n();
+const clipboardStore = useClipboardStore();
 const externalClipboardContext = useExternalClipboardContext();
+const filterQuery = ref('');
 
 const {
   clipboardToolbarItems,
   toDisplayedClipboardItems,
 } = useClipboardItems(() => props.open);
 
-const displayedClipboardItems = computed(() => toDisplayedClipboardItems(clipboardToolbarItems.value));
-const hiddenClipboardItemCount = computed(() => clipboardToolbarItems.value.length - displayedClipboardItems.value.length);
+const showFilter = computed(() => clipboardToolbarItems.value.length >= FILTER_MIN_ITEMS || Boolean(filterQuery.value));
+const sourceAppName = computed(() => clipboardStore.clipboardSourceAppName);
+const sourceIconUrl = computed(() => clipboardStore.clipboardSourceIconUrl);
+const filteredClipboardItems = computed(() => {
+  const normalizedQuery = filterQuery.value.trim().toLowerCase();
+
+  if (normalizedQuery && sourceAppName.value?.toLowerCase().includes(normalizedQuery)) {
+    return clipboardToolbarItems.value;
+  }
+
+  return filterClipboardToolbarItems(clipboardToolbarItems.value, filterQuery.value);
+});
+const displayedClipboardItems = computed(() => toDisplayedClipboardItems(filteredClipboardItems.value));
+const hiddenClipboardItemCount = computed(() => filteredClipboardItems.value.length - displayedClipboardItems.value.length);
 const pasteTargets = computed(() => externalClipboardContext?.pasteTargets.value ?? []);
+const itemOperation = computed<ExternalClipboardTransferOperation>(() => clipboardStore.isMoveOperation ? 'move' : 'copy');
 
-const { isDraggingItem, handleItemMouseDown } = useClipboardItemDrag(copyItemTo);
+function formatItemCardDetails(item: ClipboardToolbarItem): string {
+  const details = getClipboardItemCardDetails(item);
 
-async function copyItemTo(item: ClipboardToolbarItem, destinationPath: string) {
+  if (sourceAppName.value && details) {
+    return `\u00A0· ${details}`;
+  }
+
+  return details;
+}
+
+const footerNote = computed(() => {
+  if (filterQuery.value) {
+    return t('fileBrowser.matchedNOfItems', {
+      matched: filteredClipboardItems.value.length,
+      total: clipboardToolbarItems.value.length,
+    });
+  }
+
+  if (hiddenClipboardItemCount.value > 0) {
+    return t('fileBrowser.showingNOfItems', {
+      total: clipboardToolbarItems.value.length,
+      hidden: hiddenClipboardItemCount.value,
+    });
+  }
+
+  return null;
+});
+
+const { isDraggingItem, handleItemMouseDown } = useClipboardItemDrag(transferItemTo);
+
+async function transferItemTo(item: ClipboardToolbarItem, destinationPath: string) {
   if (!externalClipboardContext) {
     return;
   }
@@ -51,7 +105,12 @@ async function copyItemTo(item: ClipboardToolbarItem, destinationPath: string) {
   }
 
   if (item.entry) {
-    await externalClipboardContext.copyEntriesTo([item.entry], destinationPath);
+    const operation = itemOperation.value;
+    const didTransfer = await externalClipboardContext.transferEntriesTo([item.entry], destinationPath, operation);
+
+    if (didTransfer && operation === 'move') {
+      clipboardStore.removeFromClipboard(item.entry);
+    }
   }
 }
 
@@ -60,8 +119,14 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
     return;
   }
 
-  await copyItemTo(item, target.path);
+  await transferItemTo(item, target.path);
 }
+
+watch(() => props.open, (isOpen) => {
+  if (!isOpen) {
+    filterQuery.value = '';
+  }
+});
 </script>
 
 <template>
@@ -71,15 +136,45 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
     :side-offset="8"
     :collision-padding="12"
     class="external-clipboard-items-popover"
-    :class="{ 'external-clipboard-items-popover--dragging': isDraggingItem }"
+    :class="{
+      'external-clipboard-items-popover--dragging': isDraggingItem,
+      'external-clipboard-items-popover--move': clipboardStore.isMoveOperation,
+    }"
+    @interact-outside="emit('interactOutside', $event)"
   >
+    <div
+      v-if="showFilter"
+      class="external-clipboard-items-popover__filter"
+    >
+      <SearchIcon
+        :size="15"
+        class="external-clipboard-items-popover__filter-icon"
+      />
+      <Input
+        v-model="filterQuery"
+        :placeholder="t('filter.filter')"
+        class="external-clipboard-items-popover__filter-input"
+      />
+      <Button
+        v-if="filterQuery"
+        variant="ghost"
+        size="icon"
+        class="external-clipboard-items-popover__filter-clear"
+        :aria-label="t('globalSearch.clearSearchField')"
+        @click="filterQuery = ''"
+      >
+        <XIcon :size="14" />
+      </Button>
+    </div>
     <ScrollArea class="external-clipboard-items-popover__scroll-area">
-      <ul class="external-clipboard-items-popover__list">
+      <ul
+        v-if="displayedClipboardItems.length > 0"
+        class="external-clipboard-items-popover__list"
+      >
         <li
           v-for="item in displayedClipboardItems"
           :key="item.key"
           class="external-clipboard-card"
-          :title="item.path"
           @mousedown="handleItemMouseDown(item, $event)"
         >
           <span class="external-clipboard-card__preview">
@@ -102,21 +197,42 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
           </span>
           <span class="external-clipboard-card__text">
             <span class="external-clipboard-card__name">{{ item.name }}</span>
-            <span class="external-clipboard-card__details">{{ getClipboardItemCardDetails(item) }}</span>
+            <span class="external-clipboard-card__details">
+              <span
+                v-if="sourceAppName"
+                class="external-clipboard-card__source"
+              >
+                <img
+                  v-if="sourceIconUrl"
+                  :src="sourceIconUrl"
+                  alt=""
+                  class="external-clipboard-card__source-icon"
+                  draggable="false"
+                >
+                <span>{{ sourceAppName }}</span>
+              </span>
+              <span class="external-clipboard-card__meta">{{ formatItemCardDetails(item) }}</span>
+            </span>
           </span>
           <ExternalClipboardPasteButton
             size="small"
             :targets="pasteTargets"
-            :can-paste-to="target => canCopyClipboardItemTo(item, target.path)"
+            :can-paste-to="target => canTransferClipboardItemTo(item, target.path, itemOperation)"
             @paste="target => handlePasteTargetClick(item, target)"
           />
         </li>
       </ul>
       <div
-        v-if="hiddenClipboardItemCount > 0"
+        v-else
+        class="external-clipboard-items-popover__empty"
+      >
+        {{ t('fileBrowser.noMatchingItems') }}
+      </div>
+      <div
+        v-if="footerNote"
         class="external-clipboard-items-popover__hidden-note"
       >
-        {{ t('fileBrowser.showingNOfItems', { total: clipboardToolbarItems.length, hidden: hiddenClipboardItemCount }) }}
+        {{ footerNote }}
       </div>
     </ScrollArea>
   </PopoverContent>
@@ -124,15 +240,57 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
 
 <style>
 .sigma-ui-popover-content.external-clipboard-items-popover {
+  --external-clipboard-accent: var(--warning);
+
   width: 380px;
   max-width: calc(100vw - 24px);
   padding: 0;
   transition: opacity 0.15s ease;
 }
 
+.sigma-ui-popover-content.external-clipboard-items-popover--move {
+  --external-clipboard-accent: var(--destructive);
+}
+
 .external-clipboard-items-popover--dragging {
   opacity: 0.35;
   pointer-events: none;
+}
+
+.external-clipboard-items-popover__filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8px 8px 0;
+}
+
+.external-clipboard-items-popover__filter-icon {
+  position: absolute;
+  z-index: 1;
+  color: hsl(var(--muted-foreground));
+  inset-inline-start: 18px;
+  pointer-events: none;
+}
+
+.external-clipboard-items-popover__filter-input.sigma-ui-input {
+  width: 100%;
+  height: 32px;
+  border-color: hsl(var(--border) / 80%);
+  background-color: hsl(var(--muted) / 40%);
+  box-shadow: none;
+  font-size: 12px;
+  padding-inline: 32px 30px;
+}
+
+.external-clipboard-items-popover__filter-input.sigma-ui-input:focus-visible {
+  background-color: hsl(var(--background));
+}
+
+.external-clipboard-items-popover__filter-clear {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  inset-inline-end: 12px;
 }
 
 .external-clipboard-items-popover__scroll-area {
@@ -170,8 +328,8 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
 }
 
 .external-clipboard-card:hover {
-  border-color: hsl(var(--warning) / 45%);
-  background-color: hsl(var(--warning) / 6%);
+  border-color: hsl(var(--external-clipboard-accent) / 45%);
+  background-color: hsl(var(--external-clipboard-accent) / 6%);
 }
 
 .external-clipboard-card__preview {
@@ -212,11 +370,40 @@ async function handlePasteTargetClick(item: ClipboardToolbarItem, target: Extern
 }
 
 .external-clipboard-card__details {
+  display: flex;
   overflow: hidden;
+  min-width: 0;
+  align-items: center;
   color: hsl(var(--muted-foreground));
   font-size: 11px;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.external-clipboard-card__source {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.external-clipboard-card__source-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.external-clipboard-card__meta {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.external-clipboard-items-popover__empty {
+  padding: 18px 12px 10px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  text-align: center;
 }
 
 .external-clipboard-items-popover__hidden-note {

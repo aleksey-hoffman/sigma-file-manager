@@ -58,6 +58,7 @@ import {
 } from '@/modules/navigator/components/navigation-panel/composables/use-navigation-panel-layout';
 import {
   ClipboardToolbar,
+  ExternalClipboardWidget,
   provideExternalClipboardContext,
   type ExternalClipboardPasteTarget,
 } from '@/modules/navigator/components/clipboard-toolbar';
@@ -135,7 +136,11 @@ const {
   performDrop: performInternalDrop,
 } = useFileDropOperation();
 
-async function handleInternalDrop(items: DirEntry[], destinationPath: string, operation: DragOperationType) {
+async function handleInternalDrop(
+  items: DirEntry[],
+  destinationPath: string,
+  operation: DragOperationType,
+): Promise<boolean> {
   const didTransferAnyItem = await performInternalDrop(
     items.map(item => item.path),
     destinationPath,
@@ -143,7 +148,7 @@ async function handleInternalDrop(items: DirEntry[], destinationPath: string, op
   );
 
   if (!didTransferAnyItem) {
-    return;
+    return false;
   }
 
   const pathsToRefresh = new Set<string>([destinationPath]);
@@ -155,9 +160,12 @@ async function handleInternalDrop(items: DirEntry[], destinationPath: string, op
   }
 
   await refreshFileBrowsersAtPaths([...pathsToRefresh]);
+  return true;
 }
 
-provideFileBrowserInternalDropHandler(handleInternalDrop);
+provideFileBrowserInternalDropHandler(async (items, destinationPath, operation) => {
+  await handleInternalDrop(items, destinationPath, operation);
+});
 
 const TEXT_COPY_PREVIEW_MAX_LENGTH = 400;
 
@@ -296,11 +304,22 @@ const currentActivePath = computed(() => {
   return currentDirEntry.value?.path;
 });
 
+const singlePanePastePath = computed(() => {
+  const currentPath = currentActivePath.value;
+  const actionContext = getVirtualLocationActionContext(selectedEntries.value, currentPath);
+
+  if (actionContext.isBrowsingVirtualLocations) {
+    return actionContext.actionDirectoryPath ?? undefined;
+  }
+
+  return currentPath;
+});
+
 const externalClipboardPasteTargets = computed<ExternalClipboardPasteTarget[]>(() => {
   if (!isSplitView.value) {
     return [{
       paneIndex: null,
-      path: currentActivePath.value,
+      path: singlePanePastePath.value,
     }];
   }
 
@@ -325,10 +344,13 @@ async function copyClipboardImageTo(destinationPath: string) {
   await refreshFileBrowsersAtPaths([destinationPath]);
 }
 
+const externalClipboardRestFootprintPx = ref(0);
+
 provideExternalClipboardContext({
   pasteTargets: externalClipboardPasteTargets,
+  restFootprintPx: externalClipboardRestFootprintPx,
   pasteClipboard: paneIndex => paneIndex === null ? handlePasteShortcut() : handlePasteToPane(paneIndex),
-  copyEntriesTo: (entries, destinationPath) => handleInternalDrop(entries, destinationPath, 'copy'),
+  transferEntriesTo: (entries, destinationPath, operation) => handleInternalDrop(entries, destinationPath, operation),
   copyClipboardImageTo,
 });
 
@@ -1380,9 +1402,10 @@ onUnmounted(() => {
                     />
                   </ResizablePanel>
                 </ResizablePanelGroup>
+                <ExternalClipboardWidget v-if="!globalSearchStore.isOpen" />
               </div>
               <ClipboardToolbar
-                :current-path="currentActivePath"
+                :current-path="singlePanePastePath"
                 :is-split-view="isSplitView"
                 :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
                 :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
@@ -1530,9 +1553,10 @@ onUnmounted(() => {
               />
             </ResizablePanel>
           </ResizablePanelGroup>
+          <ExternalClipboardWidget v-if="!globalSearchStore.isOpen" />
         </div>
         <ClipboardToolbar
-          :current-path="currentActivePath"
+          :current-path="singlePanePastePath"
           :is-split-view="isSplitView"
           :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
           :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
@@ -1685,10 +1709,12 @@ onUnmounted(() => {
 }
 
 .navigator-page__panes-container {
+  position: relative;
   display: flex;
   overflow: hidden;
   min-width: 0;
   flex: 1;
+  container-type: inline-size;
   gap: 6px;
 }
 

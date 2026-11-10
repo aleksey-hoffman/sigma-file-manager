@@ -397,8 +397,8 @@
     "clipboard": {
       "title": "क्लिपबोर्ड",
       "showToolbarForExternalImages": "अन्य ऐप्स में कॉपी की गई छवियों के लिए क्लिपबोर्ड विजेट दिखाएं",
-      "showToolbarForExternalPaths": "अन्य ऐप्स में कॉपी किए गए फ़ाइल पथों के लिए क्लिपबोर्ड विजेट दिखाएं",
-      "pasteStillWorksWhenHidden": "जब ये विकल्प अक्षम हों, {shortcut} से पेस्ट करना फिर भी काम करेगा। आपको बस क्लिपबोर्ड विजेट दिखाई नहीं देगा।"
+      "showToolbarForExternalPaths": "अन्य ऐप्स में कॉपी या कट की गई फ़ाइलों के लिए क्लिपबोर्ड विजेट दिखाएं",
+      "pasteStillWorksWhenHidden": "बंद होने पर भी {shortcut} से पेस्ट करना काम करता है।"
     },
     "homePageMediaBanner": {
       "title": "होम पेज मीडिया बैनर"
@@ -961,10 +961,12 @@
     "removeFromClipboard": "क्लिपबोर्ड से निकालें",
     "preparedForCopying": "नकल के लिए तैयार",
     "preparedForMoving": "चलने के लिए तैयार",
-    "itemsPrepared": "{count} आइटम",
+    "itemsPrepared": "0 आइटम | 1 आइटम | {count} आइटम | {count} आइटम",
     "discardClipboard": "खारिज करना",
     "copiedInAnotherApp": "किसी अन्य ऐप में कॉपी किया गया",
     "cutInAnotherApp": "किसी अन्य ऐप में कट किया गया",
+    "copiedInApp": "{app} में कॉपी किया गया",
+    "cutInApp": "{app} में कट किया गया",
     "cannotMoveToSameDirectory": "आइटमों को एक ही निर्देशिका में नहीं ले जाया जा सकता",
     "cannotPasteIntoItself": "किसी फ़ोल्डर को स्वयं में चिपकाया नहीं जा सकता",
     "cannotCreateLinkInsideItself": "किसी फ़ोल्डर लिंक को उसी के अंदर नहीं बना सकते",
@@ -985,6 +987,7 @@
       "copy": "प्रतिलिपि",
       "move": "कदम",
       "paste": "पेस्ट करें",
+      "pasteAll": "सभी पेस्ट करें",
       "pasteToPane1": "फलक 1 पर चिपकाएँ",
       "pasteToPane2": "फलक 2 पर चिपकाएँ",
       "delete": "मिटाना",

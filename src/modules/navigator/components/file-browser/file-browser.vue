@@ -14,7 +14,7 @@ import { provideFileBrowserContext } from './composables/use-file-browser-contex
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
-import { ExternalClipboardWidget } from '@/modules/navigator/components/clipboard-toolbar';
+import { useExternalClipboardContext } from '@/modules/navigator/components/clipboard-toolbar/external-clipboard-context';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
@@ -78,12 +78,28 @@ const fb = useFileBrowser({
   scrollStateKey: getScrollStateKey,
 });
 
+const externalClipboardContext = useExternalClipboardContext();
+
 const folderOptionsPath = computed(() => {
   if (props.tab?.type === 'search') {
     return '';
   }
 
   return fb.currentPath.value;
+});
+
+const reserveExternalClipboardFootprint = computed(() => !fb.isExternalMode
+  && !props.hideStatusBar
+  && (props.paneIndex === 0 || props.paneIndex === undefined));
+
+const footerStyle = computed(() => {
+  const footprintPx = reserveExternalClipboardFootprint.value
+    ? (externalClipboardContext?.restFootprintPx.value ?? 0)
+    : 0;
+
+  return footprintPx > 0
+    ? { '--external-clipboard-footprint': `${footprintPx}px` }
+    : undefined;
 });
 
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
@@ -272,10 +288,12 @@ defineExpose({
       :track-relative-time="props.trackRelativeTime"
     />
 
-    <div class="file-browser__footer">
-      <ExternalClipboardWidget v-if="props.paneIndex === 0 || props.paneIndex === undefined" />
+    <div
+      v-if="!hideStatusBar"
+      class="file-browser__footer"
+      :style="footerStyle"
+    >
       <FileBrowserStatusBar
-        v-if="!hideStatusBar"
         :dir-contents="fb.dirContents.value"
         :filtered-count="fb.entries.value.length"
         :selected-count="fb.selectedEntries.value.length"
@@ -373,8 +391,7 @@ defineExpose({
   display: flex;
   flex-shrink: 0;
   align-items: flex-end;
-  container-type: inline-size;
-  gap: 6px;
+  padding-inline-start: min(var(--external-clipboard-footprint, 0px), 100%);
 }
 
 .file-browser__status-bar {

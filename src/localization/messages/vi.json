@@ -368,8 +368,8 @@
     "clipboard": {
       "title": "Bảng nhớ tạm",
       "showToolbarForExternalImages": "Hiển thị tiện ích bảng nhớ tạm cho hình ảnh được sao chép trong ứng dụng khác",
-      "showToolbarForExternalPaths": "Hiển thị tiện ích bảng nhớ tạm cho đường dẫn tệp được sao chép trong ứng dụng khác",
-      "pasteStillWorksWhenHidden": "Dán bằng {shortcut} vẫn hoạt động khi các tùy chọn này bị tắt. Bạn chỉ sẽ không thấy tiện ích bảng nhớ tạm."
+      "showToolbarForExternalPaths": "Hiển thị tiện ích bảng nhớ tạm cho tệp được sao chép hoặc cắt trong ứng dụng khác",
+      "pasteStillWorksWhenHidden": "Dán bằng {shortcut} vẫn hoạt động khi tắt."
     },
     "homePageMediaBanner": {
       "title": "Biểu ngữ truyền thông trang chủ"
@@ -931,10 +931,12 @@
     "removeFromClipboard": "Xóa khỏi clipboard",
     "preparedForCopying": "Đã chuẩn bị để sao chép",
     "preparedForMoving": "Đã chuẩn bị để di chuyển",
-    "itemsPrepared": "{count} mục",
+    "itemsPrepared": "0 mục | 1 mục | {count} mục | {count} mục",
     "discardClipboard": "Hủy bỏ",
     "copiedInAnotherApp": "Đã sao chép trong ứng dụng khác",
     "cutInAnotherApp": "Đã cắt trong ứng dụng khác",
+    "copiedInApp": "Đã sao chép trong {app}",
+    "cutInApp": "Đã cắt trong {app}",
     "cannotMoveToSameDirectory": "Không thể di chuyển các mục vào cùng thư mục",
     "cannotPasteIntoItself": "Không thể dán thư mục vào chính nó",
     "cannotCreateLinkInsideItself": "Không thể tạo liên kết thư mục bên trong chính nó",
@@ -955,6 +957,7 @@
       "copy": "Sao chép",
       "move": "Di chuyển",
       "paste": "Dán",
+      "pasteAll": "Dán tất cả",
       "pasteToPane1": "Dán vào bảng 1",
       "pasteToPane2": "Dán vào bảng 2",
       "delete": "Xóa",

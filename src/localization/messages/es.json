@@ -368,8 +368,8 @@
     "clipboard": {
       "title": "Portapapeles",
       "showToolbarForExternalImages": "Mostrar el widget del portapapeles para imágenes copiadas en otras apps",
-      "showToolbarForExternalPaths": "Mostrar el widget del portapapeles para rutas de archivos copiadas en otras apps",
-      "pasteStillWorksWhenHidden": "Pegar con {shortcut} seguirá funcionando cuando estas opciones estén desactivadas. Simplemente no verás el widget del portapapeles."
+      "showToolbarForExternalPaths": "Mostrar el widget del portapapeles para archivos copiados o cortados en otras apps",
+      "pasteStillWorksWhenHidden": "Pegar con {shortcut} sigue funcionando al desactivarlo."
     },
     "homePageMediaBanner": {
       "title": "Banner de medios de la página de inicio"
@@ -933,10 +933,12 @@
     "removeFromClipboard": "Eliminar del portapapeles",
     "preparedForCopying": "Preparado para copiar",
     "preparedForMoving": "Preparado para mover",
-    "itemsPrepared": "{count} elementos",
+    "itemsPrepared": "0 elementos | 1 elemento | {count} elementos | {count} elementos",
     "discardClipboard": "Descartar",
     "copiedInAnotherApp": "Copiado en otra app",
     "cutInAnotherApp": "Cortado en otra app",
+    "copiedInApp": "Copiado en {app}",
+    "cutInApp": "Cortado en {app}",
     "cannotMoveToSameDirectory": "No se pueden mover elementos al mismo directorio",
     "cannotPasteIntoItself": "No se puede pegar una carpeta en sí misma",
     "cannotCreateLinkInsideItself": "No se puede crear un enlace de carpeta dentro de sí misma",
@@ -957,6 +959,7 @@
       "copy": "Copiar",
       "move": "Mover",
       "paste": "Pegar",
+      "pasteAll": "Pegar todo",
       "pasteToPane1": "Pegar en panel 1",
       "pasteToPane2": "Pegar en panel 2",
       "delete": "Eliminar",

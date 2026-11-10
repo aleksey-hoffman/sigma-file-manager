@@ -368,8 +368,8 @@
     "clipboard": {
       "title": "Appunti",
       "showToolbarForExternalImages": "Mostra il widget degli appunti per le immagini copiate in altre app",
-      "showToolbarForExternalPaths": "Mostra il widget degli appunti per i percorsi file copiati in altre app",
-      "pasteStillWorksWhenHidden": "Incollare con {shortcut} continuerà a funzionare quando queste opzioni sono disattivate. Semplicemente non vedrai il widget degli appunti."
+      "showToolbarForExternalPaths": "Mostra il widget degli appunti per i file copiati o tagliati in altre app",
+      "pasteStillWorksWhenHidden": "Incollare con {shortcut} funziona anche quando è disattivato."
     },
     "homePageMediaBanner": {
       "title": "Banner multimediale nella pagina iniziale"
@@ -931,10 +931,12 @@
     "removeFromClipboard": "Rimuovi dagli appunti",
     "preparedForCopying": "Preparato per la copia",
     "preparedForMoving": "Preparato per lo spostamento",
-    "itemsPrepared": "{count} elementi",
+    "itemsPrepared": "0 elementi | 1 elemento | {count} elementi | {count} elementi",
     "discardClipboard": "Scarta",
     "copiedInAnotherApp": "Copiato in un'altra app",
     "cutInAnotherApp": "Tagliato in un'altra app",
+    "copiedInApp": "Copiato in {app}",
+    "cutInApp": "Tagliato in {app}",
     "cannotMoveToSameDirectory": "Impossibile spostare gli elementi nella stessa directory",
     "cannotPasteIntoItself": "Impossibile incollare una cartella in se stessa",
     "cannotCreateLinkInsideItself": "Impossibile creare un collegamento della cartella dentro se stessa",
@@ -955,6 +957,7 @@
       "copy": "Copia",
       "move": "Sposta",
       "paste": "Incolla",
+      "pasteAll": "Incolla tutto",
       "pasteToPane1": "Incolla nel pannello 1",
       "pasteToPane2": "Incolla nel pannello 2",
       "delete": "Elimina",

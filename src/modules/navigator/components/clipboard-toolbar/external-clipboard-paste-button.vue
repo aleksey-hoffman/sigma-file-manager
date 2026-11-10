@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  getPasteTargetFolderName,
   getPasteTargetLabelKey,
   type ExternalClipboardPasteTarget,
 } from './external-clipboard-context';
@@ -22,8 +23,10 @@ const props = withDefaults(defineProps<{
   targets: ExternalClipboardPasteTarget[];
   canPasteTo: (target: ExternalClipboardPasteTarget) => boolean;
   size?: 'default' | 'small';
+  labelKey?: string;
 }>(), {
   size: 'default',
+  labelKey: 'fileBrowser.actions.paste',
 });
 
 const emit = defineEmits<{
@@ -49,7 +52,7 @@ const iconSize = computed(() => props.size === 'small' ? 13 : 14);
     @click="emit('paste', singleTarget)"
   >
     <ClipboardPasteIcon :size="iconSize" />
-    <span>{{ t('fileBrowser.actions.paste') }}</span>
+    <span>{{ t(props.labelKey) }}</span>
   </button>
   <DropdownMenu
     v-else
@@ -64,7 +67,7 @@ const iconSize = computed(() => props.size === 'small' ? 13 : 14);
         :disabled="!hasPasteTarget"
       >
         <ClipboardPasteIcon :size="iconSize" />
-        <span>{{ t('fileBrowser.actions.paste') }}</span>
+        <span>{{ t(props.labelKey) }}</span>
         <ChevronDownIcon
           :size="12"
           class="external-clipboard-paste-button__chevron"
@@ -85,19 +88,23 @@ const iconSize = computed(() => props.size === 'small' ? 13 : 14);
         @select="emit('paste', target)"
       >
         <ClipboardPasteIcon :size="14" />
-        {{ t(getPasteTargetLabelKey(target)) }}
+        <span class="external-clipboard-paste-menu__item-label">{{ t(getPasteTargetLabelKey(target)) }}</span>
+        <span
+          v-if="getPasteTargetFolderName(target, t)"
+          class="external-clipboard-paste-menu__item-folder"
+        >{{ getPasteTargetFolderName(target, t) }}</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
 
-<style>
+<style scoped>
 .external-clipboard-paste-button {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: hsl(var(--foreground));
   cursor: pointer;
   font-weight: 500;
@@ -118,7 +125,6 @@ const iconSize = computed(() => props.size === 'small' ? 13 : 14);
   height: 28px;
   padding: 0 9px;
   border: 1px solid hsl(var(--border) / 70%);
-  border-radius: 7px;
   background-color: hsl(var(--background-3) / 60%);
   font-size: 11.5px;
   gap: 5px;
@@ -126,9 +132,9 @@ const iconSize = computed(() => props.size === 'small' ? 13 : 14);
 
 .external-clipboard-paste-button:not(:disabled):hover,
 .external-clipboard-paste-button[data-state="open"] {
-  border-color: hsl(var(--success) / 50%);
-  background-color: hsl(var(--success) / 16%);
-  color: hsl(var(--success));
+  border-color: hsl(var(--external-clipboard-accent, var(--warning)) / 50%);
+  background-color: hsl(var(--external-clipboard-accent, var(--warning)) / 16%);
+  color: hsl(var(--external-clipboard-accent, var(--warning)));
 }
 
 .external-clipboard-paste-button:focus-visible {
@@ -150,8 +156,21 @@ const iconSize = computed(() => props.size === 'small' ? 13 : 14);
 .external-clipboard-paste-button[data-state="open"] .external-clipboard-paste-button__chevron {
   transform: rotate(180deg);
 }
+</style>
 
+<style>
 .external-clipboard-paste-menu {
-  min-width: 170px;
+  min-width: 190px;
+}
+
+.external-clipboard-paste-menu__item-folder {
+  overflow: hidden;
+  max-width: 120px;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  margin-inline-start: auto;
+  padding-inline-start: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

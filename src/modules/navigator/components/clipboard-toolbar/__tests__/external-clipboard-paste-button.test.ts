@@ -100,9 +100,13 @@ describe('external clipboard paste button', () => {
     await openPaneMenu(wrapper);
 
     expect(wrapper.emitted('update:menuOpen')).toEqual([[true]]);
-    expect(getMenuItems().map(item => item.textContent?.trim())).toEqual([
+    expect(getMenuItems().map(item => item.querySelector('.external-clipboard-paste-menu__item-label')?.textContent?.trim())).toEqual([
       'fileBrowser.actions.pasteToPane1',
       'fileBrowser.actions.pasteToPane2',
+    ]);
+    expect(getMenuItems().map(item => item.querySelector('.external-clipboard-paste-menu__item-folder')?.textContent?.trim())).toEqual([
+      'Left',
+      'Right',
     ]);
 
     getMenuItems()[1].click();

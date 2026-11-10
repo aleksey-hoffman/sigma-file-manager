@@ -40,7 +40,7 @@ function createSystemImageDragEntry(name: string, path: string): DirEntry {
 }
 
 export function useClipboardItemDrag(
-  copyItemTo: (item: ClipboardToolbarItem, destinationPath: string) => Promise<void>,
+  transferItemTo: (item: ClipboardToolbarItem, destinationPath: string) => Promise<void>,
 ) {
   const dragSession = useFileBrowserDragSession();
   const clipboardStore = useClipboardStore();
@@ -99,14 +99,18 @@ export function useClipboardItemDrag(
 
     stopTracking();
 
+    const itemOperationType = item.kind === 'system-image' || !clipboardStore.isMoveOperation
+      ? 'copy'
+      : 'move';
+
     dragSession.startDragSession({
       sourcePaneId: CLIPBOARD_ITEM_DRAG_SOURCE_ID,
       items: [dragEntry],
-      operationType: 'copy',
-      lockedOperationType: 'copy',
+      operationType: itemOperationType,
+      lockedOperationType: itemOperationType,
       cursorX: event.clientX,
       cursorY: event.clientY,
-      dropHandler: (_items, destinationPath) => copyItemTo(item, destinationPath),
+      dropHandler: (_items, destinationPath) => transferItemTo(item, destinationPath),
     });
   }
 

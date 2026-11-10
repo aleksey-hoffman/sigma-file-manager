@@ -6,7 +6,11 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { DirSizeInfo } from '@/stores/runtime/dir-sizes';
 import { formatBytes, isImageFile } from '@/modules/navigator/components/file-browser/utils';
 import { getParentDirectory, getPathLeafName } from '@/utils/normalize-path';
-import { isDestinationInsideAnySourceDirectory } from '@/utils/file-operation-paths';
+import {
+  arePathsEquivalent,
+  getParentPath,
+  isDestinationInsideAnySourceDirectory,
+} from '@/utils/file-operation-paths';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 
 export const MAX_VISIBLE_CLIPBOARD_ITEMS = 100;
@@ -160,9 +164,10 @@ export function getClipboardItemCardDetails(item: ClipboardToolbarItem): string 
   return [location, item.sizeLabel].filter(Boolean).join(' · ');
 }
 
-export function canCopyClipboardItemTo(
+export function canTransferClipboardItemTo(
   item: ClipboardToolbarItem,
   destinationPath: string | undefined,
+  operation: 'copy' | 'move' = 'copy',
 ): boolean {
   if (!destinationPath || isVirtualLocationPath(destinationPath)) {
     return false;
@@ -172,7 +177,15 @@ export function canCopyClipboardItemTo(
     return item.kind === 'system-image';
   }
 
-  return !isDestinationInsideAnySourceDirectory(destinationPath, [item.entry.path], [item.entry.is_dir]);
+  if (isDestinationInsideAnySourceDirectory(destinationPath, [item.entry.path], [item.entry.is_dir])) {
+    return false;
+  }
+
+  if (operation === 'move' && arePathsEquivalent(destinationPath, getParentPath(item.entry.path))) {
+    return false;
+  }
+
+  return true;
 }
 
 export function getClipboardImagePreviewSrc(

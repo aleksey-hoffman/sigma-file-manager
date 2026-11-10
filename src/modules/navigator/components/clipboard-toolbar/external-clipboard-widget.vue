@@ -15,6 +15,7 @@ import { useElementSize, useEventListener } from '@vueuse/core';
 import { PopoverAnchor } from 'reka-ui';
 import {
   ClipboardIcon,
+  ChevronsUpDownIcon,
   ImageIcon,
   ScissorsIcon,
   XIcon,
@@ -23,6 +24,7 @@ import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import ExternalClipboardItemsPopover from './external-clipboard-items-popover.vue';
 import ExternalClipboardPasteButton from './external-clipboard-paste-button.vue';
+import { getClipboardImageSubtitle } from './clipboard-toolbar-items';
 import { useClipboardItemDragActive } from './use-clipboard-item-drag';
 import {
   useExternalClipboardContext,
@@ -31,6 +33,15 @@ import {
 
 const COLLAPSE_DELAY_MS = 160;
 const PILL_BORDER_WIDTH = 2;
+const REST_PILL_HEIGHT = 32;
+const EXPANDED_PILL_HEIGHT = 48;
+const COLLAPSED_ICON_LEFT = 10;
+const COLLAPSED_ICON_SIZE = 14;
+const COLLAPSED_ICON_GAP = 7;
+const COLLAPSED_PADDING_RIGHT = 7;
+const FOOTER_GAP_WIDTH = 6;
+const SUMMARY_PADDING_LEFT = 4;
+const EXPANDED_ICON_PLATE_SIZE = 28;
 
 const { t } = useI18n();
 const clipboardStore = useClipboardStore();
@@ -38,8 +49,8 @@ const externalClipboardContext = useExternalClipboardContext();
 const isClipboardItemDragActive = useClipboardItemDragActive();
 
 const pillRef = ref<HTMLElement | null>(null);
-const restContentRef = ref<HTMLElement | null>(null);
-const expandedContentRef = ref<HTMLElement | null>(null);
+const layoutRef = ref<HTMLElement | null>(null);
+const badgeRef = ref<HTMLElement | null>(null);
 const isHovered = ref(false);
 const hasFocusWithin = ref(false);
 const isItemsPopoverOpen = ref(false);
@@ -47,8 +58,8 @@ const isPasteMenuOpen = ref(false);
 const isPinnedOpen = ref(false);
 let collapseTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const restContentSize = useElementSize(restContentRef, undefined, { box: 'border-box' });
-const expandedContentSize = useElementSize(expandedContentRef, undefined, { box: 'border-box' });
+const layoutSize = useElementSize(layoutRef, undefined, { box: 'border-box' });
+const badgeSize = useElementSize(badgeRef, undefined, { box: 'border-box' });
 
 const isExpanded = computed(() => isHovered.value
   || hasFocusWithin.value
@@ -57,16 +68,27 @@ const isExpanded = computed(() => isHovered.value
   || isPinnedOpen.value
   || isClipboardItemDragActive.value);
 
-const restWidth = computed(() => restContentSize.width.value + PILL_BORDER_WIDTH);
+const restWidth = computed(() => COLLAPSED_ICON_LEFT
+  + COLLAPSED_ICON_SIZE
+  + COLLAPSED_ICON_GAP
+  + badgeSize.width.value
+  + COLLAPSED_PADDING_RIGHT
+  + PILL_BORDER_WIDTH);
 
-const pillStyle = computed(() => {
-  const contentSize = isExpanded.value ? expandedContentSize : restContentSize;
+const widgetStyle = computed(() => ({
+  'width': `${restWidth.value}px`,
+  '--collapsed-icon-left': `${COLLAPSED_ICON_LEFT}px`,
+  '--collapsed-icon-size': `${COLLAPSED_ICON_SIZE}px`,
+  '--collapsed-icon-gap': `${COLLAPSED_ICON_GAP}px`,
+  '--collapsed-padding-right': `${COLLAPSED_PADDING_RIGHT}px`,
+  '--summary-padding-left': `${SUMMARY_PADDING_LEFT}px`,
+  '--expanded-icon-plate-size': `${EXPANDED_ICON_PLATE_SIZE}px`,
+}));
 
-  return {
-    width: `${contentSize.width.value + PILL_BORDER_WIDTH}px`,
-    height: `${contentSize.height.value + PILL_BORDER_WIDTH}px`,
-  };
-});
+const pillStyle = computed(() => ({
+  width: `${isExpanded.value ? Math.max(layoutSize.width.value + PILL_BORDER_WIDTH, restWidth.value) : restWidth.value}px`,
+  height: `${isExpanded.value ? EXPANDED_PILL_HEIGHT : REST_PILL_HEIGHT}px`,
+}));
 
 const clipboardIcon = computed(() => {
   if (clipboardStore.hasImageContent) {
@@ -76,11 +98,27 @@ const clipboardIcon = computed(() => {
   return clipboardStore.isMoveOperation ? ScissorsIcon : ClipboardIcon;
 });
 
-const titleLabel = computed(() => clipboardStore.isMoveOperation
-  ? t('fileBrowser.cutInAnotherApp')
-  : t('fileBrowser.copiedInAnotherApp'));
+const titleLabel = computed(() => {
+  const sourceAppName = clipboardStore.clipboardSourceAppName;
 
-const itemCountLabel = computed(() => t('fileBrowser.itemsPrepared', { count: clipboardStore.itemCount }));
+  if (sourceAppName) {
+    return clipboardStore.isMoveOperation
+      ? t('fileBrowser.cutInApp', { app: sourceAppName })
+      : t('fileBrowser.copiedInApp', { app: sourceAppName });
+  }
+
+  return clipboardStore.isMoveOperation
+    ? t('fileBrowser.cutInAnotherApp')
+    : t('fileBrowser.copiedInAnotherApp');
+});
+
+const subtitleLabel = computed(() => {
+  if (clipboardStore.clipboardImage) {
+    return `${t('image')} · ${getClipboardImageSubtitle(clipboardStore.clipboardImage)}`;
+  }
+
+  return t('fileBrowser.itemsPrepared', { count: clipboardStore.itemCount });
+});
 const pasteTargets = computed(() => externalClipboardContext?.pasteTargets.value ?? []);
 
 function clearCollapseTimeout() {
@@ -105,7 +143,7 @@ function handleMouseLeave() {
 }
 
 function handleFocusIn(event: FocusEvent) {
-  hasFocusWithin.value = (event.target as Element).matches(':focus-visible');
+  hasFocusWithin.value = event.target instanceof Element && event.target.matches(':focus-visible');
 }
 
 function handleFocusOut(event: FocusEvent) {
@@ -159,14 +197,30 @@ watch(() => clipboardStore.showExternalClipboardWidget, (isVisible) => {
   }
 });
 
-onBeforeUnmount(clearCollapseTimeout);
+watch(
+  () => clipboardStore.showExternalClipboardWidget ? restWidth.value + FOOTER_GAP_WIDTH : 0,
+  (footprintPx) => {
+    if (externalClipboardContext) {
+      externalClipboardContext.restFootprintPx.value = footprintPx;
+    }
+  },
+  { immediate: true },
+);
+
+onBeforeUnmount(() => {
+  clearCollapseTimeout();
+
+  if (externalClipboardContext) {
+    externalClipboardContext.restFootprintPx.value = 0;
+  }
+});
 </script>
 
 <template>
   <div
     v-if="clipboardStore.showExternalClipboardWidget"
     class="external-clipboard-widget"
-    :style="{ width: `${restWidth}px` }"
+    :style="widgetStyle"
   >
     <Popover v-model:open="isItemsPopoverOpen">
       <PopoverAnchor as-child>
@@ -184,58 +238,70 @@ onBeforeUnmount(clearCollapseTimeout);
           @focusout="handleFocusOut"
         >
           <div
-            ref="restContentRef"
-            class="external-clipboard-widget__rest"
-            aria-hidden="true"
-          >
-            <component
-              :is="clipboardIcon"
-              :size="14"
-              class="external-clipboard-widget__icon"
-            />
-            <span class="external-clipboard-widget__badge">{{ clipboardStore.itemCount }}</span>
-          </div>
-          <div
-            ref="expandedContentRef"
-            class="external-clipboard-widget__expanded"
+            ref="layoutRef"
+            class="external-clipboard-widget__layout"
           >
             <PopoverTrigger as-child>
               <button
                 type="button"
                 class="external-clipboard-widget__summary"
                 :aria-expanded="isItemsPopoverOpen"
-                :aria-label="`${titleLabel}, ${itemCountLabel}`"
+                :aria-label="`${titleLabel}, ${subtitleLabel}`"
               >
-                <span class="external-clipboard-widget__summary-icon">
-                  <component
-                    :is="clipboardIcon"
-                    :size="16"
-                    class="external-clipboard-widget__icon"
-                  />
+                <span class="external-clipboard-widget__icon-slot">
+                  <span class="external-clipboard-widget__icon-plate">
+                    <span class="external-clipboard-widget__icon-glyph">
+                      <component
+                        :is="clipboardIcon"
+                        :size="16"
+                        class="external-clipboard-widget__icon"
+                      />
+                    </span>
+                  </span>
                 </span>
                 <span class="external-clipboard-widget__text">
-                  <span class="external-clipboard-widget__title">{{ titleLabel }}</span>
-                  <span class="external-clipboard-widget__subtitle">{{ itemCountLabel }}</span>
+                  <span class="external-clipboard-widget__title-row">
+                    <img
+                      v-if="clipboardStore.clipboardSourceIconUrl"
+                      :src="clipboardStore.clipboardSourceIconUrl"
+                      alt=""
+                      class="external-clipboard-widget__source-icon"
+                      draggable="false"
+                    >
+                    <span class="external-clipboard-widget__title">{{ titleLabel }}</span>
+                  </span>
+                  <span class="external-clipboard-widget__subtitle">{{ subtitleLabel }}</span>
                 </span>
+                <ChevronsUpDownIcon
+                  :size="14"
+                  class="external-clipboard-widget__disclosure"
+                />
               </button>
             </PopoverTrigger>
-            <span class="external-clipboard-widget__divider" />
-            <ExternalClipboardPasteButton
-              v-model:menu-open="isPasteMenuOpen"
-              :targets="pasteTargets"
-              :can-paste-to="canPasteTo"
-              @paste="pasteTo"
-            />
-            <button
-              type="button"
-              class="external-clipboard-widget__discard"
-              :aria-label="t('fileBrowser.discardClipboard')"
-              :title="t('fileBrowser.discardClipboard')"
-              @click="clipboardStore.discardClipboard()"
-            >
-              <XIcon :size="14" />
-            </button>
+            <div class="external-clipboard-widget__actions">
+              <span class="external-clipboard-widget__divider" />
+              <ExternalClipboardPasteButton
+                v-model:menu-open="isPasteMenuOpen"
+                label-key="fileBrowser.actions.pasteAll"
+                :targets="pasteTargets"
+                :can-paste-to="canPasteTo"
+                @paste="pasteTo"
+              />
+              <button
+                type="button"
+                class="external-clipboard-widget__discard"
+                :aria-label="t('fileBrowser.discardClipboard')"
+                @click="clipboardStore.discardClipboard()"
+              >
+                <XIcon :size="14" />
+              </button>
+            </div>
           </div>
+          <span
+            ref="badgeRef"
+            class="external-clipboard-widget__badge"
+            aria-hidden="true"
+          >{{ clipboardStore.itemCount }}</span>
         </div>
       </PopoverAnchor>
       <ExternalClipboardItemsPopover
@@ -249,26 +315,29 @@ onBeforeUnmount(clearCollapseTimeout);
 <style scoped>
 .external-clipboard-widget {
   --external-clipboard-accent: var(--warning);
+  --clipboard-morph-duration: 0.4s;
+  --clipboard-morph-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --expanded-icon-size: 16px;
 
-  position: relative;
-  height: 32px;
-  flex-shrink: 0;
-}
-
-.external-clipboard-widget__pill {
   position: absolute;
   z-index: 30;
   bottom: 0;
   left: 0;
+  height: 32px;
+}
+
+.external-clipboard-widget__pill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   overflow: hidden;
   border: 1px solid hsl(var(--border));
-  border-radius: 16px;
+  border-radius: var(--radius-sm);
   background-color: hsl(var(--background-2));
   transition:
-    width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
-    height 0.32s cubic-bezier(0.32, 0.72, 0, 1),
-    border-radius 0.32s cubic-bezier(0.32, 0.72, 0, 1),
-    box-shadow 0.24s ease;
+    width var(--clipboard-morph-duration) var(--clipboard-morph-ease),
+    height var(--clipboard-morph-duration) var(--clipboard-morph-ease),
+    box-shadow var(--clipboard-morph-duration) var(--clipboard-morph-ease);
 }
 
 .external-clipboard-widget__pill--move {
@@ -276,35 +345,86 @@ onBeforeUnmount(clearCollapseTimeout);
 }
 
 .external-clipboard-widget__pill--expanded {
-  border-radius: 24px;
   box-shadow:
     0 14px 36px -10px rgb(0 0 0 / 50%),
     0 4px 12px -6px rgb(0 0 0 / 30%);
 }
 
-.external-clipboard-widget__rest,
-.external-clipboard-widget__expanded {
+.external-clipboard-widget__layout {
   position: absolute;
+  top: 0;
   bottom: 0;
   left: 0;
   display: flex;
+  width: max-content;
+  max-width: calc(100cqw - 8px);
   align-items: center;
+  padding: 0 var(--collapsed-padding-right) 0 calc(var(--collapsed-icon-left) - var(--summary-padding-left));
+  gap: 2px;
+  pointer-events: none;
   white-space: nowrap;
 }
 
-.external-clipboard-widget__rest {
-  height: 30px;
-  padding: 0 7px 0 10px;
-  gap: 7px;
-  transition: opacity 0.14s ease;
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__layout {
+  pointer-events: auto;
+}
+
+.external-clipboard-widget__icon-slot {
+  display: flex;
+  width: var(--expanded-icon-plate-size);
+  height: var(--expanded-icon-plate-size);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.external-clipboard-widget__icon-plate {
+  display: flex;
+  width: var(--collapsed-icon-size);
+  height: var(--collapsed-icon-size);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: transparent;
+  transition:
+    width var(--clipboard-morph-duration) var(--clipboard-morph-ease),
+    height var(--clipboard-morph-duration) var(--clipboard-morph-ease),
+    background-color var(--clipboard-morph-duration) var(--clipboard-morph-ease);
+}
+
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__icon-plate {
+  width: var(--expanded-icon-plate-size);
+  height: var(--expanded-icon-plate-size);
+  background-color: hsl(var(--foreground) / 6%);
+}
+
+.external-clipboard-widget__icon-glyph {
+  display: flex;
+  width: var(--collapsed-icon-size);
+  height: var(--collapsed-icon-size);
+  flex-shrink: 0;
+  transition:
+    width var(--clipboard-morph-duration) var(--clipboard-morph-ease),
+    height var(--clipboard-morph-duration) var(--clipboard-morph-ease);
+}
+
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__icon-glyph {
+  width: var(--expanded-icon-size);
+  height: var(--expanded-icon-size);
 }
 
 .external-clipboard-widget__icon {
-  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
   color: hsl(var(--external-clipboard-accent));
 }
 
 .external-clipboard-widget__badge {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: calc(var(--collapsed-icon-left) + var(--collapsed-icon-size) + var(--collapsed-icon-gap));
   min-width: 20px;
   padding: 1px 6px;
   border-radius: 999px;
@@ -313,29 +433,15 @@ onBeforeUnmount(clearCollapseTimeout);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+  pointer-events: none;
   text-align: center;
+  transform: translateY(-50%);
+  transition: opacity 0.2s ease 0.14s;
 }
 
-.external-clipboard-widget__expanded {
-  width: max-content;
-  max-width: calc(100cqw - 8px);
-  height: 46px;
-  padding: 0 7px 0 5px;
-  gap: 2px;
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__badge {
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.16s ease;
-}
-
-.external-clipboard-widget__pill--expanded .external-clipboard-widget__rest {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.external-clipboard-widget__pill--expanded .external-clipboard-widget__expanded {
-  opacity: 1;
-  pointer-events: auto;
-  transition-delay: 0.08s;
+  transition: opacity 0.12s ease;
 }
 
 .external-clipboard-widget__summary {
@@ -344,10 +450,11 @@ onBeforeUnmount(clearCollapseTimeout);
   height: 36px;
   flex-shrink: 1;
   align-items: center;
-  padding: 0 12px 0 4px;
-  border-radius: 999px;
+  padding: 0 12px 0 var(--summary-padding-left);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   gap: 9px;
+  pointer-events: auto;
   text-align: left;
   transition: background-color 0.15s ease;
 }
@@ -357,15 +464,18 @@ onBeforeUnmount(clearCollapseTimeout);
   background-color: hsl(var(--foreground) / 7%);
 }
 
-.external-clipboard-widget__summary-icon {
-  display: flex;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background-color: hsl(var(--foreground) / 6%);
+.external-clipboard-widget__text,
+.external-clipboard-widget__disclosure,
+.external-clipboard-widget__actions {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__text,
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__disclosure,
+.external-clipboard-widget__pill--expanded .external-clipboard-widget__actions {
+  opacity: 1;
+  transition: opacity 0.28s ease 0.06s;
 }
 
 .external-clipboard-widget__text {
@@ -375,10 +485,29 @@ onBeforeUnmount(clearCollapseTimeout);
   line-height: 1.2;
 }
 
+.external-clipboard-widget__title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+}
+
+.external-clipboard-widget__source-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .external-clipboard-widget__title,
 .external-clipboard-widget__subtitle {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.external-clipboard-widget__disclosure {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
 }
 
 .external-clipboard-widget__title {
@@ -391,6 +520,13 @@ onBeforeUnmount(clearCollapseTimeout);
   color: hsl(var(--muted-foreground));
   font-size: 11px;
   font-variant-numeric: tabular-nums;
+}
+
+.external-clipboard-widget__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
 }
 
 .external-clipboard-widget__divider {
@@ -408,7 +544,7 @@ onBeforeUnmount(clearCollapseTimeout);
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition:
@@ -429,8 +565,16 @@ onBeforeUnmount(clearCollapseTimeout);
 
 @media (prefers-reduced-motion: reduce) {
   .external-clipboard-widget__pill,
-  .external-clipboard-widget__rest,
-  .external-clipboard-widget__expanded {
+  .external-clipboard-widget__icon-plate,
+  .external-clipboard-widget__icon-glyph,
+  .external-clipboard-widget__text,
+  .external-clipboard-widget__disclosure,
+  .external-clipboard-widget__actions,
+  .external-clipboard-widget__badge,
+  .external-clipboard-widget__pill--expanded .external-clipboard-widget__text,
+  .external-clipboard-widget__pill--expanded .external-clipboard-widget__disclosure,
+  .external-clipboard-widget__pill--expanded .external-clipboard-widget__actions,
+  .external-clipboard-widget__pill--expanded .external-clipboard-widget__badge {
     transition: none;
   }
 }
