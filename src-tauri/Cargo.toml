@@ -19,21 +19,24 @@ name = "sigma_file_manager_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
+default = ["wry"]
 devtools = []
+wry = ["tauri-plugin-dialog/gtk3"]
+cef = ["dep:tauri-runtime-cef", "dep:gtk", "tauri-plugin-dialog/xdg-portal"]
 
 [build-dependencies]
-tauri-build = { version = "2.7", features = [] }
+tauri-build = { version = "2.6", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.12", features = [ "protocol-asset", "tray-icon", "image-png", "devtools"] }
+tauri = { version = "2.11", features = [ "protocol-asset", "tray-icon", "image-png", "devtools"] }
 tauri-plugin-log = "2"
 tauri-plugin-store = "2"
 tauri-plugin-opener = "2.5.4"
 tauri-plugin-os = "2"
-tauri-plugin-dialog = "2"
+tauri-plugin-dialog = { version = "2", default-features = false }
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-system-fonts = "2"
 sysinfo = { version = "0.38", features = ["linux-netdevs"] }
@@ -81,6 +84,7 @@ arboard = "3.6.1"
 # Upstream: https://github.com/crabnebula-dev/drag-rs/issues/72
 [patch.crates-io]
 drag = { path = "./patches/drag" }
+tauri-runtime-cef = { path = "./patches/tauri-runtime-cef-stub" }
 
 [dev-dependencies]
 tempfile = "3"
@@ -88,6 +92,10 @@ tokio = { version = "1", features = ["macros", "test-util"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tauri-runtime-cef = { version = "0.1", optional = true }
+gtk = { version = "0.18", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 sfm-default-file-manager-common = { path = "default-file-manager-common" }

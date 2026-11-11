@@ -253,7 +253,17 @@ fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg_attr(
+    all(feature = "cef", target_os = "linux"),
+    tauri_runtime_cef::cef_entry_point
+)]
 pub fn run() {
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    if let Err(message) = check_cef_display() {
+        eprintln!("{message}");
+        std::process::exit(1);
+    }
+
     app_dirs::prepare_isolated_environment();
     let mut context = tauri::generate_context!();
     app_dirs::apply_portable_mode(&mut context);
@@ -279,6 +289,11 @@ pub fn run() {
                 .args([SIGMA_AUTOSTART_CLI_FLAG])
                 .build(),
         );
+    }
+
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    {
+        builder = builder.runtime(build_cef_runtime());
     }
 
     builder
@@ -457,6 +472,35 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn check_cef_display() -> Result<(), String> {
+    match std::env::var_os("DISPLAY") {
+        Some(display) if !display.is_empty() => Ok(()),
+        _ => Err(
+            "Sigma File Manager needs an X11 display (DISPLAY is not set). \
+             On a Wayland session, install and start XWayland."
+                .to_string(),
+        ),
+    }
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn build_cef_runtime() -> tauri_runtime_cef::Cef {
+    let mut cef = tauri_runtime_cef::Cef::default().sandbox(tauri_runtime_cef::SandboxPolicy::Auto);
+
+    if let Some(cache_dir) = app_dirs::cef_cache_dir_override() {
+        cef = cef.root_cache_path(cache_dir);
+    }
+
+    match std::env::var("SFM_CDP_PORT").map(|port| port.parse::<u16>()) {
+        Ok(Ok(port)) => cef.remote_debugging(tauri_runtime_cef::RemoteDebugging::Port {
+            port,
+            allowed_origins: Vec::new(),
+        }),
+        _ => cef,
+    }
+}
+
 fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
         let mut log_plugin = tauri_plugin_log::Builder::default().level(log::LevelFilter::Info);
@@ -471,6 +515,9 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         }
         app.handle().plugin(log_plugin.build())?;
     }
+
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    system_icons::init_gtk_thread(app.handle().clone())?;
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
