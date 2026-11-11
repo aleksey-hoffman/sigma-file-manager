@@ -263,6 +263,28 @@ jobs:
           path: staged/Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-setup.exe
           if-no-files-found: error
 
+      - name: Build Windows portable executable
+        if: matrix.platform == 'windows'
+        run: npm run tauri:build:portable
+
+      - name: Stage Windows portable executable
+        if: matrix.platform == 'windows'
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          mkdir -p staged-portable
+          cp src-tauri/target/release/sigma-file-manager.exe \
+            "staged-portable/Sigma-File-Manager-${VERSION}-windows-portable.exe"
+
+      - name: Upload unsigned Windows portable artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-portable
+          path: staged-portable/Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-portable.exe
+          if-no-files-found: error
+
       - name: Upload Linux binary
         if: matrix.platform == 'linux'
         env:
@@ -405,3 +427,122 @@ jobs:
           SIGNED_PATH: ${{ steps.verify.outputs.path }}
           GH_REPO: ${{ github.repository }}
         run: gh release upload "$TAG" "$SIGNED_PATH" --clobber
+
+  windows-portable:
+    name: Package Windows portable
+    needs: [prepare, build]
+    runs-on: windows-latest
+    timeout-minutes: 360
+    permissions:
+      contents: write
+      actions: read
+    env:
+      SIGN_PORTABLE: ${{ github.repository == 'aleksey-hoffman/sigma-file-manager' }}
+      PORTABLE_EXE: Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-portable.exe
+      PORTABLE_ZIP: ${{ github.repository == 'aleksey-hoffman/sigma-file-manager' && format('Sigma-File-Manager-{0}-windows-portable.zip', needs.prepare.outputs.version) || format('Sigma-File-Manager-{0}-windows-portable-unsigned.zip', needs.prepare.outputs.version) }}
+
+    steps:
+      - name: Download unsigned portable executable
+        if: env.SIGN_PORTABLE != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: unsigned-windows-portable
+          path: portable
+
+      - name: Warn about unsigned portable archive
+        if: env.SIGN_PORTABLE != 'true'
+        shell: bash
+        run: |
+          echo "::warning::Publishing unsigned Windows portable archive ($PORTABLE_ZIP)."
+
+      - name: Require SignPath secrets
+        if: env.SIGN_PORTABLE == 'true'
+        shell: pwsh
+        env:
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          SIGNPATH_ORGANIZATION_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG: ${{ vars.SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG }}
+        run: |
+          if (-not $env:SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG) { throw "Missing repository variable SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG." }
+          if (-not $env:SIGNPATH_API_TOKEN) { throw "Missing repository secret SIGNPATH_API_TOKEN." }
+          if (-not $env:SIGNPATH_ORGANIZATION_ID) { throw "Missing repository secret SIGNPATH_ORGANIZATION_ID." }
+
+      - name: Resolve unsigned portable artifact id
+        if: env.SIGN_PORTABLE == 'true'
+        id: artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          artifact_id="$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?name=unsigned-windows-portable" \
+            --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          if [[ -z "$artifact_id" ]]; then
+            echo "::error::Artifact 'unsigned-windows-portable' not found in run $RUN_ID"
+            exit 1
+          fi
+          echo "id=$artifact_id" >> "$GITHUB_OUTPUT"
+
+      - name: Submit SignPath signing request
+        if: env.SIGN_PORTABLE == 'true'
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: sigma-file-manager
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: ${{ vars.SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.artifact.outputs.id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 20700
+          output-artifact-directory: ${{ github.workspace }}/portable
+
+      - name: Show SignPath request
+        if: env.SIGN_PORTABLE == 'true'
+        shell: bash
+        env:
+          SIGNING_REQUEST_URL: ${{ steps.signpath.outputs.signing-request-web-url }}
+        run: echo "SignPath request URL - $SIGNING_REQUEST_URL"
+
+      - name: Verify signed portable executable
+        if: env.SIGN_PORTABLE == 'true'
+        shell: pwsh
+        run: |
+          $signedDir = Join-Path $env:GITHUB_WORKSPACE "portable"
+          $signedPath = Join-Path $signedDir $env:PORTABLE_EXE
+          if (-not (Test-Path $signedPath)) {
+            $candidates = @(Get-ChildItem $signedDir -Recurse -Filter "*.exe")
+            if ($candidates.Count -ne 1) {
+              Get-ChildItem $signedDir -Recurse | Format-Table FullName, Length
+              throw "Expected exactly one signed portable executable, found $($candidates.Count)."
+            }
+            Copy-Item $candidates[0].FullName $signedPath -Force
+          }
+          $signature = Get-AuthenticodeSignature -FilePath $signedPath
+          Write-Host "Signer: $($signature.SignerCertificate.Subject)"
+          Write-Host "Status: $($signature.Status)"
+          if (-not $signature.SignerCertificate -or $signature.Status -ne 'Valid') {
+            throw "Portable executable is not validly Authenticode-signed. Status=$($signature.Status)"
+          }
+
+      - name: Create portable zip
+        shell: pwsh
+        run: |
+          $packageDir = Join-Path $env:RUNNER_TEMP "portable-package"
+          if (Test-Path $packageDir) {
+            Remove-Item -Recurse -Force $packageDir
+          }
+          $appDir = Join-Path $packageDir "Sigma File Manager"
+          New-Item -ItemType Directory -Force -Path $appDir | Out-Null
+          Copy-Item (Join-Path $env:GITHUB_WORKSPACE "portable/$env:PORTABLE_EXE") (Join-Path $appDir "Sigma File Manager.exe")
+          Compress-Archive -Path $appDir -DestinationPath (Join-Path $env:GITHUB_WORKSPACE $env:PORTABLE_ZIP) -Force
+
+      - name: Upload portable zip to GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: gh release upload "$TAG" "$PORTABLE_ZIP" --clobber

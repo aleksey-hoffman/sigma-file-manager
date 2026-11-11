@@ -17,6 +17,7 @@ export interface AppDirs {
   appCacheDir: string;
   appLogDir: string;
   isolatedRoot: string | null;
+  portableRoot: string | null;
 }
 
 let appDirsPromise: Promise<AppDirs> | null = null;
@@ -54,4 +55,8 @@ export async function appLogDir(): Promise<string> {
 
 export async function isIsolatedDataDir(): Promise<boolean> {
   return Boolean((await getAppDirs()).isolatedRoot);
+}
+
+export async function isPortableDataDir(): Promise<boolean> {
+  return Boolean((await getAppDirs()).portableRoot);
 }

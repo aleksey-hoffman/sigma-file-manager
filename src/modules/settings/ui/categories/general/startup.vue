@@ -8,12 +8,15 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RocketIcon } from '@lucide/vue';
 import { SettingsItem } from '@/modules/settings';
+import SettingsAvailabilityBadge from '@/modules/settings/ui/availability-badge.vue';
 import { Switch } from '@/components/ui/switch';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
+const platformStore = usePlatformStore();
 
 const launchAtStartup = computed(() => userSettingsStore.userSettings.launchAtStartup);
 const launchAtStartupHidden = computed(() => userSettingsStore.userSettings.launchAtStartupHidden);
@@ -42,6 +45,11 @@ async function onLaunchAtStartupHiddenChange(enabled: boolean) {
     :title="t('settings.general.startupBehavior')"
     :icon="RocketIcon"
   >
+    <template #title-suffix>
+      <SettingsAvailabilityBadge v-if="platformStore.isPortable">
+        {{ t('settings.unavailableInPortableVersion') }}
+      </SettingsAvailabilityBadge>
+    </template>
     <div class="startup-section">
       <div class="startup-section__toggle">
         <label
@@ -52,6 +60,7 @@ async function onLaunchAtStartupHiddenChange(enabled: boolean) {
         </label>
         <Switch
           id="launch-at-startup"
+          :disabled="platformStore.isPortable"
           :model-value="launchAtStartup"
           @update:model-value="onLaunchAtStartupChange"
         />
@@ -65,7 +74,7 @@ async function onLaunchAtStartupHiddenChange(enabled: boolean) {
         </label>
         <Switch
           id="launch-at-startup-hidden"
-          :disabled="!launchAtStartup"
+          :disabled="platformStore.isPortable || !launchAtStartup"
           :model-value="launchAtStartupHidden"
           @update:model-value="onLaunchAtStartupHiddenChange"
         />

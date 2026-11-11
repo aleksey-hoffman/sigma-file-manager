@@ -32,6 +32,7 @@ const {
     openUrlMock: vi.fn(),
     platformStoreState: {
       appUpdatesManagedExternally: false,
+      isPortable: false,
     },
     toastCustomMock: vi.fn(),
     toastDismissMock: vi.fn(),
@@ -100,6 +101,7 @@ describe('useAppUpdater external update management', () => {
     userSettingsStoreState.userSettings.appUpdates.autoCheck = true;
     userSettingsStoreState.userSettings.appUpdates.lastCheckTimestamp = 0;
     platformStoreState.appUpdatesManagedExternally = false;
+    platformStoreState.isPortable = false;
   });
 
   it('skips update checks when updates are managed externally', async () => {
@@ -177,5 +179,36 @@ describe('useAppUpdater external update management', () => {
     expect(listenMock).not.toHaveBeenCalled();
     expect(toastCustomMock).not.toHaveBeenCalled();
     expect(toastErrorMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {
+      isPortable: true,
+      expectsPortableHint: true,
+    },
+    {
+      isPortable: false,
+      expectsPortableHint: false,
+    },
+  ])('mentions the app folder after a download only for portable copies (portable: $isPortable)', async ({ isPortable, expectsPortableHint }) => {
+    platformStoreState.isPortable = isPortable;
+    invokeMock.mockResolvedValue('/apps/sfm/Sigma-File-Manager-2.1.0-windows-portable.zip');
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { downloadReleaseInstaller } = useAppUpdater();
+
+    await downloadReleaseInstaller({
+      latestVersion: '2.1.0',
+      currentVersion: '2.0.0',
+      releaseUrl: 'https://example.com/release',
+      installerDownloadUrl: 'https://example.com/portable.zip',
+      installerFileName: 'Sigma-File-Manager-2.1.0-windows-portable.zip',
+    });
+
+    const downloadedToastOptions = toastCustomMock.mock.calls.at(-1)?.[1];
+    const description: string = downloadedToastOptions.componentProps.data.description;
+
+    expect(downloadedToastOptions.componentProps.data.subtitle).toBe('notifications.updateDownloaded');
+    expect(description.includes('notifications.portableUpdateSavedNextToApp')).toBe(expectsPortableHint);
   });
 });

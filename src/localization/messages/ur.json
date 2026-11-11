@@ -524,7 +524,8 @@
         "description": "یہ اختیار سسٹم رجسٹری بدلتا ہے اور غیر متوقع اثر کر سکتا ہے۔ اپنے خطرے پر آگے بڑھیں۔",
         "unavailableInMicrosoftStore": "Microsoft Store ورژن میں دستیاب نہیں"
       }
-    }
+    },
+    "unavailableInPortableVersion": "پورٹیبل ورژن میں دستیاب نہیں"
   },
   "projectGithubButtons": {
     "projectPage": "پروجیکٹ صفحہ",
@@ -740,6 +741,7 @@
     "updateAvailable": "اپ ڈیٹ دستیاب ہے",
     "updateDownloaded": "اپ ڈیٹ ڈاؤن لوڈ ہو گیا",
     "installerSavedAs": "محفوظ: {name}",
+    "portableUpdateSavedNextToApp": "ایپ فولڈر میں محفوظ ہو گیا۔ ایپ بند کریں اور اسے نئے ورژن سے بدل دیں۔ آپ کا ڈیٹا فولڈر برقرار رہے گا۔",
     "quickViewFileIsNotSupported": "فوری نظر: فائل سپورٹ نہیں",
     "printViewFileIsNotSupported": "پرنٹ: فائل معاون نہیں",
     "createdNLinks": "0 لنکس بنائے گئے | 1 لنک بنایا گیا | {n} لنکس بنائے گئے | {n} لنکس بنائے گئے",

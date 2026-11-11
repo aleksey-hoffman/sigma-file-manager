@@ -274,6 +274,9 @@ export function useAppUpdater() {
 
     if (downloadedPath) {
       const savedName = fileBaseNameFromPath(downloadedPath);
+      const portableUpdateHint = platformStore.isPortable
+        ? `\n${t('notifications.portableUpdateSavedNextToApp')}`
+        : '';
       toast.custom(markRaw(ToastStatic), {
         id: toastId,
         duration: Infinity,
@@ -283,7 +286,8 @@ export function useAppUpdater() {
             subtitle: t('notifications.updateDownloaded'),
             description:
               `${t('currentVersion')}: v${info.currentVersion}\n`
-              + t('notifications.installerSavedAs', { name: savedName }),
+              + t('notifications.installerSavedAs', { name: savedName })
+              + portableUpdateHint,
             actionText: t('openWith.open'),
             onAction: async () => {
               try {

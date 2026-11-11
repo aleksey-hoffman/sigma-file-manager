@@ -4,11 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { FolderOpenIcon } from '@lucide/vue';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/ui/toaster';
 import { SettingsItem } from '@/modules/settings';
+import SettingsAvailabilityBadge from '@/modules/settings/ui/availability-badge.vue';
 import { useI18n } from 'vue-i18n';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import {
@@ -22,6 +23,18 @@ const platformStore = usePlatformStore();
 const isEnabled = ref(false);
 const isLoading = ref(true);
 const isApplying = ref(false);
+
+const unavailableReason = computed(() => {
+  if (platformStore.isMicrosoftStoreInstallation) {
+    return t('settings.experimental.defaultFileManager.unavailableInMicrosoftStore');
+  }
+
+  if (platformStore.isPortable) {
+    return t('settings.unavailableInPortableVersion');
+  }
+
+  return null;
+});
 
 async function refreshDefaultFileManagerState(showError = true) {
   isLoading.value = true;
@@ -77,12 +90,9 @@ onMounted(async () => {
     :icon="FolderOpenIcon"
   >
     <template #title-suffix>
-      <span
-        v-if="platformStore.isMicrosoftStoreInstallation"
-        class="default-file-manager__availability-badge"
-      >
-        {{ t('settings.experimental.defaultFileManager.unavailableInMicrosoftStore') }}
-      </span>
+      <SettingsAvailabilityBadge v-if="unavailableReason">
+        {{ unavailableReason }}
+      </SettingsAvailabilityBadge>
     </template>
     <Switch
       id="default-file-manager"
@@ -92,17 +102,3 @@ onMounted(async () => {
     />
   </SettingsItem>
 </template>
-
-<style scoped>
-.default-file-manager__availability-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: var(--radius-full);
-  background-color: hsl(var(--warning) / 12%);
-  color: hsl(var(--warning));
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.4;
-}
-</style>

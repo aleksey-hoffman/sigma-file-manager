@@ -7,6 +7,7 @@ import { ref, computed } from 'vue';
 import type { Platform } from '@tauri-apps/plugin-os';
 import { invoke } from '@tauri-apps/api/core';
 import { initPlatformInfo as initSharedPlatformInfo } from '@/utils/platform-info';
+import { isPortableDataDir } from '@/utils/app-dirs';
 
 export function canUseDefaultFileManager(
   platform: Platform | null,
@@ -19,6 +20,7 @@ export const usePlatformStore = defineStore('platform', () => {
   const currentPlatform = ref<Platform | null>(null);
   const appUpdatesManagedExternally = ref(false);
   const supportsDefaultFileManager = ref(false);
+  const isPortable = ref(false);
 
   const isWindows = computed(() => currentPlatform.value === 'windows');
   const isMacOS = computed(() => currentPlatform.value === 'macos');
@@ -37,6 +39,13 @@ export const usePlatformStore = defineStore('platform', () => {
     }
     catch {
       appUpdatesManagedExternally.value = false;
+    }
+
+    try {
+      isPortable.value = await isPortableDataDir();
+    }
+    catch {
+      isPortable.value = false;
     }
 
     try {
@@ -60,6 +69,7 @@ export const usePlatformStore = defineStore('platform', () => {
     isUnix,
     isMicrosoftStoreInstallation,
     supportsDefaultFileManager,
+    isPortable,
     init,
   };
 });

@@ -524,7 +524,8 @@
         "description": "אפשרות זו משנה את רישום המערכת ועלולה לגרום לתופעות לוואי בלתי צפויות במכשירך. המשך על אחריותך.",
         "unavailableInMicrosoftStore": "לא זמין בגרסת Microsoft Store"
       }
-    }
+    },
+    "unavailableInPortableVersion": "לא זמין בגרסה הניידת"
   },
   "projectGithubButtons": {
     "projectPage": "דף הפרויקט",
@@ -740,6 +741,7 @@
     "updateAvailable": "עדכון זמין",
     "updateDownloaded": "העדכון הורד",
     "installerSavedAs": "נשמר בשם: {name}",
+    "portableUpdateSavedNextToApp": "נשמר בתיקיית היישום. סגור את היישום והחלף אותו בגרסה החדשה. תיקיית הנתונים שלך נשמרת.",
     "quickViewFileIsNotSupported": "תצוגה מהירה: הקובץ אינו נתמך",
     "printViewFileIsNotSupported": "הדפסה: הקובץ אינו נתמך",
     "createdNLinks": "נוצרו 0 קישורים | נוצר קישור אחד | נוצרו {n} קישורים | נוצרו {n} קישורים",

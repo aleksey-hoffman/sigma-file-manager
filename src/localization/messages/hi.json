@@ -524,7 +524,8 @@
         "description": "यह विकल्प सिस्टम रजिस्ट्री को संशोधित करता है और आपके डिवाइस पर अप्रत्याशित दुष्प्रभाव हो सकता है। स्वयं के जोखिम पर आगे बढ़ें।",
         "unavailableInMicrosoftStore": "Microsoft Store संस्करण में उपलब्ध नहीं"
       }
-    }
+    },
+    "unavailableInPortableVersion": "पोर्टेबल संस्करण में उपलब्ध नहीं"
   },
   "projectGithubButtons": {
     "projectPage": "प्रोजेक्ट पेज",
@@ -740,6 +741,7 @@
     "updateAvailable": "उपलब्ध अद्यतन",
     "updateDownloaded": "अद्यतन डाउनलोड किया गया",
     "installerSavedAs": "इस रूप में सहेजा गया: {name}",
+    "portableUpdateSavedNextToApp": "ऐप फ़ोल्डर में सहेजा गया। ऐप बंद करें और इसे नए संस्करण से बदलें। आपका डेटा फ़ोल्डर बना रहता है।",
     "quickViewFileIsNotSupported": "त्वरित दृश्य: फ़ाइल समर्थित नहीं है",
     "printViewFileIsNotSupported": "मुद्रण: फ़ाइल समर्थित नहीं है",
     "createdNLinks": "0 लिंक बनाए गए | 1 लिंक बनाया गया | {n} लिंक बनाए गए | {n} लिंक बनाए गए",

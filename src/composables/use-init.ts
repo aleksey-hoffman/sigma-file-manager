@@ -34,7 +34,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
-import { isIsolatedDataDir } from '@/utils/app-dirs';
+import { isIsolatedDataDir, isPortableDataDir } from '@/utils/app-dirs';
 import {
   prelaunchConfiguredAuxiliaryWindows,
   setupAuxiliaryWindowLifecycle,
@@ -424,7 +424,7 @@ export function useInit() {
       async () => {
         // Isolated e2e runs start with default settings; syncing them would
         // change the user's real OS autostart entry.
-        if (await isIsolatedDataDir()) {
+        if (await isIsolatedDataDir() || await isPortableDataDir()) {
           return;
         }
 

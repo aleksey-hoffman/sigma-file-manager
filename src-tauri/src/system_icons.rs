@@ -22,7 +22,7 @@ static ICON_DATA_URL_CACHE: Lazy<Mutex<LruCache<String, String>>> = Lazy::new(||
 });
 
 static ICON_PROBE_DIR: Lazy<Result<PathBuf, String>> = Lazy::new(|| {
-    let dir = crate::app_dirs::local_data_dir_without_app("com.sigma-file-manager.app")
+    let dir = crate::app_dirs::local_data_dir_without_app()
         .ok_or_else(|| "Could not resolve local data directory".to_string())?
         .join("icon-probes");
     fs::create_dir_all(&dir).map_err(|error| error.to_string())?;

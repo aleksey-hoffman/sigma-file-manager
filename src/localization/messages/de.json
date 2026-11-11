@@ -495,7 +495,8 @@
         "description": "Diese Option ändert die Systemregistrierung und kann unerwartete Nebenwirkungen auf Ihrem Gerät haben. Fahren Sie auf eigenes Risiko fort.",
         "unavailableInMicrosoftStore": "In der Microsoft Store-Version nicht verfügbar"
       }
-    }
+    },
+    "unavailableInPortableVersion": "In der portablen Version nicht verfügbar"
   },
   "projectGithubButtons": {
     "projectPage": "Projektseite",
@@ -709,6 +710,7 @@
     "updateAvailable": "Update verfügbar",
     "updateDownloaded": "Aktualisierung heruntergeladen",
     "installerSavedAs": "Gespeichert als: {name}",
+    "portableUpdateSavedNextToApp": "Im App-Ordner gespeichert. Schließen Sie die App und ersetzen Sie sie durch die neue Version. Ihr Datenordner bleibt erhalten.",
     "quickViewFileIsNotSupported": "Schnellansicht: Datei wird nicht unterstützt",
     "printViewFileIsNotSupported": "Drucken: Datei wird nicht unterstützt",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",

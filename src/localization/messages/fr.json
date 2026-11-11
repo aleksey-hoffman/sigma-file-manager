@@ -495,7 +495,8 @@
         "description": "Cette option modifie le registre système et peut avoir des effets secondaires inattendus sur votre appareil. Continuez à vos propres risques.",
         "unavailableInMicrosoftStore": "Indisponible dans la version Microsoft Store"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Indisponible dans la version portable"
   },
   "projectGithubButtons": {
     "projectPage": "Page projet",
@@ -709,6 +710,7 @@
     "updateAvailable": "Mise à jour disponible",
     "updateDownloaded": "Mise à jour téléchargée",
     "installerSavedAs": "Enregistré sous : {name}",
+    "portableUpdateSavedNextToApp": "Enregistré dans le dossier de l'application. Fermez l'application et remplacez-la par la nouvelle version. Votre dossier de données est conservé.",
     "quickViewFileIsNotSupported": "Vue rapide: le fichier n'est pas pris en charge",
     "printViewFileIsNotSupported": "Impression : fichier non pris en charge",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",

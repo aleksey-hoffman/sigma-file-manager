@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "app": {
+    "appDirectoriesOverride": "./sigma-file-manager-data"
+  },
+  "bundle": {
+    "active": false
+  }
+}

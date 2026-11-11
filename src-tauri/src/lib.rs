@@ -255,6 +255,8 @@ fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     app_dirs::prepare_isolated_environment();
+    let mut context = tauri::generate_context!();
+    app_dirs::apply_portable_mode(&mut context);
 
     let mut window_state_plugin = tauri_plugin_window_state::Builder::default()
         .with_state_flags(main_window_state::state_flags())
@@ -271,6 +273,13 @@ pub fn run() {
     if !app_dirs::is_isolated() {
         builder = builder.plugin(tauri_plugin_single_instance::init(handle_second_instance));
     }
+    if !app_dirs::is_portable() {
+        builder = builder.plugin(
+            tauri_plugin_autostart::Builder::new()
+                .args([SIGMA_AUTOSTART_CLI_FLAG])
+                .build(),
+        );
+    }
 
     builder
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -282,11 +291,6 @@ pub fn run() {
         .plugin(tauri_plugin_system_fonts::init())
         .plugin(tauri_plugin_drag::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(
-            tauri_plugin_autostart::Builder::new()
-                .args([SIGMA_AUTOSTART_CLI_FLAG])
-                .build(),
-        )
         .invoke_handler(tauri::generate_handler![
             app_dirs::get_app_dirs,
             configure_webview_hide_pdf_more_settings,
@@ -449,7 +453,7 @@ pub fn run() {
             }
         })
         .on_menu_event(system_tray::handle_menu_event)
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
 

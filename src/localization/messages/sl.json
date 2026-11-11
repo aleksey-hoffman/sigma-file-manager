@@ -524,7 +524,8 @@
         "description": "Ta možnost spremeni sistemski register in lahko povzroči nepričakovane stranske učinke na vaši napravi. Nadaljujte na lastno odgovornost.",
         "unavailableInMicrosoftStore": "Ni na voljo v različici iz trgovine Microsoft Store"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Ni na voljo v prenosni različici"
   },
   "projectGithubButtons": {
     "projectPage": "Stran projekta",
@@ -740,6 +741,7 @@
     "updateAvailable": "Posodobitev je na voljo",
     "updateDownloaded": "Posodobitev je bila prenesena",
     "installerSavedAs": "Shranjeno kot: {name}",
+    "portableUpdateSavedNextToApp": "Shranjeno v mapo aplikacije. Zaprite aplikacijo in jo zamenjajte z novo različico. Vaša mapa s podatki ostane.",
     "quickViewFileIsNotSupported": "Quick view: datoteka ni podprta",
     "printViewFileIsNotSupported": "Tiskanje: datoteka ni podprta",
     "createdNLinks": "Ustvarjenih 0 povezav | Ustvarjena 1 povezava | Ustvarjene {n} povezave | Ustvarjenih {n} povezav",

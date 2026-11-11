@@ -524,7 +524,8 @@
         "description": "Այս տարբերակը փոխում է համակարգի կարգավորումները և կարող է անսպասելի ազդեցություններ ունենալ սարքի վրա։ Շարունակեք Ձեր ռիսկով։",
         "unavailableInMicrosoftStore": "Հասանելի չէ Microsoft Store-ից ներբեռնված վերսիայում"
       }
-    }
+    },
+    "unavailableInPortableVersion": "Հասանելի չէ դյուրակիր վերսիայում"
   },
   "projectGithubButtons": {
     "projectPage": "Պրոյեկտի էջ",
@@ -740,6 +741,7 @@
     "updateAvailable": "Թարմացումը հասանելի է",
     "updateDownloaded": "Թարմացումը ներբեռնվել է",
     "installerSavedAs": "Պահվել է ինչպես՝ {name}",
+    "portableUpdateSavedNextToApp": "Պահվել է ծրագրի պանակում։ Փակեք ծրագիրը և փոխարինեք այն նոր վերսիայով։ Տվյալների պանակը կպահպանվի։",
     "quickViewFileIsNotSupported": "Արագ դիտում. ֆայլը չի աջակցվում",
     "printViewFileIsNotSupported": "Տպել. ֆայլը չի աջակցվում",
     "createdNLinks": "Ստեղծվել է 0 հղում | Ստեղծվել է 1 հղում | Ստեղծվել է {n} հղում | Ստեղծվել է {n} հղում",
