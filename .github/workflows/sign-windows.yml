@@ -83,10 +83,15 @@ jobs:
             echo "::error::The portable build is uploaded to releases as a zip by the release workflow. Leave upload_to_release false."
             exit 1
           fi
+          resolved_slug="${ARTIFACT_CONFIGURATION_SLUG:-windows-signed-${TARGET}}"
+          if [[ ! "$resolved_slug" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+            echo "::error::Invalid artifact_configuration_slug '$resolved_slug'"
+            exit 1
+          fi
           version="$(node -p "require('./package.json').version")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "installer=Sigma-File-Manager-${version}-windows-${TARGET}.exe" >> "$GITHUB_OUTPUT"
-          echo "artifact_configuration_slug=${ARTIFACT_CONFIGURATION_SLUG:-windows-signed-${TARGET}}" >> "$GITHUB_OUTPUT"
+          echo "artifact_configuration_slug=$resolved_slug" >> "$GITHUB_OUTPUT"
 
       - name: Setup Volta
         uses: volta-cli/action@v4

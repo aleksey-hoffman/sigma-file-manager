@@ -437,9 +437,9 @@ jobs:
       contents: write
       actions: read
     env:
-      SIGN_PORTABLE: ${{ github.repository == 'aleksey-hoffman/sigma-file-manager' && vars.SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG != '' }}
+      SIGN_PORTABLE: ${{ github.repository == 'aleksey-hoffman/sigma-file-manager' }}
       PORTABLE_EXE: Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-portable.exe
-      PORTABLE_ZIP: Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-portable.zip
+      PORTABLE_ZIP: ${{ github.repository == 'aleksey-hoffman/sigma-file-manager' && format('Sigma-File-Manager-{0}-windows-portable.zip', needs.prepare.outputs.version) || format('Sigma-File-Manager-{0}-windows-portable-unsigned.zip', needs.prepare.outputs.version) }}
 
     steps:
       - name: Download unsigned portable executable
@@ -449,13 +449,21 @@ jobs:
           name: unsigned-windows-portable
           path: portable
 
+      - name: Warn about unsigned portable archive
+        if: env.SIGN_PORTABLE != 'true'
+        shell: bash
+        run: |
+          echo "::warning::Publishing unsigned Windows portable archive ($PORTABLE_ZIP)."
+
       - name: Require SignPath secrets
         if: env.SIGN_PORTABLE == 'true'
         shell: pwsh
         env:
           SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
           SIGNPATH_ORGANIZATION_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG: ${{ vars.SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG }}
         run: |
+          if (-not $env:SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG) { throw "Missing repository variable SIGNPATH_PORTABLE_ARTIFACT_CONFIGURATION_SLUG." }
           if (-not $env:SIGNPATH_API_TOKEN) { throw "Missing repository secret SIGNPATH_API_TOKEN." }
           if (-not $env:SIGNPATH_ORGANIZATION_ID) { throw "Missing repository secret SIGNPATH_ORGANIZATION_ID." }
 
