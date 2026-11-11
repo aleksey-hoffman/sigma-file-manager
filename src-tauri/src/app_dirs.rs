@@ -3,22 +3,28 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 //! Single place that resolves the app's own folders (data, config, local data,
-//! cache, logs and the WebView data folder).
+//! cache, logs and the WebView data folder) across installed, portable, and
+//! isolated e2e runs.
+//!
+//! Portable builds keep their folders under the configured portable data root
+//! next to the executable (or in a `sigma-file-manager-data` sidecar folder next
+//! to an AppImage on Linux) and use a per-root application identifier so each
+//! portable copy has its own single-instance lock.
 //!
 //! In debug builds only, setting `SFM_E2E_DATA_DIR` to an absolute path moves
 //! all of them under that folder, so WebDriver e2e runs never read or write the
-//! user's real app data. Release builds compile the override out and always use
-//! the Tauri path resolver, exactly as before.
+//! user's real app data. Release builds compile the e2e override out.
 
 use std::path::{Component, Path, PathBuf};
 use std::sync::OnceLock;
 
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use tauri::utils::config::AppDirectoriesOverride;
 use tauri::{Manager, Runtime};
 
 const INSTALLED_IDENTIFIER: &str = "com.sigma-file-manager.app";
-const PORTABLE_IDENTIFIER: &str = "com.sigma-file-manager.portable";
+const PORTABLE_IDENTIFIER_PREFIX: &str = "com.sigma-file-manager.portable";
 #[cfg(target_os = "linux")]
 const APPIMAGE_PORTABLE_DATA_DIR_NAME: &str = "sigma-file-manager-data";
 
@@ -127,28 +133,88 @@ pub fn apply_portable_mode<R: Runtime>(context: &mut tauri::Context<R>) {
 
     let env = tauri::Env::default();
     #[cfg(target_os = "linux")]
-    let running_as_appimage = env.appimage.is_some();
+    let current_exe = tauri::utils::platform::current_exe().ok();
+    #[cfg(target_os = "linux")]
+    let running_as_appimage = is_running_as_appimage(
+        env.appimage.as_deref(),
+        env.appdir.as_deref(),
+        current_exe.as_deref(),
+    );
     #[cfg(not(target_os = "linux"))]
     let running_as_appimage = false;
 
-    let Some(app_dir) = tauri::process::current_binary(&env)
-        .ok()
-        .and_then(|binary| binary.parent().map(Path::to_path_buf))
-    else {
-        return;
+    #[cfg(target_os = "linux")]
+    let current_binary = if running_as_appimage {
+        tauri::process::current_binary(&env).ok()
+    } else {
+        current_exe
     };
+    #[cfg(not(target_os = "linux"))]
+    let current_binary = tauri::process::current_binary(&env).ok();
 
-    let Some(mode) = resolve_portable_mode(
+    let app_dir = current_binary
+        .as_deref()
+        .and_then(|binary| binary.parent().map(Path::to_path_buf));
+
+    let mode = match resolve_portable_mode_for_startup(
         config.app.app_directories_override.as_ref(),
-        &app_dir,
+        app_dir.as_deref(),
         running_as_appimage,
-    ) else {
-        return;
+    ) {
+        Ok(Some(mode)) => mode,
+        Ok(None) => return,
+        Err(message) => {
+            eprintln!("{message}");
+            std::process::exit(1);
+        }
     };
 
+    config.identifier = portable_identifier(&mode.root);
     config.app.app_directories_override = Some(AppDirectoriesOverride::Root(mode.root.clone()));
-    config.identifier = PORTABLE_IDENTIFIER.to_string();
     let _ = PORTABLE_MODE.set(mode);
+}
+
+fn portable_identifier(root: &Path) -> String {
+    let mut hasher = Sha256::new();
+    #[cfg(windows)]
+    hasher.update(root.to_string_lossy().to_lowercase().as_bytes());
+    #[cfg(not(windows))]
+    hasher.update(root.as_os_str().as_encoded_bytes());
+    let digest = hasher.finalize();
+    let short_hash: String = digest
+        .iter()
+        .take(8)
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    format!("{PORTABLE_IDENTIFIER_PREFIX}-{short_hash}")
+}
+
+fn resolve_portable_mode_for_startup(
+    configured_override: Option<&AppDirectoriesOverride>,
+    app_dir: Option<&Path>,
+    running_as_appimage: bool,
+) -> Result<Option<PortableMode>, &'static str> {
+    let Some(app_dir) = app_dir else {
+        if has_portable_root_override(configured_override) {
+            return Err(
+                "Failed to resolve the portable application folder; refusing to start with the installed app identity",
+            );
+        }
+        return Ok(None);
+    };
+
+    Ok(resolve_portable_mode(
+        configured_override,
+        app_dir,
+        running_as_appimage,
+    ))
+}
+
+fn has_portable_root_override(configured_override: Option<&AppDirectoriesOverride>) -> bool {
+    matches!(
+        configured_override,
+        Some(AppDirectoriesOverride::Root(path)) if is_portable_root_config_path(path)
+    )
 }
 
 fn resolve_portable_mode(
@@ -169,23 +235,66 @@ fn resolve_portable_mode(
     })
 }
 
+fn is_portable_root_config_path(path: &Path) -> bool {
+    let mut components = path.components();
+    let Some(first) = components.next() else {
+        return false;
+    };
+    if matches!(first, Component::Normal(part) if part.to_string_lossy().starts_with('$')) {
+        return false;
+    }
+    if !path.is_absolute() && (path.has_root() || matches!(first, Component::Prefix(_))) {
+        return false;
+    }
+    true
+}
+
 fn portable_root_from_config(path: &Path, app_dir: &Path) -> Option<PathBuf> {
-    let starts_with_base_directory_variable = matches!(
-        path.components().next(),
-        Some(Component::Normal(first)) if first.to_string_lossy().starts_with('$')
-    );
-    if starts_with_base_directory_variable {
+    if !is_portable_root_config_path(path) {
         return None;
     }
 
     let root = if path.is_absolute() {
         path.to_path_buf()
-    } else if path.has_root() || matches!(path.components().next(), Some(Component::Prefix(_))) {
-        return None;
     } else {
         app_dir.join(path)
     };
     Some(root.components().collect())
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn is_exe_within_appdir(current_exe: &Path, appdir: &Path) -> bool {
+    if !appdir.is_absolute() || appdir == Path::new("/") {
+        return false;
+    }
+    if current_exe.starts_with(appdir) {
+        return true;
+    }
+    std::fs::canonicalize(appdir)
+        .is_ok_and(|canonical_appdir| {
+            canonical_appdir != Path::new("/") && current_exe.starts_with(&canonical_appdir)
+        })
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn is_running_as_appimage(
+    appimage: Option<&std::ffi::OsStr>,
+    appdir: Option<&std::ffi::OsStr>,
+    current_exe: Option<&Path>,
+) -> bool {
+    let Some(appimage_path) = appimage.filter(|value| !value.is_empty()).map(Path::new) else {
+        return false;
+    };
+    if !appimage_path.is_absolute() {
+        return false;
+    }
+    let Some(appdir_path) = appdir.filter(|value| !value.is_empty()).map(Path::new) else {
+        return false;
+    };
+    let Some(exe_path) = current_exe else {
+        return false;
+    };
+    is_exe_within_appdir(exe_path, appdir_path)
 }
 
 #[cfg(target_os = "linux")]
@@ -370,6 +479,7 @@ mod tests {
 #[cfg(test)]
 mod portable_tests {
     use super::*;
+    use std::ffi::OsStr;
     use tauri::utils::config::AppDirectoryOverrides;
 
     fn root_override(path: &str) -> AppDirectoriesOverride {
@@ -442,6 +552,58 @@ mod portable_tests {
             serde_json::from_str(include_str!("../tauri.conf.json")).expect("tauri config");
 
         assert_eq!(config["identifier"], INSTALLED_IDENTIFIER);
+    }
+
+    #[test]
+    fn portable_identifier_is_stable_and_unique_per_root() {
+        let first_root = std::env::temp_dir().join("sfm-portable-copy-a").join("data");
+        let second_root = std::env::temp_dir().join("sfm-portable-copy-b").join("data");
+
+        let first_identifier = portable_identifier(&first_root);
+        let second_identifier = portable_identifier(&second_root);
+
+        assert_eq!(first_identifier, portable_identifier(&first_root));
+        assert_ne!(first_identifier, second_identifier);
+        assert_ne!(first_identifier, INSTALLED_IDENTIFIER);
+        assert!(first_identifier.starts_with("com.sigma-file-manager.portable-"));
+    }
+
+    #[test]
+    fn startup_fails_closed_when_portable_root_cannot_resolve_app_dir() {
+        assert!(
+            resolve_portable_mode_for_startup(Some(&root_override("./data")), None, false).is_err()
+        );
+        assert_eq!(resolve_portable_mode_for_startup(None, None, false), Ok(None));
+        assert_eq!(
+            resolve_portable_mode_for_startup(Some(&root_override("$DOCUMENT/sfm")), None, false),
+            Ok(None)
+        );
+    }
+
+    #[test]
+    fn appimage_detection_requires_current_exe_inside_appdir() {
+        let appimage = Some(OsStr::new("/home/user/Apps/Sigma.AppImage"));
+        let appdir = Some(OsStr::new("/tmp/.mount_Sigma-123456"));
+        let mounted_exe = Path::new("/tmp/.mount_Sigma-123456/usr/bin/sigma-file-manager");
+        let installed_exe = Path::new("/usr/bin/sigma-file-manager");
+
+        assert!(is_running_as_appimage(appimage, appdir, Some(mounted_exe)));
+        assert!(!is_running_as_appimage(
+            appimage,
+            appdir,
+            Some(installed_exe)
+        ));
+        assert!(!is_running_as_appimage(
+            appimage,
+            Some(OsStr::new("/")),
+            Some(installed_exe)
+        ));
+        assert!(!is_running_as_appimage(
+            Some(OsStr::new("Sigma.AppImage")),
+            appdir,
+            Some(mounted_exe)
+        ));
+        assert!(!is_running_as_appimage(appimage, None, Some(mounted_exe)));
     }
 
     #[test]
