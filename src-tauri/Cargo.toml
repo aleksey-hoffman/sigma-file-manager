@@ -6,7 +6,7 @@ license = "GPL-3.0-or-later"
 authors = ["Aleksey Hoffman"]
 repository = "https://github.com/aleksey-hoffman/sigma-file-manager"
 edition = "2021"
-rust-version = "1.88.0"
+rust-version = "1.92"
 
 [workspace]
 members = [".", "default-file-manager-common", "default-file-manager-launcher"]

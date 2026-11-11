@@ -94,11 +94,14 @@ fn parse_github_releases(body: &str) -> Vec<GithubRelease> {
     releases.iter().filter_map(parse_github_release).collect()
 }
 
-fn pick_best_installable_upgrade(
+fn pick_best_installable_upgrade<PickAsset>(
     releases: Vec<GithubRelease>,
     current_version: &str,
-    portable: bool,
-) -> Option<(GithubRelease, String, String)> {
+    pick_asset: PickAsset,
+) -> Option<(GithubRelease, String, String)>
+where
+    PickAsset: Fn(&[Value]) -> Option<(String, String)>,
+{
     let current_version_number = parse_version_to_number(current_version);
 
     releases
@@ -110,7 +113,7 @@ fn pick_best_installable_upgrade(
             }
 
             let (installer_download_url, installer_file_name) =
-                pick_release_installer_asset(release.assets.as_slice(), portable)?;
+                pick_asset(release.assets.as_slice())?;
 
             Some((
                 release_version_number,
@@ -241,6 +244,11 @@ fn make_unique_path_in_dir(directory: &Path, file_name: &str) -> PathBuf {
     unique_path_with_index(&directory.join(file_name), 2, "download", None, Some(1000))
 }
 
+fn discard_partial_download(file: fs::File, path: &Path) {
+    drop(file);
+    fs::remove_file(path).ok();
+}
+
 fn build_http_client(timeout_secs: u64) -> Result<reqwest::Client, reqwest::Error> {
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(CONNECT_TIMEOUT_SECS))
@@ -248,18 +256,22 @@ fn build_http_client(timeout_secs: u64) -> Result<reqwest::Client, reqwest::Erro
         .build()
 }
 
-#[cfg(target_os = "windows")]
-fn pick_release_installer_asset(assets: &[Value], portable: bool) -> Option<(String, String)> {
+#[cfg(any(target_os = "windows", test))]
+fn pick_windows_release_asset(assets: &[Value], portable: bool) -> Option<(String, String)> {
     if portable {
         return pick_windows_portable_asset(assets);
     }
+    pick_windows_setup_asset(assets)
+}
 
+#[cfg(any(target_os = "windows", test))]
+fn pick_windows_setup_asset(assets: &[Value]) -> Option<(String, String)> {
     let mut fallback: Option<(String, String)> = None;
 
     for asset in assets {
         let name = asset.get("name")?.as_str()?;
         let lower = name.to_lowercase();
-        if !lower.ends_with(".exe") {
+        if !lower.ends_with(".exe") || lower.contains("portable") {
             continue;
         }
         let url = asset.get("browser_download_url")?.as_str()?.to_string();
@@ -276,7 +288,7 @@ fn pick_release_installer_asset(assets: &[Value], portable: bool) -> Option<(Str
     fallback
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", test))]
 fn pick_windows_portable_asset(assets: &[Value]) -> Option<(String, String)> {
     assets.iter().find_map(|asset| {
         let name = asset.get("name")?.as_str()?;
@@ -289,8 +301,18 @@ fn pick_windows_portable_asset(assets: &[Value]) -> Option<(String, String)> {
     })
 }
 
+#[cfg(target_os = "windows")]
+fn pick_release_installer_asset(assets: &[Value], portable: bool) -> Option<(String, String)> {
+    pick_windows_release_asset(assets, portable)
+}
+
 #[cfg(target_os = "linux")]
 fn pick_release_installer_asset(assets: &[Value], _portable: bool) -> Option<(String, String)> {
+    pick_linux_appimage_asset(assets)
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn pick_linux_appimage_asset(assets: &[Value]) -> Option<(String, String)> {
     for asset in assets {
         let name = asset.get("name")?.as_str()?;
         if !name.to_lowercase().ends_with(".appimage") {
@@ -352,8 +374,11 @@ pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckRes
 
     let releases = parse_github_releases(&body);
 
+    let portable = crate::app_dirs::is_portable();
     let Some((release, installer_download_url, installer_file_name)) =
-        pick_best_installable_upgrade(releases, &current_version, crate::app_dirs::is_portable())
+        pick_best_installable_upgrade(releases, &current_version, |assets| {
+            pick_release_installer_asset(assets, portable)
+        })
     else {
         return Ok(UpdateCheckResult {
             update_available: false,
@@ -397,8 +422,13 @@ pub async fn download_release_installer(
     };
 
     if !download_dir.exists() {
-        fs::create_dir_all(&download_dir)
-            .map_err(|error| format!("Failed to create Downloads directory: {}", error))?;
+        fs::create_dir_all(&download_dir).map_err(|error| {
+            format!(
+                "Failed to create download folder {}: {}",
+                download_dir.display(),
+                error
+            )
+        })?;
     }
 
     let dest_path = make_unique_path_in_dir(&download_dir, &safe_file_name);
@@ -439,26 +469,36 @@ pub async fn download_release_installer(
 
     let mut stream = response.bytes_stream();
     let mut file = fs::File::create(&dest_path)
-        .map_err(|error| format!("Failed to create installer file: {}", error))?;
+        .map_err(|error| format!("Failed to create {}: {}", dest_path.display(), error))?;
     let mut downloaded: u64 = 0;
     let mut last_emit: u64 = 0;
 
     while let Some(chunk_result) = stream.next().await {
-        let chunk =
-            chunk_result.map_err(|error| format!("Failed to read download stream: {}", error))?;
+        let chunk = match chunk_result {
+            Ok(chunk) => chunk,
+            Err(error) => {
+                discard_partial_download(file, &dest_path);
+                return Err(format!("Failed to read download stream: {}", error));
+            }
+        };
         downloaded += chunk.len() as u64;
 
         if downloaded > MAX_INSTALLER_DOWNLOAD_BYTES {
-            drop(file);
-            fs::remove_file(&dest_path).ok();
+            discard_partial_download(file, &dest_path);
             return Err(format!(
                 "Download exceeds size limit of {} bytes",
                 MAX_INSTALLER_DOWNLOAD_BYTES
             ));
         }
 
-        file.write_all(&chunk)
-            .map_err(|error| format!("Failed to write installer file: {}", error))?;
+        if let Err(error) = file.write_all(&chunk) {
+            discard_partial_download(file, &dest_path);
+            return Err(format!(
+                "Failed to write {}: {}",
+                dest_path.display(),
+                error
+            ));
+        }
 
         if let Some(ref progress_id) = progress_event_id {
             if downloaded - last_emit >= 256 * 1024 || last_emit == 0 {
@@ -516,6 +556,14 @@ mod tests {
         assert!(is_semver_app_release_tag("v1.0.0"));
     }
 
+    fn installed_windows_asset(assets: &[Value]) -> Option<(String, String)> {
+        pick_windows_release_asset(assets, false)
+    }
+
+    fn portable_windows_asset(assets: &[Value]) -> Option<(String, String)> {
+        pick_windows_release_asset(assets, true)
+    }
+
     #[test]
     fn pick_best_installable_upgrade_requires_platform_installer() {
         let upgrade = pick_best_installable_upgrade(
@@ -528,13 +576,12 @@ mod tests {
                 })],
             }],
             "2.1.0",
-            false,
+            installed_windows_asset,
         );
         assert!(upgrade.is_none());
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
     fn pick_best_installable_upgrade_picks_highest_with_setup_exe() {
         let upgrade = pick_best_installable_upgrade(
             vec![
@@ -556,7 +603,7 @@ mod tests {
                 },
             ],
             "2.0.0-alpha.6",
-            false,
+            installed_windows_asset,
         )
         .expect("expected upgrade");
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
@@ -567,7 +614,6 @@ mod tests {
         );
     }
 
-    #[cfg(target_os = "windows")]
     fn release_with_setup_and_portable_assets() -> GithubRelease {
         GithubRelease {
             tag: "v2.3.0".to_string(),
@@ -586,12 +632,11 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
     fn portable_copy_is_offered_the_portable_zip() {
         let upgrade = pick_best_installable_upgrade(
             vec![release_with_setup_and_portable_assets()],
             "2.2.0",
-            true,
+            portable_windows_asset,
         )
         .expect("expected upgrade");
         assert_eq!(upgrade.1, "https://example.com/portable.zip");
@@ -599,19 +644,34 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
     fn installed_copy_is_offered_the_setup_exe() {
         let upgrade = pick_best_installable_upgrade(
             vec![release_with_setup_and_portable_assets()],
             "2.2.0",
-            false,
+            installed_windows_asset,
         )
         .expect("expected upgrade");
         assert_eq!(upgrade.1, "https://example.com/setup.exe");
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
+    fn installed_copy_never_falls_back_to_a_portable_exe() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![GithubRelease {
+                tag: "v2.3.0".to_string(),
+                url: "https://example.com/v2.3.0".to_string(),
+                assets: vec![serde_json::json!({
+                    "name": "Sigma-File-Manager-2.3.0-windows-portable.exe",
+                    "browser_download_url": "https://example.com/portable.exe"
+                })],
+            }],
+            "2.2.0",
+            installed_windows_asset,
+        );
+        assert!(upgrade.is_none());
+    }
+
+    #[test]
     fn portable_copy_skips_releases_without_a_portable_zip() {
         let upgrade = pick_best_installable_upgrade(
             vec![GithubRelease {
@@ -623,13 +683,12 @@ mod tests {
                 })],
             }],
             "2.2.0",
-            true,
+            portable_windows_asset,
         );
         assert!(upgrade.is_none());
     }
 
     #[test]
-    #[cfg(target_os = "linux")]
     fn pick_best_installable_upgrade_picks_highest_with_appimage() {
         let upgrade = pick_best_installable_upgrade(
             vec![
@@ -651,7 +710,7 @@ mod tests {
                 },
             ],
             "2.0.0-alpha.6",
-            false,
+            pick_linux_appimage_asset,
         )
         .expect("expected upgrade");
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");

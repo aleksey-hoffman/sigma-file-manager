@@ -449,6 +449,16 @@ jobs:
           name: unsigned-windows-portable
           path: portable
 
+      - name: Require SignPath secrets
+        if: env.SIGN_PORTABLE == 'true'
+        shell: pwsh
+        env:
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          SIGNPATH_ORGANIZATION_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+        run: |
+          if (-not $env:SIGNPATH_API_TOKEN) { throw "Missing repository secret SIGNPATH_API_TOKEN." }
+          if (-not $env:SIGNPATH_ORGANIZATION_ID) { throw "Missing repository secret SIGNPATH_ORGANIZATION_ID." }
+
       - name: Resolve unsigned portable artifact id
         if: env.SIGN_PORTABLE == 'true'
         id: artifact
@@ -480,6 +490,13 @@ jobs:
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 20700
           output-artifact-directory: ${{ github.workspace }}/portable
+
+      - name: Show SignPath request
+        if: env.SIGN_PORTABLE == 'true'
+        shell: bash
+        env:
+          SIGNING_REQUEST_URL: ${{ steps.signpath.outputs.signing-request-web-url }}
+        run: echo "SignPath request URL - $SIGNING_REQUEST_URL"
 
       - name: Verify signed portable executable
         if: env.SIGN_PORTABLE == 'true'

@@ -22,6 +22,8 @@ const {
   hideWindowMock,
   initAutoCheckMock,
   invokeMock,
+  isIsolatedDataDirMock,
+  isPortableDataDirMock,
   navigatorIconsPreloadConfiguredThemesMock,
   openOrFocusTabGroupMock,
   platformInitMock,
@@ -58,6 +60,8 @@ const {
   hideWindowMock: vi.fn(),
   initAutoCheckMock: vi.fn(),
   invokeMock: vi.fn(),
+  isIsolatedDataDirMock: vi.fn(),
+  isPortableDataDirMock: vi.fn(),
   navigatorIconsPreloadConfiguredThemesMock: vi.fn(),
   openOrFocusTabGroupMock: vi.fn(),
   platformInitMock: vi.fn(),
@@ -306,6 +310,11 @@ vi.mock('@/utils/autostart-sync', () => ({
   applyLaunchAtStartupPreference: applyLaunchAtStartupPreferenceMock,
 }));
 
+vi.mock('@/utils/app-dirs', () => ({
+  isIsolatedDataDir: isIsolatedDataDirMock,
+  isPortableDataDir: isPortableDataDirMock,
+}));
+
 vi.mock('@/utils/auxiliary-windows', () => ({
   prelaunchConfiguredAuxiliaryWindows: vi.fn().mockResolvedValue(undefined),
   setupAuxiliaryWindowLifecycle: vi.fn().mockResolvedValue(vi.fn()),
@@ -358,6 +367,8 @@ describe('useInit startup restoration', () => {
     hideWindowMock.mockReset().mockResolvedValue(undefined);
     initAutoCheckMock.mockReset().mockResolvedValue(undefined);
     invokeMock.mockReset();
+    isIsolatedDataDirMock.mockReset().mockResolvedValue(false);
+    isPortableDataDirMock.mockReset().mockResolvedValue(false);
     navigatorIconsPreloadConfiguredThemesMock.mockReset().mockResolvedValue(undefined);
     openOrFocusTabGroupMock.mockReset().mockResolvedValue(undefined);
     platformInitMock.mockReset().mockResolvedValue(undefined);
@@ -828,6 +839,46 @@ describe('useInit startup restoration', () => {
     await completeInit(init);
 
     expect(routerPushMock).toHaveBeenCalledWith({ name: 'settings' });
+  });
+
+  it('applies the launch at startup preference on a normal startup', async () => {
+    userSettingsMock.launchAtStartup = true;
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init, awaitBackgroundTasks } = useInit();
+
+    await completeInit(init, awaitBackgroundTasks);
+
+    expect(applyLaunchAtStartupPreferenceMock).toHaveBeenCalledWith(true);
+  });
+
+  it.each([
+    ['portable', isPortableDataDirMock],
+    ['isolated', isIsolatedDataDirMock],
+  ])('does not touch the OS autostart entry in a %s data folder', async (_dataFolderKind, dataDirMock) => {
+    userSettingsMock.launchAtStartup = true;
+    dataDirMock.mockResolvedValue(true);
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init, awaitBackgroundTasks } = useInit();
+
+    await completeInit(init, awaitBackgroundTasks);
+
+    expect(applyLaunchAtStartupPreferenceMock).not.toHaveBeenCalled();
   });
 });
 

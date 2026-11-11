@@ -17,6 +17,7 @@ use serde::Serialize;
 use tauri::utils::config::AppDirectoriesOverride;
 use tauri::{Manager, Runtime};
 
+const INSTALLED_IDENTIFIER: &str = "com.sigma-file-manager.app";
 const PORTABLE_IDENTIFIER: &str = "com.sigma-file-manager.portable";
 #[cfg(target_os = "linux")]
 const APPIMAGE_PORTABLE_DATA_DIR_NAME: &str = "sigma-file-manager-data";
@@ -179,6 +180,8 @@ fn portable_root_from_config(path: &Path, app_dir: &Path) -> Option<PathBuf> {
 
     let root = if path.is_absolute() {
         path.to_path_buf()
+    } else if path.has_root() || matches!(path.components().next(), Some(Component::Prefix(_))) {
+        return None;
     } else {
         app_dir.join(path)
     };
@@ -217,14 +220,14 @@ pub fn app_data_dir<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<Pat
 }
 
 /// Local data folder for code that runs before an `AppHandle` exists.
-pub fn local_data_dir_without_app(identifier: &str) -> Option<PathBuf> {
+pub fn local_data_dir_without_app() -> Option<PathBuf> {
     if let Some(root) = isolated_root() {
         return Some(isolated_dir(&root, AppDir::LocalData));
     }
     if let Some(mode) = portable_mode() {
         return Some(mode.root.clone());
     }
-    dirs::data_local_dir().map(|dir| dir.join(identifier))
+    dirs::data_local_dir().map(|dir| dir.join(INSTALLED_IDENTIFIER))
 }
 
 /// Absolute window-state file path when isolated; the plugin joins it onto
@@ -416,6 +419,29 @@ mod portable_tests {
             None
         );
         assert_eq!(resolve_portable_mode(None, &app_dir, false), None);
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn root_relative_and_drive_relative_overrides_are_not_portable() {
+        let app_dir = PathBuf::from(r"D:\Apps\Sigma File Manager");
+
+        assert_eq!(
+            resolve_portable_mode(Some(&root_override(r"\data")), &app_dir, false),
+            None
+        );
+        assert_eq!(
+            resolve_portable_mode(Some(&root_override("C:data")), &app_dir, false),
+            None
+        );
+    }
+
+    #[test]
+    fn installed_identifier_matches_the_tauri_config() {
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).expect("tauri config");
+
+        assert_eq!(config["identifier"], INSTALLED_IDENTIFIER);
     }
 
     #[test]

@@ -273,6 +273,13 @@ pub fn run() {
     if !app_dirs::is_isolated() {
         builder = builder.plugin(tauri_plugin_single_instance::init(handle_second_instance));
     }
+    if !app_dirs::is_portable() {
+        builder = builder.plugin(
+            tauri_plugin_autostart::Builder::new()
+                .args([SIGMA_AUTOSTART_CLI_FLAG])
+                .build(),
+        );
+    }
 
     builder
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -284,11 +291,6 @@ pub fn run() {
         .plugin(tauri_plugin_system_fonts::init())
         .plugin(tauri_plugin_drag::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(
-            tauri_plugin_autostart::Builder::new()
-                .args([SIGMA_AUTOSTART_CLI_FLAG])
-                .build(),
-        )
         .invoke_handler(tauri::generate_handler![
             app_dirs::get_app_dirs,
             configure_webview_hide_pdf_more_settings,
