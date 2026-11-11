@@ -116,7 +116,7 @@ watch(() => clipboardStore.itemCount, (count) => {
 <template>
   <Transition name="clipboard-slide">
     <div
-      v-if="clipboardStore.showClipboardUi"
+      v-if="clipboardStore.showClipboardToolbar"
       class="clipboard-toolbar-container"
     >
       <Popover v-model:open="clipboardItemsPopoverOpen">

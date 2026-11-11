@@ -5,7 +5,7 @@
 use std::fs;
 use std::io::Read;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::http::download_url_bytes;
 use super::paths::{
@@ -84,19 +84,52 @@ pub async fn extension_path_exists(
     }
 
     let normalized_extension_dir = canonicalize_path(&extension_dir, "extension dir")?;
+    path_exists_within_extension_dir(&normalized_extension_dir, &full_path)
+}
 
-    if full_path.exists() {
-        let normalized_full_path = canonicalize_path(&full_path, "file path")?;
-        ensure_path_within_roots(
-            &normalized_full_path,
-            &[&normalized_extension_dir],
-            "Access denied: path traversal detected",
-        )?;
+pub async fn extension_paths_exist(
+    app_handle: tauri::AppHandle,
+    extension_id: String,
+    file_paths: Vec<String>,
+    caller_extension_id: Option<String>,
+) -> Result<Vec<bool>, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
 
-        Ok(true)
-    } else {
-        Ok(false)
+    if !extension_dir.exists() {
+        return Ok(vec![false; file_paths.len()]);
     }
+
+    let normalized_extension_dir = canonicalize_path(&extension_dir, "extension dir")?;
+
+    Ok(file_paths
+        .iter()
+        .map(|file_path| {
+            path_exists_within_extension_dir(
+                &normalized_extension_dir,
+                &extension_dir.join(file_path),
+            )
+            .unwrap_or(false)
+        })
+        .collect())
+}
+
+fn path_exists_within_extension_dir(
+    normalized_extension_dir: &Path,
+    full_path: &Path,
+) -> Result<bool, String> {
+    if !full_path.exists() {
+        return Ok(false);
+    }
+
+    let normalized_full_path = canonicalize_path(full_path, "file path")?;
+    ensure_path_within_roots(
+        &normalized_full_path,
+        &[normalized_extension_dir],
+        "Access denied: path traversal detected",
+    )?;
+
+    Ok(true)
 }
 
 pub async fn read_text_preview(
@@ -318,4 +351,55 @@ pub async fn download_extension_file(
         success: true,
         error: None,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn path_exists_within_extension_dir_reports_existing_and_missing_files() {
+        let extension_dir = tempdir().expect("extension dir");
+        fs::create_dir_all(extension_dir.path().join("icons")).expect("icons dir");
+        fs::write(extension_dir.path().join("icons/file.svg"), "<svg/>").expect("icon file");
+        let normalized_extension_dir =
+            canonicalize_path(extension_dir.path(), "extension dir").expect("normalized dir");
+
+        assert_eq!(
+            path_exists_within_extension_dir(
+                &normalized_extension_dir,
+                &extension_dir.path().join("icons/file.svg"),
+            ),
+            Ok(true)
+        );
+        assert_eq!(
+            path_exists_within_extension_dir(
+                &normalized_extension_dir,
+                &extension_dir.path().join("icons/missing.svg"),
+            ),
+            Ok(false)
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn path_exists_within_extension_dir_rejects_links_outside_the_extension() {
+        let extension_dir = tempdir().expect("extension dir");
+        let outside_dir = tempdir().expect("outside dir");
+        fs::write(outside_dir.path().join("secret.svg"), "<svg/>").expect("outside file");
+        std::os::unix::fs::symlink(
+            outside_dir.path().join("secret.svg"),
+            extension_dir.path().join("linked.svg"),
+        )
+        .expect("symlink");
+        let normalized_extension_dir =
+            canonicalize_path(extension_dir.path(), "extension dir").expect("normalized dir");
+
+        assert!(path_exists_within_extension_dir(
+            &normalized_extension_dir,
+            &extension_dir.path().join("linked.svg"),
+        )
+        .is_err());
+    }
 }

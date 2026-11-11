@@ -102,6 +102,31 @@ function getChildNames(tree: ReturnType<typeof useDirectoryTree>, path: string):
   return tree.getChildren(path)?.map(entry => entry.name);
 }
 
+function readPaths(): string[] {
+  return resolveDirectoryContentsMock.mock.calls.map(([path]) => path);
+}
+
+function deferRead(path: string): { resolve: (entries: DirEntry[]) => void } {
+  let resolveRead: (value: { entries: DirEntry[] }) => void = () => {};
+
+  const fallbackImplementation = resolveDirectoryContentsMock.getMockImplementation();
+
+  resolveDirectoryContentsMock.mockImplementation((requestedPath: string, ...rest: unknown[]) => {
+    if (requestedPath !== path) {
+      return fallbackImplementation?.(requestedPath, ...rest);
+    }
+
+    resolveDirectoryContentsMock.mockImplementation(fallbackImplementation ?? (async () => ({ entries: [] })));
+    return new Promise((resolve) => {
+      resolveRead = resolve;
+    });
+  });
+
+  return {
+    resolve: entries => resolveRead({ entries }),
+  };
+}
+
 describe('useDirectoryTree', () => {
   let scope: EffectScope;
   const activePath = ref('/home');
@@ -139,7 +164,7 @@ describe('useDirectoryTree', () => {
     vi.useRealTimers();
   });
 
-  it('expands the ancestors of the active path and loads its children', async () => {
+  it('expands the ancestors of the active path without reading the collapsed active directory', async () => {
     const tree = createTree();
     await flushPromises();
 
@@ -147,8 +172,61 @@ describe('useDirectoryTree', () => {
     expect(tree.isExpanded('/')).toBe(true);
     expect(tree.isExpanded('/home')).toBe(false);
     expect(getChildNames(tree, '/')).toEqual(['etc', 'home']);
-    expect(getChildNames(tree, '/home')).toEqual(['user']);
+    expect(getChildNames(tree, '/home')).toBeUndefined();
+    expect(readPaths()).not.toContain('/home');
+    expect(resolveDirectoryContentsMock).toHaveBeenCalledWith('/', expect.objectContaining({ directoriesOnly: true }));
     expect(tree.revealVersion.value).toBe(1);
+  });
+
+  it('reads the active directory once it is expanded', async () => {
+    const tree = createTree();
+    await flushPromises();
+
+    tree.setExpanded('/home', true);
+    await flushPromises();
+
+    expect(getChildNames(tree, '/home')).toEqual(['user']);
+  });
+
+  it('shows cached children at once and refreshes them when a directory is expanded again', async () => {
+    directoryEntriesByPath.set('/etc', [createDirectory('/etc/nginx')]);
+    const tree = createTree();
+    await flushPromises();
+    tree.setExpanded('/etc', true);
+    await flushPromises();
+    tree.setExpanded('/etc', false);
+
+    const pendingRead = deferRead('/etc');
+    tree.setExpanded('/etc', true);
+
+    expect(getChildNames(tree, '/etc')).toEqual(['nginx']);
+
+    pendingRead.resolve([createDirectory('/etc/nginx'), createDirectory('/etc/apache')]);
+    await flushPromises();
+
+    expect(getChildNames(tree, '/etc')).toEqual(['apache', 'nginx']);
+  });
+
+  it('discards a reveal that finishes after navigating to another directory', async () => {
+    directoryEntriesByPath.set('/', [createDirectory('/etc'), createDirectory('/srv')]);
+    directoryEntriesByPath.set('/srv', [createDirectory('/srv/data')]);
+    const tree = createTree();
+    await flushPromises();
+
+    const pendingRead = deferRead('/etc');
+    activePath.value = '/etc/nginx';
+    await flushPromises();
+    activePath.value = '/srv/data';
+    await flushPromises();
+
+    expect(tree.isExpanded('/srv')).toBe(true);
+
+    pendingRead.resolve([createDirectory('/etc/nginx')]);
+    await flushPromises();
+
+    expect(tree.isExpanded('/etc')).toBe(false);
+    expect(getChildNames(tree, '/etc')).toBeUndefined();
+    expect(tree.isExpanded('/srv')).toBe(true);
   });
 
   it('publishes the first content while paused, then holds later updates until resumed', async () => {
@@ -189,6 +267,7 @@ describe('useDirectoryTree', () => {
 
   it('reloads a cached directory after a directory change event', async () => {
     vi.useFakeTimers();
+    activePath.value = '/home/user';
     const tree = createTree();
     await flushPromises();
 
@@ -225,6 +304,7 @@ describe('useDirectoryTree', () => {
   });
 
   it('drops an older read that finishes after a newer read of the same directory', async () => {
+    activePath.value = '/home/user';
     const tree = createTree();
     await flushPromises();
 

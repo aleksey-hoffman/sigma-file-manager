@@ -5,6 +5,7 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { prefetchSystemIconsForEntries } from '@/composables/system-icon-cache';
 import { loadInstalledIconTheme } from '@/modules/icon-theme/extension-icon-themes';
@@ -18,6 +19,7 @@ import type { DirEntry } from '@/types/dir-entry';
 
 export const useNavigatorIconsStore = defineStore('navigatorIcons', () => {
   const userSettingsStore = useUserSettingsStore();
+  const extensionsStorageStore = useExtensionsStorageStore();
   const extensionsStore = useExtensionsStore();
 
   const loadedExtensionThemes = ref(new Map<string, LoadedIconThemeDefinition | null>());
@@ -40,8 +42,9 @@ export const useNavigatorIconsStore = defineStore('navigatorIcons', () => {
     return loadedExtensionThemes.value.get(iconThemeId) ?? null;
   }
 
-  function isExtensionThemeSettled(iconThemeId: string): boolean {
-    return settledExtensionThemeIds.value.has(iconThemeId);
+  async function loadExtensionTheme(iconThemeId: string): Promise<LoadedIconThemeDefinition | null> {
+    await extensionsStorageStore.init();
+    return await loadInstalledIconTheme(extensionsStore.enabledExtensions, iconThemeId);
   }
 
   async function ensureExtensionThemeLoaded(iconThemeId: string): Promise<LoadedIconThemeDefinition | null> {
@@ -62,12 +65,13 @@ export const useNavigatorIconsStore = defineStore('navigatorIcons', () => {
     }
 
     const requestGeneration = loadGeneration;
-    const loadPromise = loadInstalledIconTheme(
-      extensionsStore.enabledExtensions,
-      iconThemeId,
-    )
+    const loadPromise: Promise<LoadedIconThemeDefinition | null> = loadExtensionTheme(iconThemeId)
       .then((loadedTheme) => {
-        if (requestGeneration === loadGeneration && loadingExtensionThemes.get(iconThemeId) === loadPromise) {
+        if (requestGeneration !== loadGeneration) {
+          return ensureExtensionThemeLoaded(iconThemeId);
+        }
+
+        if (loadingExtensionThemes.get(iconThemeId) === loadPromise) {
           const nextThemes = new Map(loadedExtensionThemes.value);
           nextThemes.set(iconThemeId, loadedTheme);
           loadedExtensionThemes.value = nextThemes;
@@ -124,33 +128,12 @@ export const useNavigatorIconsStore = defineStore('navigatorIcons', () => {
       && parsedTheme.themeId === BUILTIN_NAVIGATOR_ICON_THEME_IDS.system;
   }
 
-  function hasFailedExtensionTheme(iconThemeId: string): boolean {
-    const parsedTheme = parseNavigatorIconThemeId(iconThemeId);
-
-    return parsedTheme?.kind === 'extension'
-      && settledExtensionThemeIds.value.has(iconThemeId)
-      && loadedExtensionThemes.value.get(iconThemeId) === null;
-  }
-
   function prefetchForDirectoryEntries(entries: DirEntry[]): void {
-    const directoryEntries = [...entries];
-    const systemIconEntries = directoryEntries.filter(entry => usesSystemIcons(getThemeIdForEntry(entry)));
+    const systemIconEntries = entries.filter(entry => usesSystemIcons(getThemeIdForEntry(entry)));
 
     if (systemIconEntries.length > 0) {
       prefetchSystemIconsForEntries(systemIconEntries);
     }
-
-    if (getConfiguredExtensionThemeIds().length === 0) {
-      return;
-    }
-
-    void preloadConfiguredThemes().then(() => {
-      const fallbackEntries = directoryEntries.filter(entry => hasFailedExtensionTheme(getThemeIdForEntry(entry)));
-
-      if (fallbackEntries.length > 0) {
-        prefetchSystemIconsForEntries(fallbackEntries);
-      }
-    });
   }
 
   watch(
@@ -168,7 +151,6 @@ export const useNavigatorIconsStore = defineStore('navigatorIcons', () => {
 
   return {
     getLoadedExtensionTheme,
-    isExtensionThemeSettled,
     ensureExtensionThemeLoaded,
     preloadConfiguredThemes,
     prefetchForDirectoryEntries,

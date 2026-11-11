@@ -4,31 +4,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import {
-  computed, nextTick, onBeforeUnmount, ref, watch,
-} from 'vue';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FileIcon, ImageIcon, SearchIcon, XIcon } from '@lucide/vue';
+import { ImageIcon, SearchIcon, XIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
-import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
-import { getFileIcon, getImageSrc, isImageFile } from '@/modules/navigator/components/file-browser/utils';
 import {
-  CLIPBOARD_ITEM_PREVIEW_SIZE,
   MAX_VISIBLE_CLIPBOARD_ITEMS,
-  createFileClipboardItem,
-  createSystemClipboardImageItem,
   filterClipboardToolbarItems,
-  getClipboardImagePreviewSrc,
-  getDisplayedClipboardItems,
-  isClipboardImageItem,
-  type ClipboardToolbarItem,
 } from './clipboard-toolbar-items';
+import { useClipboardItems } from './use-clipboard-items';
 
 const props = defineProps<{
   open: boolean;
@@ -37,38 +25,20 @@ const props = defineProps<{
 const { t } = useI18n();
 
 const clipboardStore = useClipboardStore();
-const dirSizesStore = useDirSizesStore();
-const imageThumbnails = useNavigatorImageThumbnails();
 const clipboardItemsFilterQuery = ref('');
 const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
 
-const clipboardToolbarItems = computed<ClipboardToolbarItem[]>(() => {
-  if (clipboardStore.clipboardImage) {
-    return [createSystemClipboardImageItem(clipboardStore.clipboardImage, t('image'))];
-  }
-
-  return clipboardStore.clipboardItems.map(entry => createFileClipboardItem(
-    entry,
-    entry.is_dir ? dirSizesStore.getSize(entry.path) : undefined,
-  ));
-});
+const {
+  clipboardToolbarItems,
+  toDisplayedClipboardItems,
+  removeClipboardItem,
+} = useClipboardItems(() => props.open);
 
 const filteredClipboardItems = computed(() => {
   return filterClipboardToolbarItems(clipboardToolbarItems.value, clipboardItemsFilterQuery.value);
 });
 
-const displayedClipboardItems = computed(() => {
-  return getDisplayedClipboardItems(filteredClipboardItems.value).map((item) => {
-    const showImagePreview = isClipboardImageItem(item);
-
-    return {
-      ...item,
-      previewSrc: showImagePreview ? getItemImagePreviewSrc(item) : undefined,
-      showImageFallback: showImagePreview ? shouldShowItemImageFallback(item) : false,
-      icon: getItemIcon(item),
-    };
-  });
-});
+const displayedClipboardItems = computed(() => toDisplayedClipboardItems(filteredClipboardItems.value));
 
 const showClipboardItemsFilter = computed(() => {
   return clipboardToolbarItems.value.length > 1 || Boolean(clipboardItemsFilterQuery.value);
@@ -102,56 +72,6 @@ const hasHiddenClipboardItems = computed(() => {
   return filteredClipboardItems.value.length > displayedClipboardItems.value.length;
 });
 
-function getItemIcon(item: ClipboardToolbarItem) {
-  if (item.kind === 'system-image') {
-    return ImageIcon;
-  }
-
-  if (!item.entry) {
-    return FileIcon;
-  }
-
-  return getFileIcon(item.entry);
-}
-
-function getItemImagePreviewSrc(item: ClipboardToolbarItem): string | undefined {
-  if (item.kind === 'system-image') {
-    if (!clipboardStore.clipboardImage) {
-      return undefined;
-    }
-
-    return getClipboardImagePreviewSrc(clipboardStore.clipboardImage, convertFileSrc);
-  }
-
-  if (!item.entry || !isImageFile(item.entry)) {
-    return undefined;
-  }
-
-  return imageThumbnails.getImageThumbnail(item.entry, CLIPBOARD_ITEM_PREVIEW_SIZE)
-    ?? imageThumbnails.getImageThumbnailPlaceholder(item.entry, CLIPBOARD_ITEM_PREVIEW_SIZE)
-    ?? (item.entry.ext?.toLowerCase() === 'svg' ? getImageSrc(item.entry) : undefined);
-}
-
-function shouldShowItemImageFallback(item: ClipboardToolbarItem): boolean {
-  if (item.kind === 'system-image') {
-    return !clipboardStore.clipboardImage?.tempPath;
-  }
-
-  return Boolean(
-    item.entry
-    && isImageFile(item.entry)
-    && imageThumbnails.shouldShowImageThumbnailFallback(item.entry, CLIPBOARD_ITEM_PREVIEW_SIZE),
-  );
-}
-
-function cancelClipboardItemImagePreviewRequests() {
-  for (const item of displayedClipboardItems.value) {
-    if (item.entry && isImageFile(item.entry)) {
-      imageThumbnails.cancelImageThumbnail(item.entry, CLIPBOARD_ITEM_PREVIEW_SIZE);
-    }
-  }
-}
-
 function handleOpenAutoFocus(event: Event) {
   if (!showClipboardItemsFilter.value) {
     return;
@@ -167,39 +87,10 @@ function clearClipboardItemsFilter() {
   clipboardItemsFilterQuery.value = '';
 }
 
-function removeClipboardItem(item: ClipboardToolbarItem) {
-  if (item.kind === 'system-image') {
-    clipboardStore.discardClipboard();
-    return;
-  }
-
-  const clipboardEntry = clipboardStore.clipboardItems.find(entry => entry.path === item.path);
-
-  if (clipboardEntry) {
-    clipboardStore.removeFromClipboard(clipboardEntry);
-  }
-}
-
 watch(() => props.open, (isOpen) => {
   if (!isOpen) {
-    cancelClipboardItemImagePreviewRequests();
     clipboardItemsFilterQuery.value = '';
   }
-});
-
-watch(
-  () => [props.open, clipboardStore.clipboardImage] as const,
-  ([isOpen, image]) => {
-    if (!isOpen || !image || image.tempPath) {
-      return;
-    }
-
-    clipboardStore.ensureSystemClipboardImageSaved();
-  },
-);
-
-onBeforeUnmount(() => {
-  cancelClipboardItemImagePreviewRequests();
 });
 </script>
 
@@ -279,7 +170,7 @@ onBeforeUnmount(() => {
               <span class="clipboard-items-popover__item-name">{{ item.name }}</span>
               <span
                 class="clipboard-items-popover__item-path"
-                :title="item.path"
+                :title="item.kind === 'file' ? item.path : undefined"
               >{{ item.subtitle }}</span>
               <span
                 v-if="item.sizeLabel"

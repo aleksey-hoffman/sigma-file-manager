@@ -211,6 +211,17 @@ pub async fn extension_path_exists(
 }
 
 #[tauri::command]
+pub async fn extension_paths_exist(
+    app_handle: tauri::AppHandle,
+    extension_id: String,
+    file_paths: Vec<String>,
+    caller_extension_id: Option<String>,
+) -> Result<Vec<bool>, String> {
+    filesystem::extension_paths_exist(app_handle, extension_id, file_paths, caller_extension_id)
+        .await
+}
+
+#[tauri::command]
 pub async fn run_extension_command(
     app_handle: tauri::AppHandle,
     extension_id: String,

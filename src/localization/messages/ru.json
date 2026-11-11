@@ -396,9 +396,9 @@
     },
     "clipboard": {
       "title": "Буфер обмена",
-      "showToolbarForExternalImages": "Показывать панель буфера обмена для изображений, скопированных в других приложениях",
-      "showToolbarForExternalPaths": "Показывать панель буфера обмена для путей файлов, скопированных в других приложениях",
-      "pasteStillWorksWhenHidden": "Вставка через {shortcut} будет работать и при отключенных опциях. Просто панель буфера обмена не будет отображаться."
+      "showToolbarForExternalImages": "Показывать виджет буфера обмена для изображений, скопированных в других приложениях",
+      "showToolbarForExternalPaths": "Показывать виджет буфера обмена для файлов, скопированных или вырезанных в других приложениях",
+      "pasteStillWorksWhenHidden": "Вставка через {shortcut} продолжает работать, когда опция отключена."
     },
     "homePageMediaBanner": {
       "title": "Медиа-баннер на главной странице"
@@ -963,8 +963,12 @@
     "removeFromClipboard": "Убрать из буфера обмена",
     "preparedForCopying": "Подготовлено для копирования",
     "preparedForMoving": "Подготовлено для перемещения",
-    "itemsPrepared": "{count} элементов",
+    "itemsPrepared": "0 элементов | 1 элемент | {count} элемента | {count} элементов",
     "discardClipboard": "Отменить",
+    "copiedInAnotherApp": "Скопировано в другом приложении",
+    "cutInAnotherApp": "Вырезано в другом приложении",
+    "copiedInApp": "Скопировано в {app}",
+    "cutInApp": "Вырезано в {app}",
     "cannotMoveToSameDirectory": "Невозможно переместить элементы в ту же папку",
     "cannotPasteIntoItself": "Невозможно вставить папку в саму себя",
     "cannotCreateLinkInsideItself": "Нельзя создать ссылку на папку внутри нее самой",
@@ -985,6 +989,7 @@
       "copy": "Копировать",
       "move": "Переместить",
       "paste": "Вставить",
+      "pasteAll": "Вставить все",
       "pasteToPane1": "Вставить в панель 1",
       "pasteToPane2": "Вставить в панель 2",
       "delete": "Удалить",

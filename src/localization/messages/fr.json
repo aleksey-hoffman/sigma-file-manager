@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Presse-papiers",
-      "showToolbarForExternalImages": "Afficher la barre d'outils du presse-papiers pour les images copiées dans d'autres apps",
-      "showToolbarForExternalPaths": "Afficher la barre d'outils du presse-papiers pour les chemins de fichiers copiés dans d'autres apps",
-      "pasteStillWorksWhenHidden": "Coller avec {shortcut} fonctionnera toujours lorsque ces options sont désactivées. Vous ne verrez simplement pas la barre d'outils du presse-papiers."
+      "showToolbarForExternalImages": "Afficher le widget du presse-papiers pour les images copiées dans d'autres apps",
+      "showToolbarForExternalPaths": "Afficher le widget du presse-papiers pour les fichiers copiés ou coupés dans d'autres apps",
+      "pasteStillWorksWhenHidden": "Le collage avec {shortcut} fonctionne toujours lorsque cette option est désactivée."
     },
     "homePageMediaBanner": {
       "title": "Bannière média de la page d'accueil"
@@ -935,8 +935,12 @@
     "removeFromClipboard": "Supprimer du presse-papiers",
     "preparedForCopying": "Préparé pour la copie",
     "preparedForMoving": "Préparé pour le déplacement",
-    "itemsPrepared": "{count} éléments",
+    "itemsPrepared": "0 éléments | 1 élément | {count} éléments | {count} éléments",
     "discardClipboard": "Abandonner",
+    "copiedInAnotherApp": "Copié dans une autre app",
+    "cutInAnotherApp": "Coupé dans une autre app",
+    "copiedInApp": "Copié dans {app}",
+    "cutInApp": "Coupé dans {app}",
     "cannotMoveToSameDirectory": "Impossible de déplacer les éléments vers le même répertoire",
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
     "cannotCreateLinkInsideItself": "Impossible de créer un lien de dossier dans lui-même",
@@ -957,6 +961,7 @@
       "copy": "Copier",
       "move": "Déplacer",
       "paste": "Coller",
+      "pasteAll": "Tout coller",
       "pasteToPane1": "Coller dans le panneau 1",
       "pasteToPane2": "Coller dans le panneau 2",
       "delete": "Supprimer",

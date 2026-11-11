@@ -9,6 +9,7 @@ import {
   clearInstalledIconThemeCache,
   getExtensionNavigatorIconThemeOptions,
   iconThemeReferencesExtension,
+  joinExtensionAssetPath,
   loadInstalledIconTheme,
   resolveThemeRelativePath,
 } from '@/modules/icon-theme/extension-icon-themes';
@@ -21,10 +22,6 @@ const { invokeAsExtensionMock } = vi.hoisted(() => ({
 
 vi.mock('@tauri-apps/api/core', () => ({
   convertFileSrc: (path: string) => `asset:${path}`,
-}));
-
-vi.mock('@tauri-apps/api/path', () => ({
-  join: async (...parts: string[]) => parts.join('/'),
 }));
 
 vi.mock('@/modules/extensions/runtime/extension-invoke', () => ({
@@ -110,7 +107,7 @@ describe('extension icon theme asset path resolution', () => {
       file: 'file',
     });
 
-    invokeAsExtensionMock.mockImplementation(async (_extensionId: string, command: string) => {
+    invokeAsExtensionMock.mockImplementation(async (_extensionId: string, command: string, payload: unknown) => {
       if (command === 'read_extension_file') {
         return Array.from(encoder.encode(themeJson));
       }
@@ -119,8 +116,8 @@ describe('extension icon theme asset path resolution', () => {
         return 'C:/extensions/acme.example-icon-themes';
       }
 
-      if (command === 'extension_path_exists') {
-        return true;
+      if (command === 'extension_paths_exist') {
+        return (payload as { filePaths: string[] }).filePaths.map(() => true);
       }
 
       throw new Error(`Unexpected command: ${command}`);
@@ -175,8 +172,8 @@ describe('extension icon theme asset path resolution', () => {
         return 'C:/extensions/acme.example-icon-themes';
       }
 
-      if (command === 'extension_path_exists') {
-        return (payload as { filePath: string }).filePath.endsWith('icons/file.svg');
+      if (command === 'extension_paths_exist') {
+        return (payload as { filePaths: string[] }).filePaths.map(filePath => filePath.endsWith('icons/file.svg'));
       }
 
       throw new Error(`Unexpected command: ${command}`);
@@ -189,7 +186,7 @@ describe('extension icon theme asset path resolution', () => {
     expect(theme?.iconDefinitions.unsafeFile).toBeUndefined();
   });
 
-  it('limits concurrent icon asset existence checks', async () => {
+  it('checks every icon asset in one batched call', async () => {
     const encoder = new TextEncoder();
     const extension = createInstalledExtension();
     const iconThemeId = createExtensionNavigatorIconThemeId(extension.id, 'example-dark');
@@ -202,16 +199,16 @@ describe('extension icon theme asset path resolution', () => {
       ]),
     );
     const themeJson = JSON.stringify({
-      iconDefinitions,
+      iconDefinitions: {
+        ...iconDefinitions,
+        escapingFile: {
+          iconPath: '../../../outside.svg',
+        },
+      },
       file: 'file0',
     });
-    const pendingExistsChecks: Array<{
-      resolveExists: (exists: boolean) => void;
-    }> = [];
-    let activeExistsCheckCount = 0;
-    let maxActiveExistsCheckCount = 0;
 
-    invokeAsExtensionMock.mockImplementation(async (_extensionId: string, command: string) => {
+    invokeAsExtensionMock.mockImplementation(async (_extensionId: string, command: string, payload: unknown) => {
       if (command === 'read_extension_file') {
         return Array.from(encoder.encode(themeJson));
       }
@@ -220,59 +217,32 @@ describe('extension icon theme asset path resolution', () => {
         return 'C:/extensions/acme.example-icon-themes';
       }
 
-      if (command === 'extension_path_exists') {
-        activeExistsCheckCount += 1;
-        maxActiveExistsCheckCount = Math.max(maxActiveExistsCheckCount, activeExistsCheckCount);
-
-        return await new Promise((resolveExists) => {
-          pendingExistsChecks.push({
-            resolveExists: (exists) => {
-              activeExistsCheckCount -= 1;
-              resolveExists(exists);
-            },
-          });
-        });
+      if (command === 'extension_paths_exist') {
+        return (payload as { filePaths: string[] }).filePaths.map(filePath => !filePath.endsWith('file-3.svg'));
       }
 
       throw new Error(`Unexpected command: ${command}`);
     });
 
-    const themeLoad = loadInstalledIconTheme([extension], iconThemeId);
-    await waitForCommandCallCount('extension_path_exists', 16);
+    const theme = await loadInstalledIconTheme([extension], iconThemeId);
+    const batchCall = invokeAsExtensionMock.mock.calls.find(call => call[1] === 'extension_paths_exist');
 
-    expect(countCommandCalls('extension_path_exists')).toBe(16);
-    expect(maxActiveExistsCheckCount).toBe(16);
-
-    const firstExistsCheck = pendingExistsChecks.shift();
-    firstExistsCheck?.resolveExists(true);
-    await waitForCommandCallCount('extension_path_exists', 17);
-
-    expect(maxActiveExistsCheckCount).toBe(16);
-
-    while (pendingExistsChecks.length > 0) {
-      pendingExistsChecks.shift()?.resolveExists(true);
-      await Promise.resolve();
-    }
-
-    const theme = await themeLoad;
+    expect(countCommandCalls('extension_paths_exist')).toBe(1);
+    expect((batchCall?.[2] as { filePaths: string[] }).filePaths).toHaveLength(20);
     expect(theme?.iconDefinitions.file0.src)
       .toBe('asset:C:/extensions/acme.example-icon-themes/dist/example-dark/icons/file-0.svg');
+    expect(theme?.iconDefinitions.file3).toBeUndefined();
+    expect(theme?.iconDefinitions.escapingFile).toBeUndefined();
+  });
+
+  it('joins icon asset paths with the separator of the extension path', () => {
+    expect(joinExtensionAssetPath('C:\\Users\\me\\extensions\\acme.icons\\', 'dist/icons/file.svg'))
+      .toBe('C:\\Users\\me\\extensions\\acme.icons\\dist\\icons\\file.svg');
+    expect(joinExtensionAssetPath('/home/me/extensions/acme.icons', 'dist/icons/file.svg'))
+      .toBe('/home/me/extensions/acme.icons/dist/icons/file.svg');
   });
 });
 
 function countCommandCalls(command: string): number {
   return invokeAsExtensionMock.mock.calls.filter(call => call[1] === command).length;
-}
-
-async function waitForCommandCallCount(command: string, expectedCallCount: number) {
-  for (let attemptIndex = 0; attemptIndex < 20; attemptIndex += 1) {
-    if (countCommandCalls(command) >= expectedCallCount) {
-      return;
-    }
-
-    await Promise.resolve();
-    await new Promise(resolve => setTimeout(resolve, 0));
-  }
-
-  expect(countCommandCalls(command)).toBeGreaterThanOrEqual(expectedCallCount);
 }

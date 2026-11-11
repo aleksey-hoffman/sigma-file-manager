@@ -38,6 +38,7 @@ const TREE_READ_DIR_OPTIONS: ReadDirOptions = {
   includeShortcutTargets: false,
   includeHardLinkCounts: false,
   includeItemCounts: false,
+  directoriesOnly: true,
 };
 
 export function useDirectoryTree(options: {
@@ -188,10 +189,11 @@ export function useDirectoryTree(options: {
     const loadedEntries = new Map<string, DirEntry[]>();
 
     await Promise.all(pathsToExpand.map(async (path) => {
+      const isActivePath = !!activePath && arePathsEquivalent(path, activePath);
       const shouldReload = !activePath
-        || arePathsEquivalent(path, activePath)
+        || (isActivePath && workingExpandedPaths.has(getPathKey(path)))
         || (parentPath !== null && arePathsEquivalent(path, parentPath))
-        || !isCached(path);
+        || (!isActivePath && !isCached(path));
 
       if (!shouldReload) {
         return;
@@ -243,10 +245,7 @@ export function useDirectoryTree(options: {
 
     workingExpandedPaths.set(pathKey, path);
     publish();
-
-    if (!isCached(path)) {
-      loadDirectory(path);
-    }
+    loadDirectory(path);
   }
 
   function toggleExpanded(path: string) {

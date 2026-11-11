@@ -113,6 +113,14 @@ export function getSystemIconCacheKey(request: SystemIconRequest): string {
   return `ext:${normalizedExtension}:${iconSize}`;
 }
 
+export function getCachedSystemIcon(request: SystemIconRequest): string | null | undefined {
+  if (!isSystemIconRequestPath(request.path)) {
+    return null;
+  }
+
+  return systemIconCache.get(getSystemIconCacheKey(request));
+}
+
 export async function fetchSystemIconCached(request: SystemIconRequest): Promise<string | null> {
   const iconSize = Math.max(8, Math.min(256, Math.round(request.size)));
   const requestCacheKey = getSystemIconCacheKey({

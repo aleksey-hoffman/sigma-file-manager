@@ -31,6 +31,7 @@ import {
   getElementContentBoxInsets,
   type ElementContentBoxInsets,
 } from '../utils/file-browser-content-box';
+import { isFileBrowserEmptyAreaClickTarget } from '../utils/file-browser-empty-area-click-target';
 import type { FileBrowserVirtualRow } from '../utils/file-browser-virtual-rows';
 import { clearDocumentTextSelection } from '@/utils/document-selection';
 
@@ -353,15 +354,7 @@ export function useFileBrowserBoxSelection(options: {
       return;
     }
 
-    if (!(event.target instanceof Element)) {
-      return;
-    }
-
-    if (event.target.closest('[data-entry-path]')) {
-      return;
-    }
-
-    if (event.target.closest('.file-browser-loading, .file-browser__empty-state-container, .file-browser-error')) {
+    if (!isFileBrowserEmptyAreaClickTarget(event.target)) {
       return;
     }
 

@@ -396,9 +396,9 @@
     },
     "clipboard": {
       "title": "Clipboard",
-      "showToolbarForExternalImages": "Show clipboard toolbar for images copied in other apps",
-      "showToolbarForExternalPaths": "Show clipboard toolbar for file paths copied in other apps",
-      "pasteStillWorksWhenHidden": "Paste with {shortcut} will still work when these options are disabled. You just won't see the clipboard toolbar."
+      "showToolbarForExternalImages": "Show clipboard widget for images copied in other apps",
+      "showToolbarForExternalPaths": "Show clipboard widget for files copied or cut in other apps",
+      "pasteStillWorksWhenHidden": "Pasting with {shortcut} still works when turned off."
     },
     "homePageMediaBanner": {
       "title": "Home page media banner"
@@ -965,8 +965,12 @@
     "removeFromClipboard": "Remove from clipboard",
     "preparedForCopying": "Prepared for copying",
     "preparedForMoving": "Prepared for moving",
-    "itemsPrepared": "{count} items",
+    "itemsPrepared": "0 items | 1 item | {count} items | {count} items",
     "discardClipboard": "Discard",
+    "copiedInAnotherApp": "Copied in another app",
+    "cutInAnotherApp": "Cut in another app",
+    "copiedInApp": "Copied in {app}",
+    "cutInApp": "Cut in {app}",
     "cannotMoveToSameDirectory": "Cannot move items to the same directory",
     "cannotPasteIntoItself": "Cannot paste a folder into itself",
     "cannotCreateLinkInsideItself": "Cannot create a folder link inside itself",
@@ -988,6 +992,7 @@
       "move": "Move",
       "createLink": "Create link",
       "paste": "Paste",
+      "pasteAll": "Paste all",
       "pasteToPane1": "Paste to pane 1",
       "pasteToPane2": "Paste to pane 2",
       "delete": "Delete",

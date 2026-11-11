@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import {
+  getClipboardUiKind,
   hasSameFileClipboardContent,
   shouldShowClipboardUi,
 } from '@/stores/runtime/clipboard-visibility';
@@ -92,5 +93,49 @@ describe('clipboard visibility', () => {
         showToolbarForExternalImages: false,
       },
     })).toBe(false);
+  });
+
+  it('routes internal copies to the toolbar even when external settings are disabled', () => {
+    expect(getClipboardUiKind({
+      hasItems: true,
+      origin: 'internal',
+      hasImageContent: false,
+      hasFileItems: true,
+      settings: {
+        showToolbarForExternalImages: false,
+        showToolbarForExternalPaths: false,
+      },
+    })).toBe('toolbar');
+  });
+
+  it('routes external file paths and images to the external widget', () => {
+    expect(getClipboardUiKind({
+      hasItems: true,
+      origin: 'external',
+      hasImageContent: false,
+      hasFileItems: true,
+      settings: defaultSettings,
+    })).toBe('external-widget');
+
+    expect(getClipboardUiKind({
+      hasItems: true,
+      origin: 'external',
+      hasImageContent: true,
+      hasFileItems: false,
+      settings: defaultSettings,
+    })).toBe('external-widget');
+  });
+
+  it('shows neither UI for external copies hidden by settings', () => {
+    expect(getClipboardUiKind({
+      hasItems: true,
+      origin: 'external',
+      hasImageContent: false,
+      hasFileItems: true,
+      settings: {
+        ...defaultSettings,
+        showToolbarForExternalPaths: false,
+      },
+    })).toBeNull();
   });
 });

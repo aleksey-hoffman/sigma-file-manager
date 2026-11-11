@@ -10,11 +10,13 @@ import type { LoadedIconThemeDefinition } from '@/types/icon-theme';
 import type { DirEntry } from '@/types/dir-entry';
 
 const {
+  extensionsStorageInitMock,
   extensionsStoreMock,
   loadInstalledIconThemeMock,
   prefetchSystemIconsForEntriesMock,
   userSettingsStoreMock,
 } = vi.hoisted(() => ({
+  extensionsStorageInitMock: vi.fn(),
   extensionsStoreMock: {
     enabledExtensions: [],
     enabledIconThemeContributorsSignature: '',
@@ -33,6 +35,12 @@ const {
 
 vi.mock('@/stores/storage/user-settings', () => ({
   useUserSettingsStore: () => userSettingsStoreMock,
+}));
+
+vi.mock('@/stores/storage/extensions', () => ({
+  useExtensionsStorageStore: () => ({
+    init: extensionsStorageInitMock,
+  }),
 }));
 
 vi.mock('@/stores/runtime/extensions', () => ({
@@ -57,6 +65,7 @@ describe('useNavigatorIconsStore', () => {
     setActivePinia(createPinia());
     loadInstalledIconThemeMock.mockReset();
     prefetchSystemIconsForEntriesMock.mockReset();
+    extensionsStorageInitMock.mockReset().mockResolvedValue(undefined);
     userSettingsStoreMock.userSettings.navigator.folderIconTheme = 'builtin:system';
     userSettingsStoreMock.userSettings.navigator.fileIconTheme = 'builtin:system';
   });
@@ -128,7 +137,7 @@ describe('useNavigatorIconsStore', () => {
     expect(prefetchSystemIconsForEntriesMock).toHaveBeenCalledWith([fileEntry]);
   });
 
-  it('prefetches system icons for extension-theme entries only after the theme fails', async () => {
+  it('does not prefetch system icons for extension-theme entries when the theme fails', async () => {
     userSettingsStoreMock.userSettings.navigator.folderIconTheme = 'builtin:default';
     userSettingsStoreMock.userSettings.navigator.fileIconTheme = 'extension:acme.icons:missing';
     loadInstalledIconThemeMock.mockResolvedValue(null);
@@ -149,11 +158,54 @@ describe('useNavigatorIconsStore', () => {
     });
 
     store.prefetchForDirectoryEntries([fileEntry, folderEntry]);
-    expect(prefetchSystemIconsForEntriesMock).not.toHaveBeenCalled();
-
     await flushPromises();
 
-    expect(prefetchSystemIconsForEntriesMock).toHaveBeenCalledWith([fileEntry]);
+    expect(store.getLoadedExtensionTheme('extension:acme.icons:missing')).toBeNull();
+    expect(prefetchSystemIconsForEntriesMock).not.toHaveBeenCalled();
+  });
+
+  it('waits for the installed extensions before resolving an extension theme', async () => {
+    let finishStorageInit: () => void = () => {};
+
+    extensionsStorageInitMock.mockImplementation(() => new Promise<void>((resolveInit) => {
+      finishStorageInit = resolveInit;
+    }));
+    loadInstalledIconThemeMock.mockImplementation(async () => createLoadedTheme('installed'));
+
+    const { useNavigatorIconsStore } = await import('@/stores/runtime/navigator-icons');
+    const store = useNavigatorIconsStore();
+    const themeId = 'extension:acme.icons:installed';
+    const themeLoad = store.ensureExtensionThemeLoaded(themeId);
+    await flushPromises();
+
+    expect(loadInstalledIconThemeMock).not.toHaveBeenCalled();
+    expect(store.getLoadedExtensionTheme(themeId)).toBeUndefined();
+
+    finishStorageInit();
+    await themeLoad;
+
+    expect(store.getLoadedExtensionTheme(themeId)?.iconDefinitions.file.src).toBe('installed:file');
+  });
+
+  it('resolves a load that was invalidated with the current theme', async () => {
+    const staleThemeLoad = createDeferredThemeLoad();
+    const currentThemeLoad = createDeferredThemeLoad();
+    loadInstalledIconThemeMock
+      .mockImplementationOnce(() => staleThemeLoad.promise)
+      .mockImplementationOnce(() => currentThemeLoad.promise);
+
+    const { useNavigatorIconsStore } = await import('@/stores/runtime/navigator-icons');
+    const store = useNavigatorIconsStore();
+    const themeId = 'extension:acme.icons:shared';
+    const staleLoad = store.ensureExtensionThemeLoaded(themeId);
+
+    await waitForLoadCount(1);
+    store.clearExtensionThemes();
+    staleThemeLoad.resolveTheme(createLoadedTheme('stale'));
+    await waitForLoadCount(2);
+    currentThemeLoad.resolveTheme(createLoadedTheme('current'));
+
+    expect((await staleLoad)?.iconDefinitions.file.src).toBe('current:file');
   });
 });
 

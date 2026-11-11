@@ -21,7 +21,7 @@ const extension = computed(() => {
   return props.path.substring(lastDot + 1);
 });
 
-const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
+const { iconSrc, fallbackIconComponent, iconRevealClass } = useNavigatorItemIcon({
   path: () => props.path,
   isDir: () => !props.isFile,
   extension: () => extension.value,
@@ -37,11 +37,13 @@ const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
     :height="size"
     draggable="false"
     class="quick-access-panel__item-icon"
+    :class="iconRevealClass"
   >
   <component
     :is="fallbackIconComponent"
     v-else
     :size="size"
     class="quick-access-panel__item-icon"
+    :class="iconRevealClass"
   />
 </template>

@@ -396,9 +396,9 @@
     },
     "clipboard": {
       "title": "کلپ بورڈ",
-      "showToolbarForExternalImages": "دوسری ایپس میں کاپی کی گئی تصاویر کے لیے کلپ بورڈ ٹول بار دکھائیں",
-      "showToolbarForExternalPaths": "دوسری ایپس میں کاپی کیے گئے فائل راستوں کے لیے کلپ بورڈ ٹول بار دکھائیں",
-      "pasteStillWorksWhenHidden": "جب یہ اختیارات غیر فعال ہوں، {shortcut} سے پیسٹ کرنا پھر بھی کام کرے گا۔ آپ کو صرف کلپ بورڈ ٹول بار نظر نہیں آئے گا۔"
+      "showToolbarForExternalImages": "دوسری ایپس میں کاپی کی گئی تصاویر کے لیے کلپ بورڈ ویجیٹ دکھائیں",
+      "showToolbarForExternalPaths": "دوسری ایپس میں کاپی یا کٹ کی گئی فائلوں کے لیے کلپ بورڈ ویجیٹ دکھائیں",
+      "pasteStillWorksWhenHidden": "بند ہونے پر بھی {shortcut} سے پیسٹ کرنا کام کرتا ہے۔"
     },
     "homePageMediaBanner": {
       "title": "ہوم صفحے میڈیا بینر"
@@ -963,8 +963,12 @@
     "removeFromClipboard": "کلپ بورڈ سے ہٹائیں",
     "preparedForCopying": "کاپی کے لیے تیار",
     "preparedForMoving": "منتقل کے لیے تیار",
-    "itemsPrepared": "{count} اشیاء",
+    "itemsPrepared": "0 اشیاء | 1 شے | {count} اشیاء | {count} اشیاء",
     "discardClipboard": "منسوخ",
+    "copiedInAnotherApp": "کسی دوسری ایپ میں کاپی کیا گیا",
+    "cutInAnotherApp": "کسی دوسری ایپ میں کٹ کیا گیا",
+    "copiedInApp": "{app} میں کاپی کیا گیا",
+    "cutInApp": "{app} میں کٹ کیا گیا",
     "cannotMoveToSameDirectory": "اسی فولڈر میں منتقل نہیں",
     "cannotPasteIntoItself": "فولڈر اپنے اندر نہیں چسپاں",
     "cannotCreateLinkInsideItself": "فولڈر لنک کو اسی کے اندر نہیں بنایا جا سکتا",
@@ -985,6 +989,7 @@
       "copy": "کاپی",
       "move": "منتقل",
       "paste": "چسپاں",
+      "pasteAll": "سب چسپاں کریں",
       "pasteToPane1": "پین 1 میں چسپاں",
       "pasteToPane2": "پین 2 میں چسپاں",
       "delete": "حذف",

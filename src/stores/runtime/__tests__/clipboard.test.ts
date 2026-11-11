@@ -622,6 +622,48 @@ describe('clipboard store', () => {
     expect(store.hasFileItems).toBe(true);
   });
 
+  it('routes external file paths to the external widget instead of the toolbar', async () => {
+    invokeMock.mockImplementation(async (commandName: string, args?: unknown) => {
+      if (commandName === 'read_system_clipboard_files') {
+        return {
+          paths: ['C:/External/file.txt'],
+          operation: 'copy',
+        };
+      }
+
+      if (commandName === 'paths_are_directories') {
+        return [false];
+      }
+
+      if (commandName === 'get_dir_entry_with_timeout') {
+        return createEntry({
+          path: (args as { path: string }).path,
+        });
+      }
+
+      return undefined;
+    });
+    const store = useClipboardStore();
+
+    await store.syncFromSystemClipboard();
+
+    expect(store.showExternalClipboardWidget).toBe(true);
+    expect(store.showClipboardToolbar).toBe(false);
+  });
+
+  it('routes external images to the external widget instead of the toolbar', () => {
+    const store = useClipboardStore();
+
+    store.setClipboardImage({
+      width: 100,
+      height: 50,
+      sizeBytes: 20000,
+    });
+
+    expect(store.showExternalClipboardWidget).toBe(true);
+    expect(store.showClipboardToolbar).toBe(false);
+  });
+
   it('hides the toolbar for external file paths when the setting is disabled', async () => {
     clipboardSettingsMock.showToolbarForExternalPaths = false;
 
@@ -651,6 +693,7 @@ describe('clipboard store', () => {
 
     expect(store.hasItems).toBe(true);
     expect(store.showClipboardUi).toBe(false);
+    expect(store.showExternalClipboardWidget).toBe(false);
   });
 
   it('hides the clipboard UI for external images when the setting is disabled', async () => {
@@ -681,6 +724,7 @@ describe('clipboard store', () => {
 
     expect(store.hasItems).toBe(true);
     expect(store.showClipboardUi).toBe(false);
+    expect(store.showExternalClipboardWidget).toBe(false);
     expect(store.canPasteTo('C:/Target')).toBe(true);
   });
 
@@ -697,5 +741,58 @@ describe('clipboard store', () => {
     });
 
     expect(store.showClipboardUi).toBe(true);
+    expect(store.showClipboardToolbar).toBe(true);
+    expect(store.showExternalClipboardWidget).toBe(false);
+  });
+
+  it('captures external clipboard source app and preserves it across focus resyncs of the same content', async () => {
+    let sourceContextResponse: Record<string, string> = {
+      processName: 'msedge.exe',
+      processIconUrl: 'data:image/png;base64,edge',
+    };
+    let currentPath = 'C:/External/report.pdf';
+
+    invokeMock.mockImplementation(async (commandName: string, args?: unknown) => {
+      if (commandName === 'read_system_clipboard_files') {
+        return {
+          paths: [currentPath],
+          operation: 'copy',
+        };
+      }
+
+      if (commandName === 'get_clipboard_source_context') {
+        return sourceContextResponse;
+      }
+
+      if (commandName === 'paths_are_directories') {
+        return [false];
+      }
+
+      if (commandName === 'get_dir_entry_with_timeout') {
+        return createEntry({
+          path: (args as { path: string }).path,
+        });
+      }
+
+      return undefined;
+    });
+
+    const store = useClipboardStore();
+    await store.syncFromSystemClipboard();
+
+    expect(store.clipboardSourceAppName).toBe('Edge');
+    expect(store.clipboardSourceIconUrl).toBe('data:image/png;base64,edge');
+
+    sourceContextResponse = {};
+    await store.syncFromSystemClipboard();
+
+    expect(store.clipboardSourceAppName).toBe('Edge');
+    expect(store.clipboardSourceIconUrl).toBe('data:image/png;base64,edge');
+
+    currentPath = 'C:/External/other.pdf';
+    await store.syncFromSystemClipboard();
+
+    expect(store.clipboardSourceAppName).toBeUndefined();
+    expect(store.clipboardSourceIconUrl).toBeUndefined();
   });
 });

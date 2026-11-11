@@ -7,6 +7,7 @@ import type { ClipboardSettings } from '@/types/user-settings';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
 export type ClipboardOrigin = 'internal' | 'external' | '';
+export type ClipboardUiKind = 'toolbar' | 'external-widget' | null;
 type FileClipboardOperationType = 'copy' | 'move' | '';
 
 export function hasSameFileClipboardContent(
@@ -36,13 +37,23 @@ export function hasSameFileClipboardContent(
   return unmatchedSystemPaths.length === 0;
 }
 
-export function shouldShowClipboardUi(options: {
+type ClipboardUiOptions = {
   hasItems: boolean;
   origin: ClipboardOrigin;
   hasImageContent: boolean;
   hasFileItems: boolean;
   settings: ClipboardSettings;
-}): boolean {
+};
+
+export function getClipboardUiKind(options: ClipboardUiOptions): ClipboardUiKind {
+  if (!shouldShowClipboardUi(options)) {
+    return null;
+  }
+
+  return options.origin === 'internal' ? 'toolbar' : 'external-widget';
+}
+
+export function shouldShowClipboardUi(options: ClipboardUiOptions): boolean {
   if (!options.hasItems) {
     return false;
   }

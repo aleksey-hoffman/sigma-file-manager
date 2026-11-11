@@ -4,13 +4,11 @@
 
 import { inject, type InjectionKey, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
+import type { DirectoryTreeEntryRow } from './utils/directory-tree';
 
 export type DirectoryTreeContext = {
   activePath: Ref<string>;
-  isExpanded: (path: string) => boolean;
-  getChildren: (path: string) => DirEntry[] | undefined;
-  stickyRowLimit: Ref<number>;
-  activate: (path: string, row: HTMLElement | null) => void;
+  activate: (row: DirectoryTreeEntryRow) => void;
   handleRowMouseDown: (entry: DirEntry, event: MouseEvent) => void;
   handleFocusedRowRemoved: () => void;
 };

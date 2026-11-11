@@ -16,10 +16,16 @@ import {
 import { getPathLeafName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import { isTransientClipboardAccessError } from '@/utils/system-clipboard-errors';
+import {
+  formatClipboardSourceAppName,
+  normalizeClipboardSourceContext,
+  readClipboardSourceContext,
+  type ClipboardSourceContext,
+} from '@/utils/clipboard-source';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import {
+  getClipboardUiKind,
   hasSameFileClipboardContent,
-  shouldShowClipboardUi,
   type ClipboardOrigin,
 } from '@/stores/runtime/clipboard-visibility';
 
@@ -95,6 +101,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
   const clipboardItems = ref<DirEntry[]>([]);
   const clipboardImage = ref<SystemClipboardImageInfo | null>(null);
   const clipboardOrigin = ref<ClipboardOrigin>('');
+  const clipboardSource = ref<ClipboardSourceContext | null>(null);
   const isOperationInProgress = ref(false);
   let pendingSystemClipboardMutation: Promise<void> | null = null;
   let pendingSystemClipboardImageSave: Promise<SystemClipboardImageInfo | null> | null = null;
@@ -102,13 +109,18 @@ export const useClipboardStore = defineStore('clipboard', () => {
   const hasFileItems = computed(() => clipboardItems.value.length > 0);
   const hasImageContent = computed(() => clipboardImage.value !== null);
   const hasItems = computed(() => hasFileItems.value || hasImageContent.value);
-  const showClipboardUi = computed(() => shouldShowClipboardUi({
+  const clipboardUiKind = computed(() => getClipboardUiKind({
     hasItems: hasItems.value,
     origin: clipboardOrigin.value,
     hasImageContent: hasImageContent.value,
     hasFileItems: hasFileItems.value,
     settings: userSettingsStore.userSettings.clipboard,
   }));
+  const showClipboardUi = computed(() => clipboardUiKind.value !== null);
+  const showClipboardToolbar = computed(() => clipboardUiKind.value === 'toolbar');
+  const showExternalClipboardWidget = computed(() => clipboardUiKind.value === 'external-widget');
+  const clipboardSourceAppName = computed(() => formatClipboardSourceAppName(clipboardSource.value?.processName));
+  const clipboardSourceIconUrl = computed(() => clipboardSource.value?.processIconUrl || undefined);
   const itemCount = computed(() => hasImageContent.value ? 1 : clipboardItems.value.length);
   const isCopyOperation = computed(() => clipboardType.value === 'copy');
   const isMoveOperation = computed(() => clipboardType.value === 'move');
@@ -132,6 +144,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardItems.value = items.map(item => ({ ...item }));
     clipboardImage.value = null;
     clipboardOrigin.value = 'internal';
+    clipboardSource.value = null;
 
     if (options?.syncToSystemClipboard !== false) {
       void syncToSystemClipboard();
@@ -148,6 +161,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardType.value = type;
     clipboardImage.value = null;
     clipboardOrigin.value = 'internal';
+    clipboardSource.value = null;
 
     for (const item of items) {
       const itemAlreadyAdded = clipboardItems.value.some(
@@ -182,6 +196,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardItems.value = [];
     clipboardImage.value = null;
     clipboardOrigin.value = '';
+    clipboardSource.value = null;
   }
 
   function trackSystemClipboardMutation(mutation: Promise<void>): Promise<void> {
@@ -224,12 +239,14 @@ export const useClipboardStore = defineStore('clipboard', () => {
     items: DirEntry[];
     image: SystemClipboardImageInfo | null;
     origin: ClipboardOrigin;
+    source: ClipboardSourceContext | null;
   } {
     return {
       type: clipboardType.value,
       items: clipboardItems.value.map(item => ({ ...item })),
       image: clipboardImage.value ? { ...clipboardImage.value } : null,
       origin: clipboardOrigin.value,
+      source: clipboardSource.value ? { ...clipboardSource.value } : null,
     };
   }
 
@@ -238,6 +255,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardItems.value = snapshot.items;
     clipboardImage.value = snapshot.image ? { ...snapshot.image } : null;
     clipboardOrigin.value = snapshot.origin;
+    clipboardSource.value = snapshot.source ? { ...snapshot.source } : null;
   }
 
   async function readSystemClipboardFiles(): Promise<{
@@ -287,11 +305,18 @@ export const useClipboardStore = defineStore('clipboard', () => {
   function setClipboardImage(
     imageInfo: SystemClipboardImageInfo,
     origin: Exclude<ClipboardOrigin, ''> = 'external',
+    source?: ClipboardSourceContext | null,
   ) {
+    const isSameImage = clipboardImage.value !== null && isSameClipboardImage(clipboardImage.value, imageInfo);
+    const normalizedSource = normalizeClipboardSourceContext(source);
+
     clipboardType.value = 'copy';
     clipboardItems.value = [];
     clipboardImage.value = { ...imageInfo };
     clipboardOrigin.value = origin;
+    clipboardSource.value = origin === 'internal'
+      ? null
+      : (normalizedSource ?? (isSameImage ? clipboardSource.value : null));
   }
 
   async function syncToSystemClipboard(): Promise<void> {
@@ -455,7 +480,8 @@ export const useClipboardStore = defineStore('clipboard', () => {
       const systemClipboardImage = await readSystemClipboardImageInfo();
 
       if (systemClipboardImage) {
-        setClipboardImage(getClipboardImageWithSavedFile(systemClipboardImage));
+        const sourceContext = await readClipboardSourceContext();
+        setClipboardImage(getClipboardImageWithSavedFile(systemClipboardImage), 'external', sourceContext);
         return true;
       }
 
@@ -483,7 +509,8 @@ export const useClipboardStore = defineStore('clipboard', () => {
       const systemClipboardImage = await readSystemClipboardImageInfo();
 
       if (systemClipboardImage) {
-        setClipboardImage(getClipboardImageWithSavedFile(systemClipboardImage));
+        const sourceContext = await readClipboardSourceContext();
+        setClipboardImage(getClipboardImageWithSavedFile(systemClipboardImage), 'external', sourceContext);
         return;
       }
 
@@ -496,6 +523,15 @@ export const useClipboardStore = defineStore('clipboard', () => {
       return;
     }
 
+    const isSameFileContent = hasSameFileClipboardContent(
+      clipboardItems.value,
+      clipboardType.value,
+      systemClipboard.paths,
+      systemClipboard.operation,
+    );
+    const preserveInternalOrigin = clipboardOrigin.value === 'internal' && isSameFileContent;
+    const sourceContext = preserveInternalOrigin ? null : await readClipboardSourceContext();
+
     const systemClipboardItems = await createClipboardEntriesFromPaths(systemClipboard.paths);
 
     if (systemClipboardItems.length === 0) {
@@ -503,18 +539,15 @@ export const useClipboardStore = defineStore('clipboard', () => {
       return;
     }
 
-    const preserveInternalOrigin = clipboardOrigin.value === 'internal'
-      && hasSameFileClipboardContent(
-        clipboardItems.value,
-        clipboardType.value,
-        systemClipboard.paths,
-        systemClipboard.operation,
-      );
+    const normalizedSource = normalizeClipboardSourceContext(sourceContext);
 
     clipboardType.value = systemClipboard.operation;
     clipboardItems.value = systemClipboardItems;
     clipboardImage.value = null;
     clipboardOrigin.value = preserveInternalOrigin ? 'internal' : 'external';
+    clipboardSource.value = preserveInternalOrigin
+      ? null
+      : (normalizedSource ?? (clipboardOrigin.value === 'external' && isSameFileContent ? clipboardSource.value : null));
   }
 
   function canReuseSavedClipboardImage(imageInfo: SystemClipboardImageInfo): boolean {
@@ -774,11 +807,16 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardType,
     clipboardItems,
     clipboardImage,
+    clipboardSource,
+    clipboardSourceAppName,
+    clipboardSourceIconUrl,
     isOperationInProgress,
     hasFileItems,
     hasImageContent,
     hasItems,
     showClipboardUi,
+    showClipboardToolbar,
+    showExternalClipboardWidget,
     itemCount,
     isCopyOperation,
     isMoveOperation,

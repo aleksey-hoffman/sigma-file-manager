@@ -63,4 +63,8 @@ const { t } = useI18n();
 .navigation-panel-toggle__button--active {
   background-color: hsl(var(--secondary));
 }
+
+.navigation-panel-toggle__button--active .navigation-panel-toggle__icon {
+  stroke: hsl(var(--primary));
+}
 </style>

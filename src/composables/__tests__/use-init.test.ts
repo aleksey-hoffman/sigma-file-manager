@@ -22,6 +22,7 @@ const {
   hideWindowMock,
   initAutoCheckMock,
   invokeMock,
+  navigatorIconsPreloadConfiguredThemesMock,
   openOrFocusTabGroupMock,
   platformInitMock,
   quickViewEnsureMainWindowDisplayedPathListenerMock,
@@ -57,6 +58,7 @@ const {
   hideWindowMock: vi.fn(),
   initAutoCheckMock: vi.fn(),
   invokeMock: vi.fn(),
+  navigatorIconsPreloadConfiguredThemesMock: vi.fn(),
   openOrFocusTabGroupMock: vi.fn(),
   platformInitMock: vi.fn(),
   quickViewEnsureMainWindowDisplayedPathListenerMock: vi.fn(),
@@ -274,6 +276,12 @@ vi.mock('@/stores/runtime/quick-view', () => ({
   }),
 }));
 
+vi.mock('@/stores/runtime/navigator-icons', () => ({
+  useNavigatorIconsStore: () => ({
+    preloadConfiguredThemes: navigatorIconsPreloadConfiguredThemesMock,
+  }),
+}));
+
 vi.mock('@/utils/disable-web-view-features', () => ({
   disableWebViewFeatures: disableWebViewFeaturesMock,
 }));
@@ -350,6 +358,7 @@ describe('useInit startup restoration', () => {
     hideWindowMock.mockReset().mockResolvedValue(undefined);
     initAutoCheckMock.mockReset().mockResolvedValue(undefined);
     invokeMock.mockReset();
+    navigatorIconsPreloadConfiguredThemesMock.mockReset().mockResolvedValue(undefined);
     openOrFocusTabGroupMock.mockReset().mockResolvedValue(undefined);
     platformInitMock.mockReset().mockResolvedValue(undefined);
     quickViewEnsureMainWindowDisplayedPathListenerMock.mockReset().mockResolvedValue(undefined);
@@ -707,6 +716,59 @@ describe('useInit startup restoration', () => {
 
     expect(routerPushMock).toHaveBeenCalledWith({ name: 'dashboard' });
     expect(callOrder.indexOf('routerPush')).toBeLessThan(callOrder.indexOf('showMainWindow'));
+  });
+
+  it('loads the selected icon theme before opening the startup page', async () => {
+    userSettingsMock.startupPage = 'navigator';
+    const callOrder: string[] = [];
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    navigatorIconsPreloadConfiguredThemesMock.mockImplementation(async () => {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      callOrder.push('iconThemeLoaded');
+    });
+
+    routerPushMock.mockImplementation(async () => {
+      callOrder.push('routerPush');
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+    await vi.advanceTimersByTimeAsync(300);
+    await initPromise;
+
+    expect(callOrder).toEqual(['iconThemeLoaded', 'routerPush']);
+  });
+
+  it('opens the startup page when the icon theme does not load in time', async () => {
+    userSettingsMock.startupPage = 'navigator';
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    navigatorIconsPreloadConfiguredThemesMock.mockImplementation(() => new Promise(() => {}));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+    await vi.advanceTimersByTimeAsync(1500);
+    await initPromise;
+
+    expect(routerPushMock).toHaveBeenCalledWith({ name: 'navigator' });
   });
 
   it('does not apply the startup page when launch args open a folder', async () => {

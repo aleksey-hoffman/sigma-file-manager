@@ -141,27 +141,17 @@ describe('clipboard toolbar', () => {
     invokeMock.mockResolvedValue(undefined);
   });
 
-  it('renders image clipboard content with dimensions', () => {
+  it('stays hidden for copies from other apps', () => {
     const clipboardStore = useClipboardStore();
     clipboardStore.setClipboardImage({
       width: 252,
       height: 358,
       sizeBytes: 360864,
-      tempPath: 'C:/Temp/clipboard-image.png',
-      tempVersion: 42,
-      savedSizeBytes: 7864320,
     });
 
     const wrapper = mountToolbar();
 
-    expect(wrapper.text()).toContain('fileBrowser.preparedForCopying');
-    expect(wrapper.text()).toContain('1 items');
-    expect(wrapper.text()).toContain('Image');
-    expect(wrapper.text()).toContain('252 x 358');
-    expect(wrapper.text()).toContain('7.5 MB');
-    expect(wrapper.find('.clipboard-items-popover__preview-image').attributes('src')).toBe('asset://C:/Temp/clipboard-image.png?v=42');
-    expect(wrapper.find('.clipboard-items-popover__item-path').text()).toBe('252 x 358');
-    expect(wrapper.find('.clipboard-items-popover__item-size').text()).toBe('7.5 MB');
+    expect(wrapper.find('.clipboard-toolbar').exists()).toBe(false);
   });
 
   it('renders the parent directory so file paths stay readable', () => {
@@ -254,59 +244,6 @@ describe('clipboard toolbar', () => {
 
     await showItemsButton.trigger('click');
     expect(showItemsButton.attributes('aria-expanded')).toBe('false');
-  });
-
-  it('saves a new clipboard image preview while the items menu stays open', async () => {
-    invokeMock.mockImplementation((commandName: string) => {
-      if (commandName === 'save_system_clipboard_image_to_temp') {
-        return Promise.resolve({
-          path: 'C:/Temp/clipboard-image.png',
-          sizeBytes: 7864320,
-        });
-      }
-
-      return Promise.resolve(undefined);
-    });
-
-    const clipboardStore = useClipboardStore();
-    clipboardStore.setClipboardImage({
-      width: 100,
-      height: 80,
-      sizeBytes: 1200,
-      clipboardSequence: 1,
-      tempPath: 'C:/Temp/old-clipboard-image.png',
-      tempVersion: 7,
-      savedSizeBytes: 2400,
-    });
-
-    const wrapper = mountToolbar();
-    const showItemsButton = wrapper.findAll('button').find(button => button.text().includes('showItems'));
-
-    if (!showItemsButton) {
-      throw new Error('Show items button was not rendered');
-    }
-
-    await showItemsButton.trigger('click');
-
-    clipboardStore.setClipboardImage({
-      width: 252,
-      height: 358,
-      sizeBytes: 360864,
-      clipboardSequence: 2,
-    });
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.find('.clipboard-items-popover__item-path').text()).toBe('252 x 358');
-    expect(wrapper.find('.clipboard-items-popover__item-size').exists()).toBe(false);
-    expect(wrapper.find('.clipboard-items-popover__preview-image').exists()).toBe(false);
-
-    await flushPromises();
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.find('.clipboard-items-popover__item-size').text()).toBe('7.5 MB');
-    expect(wrapper.find('.clipboard-items-popover__preview-image').attributes('src')).toContain(
-      'asset://C:/Temp/clipboard-image.png',
-    );
   });
 
   it('renders generated previews for image file clipboard entries', async () => {

@@ -42,6 +42,47 @@ function parseAssociationKey(rawKey: string): ParsedAssociationKey | null {
   };
 }
 
+type AssociationIndexEntry = {
+  definitionId: string | null;
+  definitionIdsByParent: Map<string, string>;
+};
+
+const associationIndexes = new WeakMap<Record<string, string>, Map<string, AssociationIndexEntry>>();
+
+function buildAssociationIndex(associations: Record<string, string>): Map<string, AssociationIndexEntry> {
+  const index = new Map<string, AssociationIndexEntry>();
+
+  for (const [rawKey, definitionId] of Object.entries(associations)) {
+    const parsedKey = parseAssociationKey(rawKey);
+
+    if (!parsedKey) {
+      continue;
+    }
+
+    let entry = index.get(parsedKey.value);
+
+    if (!entry) {
+      entry = {
+        definitionId: null,
+        definitionIdsByParent: new Map(),
+      };
+      index.set(parsedKey.value, entry);
+    }
+
+    if (parsedKey.parentName) {
+      if (!entry.definitionIdsByParent.has(parsedKey.parentName)) {
+        entry.definitionIdsByParent.set(parsedKey.parentName, definitionId);
+      }
+
+      continue;
+    }
+
+    entry.definitionId = definitionId;
+  }
+
+  return index;
+}
+
 function resolveAssociationRecord(
   associations: Record<string, string> | undefined,
   value: string,
@@ -51,27 +92,28 @@ function resolveAssociationRecord(
     return null;
   }
 
-  let fallbackMatch: string | null = null;
+  let index = associationIndexes.get(associations);
 
-  for (const [rawKey, definitionId] of Object.entries(associations)) {
-    const parsedKey = parseAssociationKey(rawKey);
-
-    if (!parsedKey || parsedKey.value !== value) {
-      continue;
-    }
-
-    if (parsedKey.parentName) {
-      if (parentName && parsedKey.parentName === parentName) {
-        return definitionId;
-      }
-
-      continue;
-    }
-
-    fallbackMatch = definitionId;
+  if (!index) {
+    index = buildAssociationIndex(associations);
+    associationIndexes.set(associations, index);
   }
 
-  return fallbackMatch;
+  const entry = index.get(value);
+
+  if (!entry) {
+    return null;
+  }
+
+  if (parentName) {
+    const parentMatch = entry.definitionIdsByParent.get(parentName);
+
+    if (parentMatch) {
+      return parentMatch;
+    }
+  }
+
+  return entry.definitionId;
 }
 
 function getDefinitionSrc(theme: LoadedIconThemeDefinition, definitionId: string | null | undefined): string | null {

@@ -120,6 +120,24 @@ afterEach(() => {
 });
 
 describe('useFileBrowserBoxSelection', () => {
+  it('does not cancel the pointer event when the click target is a file row', () => {
+    const harness = createBoxSelectionHarness();
+    const entryRow = document.createElement('div');
+    entryRow.dataset.entryPath = '/docs/readme.md';
+    harness.entriesContainer.appendChild(entryRow);
+    const pointerDownEvent = createPointerDownEvent(entryRow);
+
+    try {
+      harness.handleEntriesContainerPointerDown(pointerDownEvent);
+
+      expect(pointerDownEvent.preventDefault).not.toHaveBeenCalled();
+    }
+    finally {
+      harness.wrapper.unmount();
+      harness.paneElement.remove();
+    }
+  });
+
   it('clears document text selection when empty-space box selection starts', () => {
     const selection = selectDocumentText();
     const harness = createBoxSelectionHarness();

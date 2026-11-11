@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "クリップボード",
-      "showToolbarForExternalImages": "他のアプリでコピーした画像のクリップボードツールバーを表示",
-      "showToolbarForExternalPaths": "他のアプリでコピーしたファイルパスのクリップボードツールバーを表示",
-      "pasteStillWorksWhenHidden": "これらのオプションを無効にしても {shortcut} による貼り付けは引き続き利用できます。クリップボードツールバーだけが表示されなくなります。"
+      "showToolbarForExternalImages": "他のアプリでコピーした画像のクリップボードウィジェットを表示",
+      "showToolbarForExternalPaths": "他のアプリでコピーまたは切り取ったファイルのクリップボードウィジェットを表示",
+      "pasteStillWorksWhenHidden": "オフにしても {shortcut} による貼り付けは利用できます。"
     },
     "homePageMediaBanner": {
       "title": "ホームページメディアバナー"
@@ -933,8 +933,12 @@
     "removeFromClipboard": "クリップボードから削除",
     "preparedForCopying": "コピー準備完了",
     "preparedForMoving": "移動準備完了",
-    "itemsPrepared": "{count} 項目",
+    "itemsPrepared": "0 項目 | 1 項目 | {count} 項目 | {count} 項目",
     "discardClipboard": "破棄",
+    "copiedInAnotherApp": "他のアプリでコピーされました",
+    "cutInAnotherApp": "他のアプリで切り取られました",
+    "copiedInApp": "{app} でコピーされました",
+    "cutInApp": "{app} で切り取られました",
     "cannotMoveToSameDirectory": "同じディレクトリに移動できません",
     "cannotPasteIntoItself": "フォルダを自身に貼り付けることはできません",
     "cannotCreateLinkInsideItself": "フォルダリンクをそのフォルダ自身の中に作成できません",
@@ -955,6 +959,7 @@
       "copy": "コピー",
       "move": "移動",
       "paste": "貼り付け",
+      "pasteAll": "すべて貼り付け",
       "pasteToPane1": "ペイン1に貼り付け",
       "pasteToPane2": "ペイン2に貼り付け",
       "delete": "削除",
