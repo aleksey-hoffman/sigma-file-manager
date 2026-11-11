@@ -40,7 +40,10 @@ import type { ContextMenuAction } from '@/modules/navigator/components/file-brow
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import FileBrowserDragOverlay from '@/modules/navigator/components/file-browser/file-browser-drag-overlay.vue';
-import { useActiveFileBrowserDragState } from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag';
+import {
+  useActiveFileBrowserDragState,
+  type DragOperationType,
+} from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag';
 import { provideFileBrowserInternalDropHandler } from '@/modules/navigator/components/file-browser/composables/use-file-browser-internal-drop';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import {
@@ -53,7 +56,12 @@ import {
   navigationPanelLayoutKey,
   useNavigationPanelLayout,
 } from '@/modules/navigator/components/navigation-panel/composables/use-navigation-panel-layout';
-import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
+import {
+  ClipboardToolbar,
+  ExternalClipboardWidget,
+  provideExternalClipboardContext,
+  type ExternalClipboardPasteTarget,
+} from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
@@ -128,15 +136,19 @@ const {
   performDrop: performInternalDrop,
 } = useFileDropOperation();
 
-provideFileBrowserInternalDropHandler(async (items, destinationPath, operation) => {
-  const didCompleteSuccessfully = await performInternalDrop(
+async function handleInternalDrop(
+  items: DirEntry[],
+  destinationPath: string,
+  operation: DragOperationType,
+): Promise<boolean> {
+  const didTransferAnyItem = await performInternalDrop(
     items.map(item => item.path),
     destinationPath,
     operation,
   );
 
-  if (!didCompleteSuccessfully) {
-    return;
+  if (!didTransferAnyItem) {
+    return false;
   }
 
   const pathsToRefresh = new Set<string>([destinationPath]);
@@ -148,6 +160,11 @@ provideFileBrowserInternalDropHandler(async (items, destinationPath, operation) 
   }
 
   await refreshFileBrowsersAtPaths([...pathsToRefresh]);
+  return true;
+}
+
+provideFileBrowserInternalDropHandler(async (items, destinationPath, operation) => {
+  await handleInternalDrop(items, destinationPath, operation);
 });
 
 const TEXT_COPY_PREVIEW_MAX_LENGTH = 400;
@@ -285,6 +302,56 @@ const trackNavigatorRelativeTime = computed(() => !globalSearchStore.isOpen);
 
 const currentActivePath = computed(() => {
   return currentDirEntry.value?.path;
+});
+
+const singlePanePastePath = computed(() => {
+  const currentPath = currentActivePath.value;
+  const actionContext = getVirtualLocationActionContext(selectedEntries.value, currentPath);
+
+  if (actionContext.isBrowsingVirtualLocations) {
+    return actionContext.actionDirectoryPath ?? undefined;
+  }
+
+  return currentPath;
+});
+
+const externalClipboardPasteTargets = computed<ExternalClipboardPasteTarget[]>(() => {
+  if (!isSplitView.value) {
+    return [{
+      paneIndex: null,
+      path: singlePanePastePath.value,
+    }];
+  }
+
+  return [0, 1].map(paneIndex => ({
+    paneIndex,
+    path: workspacesStore.currentTabGroup?.[paneIndex]?.path,
+  }));
+});
+
+async function copyClipboardImageTo(destinationPath: string) {
+  const result = await clipboardStore.pasteSystemClipboardImage(destinationPath);
+
+  if (!result.success) {
+    if (result.error) {
+      toast.error(result.error);
+    }
+
+    return;
+  }
+
+  await dirSizesStore.refreshSizesAfterCopyMove([], destinationPath, [destinationPath]);
+  await refreshFileBrowsersAtPaths([destinationPath]);
+}
+
+const externalClipboardRestFootprintPx = ref(0);
+
+provideExternalClipboardContext({
+  pasteTargets: externalClipboardPasteTargets,
+  restFootprintPx: externalClipboardRestFootprintPx,
+  pasteClipboard: paneIndex => paneIndex === null ? handlePasteShortcut() : handlePasteToPane(paneIndex),
+  transferEntriesTo: (entries, destinationPath, operation) => handleInternalDrop(entries, destinationPath, operation),
+  copyClipboardImageTo,
 });
 
 function getLayoutForPath(path: string | undefined): 'list' | 'grid' {
@@ -1335,9 +1402,10 @@ onUnmounted(() => {
                     />
                   </ResizablePanel>
                 </ResizablePanelGroup>
+                <ExternalClipboardWidget v-if="!globalSearchStore.isOpen" />
               </div>
               <ClipboardToolbar
-                :current-path="currentActivePath"
+                :current-path="singlePanePastePath"
                 :is-split-view="isSplitView"
                 :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
                 :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
@@ -1348,6 +1416,7 @@ onUnmounted(() => {
                 :is-active="activeFileBrowserDragState.isActive"
                 :item-count="activeFileBrowserDragState.items.length"
                 :operation-type="activeFileBrowserDragState.operationType"
+                :is-operation-locked="activeFileBrowserDragState.isOperationLocked"
                 :cursor-x="activeFileBrowserDragState.cursorX"
                 :cursor-y="activeFileBrowserDragState.cursorY"
               />
@@ -1484,9 +1553,10 @@ onUnmounted(() => {
               />
             </ResizablePanel>
           </ResizablePanelGroup>
+          <ExternalClipboardWidget v-if="!globalSearchStore.isOpen" />
         </div>
         <ClipboardToolbar
-          :current-path="currentActivePath"
+          :current-path="singlePanePastePath"
           :is-split-view="isSplitView"
           :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
           :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
@@ -1497,6 +1567,7 @@ onUnmounted(() => {
           :is-active="activeFileBrowserDragState.isActive"
           :item-count="activeFileBrowserDragState.items.length"
           :operation-type="activeFileBrowserDragState.operationType"
+          :is-operation-locked="activeFileBrowserDragState.isOperationLocked"
           :cursor-x="activeFileBrowserDragState.cursorX"
           :cursor-y="activeFileBrowserDragState.cursorY"
         />
@@ -1638,10 +1709,12 @@ onUnmounted(() => {
 }
 
 .navigator-page__panes-container {
+  position: relative;
   display: flex;
   overflow: hidden;
   min-width: 0;
   flex: 1;
+  container-type: inline-size;
   gap: 6px;
 }
 

@@ -396,9 +396,9 @@
     },
     "clipboard": {
       "title": "Odložišče",
-      "showToolbarForExternalImages": "Prikaži orodno vrstico odložišča za slike, kopirane v drugih aplikacijah",
-      "showToolbarForExternalPaths": "Prikaži orodno vrstico odložišča za poti datotek, kopirane v drugih aplikacijah",
-      "pasteStillWorksWhenHidden": "Lepljenje s {shortcut} bo še vedno delovalo, ko so te možnosti onemogočene. Orodna vrstica odložišča se samo ne bo prikazala."
+      "showToolbarForExternalImages": "Prikaži pripomoček odložišča za slike, kopirane v drugih aplikacijah",
+      "showToolbarForExternalPaths": "Prikaži pripomoček odložišča za datoteke, kopirane ali izrezane v drugih aplikacijah",
+      "pasteStillWorksWhenHidden": "Lepljenje s {shortcut} še vedno deluje, ko je izklopljeno."
     },
     "homePageMediaBanner": {
       "title": "Medijska pasica domače strani"
@@ -961,8 +961,12 @@
     "removeFromClipboard": "Odstrani iz odložišča",
     "preparedForCopying": "Pripravljeno za kopiranje",
     "preparedForMoving": "Pripravljeno za premikanje",
-    "itemsPrepared": "{count} predmetov",
+    "itemsPrepared": "0 predmetov | 1 predmet | {count} predmeti | {count} predmetov",
     "discardClipboard": "Zavrzi",
+    "copiedInAnotherApp": "Kopirano v drugi aplikaciji",
+    "cutInAnotherApp": "Izrezano v drugi aplikaciji",
+    "copiedInApp": "Kopirano v {app}",
+    "cutInApp": "Izrezano v {app}",
     "cannotMoveToSameDirectory": "Ni mogoče premakniti elementov v isti imenik",
     "cannotPasteIntoItself": "Ni mogoče prilepiti mape v samo sebe",
     "cannotCreateLinkInsideItself": "Povezave do mape ni mogoče ustvariti znotraj nje same",
@@ -983,6 +987,7 @@
       "copy": "Kopiraj",
       "move": "Premakni",
       "paste": "Prilepi",
+      "pasteAll": "Prilepi vse",
       "pasteToPane1": "Prilepi v podokno 1",
       "pasteToPane2": "Prilepi v podokno 2",
       "delete": "Izbriši",

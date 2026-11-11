@@ -3,3 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 export { default as ClipboardToolbar } from './clipboard-toolbar.vue';
+export { default as ExternalClipboardWidget } from './external-clipboard-widget.vue';
+export {
+  provideExternalClipboardContext,
+  type ExternalClipboardPasteTarget,
+} from './external-clipboard-context';

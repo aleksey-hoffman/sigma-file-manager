@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import {
+  canTransferClipboardItemTo,
   createFileClipboardItem,
   createSystemClipboardImageItem,
   filterClipboardToolbarItems,
@@ -167,5 +168,23 @@ describe('clipboard toolbar items', () => {
       tempPath: 'C:/Temp/clipboard-image.png',
       tempVersion: 42,
     }, path => `asset://${path}`)).toBe('asset://C:/Temp/clipboard-image.png?v=42');
+  });
+
+  it('blocks moving an item into its own parent folder while allowing copies', () => {
+    const fileItem = createFileClipboardItem(createDirEntry({
+      name: 'report.pdf',
+      path: 'C:/Source/report.pdf',
+    }));
+    const folderItem = createFileClipboardItem(createDirEntry({
+      name: 'Source',
+      path: 'C:/Source',
+      is_dir: true,
+      is_file: false,
+    }));
+
+    expect(canTransferClipboardItemTo(fileItem, 'C:/Source', 'copy')).toBe(true);
+    expect(canTransferClipboardItemTo(fileItem, 'c:/source', 'move')).toBe(false);
+    expect(canTransferClipboardItemTo(fileItem, 'C:/Target', 'move')).toBe(true);
+    expect(canTransferClipboardItemTo(folderItem, 'C:/Source/Subfolder', 'copy')).toBe(false);
   });
 });

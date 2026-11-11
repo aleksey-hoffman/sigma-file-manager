@@ -38,31 +38,45 @@ const showToolbarForExternalPaths = computed({
     :title="t('settings.clipboard.title')"
     :icon="ClipboardIcon"
   >
-    <template #description>
-      <i18n-t
-        keypath="settings.clipboard.pasteStillWorksWhenHidden"
-        tag="span"
-      >
-        <template #shortcut>
-          <kbd class="clipboard-settings__shortcut">{{ pasteShortcutLabel }}</kbd>
-        </template>
-      </i18n-t>
-    </template>
     <template #nested>
       <div class="clipboard-settings">
         <div class="clipboard-settings__row">
-          <span class="clipboard-settings__label">
-            {{ t('settings.clipboard.showToolbarForExternalImages') }}
-          </span>
+          <div class="clipboard-settings__copy">
+            <span class="clipboard-settings__label">
+              {{ t('settings.clipboard.showToolbarForExternalImages') }}
+            </span>
+            <p class="clipboard-settings__description">
+              <i18n-t
+                keypath="settings.clipboard.pasteStillWorksWhenHidden"
+                tag="span"
+              >
+                <template #shortcut>
+                  <kbd class="clipboard-settings__shortcut">{{ pasteShortcutLabel }}</kbd>
+                </template>
+              </i18n-t>
+            </p>
+          </div>
           <Switch
             :model-value="showToolbarForExternalImages"
             @update:model-value="showToolbarForExternalImages = $event"
           />
         </div>
         <div class="clipboard-settings__row">
-          <span class="clipboard-settings__label">
-            {{ t('settings.clipboard.showToolbarForExternalPaths') }}
-          </span>
+          <div class="clipboard-settings__copy">
+            <span class="clipboard-settings__label">
+              {{ t('settings.clipboard.showToolbarForExternalPaths') }}
+            </span>
+            <p class="clipboard-settings__description">
+              <i18n-t
+                keypath="settings.clipboard.pasteStillWorksWhenHidden"
+                tag="span"
+              >
+                <template #shortcut>
+                  <kbd class="clipboard-settings__shortcut">{{ pasteShortcutLabel }}</kbd>
+                </template>
+              </i18n-t>
+            </p>
+          </div>
           <Switch
             :model-value="showToolbarForExternalPaths"
             @update:model-value="showToolbarForExternalPaths = $event"
@@ -84,27 +98,41 @@ const showToolbarForExternalPaths = computed({
 .clipboard-settings__row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem 2rem;
 }
 
-.clipboard-settings__label {
+.clipboard-settings__copy {
+  display: flex;
   min-width: min(100%, 16rem);
   flex: 1 1 12rem;
+  flex-direction: column;
+}
+
+.clipboard-settings__label {
   color: hsl(var(--foreground));
   font-size: 0.875rem;
 }
 
+.clipboard-settings__description {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 .clipboard-settings__shortcut {
-  display: inline-block;
-  padding: 0.125rem 0.375rem;
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.25rem;
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
+  display: inline-flex;
+  padding: 0.0625rem 0.3125rem;
+  border-radius: calc(var(--radius-sm) - 1px);
+  margin: 0 0.125rem;
+  background-color: hsl(var(--muted) / 70%);
+  color: hsl(var(--muted-foreground));
   font-family: inherit;
-  font-size: 0.8125rem;
-  line-height: 1.2;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  vertical-align: baseline;
 }
 </style>

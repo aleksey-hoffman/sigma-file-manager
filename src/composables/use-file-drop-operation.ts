@@ -29,16 +29,16 @@ export function useFileDropOperation() {
       return false;
     }
 
-    if (result.success && result.copiedCount > 0) {
-      const sourcesForSizes = sourcePaths.map((path, index) => ({
-        path,
-        is_dir: result.sourcePathIsDir[index] ?? false,
-      }));
-      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [targetPath]);
-      return true;
+    if (result.copiedCount === 0) {
+      return false;
     }
 
-    return false;
+    const sourcesForSizes = sourcePaths.map((path, index) => ({
+      path,
+      is_dir: result.sourcePathIsDir[index] ?? false,
+    }));
+    await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [targetPath]);
+    return true;
   }
 
   return {

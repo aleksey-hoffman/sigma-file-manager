@@ -14,6 +14,7 @@ const props = defineProps<{
   isActive: boolean;
   itemCount: number;
   operationType: DragOperationType;
+  isOperationLocked?: boolean;
   cursorX: number;
   cursorY: number;
 }>();
@@ -50,7 +51,10 @@ const description = computed(() => {
             class="file-browser-drag-overlay__icon"
           />
         </div>
-        <div class="file-browser-drag-overlay__hint">
+        <div
+          v-if="!props.isOperationLocked"
+          class="file-browser-drag-overlay__hint"
+        >
           {{ t('drag.holdShiftToChangeMode') }}
         </div>
       </div>

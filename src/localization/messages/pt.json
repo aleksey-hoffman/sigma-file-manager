@@ -367,9 +367,9 @@
     },
     "clipboard": {
       "title": "Área de transferência",
-      "showToolbarForExternalImages": "Mostrar barra de ferramentas da área de transferência para imagens copiadas em outros apps",
-      "showToolbarForExternalPaths": "Mostrar barra de ferramentas da área de transferência para caminhos de arquivo copiados em outros apps",
-      "pasteStillWorksWhenHidden": "Colar com {shortcut} continuará funcionando quando estas opções estiverem desativadas. Você apenas não verá a barra de ferramentas da área de transferência."
+      "showToolbarForExternalImages": "Mostrar o widget da área de transferência para imagens copiadas em outros apps",
+      "showToolbarForExternalPaths": "Mostrar o widget da área de transferência para arquivos copiados ou recortados em outros apps",
+      "pasteStillWorksWhenHidden": "Colar com {shortcut} continua funcionando quando desativado."
     },
     "homePageMediaBanner": {
       "title": "Banner de mídia da página inicial"
@@ -930,8 +930,12 @@
     "removeFromClipboard": "Remover da área de transferência",
     "preparedForCopying": "Preparado para cópia",
     "preparedForMoving": "Preparado para movimentação",
-    "itemsPrepared": "{count} itens",
+    "itemsPrepared": "0 itens | 1 item | {count} itens | {count} itens",
     "discardClipboard": "Descartar",
+    "copiedInAnotherApp": "Copiado em outro app",
+    "cutInAnotherApp": "Recortado em outro app",
+    "copiedInApp": "Copiado em {app}",
+    "cutInApp": "Recortado em {app}",
     "cannotMoveToSameDirectory": "Não é possível mover itens para o mesmo diretório",
     "cannotPasteIntoItself": "Não é possível colar uma pasta em si mesma",
     "cannotCreateLinkInsideItself": "Não é possível criar um link de pasta dentro dela mesma",
@@ -952,6 +956,7 @@
       "copy": "Copiar",
       "move": "Mover",
       "paste": "Colar",
+      "pasteAll": "Colar tudo",
       "pasteToPane1": "Colar no painel 1",
       "pasteToPane2": "Colar no painel 2",
       "delete": "Excluir",
