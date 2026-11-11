@@ -172,6 +172,16 @@ The funding will be used for funding the development of this and my other big pr
       </td>
     </tr>
     <tr>
+      <td>Linux | Portable, Chromium engine (experimental)</td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
+          Portable (<code>*-linux-chromium-x86_64.AppImage</code>)
+        </a>
+        <br>
+        Bundles Chromium (CEF) instead of WebKitGTK for faster rendering. Larger download (~175 MB); requires X11 or XWayland
+      </td>
+    </tr>
+    <tr>
       <td>Linux | Flatpak</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">

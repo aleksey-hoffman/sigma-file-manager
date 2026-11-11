@@ -546,3 +546,92 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ needs.prepare.outputs.tag }}
         run: gh release upload "$TAG" "$PORTABLE_ZIP" --clobber
+
+  build-linux-chromium:
+    name: Build (linux-chromium)
+    needs: prepare
+    runs-on: ubuntu-24.04
+    env:
+      RUSTC_WRAPPER: sccache
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: release-linux-chromium
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Linux dependencies
+        uses: ./.github/actions/install-linux-tauri-deps
+
+      - name: Install Chromium AppImage dependencies
+        run: |
+          sudo apt-get install -y \
+            libasound2-dev \
+            libnss3 \
+            libpulse0 \
+            libspeechd2 \
+            libxkbcommon-x11-0 \
+            xvfb \
+            squashfs-tools \
+            zstd \
+            desktop-file-utils \
+            file
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Sync Cargo version with package.json
+        run: npm run sync-version
+
+      - name: Build Linux Chromium AppImage
+        shell: bash
+        run: script -qfec "npm run tauri:linux-cef -- build --bundles appimage" /dev/null
+
+      - name: Upload Linux Chromium AppImage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          mkdir -p staged-chromium
+          shopt -s nullglob
+          bundles=(src-tauri/target/release/bundle/appimage/*.AppImage)
+          if (( ${#bundles[@]} != 1 )); then
+            echo "::error::Expected 1 Chromium AppImage bundle, found ${#bundles[@]}"
+            exit 1
+          fi
+          staged_asset="staged-chromium/Sigma-File-Manager-${VERSION}-linux-chromium-x86_64.AppImage"
+          cp "${bundles[0]}" "$staged_asset"
+          chmod +x "$staged_asset"
+          gh release upload "$TAG" "$staged_asset" --clobber

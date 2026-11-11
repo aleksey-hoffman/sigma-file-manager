@@ -56,8 +56,24 @@ jobs:
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-linux
+          workspaces: src-tauri
+          cache-on-failure: true
+
       - name: Cargo test (lib)
         run: cargo test --manifest-path src-tauri/Cargo.toml --lib
+
+      - name: Cargo check (cef lib)
+        shell: bash
+        run: |
+          cp src-tauri/Cargo.lock src-tauri/Cargo.lock.wry
+          cp src-tauri/Cargo.cef.lock src-tauri/Cargo.lock
+          trap 'mv -f src-tauri/Cargo.lock.wry src-tauri/Cargo.lock' EXIT
+          cargo check --manifest-path src-tauri/Cargo.toml --lib --no-default-features --features cef --config src-tauri/.cargo/cef.toml
 
   tauri-windows:
     runs-on: windows-latest
