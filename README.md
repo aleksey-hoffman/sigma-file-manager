@@ -158,7 +158,7 @@ The funding will be used for funding the development of this and my other big pr
           Portable (.zip)
         </a>
         <br>
-        Keeps its data in the <code>data</code> folder next to the app. Requires the WebView2 runtime (included in Windows 11)
+        Keeps its data in the <code>sigma-file-manager-data</code> folder next to the app. Requires the WebView2 runtime (included in Windows 11)
       </td>
     </tr>
     <tr>
@@ -168,7 +168,7 @@ The funding will be used for funding the development of this and my other big pr
           Portable (.AppImage)
         </a>
         <br>
-        To keep its data next to the AppImage, create a <code>sigma-file-manager-data</code> folder beside it
+        To keep its data next to the AppImage, create a <code>sigma-file-manager-data</code> folder beside it. Existing Linux app data is not moved into that folder automatically
       </td>
     </tr>
     <tr>

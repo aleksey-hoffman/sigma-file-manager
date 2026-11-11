@@ -523,9 +523,13 @@ jobs:
         shell: pwsh
         run: |
           $packageDir = Join-Path $env:RUNNER_TEMP "portable-package"
-          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
-          Copy-Item (Join-Path $env:GITHUB_WORKSPACE "portable/$env:PORTABLE_EXE") (Join-Path $packageDir "Sigma File Manager.exe")
-          Compress-Archive -Path (Join-Path $packageDir "*") -DestinationPath (Join-Path $env:GITHUB_WORKSPACE $env:PORTABLE_ZIP) -Force
+          if (Test-Path $packageDir) {
+            Remove-Item -Recurse -Force $packageDir
+          }
+          $appDir = Join-Path $packageDir "Sigma File Manager"
+          New-Item -ItemType Directory -Force -Path $appDir | Out-Null
+          Copy-Item (Join-Path $env:GITHUB_WORKSPACE "portable/$env:PORTABLE_EXE") (Join-Path $appDir "Sigma File Manager.exe")
+          Compress-Archive -Path $appDir -DestinationPath (Join-Path $env:GITHUB_WORKSPACE $env:PORTABLE_ZIP) -Force
 
       - name: Upload portable zip to GitHub release
         shell: bash

@@ -62,7 +62,7 @@ describe('app-dirs', () => {
   it('reports a portable data folder', async () => {
     invokeMock.mockResolvedValue({
       ...defaultAppDirs,
-      portableRoot: 'D:\\Sigma File Manager\\data',
+      portableRoot: 'D:\\Sigma File Manager\\sigma-file-manager-data',
     });
     const appDirs = await importAppDirs();
 

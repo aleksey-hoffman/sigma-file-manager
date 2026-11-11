@@ -489,10 +489,14 @@ mod portable_tests {
     #[test]
     fn relative_override_resolves_next_to_the_app() {
         let app_dir = std::env::temp_dir().join("sfm-portable-app");
-        let mode = resolve_portable_mode(Some(&root_override("./data")), &app_dir, false)
-            .expect("portable mode");
+        let mode = resolve_portable_mode(
+            Some(&root_override("./sigma-file-manager-data")),
+            &app_dir,
+            false,
+        )
+        .expect("portable mode");
 
-        assert_eq!(mode.root, app_dir.join("data"));
+        assert_eq!(mode.root, app_dir.join("sigma-file-manager-data"));
         assert_eq!(mode.app_dir, app_dir);
     }
 
@@ -550,14 +554,25 @@ mod portable_tests {
     fn installed_identifier_matches_the_tauri_config() {
         let config: serde_json::Value =
             serde_json::from_str(include_str!("../tauri.conf.json")).expect("tauri config");
+        let portable_config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.portable.conf.json"))
+                .expect("portable tauri config");
 
         assert_eq!(config["identifier"], INSTALLED_IDENTIFIER);
+        assert_eq!(
+            portable_config["app"]["appDirectoriesOverride"],
+            "./sigma-file-manager-data"
+        );
     }
 
     #[test]
     fn portable_identifier_is_stable_and_unique_per_root() {
-        let first_root = std::env::temp_dir().join("sfm-portable-copy-a").join("data");
-        let second_root = std::env::temp_dir().join("sfm-portable-copy-b").join("data");
+        let first_root = std::env::temp_dir()
+            .join("sfm-portable-copy-a")
+            .join("sigma-file-manager-data");
+        let second_root = std::env::temp_dir()
+            .join("sfm-portable-copy-b")
+            .join("sigma-file-manager-data");
 
         let first_identifier = portable_identifier(&first_root);
         let second_identifier = portable_identifier(&second_root);
@@ -570,9 +585,12 @@ mod portable_tests {
 
     #[test]
     fn startup_fails_closed_when_portable_root_cannot_resolve_app_dir() {
-        assert!(
-            resolve_portable_mode_for_startup(Some(&root_override("./data")), None, false).is_err()
-        );
+        assert!(resolve_portable_mode_for_startup(
+            Some(&root_override("./sigma-file-manager-data")),
+            None,
+            false
+        )
+        .is_err());
         assert_eq!(resolve_portable_mode_for_startup(None, None, false), Ok(None));
         assert_eq!(
             resolve_portable_mode_for_startup(Some(&root_override("$DOCUMENT/sfm")), None, false),
