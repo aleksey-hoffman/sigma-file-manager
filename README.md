@@ -178,7 +178,7 @@ The funding will be used for funding the development of this and my other big pr
           Portable (<code>*-linux-chromium-x86_64.AppImage</code>)
         </a>
         <br>
-        Bundles Chromium (CEF) instead of WebKitGTK for faster rendering. Larger download (~175 MB); requires X11 or XWayland
+        Bundles Chromium (CEF) instead of WebKitGTK for faster rendering. Larger download (~175 MB); requires X11 or XWayland. On distros that restrict unprivileged user namespaces (Ubuntu 24.04 and later), this AppImage may run without the Chromium sandbox
       </td>
     </tr>
     <tr>
