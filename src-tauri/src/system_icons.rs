@@ -4,7 +4,7 @@
 
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine;
-use file_icon_provider::{get_file_icon, Error as FileIconError};
+use file_icon_provider::{get_file_icon, Error as FileIconError, Icon as FileIcon};
 use image::codecs::png::PngEncoder;
 use image::ImageEncoder;
 use lru::LruCache;
@@ -31,6 +31,15 @@ static ICON_PROBE_DIR: Lazy<Result<PathBuf, String>> = Lazy::new(|| {
 
 static UNSUPPORTED_SHELL_ICON_PATHS: Lazy<Mutex<HashSet<String>>> =
     Lazy::new(|| Mutex::new(HashSet::new()));
+
+enum PlatformIconError {
+    Provider(FileIconError),
+    GtkUnavailable,
+}
+
+fn is_permanent_icon_failure(error: &PlatformIconError) -> bool {
+    matches!(error, PlatformIconError::Provider(FileIconError::Failed))
+}
 
 fn normalize_path_for_os(path: &str) -> PathBuf {
     #[cfg(windows)]
@@ -313,16 +322,13 @@ pub(crate) fn init_gtk_thread(app_handle: tauri::AppHandle) -> Result<(), gtk::g
 }
 
 #[cfg(all(feature = "cef", target_os = "linux"))]
-fn get_file_icon_for_platform(
-    path: &Path,
-    size: u16,
-) -> Result<file_icon_provider::Icon, FileIconError> {
+fn get_file_icon_for_platform(path: &Path, size: u16) -> Result<FileIcon, PlatformIconError> {
     let Some((gtk_thread_id, app_handle)) = GTK_THREAD.get() else {
-        return Err(FileIconError::Failed);
+        return Err(PlatformIconError::GtkUnavailable);
     };
 
     if std::thread::current().id() == *gtk_thread_id {
-        return get_file_icon(path, size);
+        return get_file_icon(path, size).map_err(PlatformIconError::Provider);
     }
 
     let (sender, receiver) = std::sync::mpsc::channel();
@@ -331,16 +337,16 @@ fn get_file_icon_for_platform(
         .run_on_main_thread(move || {
             let _ = sender.send(get_file_icon(&path, size));
         })
-        .map_err(|_| FileIconError::Failed)?;
-    receiver.recv().map_err(|_| FileIconError::Failed)?
+        .map_err(|_| PlatformIconError::GtkUnavailable)?;
+    receiver
+        .recv()
+        .map_err(|_| PlatformIconError::GtkUnavailable)?
+        .map_err(PlatformIconError::Provider)
 }
 
 #[cfg(not(all(feature = "cef", target_os = "linux")))]
-fn get_file_icon_for_platform(
-    path: &Path,
-    size: u16,
-) -> Result<file_icon_provider::Icon, FileIconError> {
-    get_file_icon(path, size)
+fn get_file_icon_for_platform(path: &Path, size: u16) -> Result<FileIcon, PlatformIconError> {
+    get_file_icon(path, size).map_err(PlatformIconError::Provider)
 }
 
 fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> {
@@ -363,13 +369,13 @@ fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> 
 
     let icon = match get_file_icon_for_platform(&shell_path, size) {
         Ok(icon) => icon,
-        Err(FileIconError::PathDoesNotExist) => {
+        Err(PlatformIconError::Provider(FileIconError::PathDoesNotExist)) => {
             return Err("Path does not exist".to_string());
         }
-        Err(FileIconError::NullIconSize) => {
+        Err(PlatformIconError::Provider(FileIconError::NullIconSize)) => {
             return Err("Invalid icon size".to_string());
         }
-        Err(FileIconError::Failed) => {
+        Err(PlatformIconError::Provider(FileIconError::Failed)) => {
             remember_unsupported_shell_icon_path(&shell_path);
             log::debug!(
                 "[shell-icon] get_file_icon failed path={} size={}",
@@ -377,6 +383,14 @@ fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> 
                 size,
             );
             return Err("Failed to get icon".to_string());
+        }
+        Err(PlatformIconError::GtkUnavailable) => {
+            log::debug!(
+                "[shell-icon] GTK thread is not ready path={} size={}",
+                shell_path.display(),
+                size,
+            );
+            return Err("GTK is not ready for icon lookup".to_string());
         }
     };
 
@@ -423,6 +437,19 @@ pub fn get_system_icon(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn gtk_thread_miss_is_not_remembered_as_an_unsupported_path() {
+        assert!(is_permanent_icon_failure(&PlatformIconError::Provider(
+            FileIconError::Failed
+        )));
+        assert!(!is_permanent_icon_failure(
+            &PlatformIconError::GtkUnavailable
+        ));
+        assert!(!is_permanent_icon_failure(&PlatformIconError::Provider(
+            FileIconError::PathDoesNotExist
+        )));
+    }
 
     #[test]
     fn normalize_extension_for_probe_rejects_invalid_values() {
