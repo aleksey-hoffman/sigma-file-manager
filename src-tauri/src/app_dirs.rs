@@ -333,7 +333,7 @@ fn appimage_portable_root(_app_dir: &Path) -> Option<PathBuf> {
     None
 }
 
-#[cfg(feature = "cef")]
+#[cfg(any(feature = "cef", test))]
 fn portable_dir(root: &Path, dir: AppDir) -> PathBuf {
     match dir {
         AppDir::Data | AppDir::Config | AppDir::LocalData => root.to_path_buf(),
@@ -556,6 +556,16 @@ mod portable_tests {
 
     fn root_override(path: &str) -> AppDirectoriesOverride {
         AppDirectoriesOverride::Root(PathBuf::from(path))
+    }
+
+    #[test]
+    fn portable_root_layout_matches_the_sidecar_directories() {
+        let root = Path::new("/portable/sigma-file-manager-data");
+        assert_eq!(portable_dir(root, AppDir::Data), root);
+        assert_eq!(portable_dir(root, AppDir::Config), root);
+        assert_eq!(portable_dir(root, AppDir::LocalData), root);
+        assert_eq!(portable_dir(root, AppDir::Cache), root.join("caches"));
+        assert_eq!(portable_dir(root, AppDir::Log), root.join("logs"));
     }
 
     #[test]

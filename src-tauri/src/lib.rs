@@ -492,6 +492,8 @@ fn build_cef_runtime() -> tauri_runtime_cef::Cef {
         cef = cef.root_cache_path(cache_dir);
     }
 
+    // SFM_CDP_PORT opens an unauthenticated DevTools server on localhost.
+    // Any local process can attach. Leave the variable unset in normal use.
     match std::env::var("SFM_CDP_PORT").map(|port| port.parse::<u16>()) {
         Ok(Ok(port)) => cef.remote_debugging(tauri_runtime_cef::RemoteDebugging::Port {
             port,
