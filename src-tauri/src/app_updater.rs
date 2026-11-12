@@ -23,8 +23,10 @@ const UPDATE_CHECK_TIMEOUT_SECS: u64 = 10;
 #[cfg(any(target_os = "windows", test))]
 const WINDOWS_PORTABLE_ASSET_SUFFIX: &str = "-windows-portable.zip";
 #[cfg(any(target_os = "linux", unix, test))]
-const LINUX_APPIMAGE_ASSET_SUFFIX: &str = ".appimage";
-#[cfg(any(target_os = "linux", test))]
+const LINUX_RELEASE_ASSET_PREFIX: &str = "sigma-file-manager-";
+#[cfg(any(target_os = "linux", unix, test))]
+const LINUX_WEBKIT_APPIMAGE_ASSET_SUFFIX: &str = "-linux.appimage";
+#[cfg(any(target_os = "linux", unix, test))]
 const LINUX_CHROMIUM_APPIMAGE_ASSET_SUFFIX: &str = "-linux-chromium-x86_64.appimage";
 
 #[derive(Serialize)]
@@ -245,33 +247,29 @@ fn is_windows_portable_download_name(file_name: &str) -> bool {
 }
 
 #[cfg(any(target_os = "linux", unix, test))]
-fn is_linux_appimage_download_name(file_name: &str) -> bool {
+fn is_linux_release_asset_name(file_name: &str) -> bool {
     file_name
         .to_ascii_lowercase()
-        .ends_with(LINUX_APPIMAGE_ASSET_SUFFIX)
+        .starts_with(LINUX_RELEASE_ASSET_PREFIX)
 }
 
-#[cfg(any(target_os = "linux", test))]
-fn is_linux_chromium_appimage_download_name(file_name: &str) -> bool {
-    file_name
-        .to_ascii_lowercase()
-        .ends_with(LINUX_CHROMIUM_APPIMAGE_ASSET_SUFFIX)
-}
-
-#[cfg(any(target_os = "linux", test))]
+#[cfg(any(target_os = "linux", unix, test))]
 fn is_linux_runtime_appimage_download_name(file_name: &str, chromium: bool) -> bool {
-    if !is_linux_appimage_download_name(file_name) {
+    if !is_linux_release_asset_name(file_name) {
         return false;
     }
 
-    let is_chromium_asset = is_linux_chromium_appimage_download_name(file_name);
+    let lower = file_name.to_ascii_lowercase();
     if chromium {
-        is_chromium_asset
+        lower.ends_with(LINUX_CHROMIUM_APPIMAGE_ASSET_SUFFIX)
     } else {
-        !is_chromium_asset
-            && !file_name.to_ascii_lowercase().contains("chromium")
-            && !file_name.to_ascii_lowercase().contains("-cef-")
+        lower.ends_with(LINUX_WEBKIT_APPIMAGE_ASSET_SUFFIX)
     }
+}
+
+#[cfg(unix)]
+fn is_linux_appimage_download_name(file_name: &str) -> bool {
+    is_linux_runtime_appimage_download_name(file_name, cfg!(feature = "cef"))
 }
 
 fn is_allowed_portable_download_file_name(file_name: &str) -> bool {
@@ -909,6 +907,52 @@ mod tests {
     }
 
     #[test]
+    fn linux_chromium_copy_accepts_a_beta_asset_and_rejects_other_names() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![GithubRelease {
+                tag: "v2.3.0-beta.1".to_string(),
+                url: "https://example.com/v2.3.0-beta.1".to_string(),
+                assets: vec![
+                    serde_json::json!({
+                        "name": "notes-linux-chromium-x86_64.AppImage",
+                        "browser_download_url": "https://example.com/notes.AppImage"
+                    }),
+                    serde_json::json!({
+                        "name": "Sigma-File-Manager-2.3.0-beta.1-linux-cef.AppImage",
+                        "browser_download_url": "https://example.com/cef.AppImage"
+                    }),
+                    serde_json::json!({
+                        "name": "Sigma-File-Manager-2.3.0-beta.1-linux-chromium-x86_64.AppImage",
+                        "browser_download_url": "https://example.com/beta-chromium.AppImage"
+                    }),
+                ],
+            }],
+            "2.2.0",
+            pick_linux_chromium_appimage_asset,
+        )
+        .expect("expected upgrade");
+        assert_eq!(upgrade.1, "https://example.com/beta-chromium.AppImage");
+        assert_eq!(
+            upgrade.2,
+            "Sigma-File-Manager-2.3.0-beta.1-linux-chromium-x86_64.AppImage"
+        );
+
+        let webkit = pick_best_installable_upgrade(
+            vec![GithubRelease {
+                tag: "v2.3.0-beta.1".to_string(),
+                url: "https://example.com/v2.3.0-beta.1".to_string(),
+                assets: vec![serde_json::json!({
+                    "name": "Sigma-File-Manager-2.3.0-beta.1-linux-cef.AppImage",
+                    "browser_download_url": "https://example.com/cef.AppImage"
+                })],
+            }],
+            "2.2.0",
+            pick_linux_appimage_asset,
+        );
+        assert!(webkit.is_none());
+    }
+
+    #[test]
     fn linux_chromium_copy_skips_releases_without_chromium_appimage() {
         let upgrade = pick_best_installable_upgrade(
             vec![GithubRelease {
@@ -1003,26 +1047,36 @@ mod tests {
             "Sigma-File-Manager-2.3.0-windows-setup.exe"
         ));
 
-        assert!(is_linux_appimage_download_name(
-            "Sigma-File-Manager-2.3.0-linux.AppImage"
-        ));
-        assert!(!is_linux_appimage_download_name(
-            "Sigma-File-Manager-2.3.0-linux.deb"
-        ));
         assert!(is_linux_runtime_appimage_download_name(
             "Sigma-File-Manager-2.3.0-linux.AppImage",
             false
         ));
         assert!(!is_linux_runtime_appimage_download_name(
+            "Sigma-File-Manager-2.3.0-linux.deb",
+            false
+        ));
+        assert!(!is_linux_runtime_appimage_download_name(
             "Sigma-File-Manager-2.3.0-linux-chromium-x86_64.AppImage",
+            false
+        ));
+        assert!(!is_linux_runtime_appimage_download_name(
+            "Sigma-File-Manager-2.3.0-linux-cef.AppImage",
             false
         ));
         assert!(is_linux_runtime_appimage_download_name(
             "Sigma-File-Manager-2.3.0-linux-chromium-x86_64.AppImage",
             true
         ));
+        assert!(is_linux_runtime_appimage_download_name(
+            "Sigma-File-Manager-2.3.0-beta.1-linux-chromium-x86_64.AppImage",
+            true
+        ));
         assert!(!is_linux_runtime_appimage_download_name(
             "Sigma-File-Manager-2.3.0-linux.AppImage",
+            true
+        ));
+        assert!(!is_linux_runtime_appimage_download_name(
+            "notes-linux-chromium-x86_64.AppImage",
             true
         ));
 
