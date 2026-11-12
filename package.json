@@ -83,6 +83,7 @@
     "@intlify/eslint-plugin-vue-i18n": "^4.5.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@tauri-apps/cli": "^2.12.4",
+    "@tauri-apps/cli-cef": "3.0.0-alpha.27",
     "@tsconfig/node22": "^22.0.5",
     "@types/jsdom": "^28.0.3",
     "@types/lodash.clonedeep": "^4.5.9",
