@@ -592,6 +592,8 @@ jobs:
 
       - name: Install Linux dependencies
         uses: ./.github/actions/install-linux-tauri-deps
+        with:
+          pin-webkit: false
 
       - name: Install Chromium AppImage dependencies
         run: |
@@ -605,7 +607,8 @@ jobs:
             squashfs-tools \
             zstd \
             desktop-file-utils \
-            file
+            file \
+            gcc
 
       - name: Install npm dependencies
         run: npm ci
@@ -614,6 +617,9 @@ jobs:
         run: npm run sync-version
 
       - name: Build Linux Chromium AppImage
+        env:
+          # quick-sharun skips strip only when this is 1. The WebKit bundler treats any value as set.
+          NO_STRIP: "1"
         shell: bash
         run: script -qfec "npm run tauri:linux-cef -- build --bundles appimage" /dev/null
 
