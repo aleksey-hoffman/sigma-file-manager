@@ -375,8 +375,10 @@ fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> 
         Err(PlatformIconError::Provider(FileIconError::NullIconSize)) => {
             return Err("Invalid icon size".to_string());
         }
-        Err(PlatformIconError::Provider(FileIconError::Failed)) => {
-            remember_unsupported_shell_icon_path(&shell_path);
+        Err(error @ PlatformIconError::Provider(FileIconError::Failed)) => {
+            if is_permanent_icon_failure(&error) {
+                remember_unsupported_shell_icon_path(&shell_path);
+            }
             log::debug!(
                 "[shell-icon] get_file_icon failed path={} size={}",
                 shell_path.display(),
