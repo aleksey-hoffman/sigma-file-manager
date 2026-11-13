@@ -5,6 +5,7 @@
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import type { HistoryItem, ItemTag, TaggedItem } from '@/types/user-stats';
+import { expandLeadingTilde, isLeadingTildePath } from '@/utils/expand-leading-tilde';
 import normalizePath, {
   canonicalizePath,
   getParentPath,
@@ -64,6 +65,7 @@ export interface AddressBarSuggestionLookup {
 
 export interface ResolveAddressBarSuggestionsOptions {
   query: string;
+  homeDir?: string;
   mode: AddressBarEditorMode;
   currentPath: string;
   directoryGroupLabel: string;
@@ -291,6 +293,10 @@ export function addressBarTrimmedQueryLooksLikeFilesystemPath(trimmedNormalizedQ
 
   const normalized = normalizePath(trimmedNormalizedQuery);
 
+  if (isLeadingTildePath(normalized)) {
+    return true;
+  }
+
   if (normalized.startsWith('//')) {
     return true;
   }
@@ -308,6 +314,51 @@ export function addressBarTrimmedQueryLooksLikeFilesystemPath(trimmedNormalizedQ
   }
 
   return false;
+}
+
+export function addressBarQueryUsesFilesystemPathMode(
+  trimmedQuery: string,
+  pathExists: boolean,
+  homeDir: string,
+): boolean {
+  const normalizedQuery = normalizePath(trimmedQuery).trim();
+  const expandedQuery = expandLeadingTilde(normalizedQuery, homeDir);
+
+  if (expandedQuery !== normalizedQuery) {
+    return true;
+  }
+
+  return pathExists;
+}
+
+export interface AddressBarGoUpTarget {
+  currentQuery: string;
+  parentQuery: string;
+}
+
+export function resolveAddressBarGoUpQuery(query: string, homeDir: string): AddressBarGoUpTarget | null {
+  const normalizedQuery = normalizePath(query).trim();
+  const expandedQuery = expandLeadingTilde(normalizedQuery, homeDir);
+  const trimmedTip = canonicalizePath(expandedQuery);
+
+  if (!trimmedTip) {
+    return null;
+  }
+
+  const parentPath = getParentPath(trimmedTip);
+
+  if (!parentPath) {
+    return null;
+  }
+
+  const currentQuery = expandedQuery.endsWith('/')
+    ? ensureAddressBarDirectoryQuery(trimmedTip)
+    : expandedQuery;
+
+  return {
+    currentQuery,
+    parentQuery: ensureAddressBarDirectoryQuery(parentPath),
+  };
 }
 
 export function getAddressBarRevealTarget(path: string): {
@@ -430,7 +481,7 @@ async function resolveAddressBarDirectoryListingOrExactOrSearch(
 export async function resolveAddressBarSuggestions(
   options: ResolveAddressBarSuggestionsOptions,
 ): Promise<AddressBarSuggestionState> {
-  const normalizedQuery = normalizePath(options.query).trim();
+  const normalizedQuery = expandLeadingTilde(options.query, options.homeDir ?? '');
 
   if (!normalizedQuery) {
     return {

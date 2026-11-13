@@ -37,6 +37,7 @@ import { ScrollBar } from '@/components/ui/scroll-area';
 import Separator from '@/components/ui/separator/separator.vue';
 import AddressBarSuggestionRow from './address-bar-editor-suggestion-row.vue';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
+import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import { useAddressBarStableDriveList } from './composables/use-address-bar-stable-drive-list';
@@ -44,7 +45,8 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { matchesShortcut, useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
-import normalizePath, { canonicalizePath, getParentPath, getPathDisplayName } from '@/utils/normalize-path';
+import { expandLeadingTilde } from '@/utils/expand-leading-tilde';
+import normalizePath, { canonicalizePath, getPathDisplayName } from '@/utils/normalize-path';
 import {
   resolveDirEntry,
   resolveDirectoryContents,
@@ -57,6 +59,7 @@ import {
 import { useVerticalVirtualList } from '@/composables/use-vertical-virtual-list';
 import {
   addressBarPathHasNoParentDirectory,
+  addressBarQueryUsesFilesystemPathMode,
   addressBarTrimmedQueryLooksLikeFilesystemPath,
   createRecentSuggestionGroup,
   createTaggedSuggestionGroups,
@@ -67,6 +70,7 @@ import {
   flattenAddressBarSuggestionGroups,
   getAddressBarRevealTarget,
   isAddressBarDirectoryShortcutCandidate,
+  resolveAddressBarGoUpQuery,
   resolveAddressBarSuggestions,
   type AddressBarEditorMode,
   type AddressBarSuggestion,
@@ -133,6 +137,7 @@ const hintKeyLabels = {
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const platformStore = usePlatformStore();
+const userPathsStore = useUserPathsStore();
 const userStatsStore = useUserStatsStore();
 const { userDirectories, refresh: refreshUserDirectories } = useUserDirectories();
 const {
@@ -432,6 +437,7 @@ async function applyEditorQueryWithoutDebouncedWatch(nextQueryExact: string): Pr
   query.value = nextQueryExact;
   suppressDebouncedSuggestionsOnQueryMutation.value = false;
   await refreshSuggestions(nextQueryExact);
+  await moveAddressBarInputCaretToEndAfterPaint();
 }
 
 function appendEditorNavigateForwardStep(nextQueryExact: string): void {
@@ -534,22 +540,19 @@ async function editorGoUpDirectory(): Promise<boolean> {
     return false;
   }
 
-  const trimmedTip = canonicalizePath(normalizePath(query.value).trim());
+  const normalizedQuery = normalizePath(query.value).trim();
+  const goUpTarget = resolveAddressBarGoUpQuery(query.value, userPathsStore.userPaths.homeDir);
 
-  if (!trimmedTip) {
+  if (!goUpTarget) {
     return false;
   }
 
-  const parentPathResolved = getParentPath(trimmedTip);
-
-  if (!parentPathResolved) {
-    return false;
+  if (goUpTarget.currentQuery !== normalizedQuery) {
+    appendEditorNavigateForwardStep(goUpTarget.currentQuery);
   }
 
-  const parentBrowseQuery = ensureAddressBarDirectoryQuery(parentPathResolved);
-
-  appendEditorNavigateForwardStep(parentBrowseQuery);
-  await applyEditorQueryWithoutDebouncedWatch(parentBrowseQuery);
+  appendEditorNavigateForwardStep(goUpTarget.parentQuery);
+  await applyEditorQueryWithoutDebouncedWatch(goUpTarget.parentQuery);
 
   return true;
 }
@@ -559,15 +562,20 @@ async function refreshSuggestions(
   keyboardSelection: RefreshSuggestionsKeyboardSelection = 'reset',
 ): Promise<void> {
   const requestId = ++suggestionRequestId;
-
   const normalizedTrimmedQuery = normalizePath(nextQuery).trim();
+  const homeDirectory = userPathsStore.userPaths.homeDir;
+  const expandedQuery = expandLeadingTilde(normalizedTrimmedQuery, homeDirectory);
+  const queryExpandsTilde = expandedQuery !== normalizedTrimmedQuery;
 
   let modeForResolve: AddressBarEditorMode = 'entry';
 
   if (normalizedTrimmedQuery !== '') {
     let pathExistsOnFilesystem = false;
 
-    if (addressBarTrimmedQueryLooksLikeFilesystemPath(normalizedTrimmedQuery)) {
+    if (
+      !queryExpandsTilde
+      && addressBarTrimmedQueryLooksLikeFilesystemPath(normalizedTrimmedQuery)
+    ) {
       pathExistsOnFilesystem = await invokePathExistsForAddressBar(normalizedTrimmedQuery);
     }
 
@@ -575,7 +583,13 @@ async function refreshSuggestions(
       return;
     }
 
-    modeForResolve = pathExistsOnFilesystem ? 'path' : 'entry';
+    modeForResolve = addressBarQueryUsesFilesystemPathMode(
+      normalizedTrimmedQuery,
+      pathExistsOnFilesystem,
+      homeDirectory,
+    )
+      ? 'path'
+      : 'entry';
   }
   else if (requestId !== suggestionRequestId) {
     return;
@@ -588,12 +602,13 @@ async function refreshSuggestions(
     addressEditorNavigationIndex.value = 0;
   }
   else if (addressEditorNavigationSteps.value.length === 0 && normalizedTrimmedQuery !== '') {
-    addressEditorNavigationSteps.value = [nextQuery];
+    addressEditorNavigationSteps.value = [queryExpandsTilde ? expandedQuery : nextQuery];
     addressEditorNavigationIndex.value = 0;
   }
 
   const nextState = await resolveAddressBarSuggestions({
     query: nextQuery,
+    homeDir: homeDirectory,
     mode: modeForResolve,
     currentPath: props.currentPath,
     directoryGroupLabel: t('settings.addressBar.directoryEntries'),
@@ -964,7 +979,10 @@ async function maybeHandleNavigatorPaneShortcut(event: KeyboardEvent): Promise<b
       return true;
     }
 
-    const trimmedQueryNormalized = normalizePath(query.value).trim();
+    const trimmedQueryNormalized = expandLeadingTilde(
+      normalizePath(query.value).trim(),
+      userPathsStore.userPaths.homeDir,
+    );
 
     if (addressBarPathHasNoParentDirectory(trimmedQueryNormalized)) {
       await editorFallbackClearQueryIntoEntryPalette();

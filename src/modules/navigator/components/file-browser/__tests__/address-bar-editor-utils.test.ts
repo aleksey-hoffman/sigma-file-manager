@@ -7,6 +7,7 @@ import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import {
   addressBarPathHasNoParentDirectory,
+  addressBarQueryUsesFilesystemPathMode,
   addressBarTrimmedQueryLooksLikeFilesystemPath,
   createRecentSuggestionGroup,
   createTaggedSuggestionGroups,
@@ -14,6 +15,7 @@ import {
   createUserDirectoriesSuggestionGroup,
   ensureAddressBarDirectoryQuery,
   getAddressBarRevealTarget,
+  resolveAddressBarGoUpQuery,
   resolveAddressBarSuggestions,
 } from '../address-bar-editor-utils';
 
@@ -97,6 +99,74 @@ describe('addressBarTrimmedQueryLooksLikeFilesystemPath', () => {
     expect(addressBarTrimmedQueryLooksLikeFilesystemPath('//wsl.localhost/Ubuntu')).toBe(true);
     expect(addressBarTrimmedQueryLooksLikeFilesystemPath('relative/sub')).toBe(true);
     expect(addressBarTrimmedQueryLooksLikeFilesystemPath('C:')).toBe(true);
+  });
+
+  it('treats a bare tilde or tilde slash prefix as a path', () => {
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~')).toBe(true);
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~/Desktop')).toBe(true);
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~\\Desktop')).toBe(true);
+  });
+
+  it('keeps other tilde text as search text', () => {
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~user')).toBe(false);
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~$Budget.xlsx')).toBe(false);
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('notes~')).toBe(false);
+  });
+});
+
+describe('address bar tilde path mode', () => {
+  it('uses path mode when a leading tilde can expand', () => {
+    expect(addressBarQueryUsesFilesystemPathMode('~', false, '/home/user')).toBe(true);
+    expect(addressBarQueryUsesFilesystemPathMode('~/de', false, '/home/user')).toBe(true);
+    expect(addressBarQueryUsesFilesystemPathMode('~\\de', false, 'C:/Users/aleks')).toBe(true);
+  });
+
+  it('stays in search mode when home is empty or the tilde is not a home prefix', () => {
+    expect(addressBarQueryUsesFilesystemPathMode('~/Desktop', false, '')).toBe(false);
+    expect(addressBarQueryUsesFilesystemPathMode('~user', false, '/home/user')).toBe(false);
+    expect(addressBarQueryUsesFilesystemPathMode('notes~', false, '/home/user')).toBe(false);
+    expect(addressBarQueryUsesFilesystemPathMode('Downloads', false, '/home/user')).toBe(false);
+  });
+
+  it('keeps an existing absolute path in path mode', () => {
+    expect(addressBarQueryUsesFilesystemPathMode('C:/Windows', true, '')).toBe(true);
+    expect(addressBarQueryUsesFilesystemPathMode('C:/Missing', false, 'C:/Users/aleks')).toBe(false);
+  });
+});
+
+describe('address bar go up from a tilde path', () => {
+  it('goes to the parent of a unix home', () => {
+    expect(resolveAddressBarGoUpQuery('~', '/home/user')).toEqual({
+      currentQuery: '/home/user',
+      parentQuery: '/home/',
+    });
+    expect(resolveAddressBarGoUpQuery('~/', '/home/user/')).toEqual({
+      currentQuery: '/home/user/',
+      parentQuery: '/home/',
+    });
+  });
+
+  it('goes to the parent of a windows home', () => {
+    expect(resolveAddressBarGoUpQuery('~', 'C:/Users/aleks')).toEqual({
+      currentQuery: 'C:/Users/aleks',
+      parentQuery: 'C:/Users/',
+    });
+    expect(resolveAddressBarGoUpQuery('~\\', 'C:\\Users\\aleks\\')).toEqual({
+      currentQuery: 'C:/Users/aleks/',
+      parentQuery: 'C:/Users/',
+    });
+  });
+
+  it('returns null when home is empty or home has no parent', () => {
+    expect(resolveAddressBarGoUpQuery('~', '')).toBeNull();
+    expect(resolveAddressBarGoUpQuery('~', '/')).toBeNull();
+  });
+
+  it('keeps an already absolute query as the current step', () => {
+    expect(resolveAddressBarGoUpQuery('/home/user/Desktop', '/home/user')).toEqual({
+      currentQuery: '/home/user/Desktop',
+      parentQuery: '/home/user/',
+    });
   });
 });
 
@@ -488,6 +558,195 @@ describe('address bar editor utils', () => {
 
     expect(state.kind).toBe('search');
     expect(state.groups[0].items.map(item => item.path)).toEqual([sharedDownloadsPath]);
+  });
+
+  it('lists home children for a ~/ prefix', async () => {
+    const homeEntries = [
+      entry('/home/user/Desktop', { name: 'Desktop' }),
+      entry('/home/user/Documents', { name: 'Documents' }),
+      entry('/home/user/notes.txt', {
+        isFile: true,
+        name: 'notes.txt',
+      }),
+    ];
+    const readDir = vi.fn(async (directoryPath: string) => {
+      if (directoryPath === '/home/user') {
+        return dirContents('/home/user', homeEntries);
+      }
+
+      throw new Error(`unexpected ${directoryPath}`);
+    });
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~/de',
+      homeDir: '/home/user',
+      mode: 'path',
+      currentPath: '/workspace',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(state.kind).toBe('search');
+    expect(readDir).toHaveBeenCalledWith('/home/user');
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['/home/user/Desktop']);
+  });
+
+  it('lists the home directory for ~/ and keeps a trailing home slash from producing //', async () => {
+    const homeEntries = [
+      entry('/home/user/Desktop', { name: 'Desktop' }),
+      entry('/home/user/Documents', { name: 'Documents' }),
+    ];
+    const readDir = vi.fn(async (directoryPath: string) => {
+      if (directoryPath === '/home/user') {
+        return dirContents('/home/user', homeEntries);
+      }
+
+      throw new Error(`unexpected ${directoryPath}`);
+    });
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~/',
+      homeDir: '/home/user/',
+      mode: 'path',
+      currentPath: '/workspace',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(state.kind).toBe('directory');
+    expect(readDir).toHaveBeenCalledWith('/home/user');
+    expect(state.groups[0].items.map(item => item.name)).toEqual(['Desktop', 'Documents']);
+  });
+
+  it('lists windows home children for a backslash tilde prefix', async () => {
+    const homeEntries = [
+      entry('C:/Users/aleks/Desktop', { name: 'Desktop' }),
+    ];
+    const readDir = vi.fn(async (directoryPath: string) => {
+      if (directoryPath === 'C:/Users/aleks') {
+        return dirContents('C:/Users/aleks', homeEntries);
+      }
+
+      throw new Error(`unexpected ${directoryPath}`);
+    });
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~\\de',
+      homeDir: 'C:\\Users\\aleks\\',
+      mode: 'path',
+      currentPath: 'C:/Work',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(readDir).toHaveBeenCalledWith('C:/Users/aleks');
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/Users/aleks/Desktop']);
+  });
+
+  it('shows the home directory itself for a bare tilde', async () => {
+    const parentEntries = [
+      entry('/home/user', { name: 'user' }),
+      entry('/home/other', { name: 'other' }),
+    ];
+    const readDir = vi.fn(async (directoryPath: string) => {
+      if (directoryPath === '/home') {
+        return dirContents('/home', parentEntries);
+      }
+
+      throw new Error(`unexpected ${directoryPath}`);
+    });
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~',
+      homeDir: '/home/user',
+      mode: 'path',
+      currentPath: '/workspace',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(readDir).toHaveBeenCalledWith('/home');
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['/home/user']);
+  });
+
+  it('does not turn an empty home into a root-relative path', async () => {
+    const readDir = vi.fn().mockRejectedValue(new Error('missing'));
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~/Desktop',
+      homeDir: '',
+      mode: 'path',
+      currentPath: '/workspace',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn().mockRejectedValue(new Error('missing')),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(readDir.mock.calls.map(call => call[0])).not.toContain('/Desktop');
+    expect(state.groups[0].items.map(item => item.path)).not.toContain('/Desktop');
+  });
+
+  it('does not expand ~user', async () => {
+    const readDir = vi.fn();
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~user',
+      homeDir: '/home/user',
+      mode: 'entry',
+      currentPath: '/workspace',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn(),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(readDir).not.toHaveBeenCalled();
+    expect(state.groups[0].items).toEqual([]);
   });
 
   it('builds expansion and reveal targets', () => {
