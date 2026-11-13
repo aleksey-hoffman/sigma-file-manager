@@ -5,6 +5,7 @@
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import type { HistoryItem, ItemTag, TaggedItem } from '@/types/user-stats';
+import { expandLeadingTilde } from '@/utils/expand-leading-tilde';
 import normalizePath, {
   canonicalizePath,
   getParentPath,
@@ -64,6 +65,8 @@ export interface AddressBarSuggestionLookup {
 
 export interface ResolveAddressBarSuggestionsOptions {
   query: string;
+  homeDir?: string;
+  queryAlreadyExpanded?: boolean;
   mode: AddressBarEditorMode;
   currentPath: string;
   directoryGroupLabel: string;
@@ -310,6 +313,51 @@ export function addressBarTrimmedQueryLooksLikeFilesystemPath(trimmedNormalizedQ
   return false;
 }
 
+export function addressBarQueryUsesFilesystemPathMode(
+  trimmedQuery: string,
+  pathExists: boolean,
+  homeDir: string,
+): boolean {
+  const normalizedQuery = normalizePath(trimmedQuery).trim();
+  const expandedQuery = expandLeadingTilde(normalizedQuery, homeDir);
+
+  if (expandedQuery !== normalizedQuery) {
+    return true;
+  }
+
+  return pathExists;
+}
+
+export interface AddressBarGoUpTarget {
+  currentQuery: string;
+  parentQuery: string;
+}
+
+export function resolveAddressBarGoUpQuery(query: string, homeDir: string): AddressBarGoUpTarget | null {
+  const normalizedQuery = normalizePath(query).trim();
+  const expandedQuery = expandLeadingTilde(normalizedQuery, homeDir);
+  const trimmedTip = canonicalizePath(expandedQuery);
+
+  if (!trimmedTip) {
+    return null;
+  }
+
+  const parentPath = getParentPath(trimmedTip);
+
+  if (!parentPath) {
+    return null;
+  }
+
+  const currentQuery = expandedQuery.endsWith('/')
+    ? ensureAddressBarDirectoryQuery(trimmedTip)
+    : expandedQuery;
+
+  return {
+    currentQuery,
+    parentQuery: ensureAddressBarDirectoryQuery(parentPath),
+  };
+}
+
 export function getAddressBarRevealTarget(path: string): {
   parentPath: string;
   entryPath: string;
@@ -427,10 +475,62 @@ async function resolveAddressBarDirectoryListingOrExactOrSearch(
   }
 }
 
+function normalizedAddressBarSuggestionQuery(
+  options: ResolveAddressBarSuggestionsOptions,
+): string {
+  const normalizedQuery = normalizePath(options.query).trim();
+
+  if (options.queryAlreadyExpanded) {
+    return normalizedQuery;
+  }
+
+  return expandLeadingTilde(normalizedQuery, options.homeDir ?? '');
+}
+
+function expandedQueryNamesHomeDirectory(expandedQuery: string, homeDir: string): boolean {
+  if (!expandedQuery || expandedQuery.endsWith('/')) {
+    return false;
+  }
+
+  const canonicalHome = canonicalizePath(homeDir);
+
+  if (!canonicalHome) {
+    return false;
+  }
+
+  return canonicalizePath(expandedQuery) === canonicalHome;
+}
+
+async function resolveExactHomeDirectorySuggestion(
+  options: ResolveAddressBarSuggestionsOptions,
+  expandedQuery: string,
+): Promise<AddressBarSuggestionState> {
+  const canonicalHome = canonicalizePath(options.homeDir ?? '');
+  const exactPath = isWindowsDriveRootPath(canonicalHome)
+    ? `${canonicalHome}/`
+    : canonicalHome;
+
+  try {
+    const exactEntry = await options.lookup.getDirEntry(exactPath);
+
+    return {
+      kind: 'exact',
+      groups: [
+        createDirectorySuggestionGroup([exactEntry], options.exactGroupLabel, 'exact'),
+      ],
+      exactEntry,
+      directoryPath: exactEntry.is_dir ? exactEntry.path : null,
+    };
+  }
+  catch {
+    return resolveSearchSuggestions(options, expandedQuery);
+  }
+}
+
 export async function resolveAddressBarSuggestions(
   options: ResolveAddressBarSuggestionsOptions,
 ): Promise<AddressBarSuggestionState> {
-  const normalizedQuery = normalizePath(options.query).trim();
+  const normalizedQuery = normalizedAddressBarSuggestionQuery(options);
 
   if (!normalizedQuery) {
     return {
@@ -449,6 +549,10 @@ export async function resolveAddressBarSuggestions(
       pathForReadDir,
       normalizedQuery,
     );
+  }
+
+  if (expandedQueryNamesHomeDirectory(normalizedQuery, options.homeDir ?? '')) {
+    return resolveExactHomeDirectorySuggestion(options, normalizedQuery);
   }
 
   const implicitBrowsePath = getImplicitAddressBarAbsoluteDirectoryBrowsePath(normalizedQuery);
