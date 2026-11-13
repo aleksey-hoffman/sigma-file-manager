@@ -21,7 +21,7 @@ concurrency:
 jobs:
   prepare:
     name: Prepare release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.context.outputs.tag }}
       version: ${{ steps.context.outputs.version }}
@@ -155,13 +155,13 @@ jobs:
           ref: ${{ needs.prepare.outputs.tag }}
 
       - name: Setup Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@v0.0.11
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
@@ -177,7 +177,7 @@ jobs:
         run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
 
       - name: Cache npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -257,7 +257,7 @@ jobs:
 
       - name: Upload unsigned Windows installer artifact
         if: matrix.platform == 'windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: unsigned-windows-setup
           path: staged/Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-setup.exe
@@ -279,7 +279,7 @@ jobs:
 
       - name: Upload unsigned Windows portable artifact
         if: matrix.platform == 'windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: unsigned-windows-portable
           path: staged-portable/Sigma-File-Manager-${{ needs.prepare.outputs.version }}-windows-portable.exe
@@ -413,7 +413,7 @@ jobs:
           "path=signed/$env:INSTALLER" >> $env:GITHUB_OUTPUT
 
       - name: Upload signed installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: signed-windows-setup
           path: ${{ steps.verify.outputs.path }}
@@ -444,7 +444,7 @@ jobs:
     steps:
       - name: Download unsigned portable executable
         if: env.SIGN_PORTABLE != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: unsigned-windows-portable
           path: portable
