@@ -1,0 +1,258 @@
+#!/bin/sh
+set -e
+# hook that checks several potential issues vulkan related
+
+# On aarch64 device drivers are all over the place and often they ship with
+# modifications not upstreamed to mesa, so we need to allow the host vulkan
+
+_vulkan_hook_dir=${TMPDIR:-/tmp}/.vulkan-hook
+
+if [ "$APPIMAGE_ARCH" = 'aarch64' ]; then
+	export SHARUN_ALLOW_SYS_VKICD=${SHARUN_ALLOW_SYS_VKICD:-1}
+fi
+
+# TODO remove once sharun does this automatically
+XDG_DATA_DIRS=${XDG_DATA_DIRS:+$XDG_DATA_DIRS:}/usr/local/share:/usr/share:/etc
+export XDG_DATA_DIRS
+
+_nvidia_check() (
+	# wtf makes this file? I cannot find any info related to it!
+	nonsense=/usr/share/vulkan/icd.d/nvidia_icd.json_inactive
+	if [ -f "$nonsense" ]; then
+		err_msg ""
+		err_msg "WARNING: Nvidia vulkan driver disabled by '$nonsense'"
+		err_msg ""
+		return 1
+	fi
+
+	# debian likes to split the nvidia driver into several packages
+	# so there is a lot of people that only have the nvidia opengl driver installed
+	# that then come complain that X vulkan app does not work because there is
+	# no nvidia vulkan driver installed on their system.
+	set -- /usr/share/glvnd/egl_vendor.d/10_nvidia.json /usr/share/vulkan/icd.d/*nvidia*.json
+	if [ -f "$1" ] && [ ! -f "$2" ]; then
+		err_msg ""
+		err_msg "============================================================"
+		err_msg ""
+		err_msg "YOU HAVE AN INCOMPLETE NVIDIA DRIVER INSTALLATION!"
+		err_msg ""
+		err_msg "There is no nvidia vulkan loader at: /usr/share/vulkan/icd.d"
+		err_msg "This usually happens when you are using a distro that splits"
+		err_msg "the nvidia driver into several packages such as debian"
+		err_msg "Run 'sudo apt install nvidia-vulkan-icd' to fix this issue"
+		err_msg ""
+		err_msg "MAKE SURE YOUR VULKAN DRIVER WORKS BEFORE REPORTING BUGS"
+		err_msg "You can check that by testing with vkcube"
+		err_msg ""
+		err_msg "============================================================"
+		err_msg ""
+	elif [ -f "$1" ] || [ -f "$2" ]; then
+		return 0
+	fi
+	return 1
+)
+
+_nvidia_check || :
+
+# It is possible for a vulkan layer to have a path with '$LIB' which is a token
+# used by the dynamic linker that expands to locations like lib and lib32
+# the problem here is that debian  has lib/x86_64-linux-gnu instead
+# so we need to check and patch '$LIB' for the real path to the lib instead
+_check_vulkan_json_path() (
+	implicit_dir=$_vulkan_hook_dir/vulkan/implicit_layer.d
+	explicit_dir=$_vulkan_hook_dir/vulkan/explicit_layer.d
+
+	is_cmd grep sed mkdir || return 1
+
+	for f in /usr/share/vulkan/explicit_layer.d/*; do
+		if [ -f "$f" ] && layer_path=$(grep -o '"/usr.*$LIB.*"' "$f"); then
+			for p in lib/"$APPIMAGE_ARCH"-linux-gnu lib64 lib; do
+				test_path=$(echo "$layer_path" | sed "s|\"||g; s|\$LIB|$p|")
+				if [ -e "$test_path" ]; then
+					mkdir -p "$explicit_dir"
+					# sed -i is not POSIX
+					__tmp_sed=$(sed "s|\$LIB|$p|" "$f")
+					echo "$__tmp_sed" > "$explicit_dir"/"${f##*/}"
+					>&2 echo "vulkan-check: Handled \$LIB path in $f"
+					break
+				fi
+			done
+		fi
+	done
+
+	for f in /usr/share/vulkan/implicit_layer.d/*; do
+		if [ -f "$f" ] && layer_path=$(grep -o '"/usr.*$LIB.*"' "$f"); then
+			for p in lib/"$APPIMAGE_ARCH"-linux-gnu lib64 lib; do
+				test_path=$(echo "$layer_path" | sed "s|\"||g; s|\$LIB|$p|")
+				if [ -e "$test_path" ]; then
+					mkdir -p "$implicit_dir"
+					# sed -i is not POSIX
+					__tmp_sed=$(sed "s|\$LIB|$p|" "$f")
+					echo "$__tmp_sed" > "$implicit_dir"/"${f##*/}"
+					>&2 echo "vulkan-check: Handled \$LIB path in $f"
+					break
+				fi
+			done
+		fi
+	done
+)
+
+if _check_vulkan_json_path && [ -d "$_vulkan_hook_dir" ]; then
+	export XDG_CONFIG_DIRS="$_vulkan_hook_dir:${XDG_CONFIG_DIRS:-/etc/xdg}"
+fi
+
+_start_virtualization() {
+	set -- /dev/dri/render*
+	gpu=$1
+
+	set -- "$APPDIR"/share/vulkan/icd.d/virtio_icd*.json
+	virtio_icd=$1
+
+	set -- "$APPDIR"/share/glvnd/egl_vendor.d/*_mesa.json
+	mesa_icd=$1
+
+	if ! command -v virgl_test_server 1>/dev/null; then
+		err_msg "ERROR: No virgl_test_server binary found!"
+		return 1
+	elif [ ! -e "$gpu" ]; then
+		err_msg "ERROR: There is no gpu in this system!"
+		return 1
+	elif [ ! -e "$virtio_icd" ]; then
+		err_msg "ERROR: Vulkan virtio was not bundled! Cannot continue."
+		return 1
+	elif [ ! -e "$mesa_icd" ]; then
+		err_msg "ERROR: Mesa gallium was not bundled! Cannot continue."
+		return 1
+	fi
+
+	socket=${TMPDIR:-/tmp}/virgl.socket
+	virgl_test_server --venus --use-gles --socket-path "$socket" --rendernode "$gpu" &
+
+	export VTEST_SOCKET_NAME="$socket"
+	export VK_DRIVER_FILES="$virtio_icd"
+	export __GLX_VENDOR_LIBRARY_NAME=mesa
+	export __EGL_VENDOR_LIBRARY_FILENAMES="$mesa_icd"
+	export MESA_LOADER_DRIVER_OVERRIDE=zink
+	export SHARUN_ALLOW_SYS_VKICD=0
+
+	# TODO: Improve this check, this is only a problem that affects the amdgpu ddx
+	case "$XDG_SESSION_TYPE" in
+		x11|X11) export LIBGL_KOPPER_DRI2=1;;
+	esac
+}
+
+if [ "$ENABLE_VIRTUALIZATION_THIS_IS_EXPERIMENTAL_KEK" = 1 ]; then
+	>&2 echo "Starting virtualization"
+	_start_virtualization || :
+fi
+
+_use_host_mesa() {
+	SHARUN_MESA_PATH=$TMPDIR/.HOST_MESA
+
+	if [ ! -d "$SHARUN_MESA_PATH" ]; then
+		while IFS="" read -r d; do
+			if [ -d "$d" ]; then
+				HOST_LIB_DIR=${HOST_LIB_DIR:-${d%/dri}}
+				break
+			fi
+		done <<-EOF
+		/usr/lib/$APPIMAGE_ARCH-linux-gnu/dri
+		/usr/lib64/dri
+		/usr/lib/dri
+		/run/opengl-driver/lib/dri
+		EOF
+
+		# We need to only expose the host mesa drivers and nothing else
+		if [ ! -d "$HOST_LIB_DIR" ]; then
+			err_msg "ERROR: Could not find host main library libs location"
+			err_msg "Searched for:"
+			err_msg " - /usr/lib/$APPIMAGE_ARCH-linux-gnu/dri "
+			err_msg " - /usr/lib64/dri"
+			err_msg " - /usr/lib/dri"
+			err_msg " - /run/opengl-driver/lib/dri"
+			err_msg "Set HOST_LIB_DIR to where you have your drivers"
+			return 1
+		fi
+		mkdir -p "$SHARUN_MESA_PATH"/lib "$SHARUN_MESA_PATH"/share
+
+		_libraries_to_expose="
+			gbm
+			dri
+			libdrm_*.so*
+			libEGL_mesa.so*
+			libEGL.so*
+			libgallium*.so*
+			libgbm.so*
+			libglapi.so*
+			libGLdispatch.so*
+			libGLESv2.so*
+			libGL.so*
+			libGLX_indirect.so*
+			libGLX_mesa.so*
+			libGLX.so*
+			libva-drm.so*
+			libva.so*
+			libva-wayland.so*
+			libva-x11.so*
+			libvulkan*gfxstream.so*
+			libwayland-client.so*
+			libwayland-cursor.so*
+			libwayland-egl.so*
+			libwayland-server.so*
+			libX11.so*
+			libX11-xcb.so*
+			libXau.so*
+			libxcb-dri2.so*
+			libxcb-dri3.so*
+			libxcb-glx.so*
+			libxcb-present.so*
+			libxcb-randr.so*
+			libxcb-shm.so*
+			libxcb.so*
+			libxcb-sync.so*
+			libxcb-xfixes.so*
+			libXdamage.so*
+			libXdmcp.so*
+			libXext.so*
+			libXfixes.so*
+		"
+
+		_data_dirs_to_expose="
+			drirc.d
+			glvnd
+			libdrm
+			vulkan
+			X11
+		"
+
+		for i in $_libraries_to_expose; do
+			set -- "$HOST_LIB_DIR"/$i
+			for l do
+				if [ -e "$l" ]; then
+					ln -sf "$l" "$SHARUN_MESA_PATH"/lib/
+				fi
+			done
+		done
+
+		for d in /run/opengl-driver/share /usr/share; do
+			if [ -d "$d" ]; then
+				_share=$d
+				break
+			fi
+		done
+
+		for d in $_data_dirs_to_expose; do
+			d=$_share/$d
+			if [ -d "$d" ]; then
+				ln -sf "$d" "$SHARUN_MESA_PATH"/share/
+			fi
+		done
+	fi
+
+	[ -d "$SHARUN_MESA_PATH" ]
+}
+
+if [ "$USE_HOST_MESA_DRIVERS" = 1 ] && _use_host_mesa; then
+	>&2 echo "Using host mesa drivers"
+	export SHARUN_MESA_PATH
+fi

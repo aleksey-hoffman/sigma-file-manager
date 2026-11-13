@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -56,8 +57,117 @@ jobs:
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-linux
+          workspaces: src-tauri
+          cache-on-failure: true
+
       - name: Cargo test (lib)
-        run: cargo test --manifest-path src-tauri/Cargo.toml --lib
+        run: cargo test --manifest-path src-tauri/Cargo.toml --locked --lib
+
+  tauri-linux-cef:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Linux dependencies
+        uses: ./.github/actions/install-linux-tauri-deps
+        with:
+          pin-webkit: false
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-linux-cef
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Cargo check (cef lib)
+        shell: bash
+        run: |
+          cp src-tauri/Cargo.lock src-tauri/Cargo.lock.wry
+          cp src-tauri/Cargo.cef.lock src-tauri/Cargo.lock
+          trap 'mv -f src-tauri/Cargo.lock.wry src-tauri/Cargo.lock' EXIT
+          cargo check --manifest-path src-tauri/Cargo.toml --locked --lib --no-default-features --features cef --config src-tauri/.cargo/cef.toml
+
+  linux-chromium-appimage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: ci-linux-chromium-appimage
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Linux dependencies
+        uses: ./.github/actions/install-linux-tauri-deps
+        with:
+          pin-webkit: false
+
+      - name: Install Chromium AppImage dependencies
+        run: |
+          sudo apt-get install -y \
+            libasound2-dev \
+            libnss3 \
+            libpulse0 \
+            libspeechd2 \
+            libxkbcommon-x11-0 \
+            xvfb \
+            squashfs-tools \
+            zstd \
+            desktop-file-utils \
+            file \
+            gcc
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Linux Chromium AppImage
+        env:
+          NO_STRIP: "1"
+        shell: bash
+        run: script -qfec "npm run tauri:linux-cef -- build --bundles appimage" /dev/null
+
+      - name: Upload Linux Chromium AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-chromium-appimage
+          path: src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+          retention-days: 7
 
   tauri-windows:
     runs-on: windows-latest
@@ -77,7 +187,7 @@ jobs:
           cache-on-failure: true
 
       - name: Cargo check release lib
-        run: cargo check --manifest-path src-tauri/Cargo.toml --release --lib
+        run: cargo check --manifest-path src-tauri/Cargo.toml --locked --release --lib
 
   e2e-windows:
     runs-on: windows-latest

@@ -1,0 +1,12 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "bundle": {
+    "linux": {
+      "appimage": {
+        "files": {
+          "bin/00-no-userns-prompt.hook": "appimage/00-no-userns-prompt.hook"
+        }
+      }
+    }
+  }
+}
