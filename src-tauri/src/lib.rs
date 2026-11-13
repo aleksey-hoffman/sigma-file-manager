@@ -6,6 +6,7 @@ mod app_dirs;
 mod app_updater;
 mod archive;
 mod background_sources;
+mod cef_launch;
 mod clipboard_source;
 mod clipboard_watcher;
 mod copy_move_job;
@@ -489,9 +490,31 @@ fn check_cef_display() -> Result<(), String> {
 
 #[cfg(all(feature = "cef", target_os = "linux"))]
 fn build_cef_runtime() -> tauri_runtime_cef::Cef {
-    let mut cef = tauri_runtime_cef::Cef::default().sandbox(tauri_runtime_cef::SandboxPolicy::Auto);
+    let plan = cef_launch::ChromiumLaunchPlan::from_environment();
+    let sandbox_dropped = chromium_appimage_auto_disables_sandbox(
+        std::env::var_os("APPIMAGE").is_some_and(|path| !path.is_empty()),
+        chrome_devel_sandbox_is_usable(),
+        read_sysctl_u64("/proc/sys/kernel/apparmor_restrict_unprivileged_userns"),
+        read_sysctl_u64("/proc/sys/user/max_user_namespaces"),
+    );
+    let cache_dir = app_dirs::cef_cache_dir_override();
+    if !cef_launch::is_chromium_subprocess(&std::env::args().skip(1).collect::<Vec<_>>()) {
+        eprintln!("{}", plan.startup_report(sandbox_dropped));
+        match &cache_dir {
+            Some(cache_dir) => {
+                eprintln!("Chromium log file: {}/cef.log", cache_dir.display());
+            }
+            None => {
+                eprintln!("Chromium log file: cef.log in the Chromium cache directory");
+            }
+        }
+    }
 
-    if let Some(cache_dir) = app_dirs::cef_cache_dir_override() {
+    let mut cef = cef_launch::apply(
+        &plan,
+        tauri_runtime_cef::Cef::default().sandbox(tauri_runtime_cef::SandboxPolicy::Auto),
+    );
+    if let Some(cache_dir) = cache_dir {
         cef = cef.root_cache_path(cache_dir);
     }
 

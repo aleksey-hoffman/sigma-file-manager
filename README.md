@@ -178,7 +178,7 @@ The funding will be used for funding the development of this and my other big pr
           Portable (<code>*-linux-chromium-x86_64.AppImage</code>)
         </a>
         <br>
-        Bundles Chromium (CEF) instead of WebKitGTK for faster rendering. Larger download (~175 MB); requires X11 or XWayland. On distros that restrict unprivileged user namespaces (Ubuntu 24.04 and later), this AppImage may run without the Chromium sandbox
+        Bundles Chromium (CEF) instead of WebKitGTK for faster rendering. Larger download (~175 MB); requires X11 or XWayland. Chromium cookies use its built-in basic store, so the system keyring stays untouched. On distros that restrict unprivileged user namespaces (Ubuntu 24.04 and later), this AppImage may run without the Chromium sandbox. <code>SFM_CEF_DISABLE_GPU=1</code> forces software rendering. Extra Chromium switches come from <code>SFM_CEF_ARGS</code>
       </td>
     </tr>
     <tr>
