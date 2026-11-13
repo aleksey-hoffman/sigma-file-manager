@@ -9,6 +9,7 @@ import {
 import { createPinia, setActivePinia } from 'pinia';
 import { USER_SETTINGS_SCHEMA_VERSION } from '@/stores/schemas/user-settings';
 import {
+  USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT,
   USER_SETTINGS_THEME_CHANGED_EVENT,
   useUserSettingsStore,
 } from '@/stores/storage/user-settings';
@@ -16,7 +17,12 @@ import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup
 import type { NavigatorFolderSettingsMap, Theme } from '@/types/user-settings';
 import { normalizePathForComparison } from '@/utils/file-operation-paths';
 
-type ThemeEventCallback = (event: { payload: { theme: Theme } }) => void;
+type SettingsEventCallback = (event: {
+  payload: {
+    theme?: Theme;
+    show?: boolean;
+  };
+}) => void;
 
 const {
   emitMock,
@@ -30,7 +36,7 @@ const {
   lazyStoreSaveMock: vi.fn(),
   lazyStoreSetMock: vi.fn(),
   listenMock: vi.fn(),
-  themeEventCallbacks: new Map<string, ThemeEventCallback>(),
+  themeEventCallbacks: new Map<string, SettingsEventCallback>(),
   webviewSetZoomMock: vi.fn(),
 }));
 
@@ -102,7 +108,7 @@ describe('user settings theme sync', () => {
     themeEventCallbacks.clear();
     listenMock.mockReset().mockImplementation(async (
       eventName: string,
-      callback: ThemeEventCallback,
+      callback: SettingsEventCallback,
     ) => {
       themeEventCallbacks.set(eventName, callback);
 
@@ -162,7 +168,7 @@ describe('user settings folder settings path lifecycle', () => {
     themeEventCallbacks.clear();
     listenMock.mockReset().mockImplementation(async (
       eventName: string,
-      callback: ThemeEventCallback,
+      callback: SettingsEventCallback,
     ) => {
       themeEventCallbacks.set(eventName, callback);
 
@@ -344,5 +350,91 @@ describe('user settings infusion blend settings', () => {
       blendTarget: 'ui',
       blendTint: '#3b82f6',
     });
+  });
+});
+
+describe('user settings info panel visibility', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    emitMock.mockReset().mockResolvedValue(undefined);
+    lazyStoreSaveMock.mockReset();
+    lazyStoreSetMock.mockReset();
+    webviewSetZoomMock.mockReset();
+    themeEventCallbacks.clear();
+    listenMock.mockReset().mockImplementation(async (
+      eventName: string,
+      callback: SettingsEventCallback,
+    ) => {
+      themeEventCallbacks.set(eventName, callback);
+
+      return vi.fn();
+    });
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+      })),
+    });
+  });
+
+  it('shows the info panel when saved settings never stored a choice', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+
+    expect(userSettingsStore.userSettings.navigator.infoPanel.show).toBe(true);
+    expect(lazyStoreSetMock).not.toHaveBeenCalledWith('navigator.infoPanel.show', false);
+    expect(lazyStoreSetMock).not.toHaveBeenCalledWith('navigator.infoPanel.show', true);
+  });
+
+  it('keeps a saved hidden info panel', async () => {
+    const userSettingsStore = useUserSettingsStore();
+    const bootstrap = createUserSettingsBootstrap('dark');
+
+    if (bootstrap.data) {
+      bootstrap.data['navigator.infoPanel.show'] = false;
+    }
+
+    await userSettingsStore.init(bootstrap);
+
+    expect(userSettingsStore.userSettings.navigator.infoPanel.show).toBe(false);
+    expect(lazyStoreSetMock).not.toHaveBeenCalledWith('navigator.infoPanel.show', true);
+  });
+
+  it('broadcasts info panel visibility to other windows', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+    emitMock.mockClear();
+
+    await userSettingsStore.set('navigator.infoPanel.show', false);
+
+    expect(userSettingsStore.userSettings.navigator.infoPanel.show).toBe(false);
+    expect(lazyStoreSetMock).toHaveBeenCalledWith('navigator.infoPanel.show', false);
+    expect(emitMock).toHaveBeenCalledWith(USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT, { show: false });
+  });
+
+  it('applies info panel visibility from other windows without writing it back', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+    emitMock.mockClear();
+    lazyStoreSaveMock.mockClear();
+    lazyStoreSetMock.mockClear();
+
+    themeEventCallbacks.get(USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT)?.({
+      payload: {
+        show: false,
+      },
+    });
+    await nextTick();
+
+    expect(userSettingsStore.userSettings.navigator.infoPanel.show).toBe(false);
+    expect(lazyStoreSetMock).not.toHaveBeenCalled();
+    expect(lazyStoreSaveMock).not.toHaveBeenCalled();
+    expect(emitMock).not.toHaveBeenCalled();
   });
 });

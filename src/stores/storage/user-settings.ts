@@ -59,9 +59,14 @@ import {
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
 export const USER_SETTINGS_THEME_CHANGED_EVENT = 'user-settings:theme-changed';
+export const USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT = 'user-settings:info-panel-show-changed';
 
 type ThemeChangedEventPayload = {
   theme: Theme;
+};
+
+type InfoPanelShowChangedEventPayload = {
+  show: boolean;
 };
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
@@ -73,6 +78,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   const themeTransitionOrigin = ref<ThemeTransitionOrigin | null>(null);
   const themeTransitionsEnabled = ref(false);
   const themeChangeEventUnlisten = ref<UnlistenFn | null>(null);
+  const infoPanelShowChangeEventUnlisten = ref<UnlistenFn | null>(null);
   const allowedUserSettingsStorageKeys = ref<Set<string>>(new Set());
   const userSettings = ref<UserSettings>({
     language: {
@@ -125,7 +131,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         },
       },
       infoPanel: {
-        show: false,
+        show: true,
         dynamicSize: false,
         widthPx: null,
         previewHeightPx: null,
@@ -476,6 +482,15 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
+  async function broadcastInfoPanelShowChange(show: boolean) {
+    try {
+      await emit(USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT, { show } satisfies InfoPanelShowChangedEventPayload);
+    }
+    catch (error) {
+      console.error('Failed to broadcast info panel visibility:', error);
+    }
+  }
+
   async function ensureThemeChangeListener() {
     if (themeChangeEventUnlisten.value) {
       return;
@@ -495,6 +510,28 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
     catch (error) {
       console.error('Failed to listen for theme changes:', error);
+    }
+  }
+
+  async function ensureInfoPanelShowChangeListener() {
+    if (infoPanelShowChangeEventUnlisten.value) {
+      return;
+    }
+
+    try {
+      infoPanelShowChangeEventUnlisten.value = await listen<InfoPanelShowChangedEventPayload>(
+        USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT,
+        (event) => {
+          if (event.payload.show === userSettings.value.navigator.infoPanel.show) {
+            return;
+          }
+
+          userSettings.value.navigator.infoPanel.show = event.payload.show;
+        },
+      );
+    }
+    catch (error) {
+      console.error('Failed to listen for info panel visibility changes:', error);
     }
   }
 
@@ -534,11 +571,6 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await webview.setZoom(zoomLevel);
   }
 
-  async function toggleInfoPanel() {
-    userSettings.value.navigator.infoPanel.show = !userSettings.value.navigator.infoPanel.show;
-    await setUserSettingsStorage('navigator.infoPanel.show', userSettings.value.navigator.infoPanel.show);
-  }
-
   function applySettingValue(key: string, value: unknown) {
     const keys = key.split('.');
     let current: Record<string, unknown> = userSettings.value as Record<string, unknown>;
@@ -557,7 +589,15 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       await broadcastThemeChange(value as Theme);
     }
 
+    if (key === 'navigator.infoPanel.show') {
+      await broadcastInfoPanelShowChange(value as boolean);
+    }
+
     await setUserSettingsStorage(key, value);
+  }
+
+  async function toggleInfoPanel() {
+    await set('navigator.infoPanel.show', !userSettings.value.navigator.infoPanel.show);
   }
 
   async function setMany(entries: Array<{
@@ -573,6 +613,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
       if (entry.key === 'theme') {
         await broadcastThemeChange(entry.value as Theme);
+      }
+
+      if (entry.key === 'navigator.infoPanel.show' && typeof entry.value === 'boolean') {
+        await broadcastInfoPanelShowChange(entry.value);
       }
     }
 
@@ -653,6 +697,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     initTheme();
     themeTransitionsEnabled.value = true;
     await ensureThemeChangeListener();
+    await ensureInfoPanelShowChangeListener();
     initLanguage();
     await initZoom();
   }
