@@ -5,7 +5,7 @@
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import type { HistoryItem, ItemTag, TaggedItem } from '@/types/user-stats';
-import { expandLeadingTilde, isLeadingTildePath } from '@/utils/expand-leading-tilde';
+import { expandLeadingTilde } from '@/utils/expand-leading-tilde';
 import normalizePath, {
   canonicalizePath,
   getParentPath,
@@ -66,6 +66,7 @@ export interface AddressBarSuggestionLookup {
 export interface ResolveAddressBarSuggestionsOptions {
   query: string;
   homeDir?: string;
+  queryAlreadyExpanded?: boolean;
   mode: AddressBarEditorMode;
   currentPath: string;
   directoryGroupLabel: string;
@@ -293,10 +294,6 @@ export function addressBarTrimmedQueryLooksLikeFilesystemPath(trimmedNormalizedQ
 
   const normalized = normalizePath(trimmedNormalizedQuery);
 
-  if (isLeadingTildePath(normalized)) {
-    return true;
-  }
-
   if (normalized.startsWith('//')) {
     return true;
   }
@@ -478,10 +475,62 @@ async function resolveAddressBarDirectoryListingOrExactOrSearch(
   }
 }
 
+function normalizedAddressBarSuggestionQuery(
+  options: ResolveAddressBarSuggestionsOptions,
+): string {
+  const normalizedQuery = normalizePath(options.query).trim();
+
+  if (options.queryAlreadyExpanded) {
+    return normalizedQuery;
+  }
+
+  return expandLeadingTilde(normalizedQuery, options.homeDir ?? '');
+}
+
+function expandedQueryNamesHomeDirectory(expandedQuery: string, homeDir: string): boolean {
+  if (!expandedQuery || expandedQuery.endsWith('/')) {
+    return false;
+  }
+
+  const canonicalHome = canonicalizePath(homeDir);
+
+  if (!canonicalHome) {
+    return false;
+  }
+
+  return canonicalizePath(expandedQuery) === canonicalHome;
+}
+
+async function resolveExactHomeDirectorySuggestion(
+  options: ResolveAddressBarSuggestionsOptions,
+  expandedQuery: string,
+): Promise<AddressBarSuggestionState> {
+  const canonicalHome = canonicalizePath(options.homeDir ?? '');
+  const exactPath = isWindowsDriveRootPath(canonicalHome)
+    ? `${canonicalHome}/`
+    : canonicalHome;
+
+  try {
+    const exactEntry = await options.lookup.getDirEntry(exactPath);
+
+    return {
+      kind: 'exact',
+      groups: [
+        createDirectorySuggestionGroup([exactEntry], options.exactGroupLabel, 'exact'),
+      ],
+      exactEntry,
+      directoryPath: exactEntry.is_dir ? exactEntry.path : null,
+    };
+  }
+  catch {
+    return resolveSearchSuggestions(options, expandedQuery);
+  }
+}
+
 export async function resolveAddressBarSuggestions(
   options: ResolveAddressBarSuggestionsOptions,
 ): Promise<AddressBarSuggestionState> {
-  const normalizedQuery = expandLeadingTilde(options.query, options.homeDir ?? '');
+  const normalizedQuery = normalizedAddressBarSuggestionQuery(options);
 
   if (!normalizedQuery) {
     return {
@@ -500,6 +549,10 @@ export async function resolveAddressBarSuggestions(
       pathForReadDir,
       normalizedQuery,
     );
+  }
+
+  if (expandedQueryNamesHomeDirectory(normalizedQuery, options.homeDir ?? '')) {
+    return resolveExactHomeDirectorySuggestion(options, normalizedQuery);
   }
 
   const implicitBrowsePath = getImplicitAddressBarAbsoluteDirectoryBrowsePath(normalizedQuery);

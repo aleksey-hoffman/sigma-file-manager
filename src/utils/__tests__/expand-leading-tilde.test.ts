@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  customDirectoryPathForStorage,
   expandCopiedPath,
   expandLeadingTilde,
   isLeadingTildePath,
@@ -90,5 +91,34 @@ describe('expandCopiedPath', () => {
     expect(expandCopiedPath('"%USERPROFILE%\\Desktop"', WINDOWS_HOME)).toBe('%USERPROFILE%/Desktop');
     expect(expandCopiedPath('"~/Desktop"', '')).toBe('~/Desktop');
     expect(expandCopiedPath('""', UNIX_HOME)).toBe('');
+  });
+});
+
+describe('customDirectoryPathForStorage', () => {
+  it('stores ~ and ~/ as the same canonical directory', () => {
+    expect(customDirectoryPathForStorage('~', UNIX_HOME)).toBe('/home/user');
+    expect(customDirectoryPathForStorage('~/', UNIX_HOME)).toBe('/home/user');
+    expect(customDirectoryPathForStorage('~/', UNIX_HOME_WITH_SLASH)).toBe('/home/user');
+    expect(customDirectoryPathForStorage('~/Desktop/', UNIX_HOME)).toBe('/home/user/Desktop');
+  });
+
+  it('keeps a trailing slash for a drive root or UNC share root', () => {
+    expect(customDirectoryPathForStorage('~', 'C:/')).toBe('C:/');
+    expect(customDirectoryPathForStorage('~/', 'C:/')).toBe('C:/');
+    expect(customDirectoryPathForStorage('~', '//server/share')).toBe('//server/share/');
+    expect(customDirectoryPathForStorage('~/', '//server/share/')).toBe('//server/share/');
+  });
+
+  it('strips one pair of quotes before expanding', () => {
+    expect(customDirectoryPathForStorage('"~/Desktop"', UNIX_HOME)).toBe('/home/user/Desktop');
+    expect(customDirectoryPathForStorage('\'~/Desktop\'', WINDOWS_HOME)).toBe('C:/Users/aleks/Desktop');
+    expect(customDirectoryPathForStorage('\'"~/Desktop"\'', UNIX_HOME)).toBe('"~/Desktop"');
+  });
+
+  it('leaves an unexpanded path unchanged, including a trailing slash', () => {
+    expect(customDirectoryPathForStorage('~/Desktop', '')).toBe('~/Desktop');
+    expect(customDirectoryPathForStorage('~/', '')).toBe('~/');
+    expect(customDirectoryPathForStorage('D:/Work/', UNIX_HOME)).toBe('D:/Work/');
+    expect(customDirectoryPathForStorage('~user', UNIX_HOME)).toBe('~user');
   });
 });

@@ -2,7 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import normalizePath, { joinPath } from '@/utils/normalize-path';
+import normalizePath, {
+  canonicalizePath,
+  isUncShareRootPath,
+  isWindowsDriveRootPath,
+  joinPath,
+} from '@/utils/normalize-path';
 
 export function isLeadingTildePath(input: string): boolean {
   const normalizedInput = normalizePath(input).trim();
@@ -27,7 +32,7 @@ export function expandLeadingTilde(input: string, homeDir: string): string {
   return joinedPath;
 }
 
-function stripOnePairOfMatchingQuotes(input: string): string {
+export function stripOnePairOfMatchingQuotes(input: string): string {
   const trimmedInput = input.trim();
 
   if (trimmedInput.length < 2) {
@@ -49,4 +54,25 @@ function stripOnePairOfMatchingQuotes(input: string): string {
 
 export function expandCopiedPath(input: string, homeDir: string): string {
   return expandLeadingTilde(stripOnePairOfMatchingQuotes(input), homeDir);
+}
+
+function canonicalDirectoryPathForStorage(path: string): string {
+  const canonicalPath = canonicalizePath(path);
+
+  if (isWindowsDriveRootPath(canonicalPath) || isUncShareRootPath(canonicalPath)) {
+    return `${canonicalPath}/`;
+  }
+
+  return canonicalPath;
+}
+
+export function customDirectoryPathForStorage(value: string, homeDir: string): string {
+  const normalizedInput = normalizePath(stripOnePairOfMatchingQuotes(value)).trim();
+  const expandedPath = expandLeadingTilde(normalizedInput, homeDir);
+
+  if (!normalizePath(homeDir).trim() || expandedPath === normalizedInput) {
+    return normalizedInput;
+  }
+
+  return canonicalDirectoryPathForStorage(expandedPath);
 }

@@ -200,4 +200,67 @@ describe('custom default directory path', () => {
     expect((input.element as HTMLInputElement).value).toBe('/home/user/Projects');
     wrapper.unmount();
   });
+
+  it('rewrites a stored tilde custom directory to its canonical path', async () => {
+    userSettingsState.navigator.defaultDirectory.customPath = '~/Desktop';
+    const wrapper = mountDefaultDirectory();
+    await flushPromises();
+    const input = wrapper.get('#default-directory-custom-path');
+
+    expect((input.element as HTMLInputElement).value).toBe('/home/user/Desktop');
+    expect(setMock).toHaveBeenCalledWith(
+      'navigator.defaultDirectory.customPath',
+      '/home/user/Desktop',
+    );
+    wrapper.unmount();
+  });
+
+  it('does not rewrite a stored tilde path when home is empty', async () => {
+    userPathsState.homeDir = '';
+    userSettingsState.navigator.defaultDirectory.customPath = '~/Desktop';
+    const wrapper = mountDefaultDirectory();
+    await flushPromises();
+
+    expect(setMock).not.toHaveBeenCalled();
+    expect((wrapper.get('#default-directory-custom-path').element as HTMLInputElement).value).toBe('~/Desktop');
+    wrapper.unmount();
+  });
+
+  it('stores ~ and ~/ as the same canonical directory', async () => {
+    const wrapper = mountDefaultDirectory();
+    const input = wrapper.get('#default-directory-custom-path');
+
+    await input.setValue('~');
+    await flushPromises();
+    expect(setMock).toHaveBeenLastCalledWith(
+      'navigator.defaultDirectory.customPath',
+      '/home/user',
+    );
+
+    await input.setValue('~/');
+    await flushPromises();
+    expect(setMock).toHaveBeenLastCalledWith(
+      'navigator.defaultDirectory.customPath',
+      '/home/user',
+    );
+
+    await input.trigger('blur');
+    await flushPromises();
+    expect((input.element as HTMLInputElement).value).toBe('/home/user');
+    wrapper.unmount();
+  });
+
+  it('strips one pair of quotes before storing a tilde path', async () => {
+    const wrapper = mountDefaultDirectory();
+    const input = wrapper.get('#default-directory-custom-path');
+
+    await input.setValue('"~/Desktop"');
+    await flushPromises();
+
+    expect(setMock).toHaveBeenLastCalledWith(
+      'navigator.defaultDirectory.customPath',
+      '/home/user/Desktop',
+    );
+    wrapper.unmount();
+  });
 });

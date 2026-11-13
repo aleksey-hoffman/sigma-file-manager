@@ -101,8 +101,8 @@ describe('addressBarTrimmedQueryLooksLikeFilesystemPath', () => {
     expect(addressBarTrimmedQueryLooksLikeFilesystemPath('C:')).toBe(true);
   });
 
-  it('treats a bare tilde or tilde slash prefix as a path', () => {
-    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~')).toBe(true);
+  it('treats a tilde slash prefix as a path and leaves a bare tilde to expansion', () => {
+    expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~')).toBe(false);
     expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~/Desktop')).toBe(true);
     expect(addressBarTrimmedQueryLooksLikeFilesystemPath('~\\Desktop')).toBe(true);
   });
@@ -122,6 +122,7 @@ describe('address bar tilde path mode', () => {
   });
 
   it('stays in search mode when home is empty or the tilde is not a home prefix', () => {
+    expect(addressBarQueryUsesFilesystemPathMode('~', false, '')).toBe(false);
     expect(addressBarQueryUsesFilesystemPathMode('~/Desktop', false, '')).toBe(false);
     expect(addressBarQueryUsesFilesystemPathMode('~user', false, '/home/user')).toBe(false);
     expect(addressBarQueryUsesFilesystemPathMode('notes~', false, '/home/user')).toBe(false);
@@ -667,14 +668,88 @@ describe('address bar editor utils', () => {
     expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/Users/aleks/Desktop']);
   });
 
-  it('shows the home directory itself for a bare tilde', async () => {
-    const parentEntries = [
-      entry('/home/user', { name: 'user' }),
-      entry('/home/other', { name: 'other' }),
-    ];
+  it('returns only the home entry for a bare tilde when a sibling name contains the home leaf', async () => {
+    const homeEntry = entry('C:/Users/fault', { name: 'fault' });
+    const queries = ['~', 'C:/Users/fault'];
+
+    for (const query of queries) {
+      const readDir = vi.fn(async (directoryPath: string) => {
+        if (directoryPath === 'C:/Users') {
+          return dirContents('C:/Users', [
+            entry('C:/Users/Default', { name: 'Default' }),
+            homeEntry,
+            entry('C:/Users/Public', { name: 'Public' }),
+          ]);
+        }
+
+        throw new Error(`unexpected ${directoryPath}`);
+      });
+      const getDirEntry = vi.fn(async (directoryPath: string) => {
+        if (directoryPath === 'C:/Users/fault') {
+          return homeEntry;
+        }
+
+        throw new Error(`unexpected ${directoryPath}`);
+      });
+
+      const state = await resolveAddressBarSuggestions({
+        query,
+        homeDir: 'C:/Users/fault',
+        mode: 'path',
+        currentPath: 'C:/Work',
+        directoryGroupLabel: 'Directory entries',
+        exactGroupLabel: 'Exact match',
+        resultsGroupLabel: 'Results',
+        entryModeGroups: [],
+        lastDirectoryEntries: [],
+        lookup: {
+          readDir,
+          getDirEntry,
+        },
+        createSearchMatcher: searchMatcher,
+      });
+
+      expect(getDirEntry).toHaveBeenCalledWith('C:/Users/fault');
+      expect(readDir).not.toHaveBeenCalled();
+      expect(state.kind).toBe('exact');
+      expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/Users/fault']);
+    }
+  });
+
+  it('returns the drive itself when home is that drive root', async () => {
+    const driveEntry = entry('C:/', { name: 'C:' });
+    const readDir = vi.fn();
+    const getDirEntry = vi.fn(async () => driveEntry);
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~',
+      homeDir: 'C:/',
+      mode: 'path',
+      currentPath: 'C:/Work',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry,
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(getDirEntry).toHaveBeenCalledWith('C:/');
+    expect(readDir).not.toHaveBeenCalled();
+    expect(state.kind).toBe('exact');
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/']);
+  });
+
+  it('falls back to parent search when the home entry cannot be read', async () => {
     const readDir = vi.fn(async (directoryPath: string) => {
-      if (directoryPath === '/home') {
-        return dirContents('/home', parentEntries);
+      if (directoryPath === 'C:/Users') {
+        return dirContents('C:/Users', [
+          entry('C:/Users/fault', { name: 'fault' }),
+        ]);
       }
 
       throw new Error(`unexpected ${directoryPath}`);
@@ -682,7 +757,34 @@ describe('address bar editor utils', () => {
 
     const state = await resolveAddressBarSuggestions({
       query: '~',
+      homeDir: 'C:/Users/fault',
+      mode: 'path',
+      currentPath: 'C:/Work',
+      directoryGroupLabel: 'Directory entries',
+      exactGroupLabel: 'Exact match',
+      resultsGroupLabel: 'Results',
+      entryModeGroups: [],
+      lastDirectoryEntries: [],
+      lookup: {
+        readDir,
+        getDirEntry: vi.fn().mockRejectedValue(new Error('missing')),
+      },
+      createSearchMatcher: searchMatcher,
+    });
+
+    expect(readDir).toHaveBeenCalledWith('C:/Users');
+    expect(state.kind).toBe('search');
+    expect(state.groups[0].items.map(item => item.path)).toEqual(['C:/Users/fault']);
+  });
+
+  it('does not expand a query that the caller already expanded', async () => {
+    const readDir = vi.fn();
+    const getDirEntry = vi.fn();
+
+    const state = await resolveAddressBarSuggestions({
+      query: '~',
       homeDir: '/home/user',
+      queryAlreadyExpanded: true,
       mode: 'path',
       currentPath: '/workspace',
       directoryGroupLabel: 'Directory entries',
@@ -692,13 +794,15 @@ describe('address bar editor utils', () => {
       lastDirectoryEntries: [],
       lookup: {
         readDir,
-        getDirEntry: vi.fn(),
+        getDirEntry,
       },
       createSearchMatcher: searchMatcher,
     });
 
-    expect(readDir).toHaveBeenCalledWith('/home');
-    expect(state.groups[0].items.map(item => item.path)).toEqual(['/home/user']);
+    expect(readDir).not.toHaveBeenCalled();
+    expect(getDirEntry).not.toHaveBeenCalled();
+    expect(state.kind).toBe('search');
+    expect(state.groups[0].items).toEqual([]);
   });
 
   it('does not turn an empty home into a root-relative path', async () => {

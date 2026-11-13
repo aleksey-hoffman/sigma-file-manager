@@ -59,7 +59,6 @@ import {
 import { useVerticalVirtualList } from '@/composables/use-vertical-virtual-list';
 import {
   addressBarPathHasNoParentDirectory,
-  addressBarQueryUsesFilesystemPathMode,
   addressBarTrimmedQueryLooksLikeFilesystemPath,
   createRecentSuggestionGroup,
   createTaggedSuggestionGroups,
@@ -437,7 +436,31 @@ async function applyEditorQueryWithoutDebouncedWatch(nextQueryExact: string): Pr
   query.value = nextQueryExact;
   suppressDebouncedSuggestionsOnQueryMutation.value = false;
   await refreshSuggestions(nextQueryExact);
-  await moveAddressBarInputCaretToEndAfterPaint();
+  await moveAddressBarInputCaretToEndAfterPaint(nextQueryExact);
+}
+
+function addressBarHistoryStepListsDirectory(step: string): boolean {
+  return normalizePath(step).trim().endsWith('/');
+}
+
+function initialAddressBarHistoryStep(
+  typedQuery: string,
+  expandedQuery: string,
+  queryExpandsTilde: boolean,
+  homeDirectory: string,
+): string {
+  if (!queryExpandsTilde) {
+    return typedQuery;
+  }
+
+  if (
+    expandedQuery.endsWith('/')
+    || canonicalizePath(expandedQuery) !== canonicalizePath(homeDirectory)
+  ) {
+    return expandedQuery;
+  }
+
+  return ensureAddressBarDirectoryQuery(expandedQuery);
 }
 
 function appendEditorNavigateForwardStep(nextQueryExact: string): void {
@@ -456,12 +479,23 @@ function appendEditorNavigateForwardStep(nextQueryExact: string): void {
     addressEditorNavigationSteps.value.length - 1
   ];
 
-  if (
-    typeof lastStepAfterSlice === 'string'
-    && normalizePath(lastStepAfterSlice).trim() === trimmedNext
-  ) {
-    addressEditorNavigationIndex.value = addressEditorNavigationSteps.value.length - 1;
-    return;
+  if (typeof lastStepAfterSlice === 'string') {
+    const canonicalLastStep = canonicalizePath(normalizePath(lastStepAfterSlice).trim());
+    const canonicalNextStep = canonicalizePath(trimmedNext);
+
+    if (canonicalLastStep === canonicalNextStep) {
+      if (
+        !addressBarHistoryStepListsDirectory(lastStepAfterSlice)
+        && addressBarHistoryStepListsDirectory(trimmedNext)
+      ) {
+        addressEditorNavigationSteps.value[
+          addressEditorNavigationSteps.value.length - 1
+        ] = nextQueryExact;
+      }
+
+      addressEditorNavigationIndex.value = addressEditorNavigationSteps.value.length - 1;
+      return;
+    }
   }
 
   addressEditorNavigationSteps.value.push(nextQueryExact);
@@ -583,11 +617,7 @@ async function refreshSuggestions(
       return;
     }
 
-    modeForResolve = addressBarQueryUsesFilesystemPathMode(
-      normalizedTrimmedQuery,
-      pathExistsOnFilesystem,
-      homeDirectory,
-    )
+    modeForResolve = queryExpandsTilde || pathExistsOnFilesystem
       ? 'path'
       : 'entry';
   }
@@ -602,13 +632,21 @@ async function refreshSuggestions(
     addressEditorNavigationIndex.value = 0;
   }
   else if (addressEditorNavigationSteps.value.length === 0 && normalizedTrimmedQuery !== '') {
-    addressEditorNavigationSteps.value = [queryExpandsTilde ? expandedQuery : nextQuery];
+    addressEditorNavigationSteps.value = [
+      initialAddressBarHistoryStep(
+        nextQuery,
+        expandedQuery,
+        queryExpandsTilde,
+        homeDirectory,
+      ),
+    ];
     addressEditorNavigationIndex.value = 0;
   }
 
   const nextState = await resolveAddressBarSuggestions({
-    query: nextQuery,
+    query: expandedQuery,
     homeDir: homeDirectory,
+    queryAlreadyExpanded: true,
     mode: modeForResolve,
     currentPath: props.currentPath,
     directoryGroupLabel: t('settings.addressBar.directoryEntries'),
@@ -1154,15 +1192,15 @@ async function open(modeToOpen: AddressBarEditorMode): Promise<void> {
     await refreshSuggestions(query.value, 'preserve');
   });
 
-  await moveAddressBarInputCaretToEndAfterPaint();
+  await moveAddressBarInputCaretToEndAfterPaint(initialQuery);
 }
 
-async function moveAddressBarInputCaretToEndAfterPaint(): Promise<void> {
+async function moveAddressBarInputCaretToEndAfterPaint(expectedQuery: string): Promise<void> {
   await nextTick();
   requestAnimationFrame(() => {
     const inputElement = getAddressBarInputElement();
 
-    if (!inputElement) {
+    if (!inputElement || inputElement.value !== expectedQuery) {
       return;
     }
 

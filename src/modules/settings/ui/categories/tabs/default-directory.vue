@@ -28,7 +28,7 @@ import { SettingsItem } from '@/modules/settings';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { DefaultDirectoryKind } from '@/types/user-settings';
-import { expandLeadingTilde } from '@/utils/expand-leading-tilde';
+import { customDirectoryPathForStorage } from '@/utils/expand-leading-tilde';
 import normalizePath from '@/utils/normalize-path';
 
 const userSettingsStore = useUserSettingsStore();
@@ -65,7 +65,20 @@ const selectedKind = computed({
   },
 });
 
-const customPathRaw = ref(userSettingsStore.userSettings.navigator?.defaultDirectory?.customPath ?? '');
+function storedCustomDirectoryPath(value: string): string {
+  return customDirectoryPathForStorage(value, userPathsStore.userPaths.homeDir);
+}
+
+const savedCustomDirectoryPath = userSettingsStore.userSettings.navigator?.defaultDirectory?.customPath ?? '';
+const migratedCustomDirectoryPath = storedCustomDirectoryPath(savedCustomDirectoryPath);
+const normalizedSavedCustomDirectoryPath = normalizePath(savedCustomDirectoryPath).trim();
+const shouldMigrateStoredTildePath = normalizePath(userPathsStore.userPaths.homeDir).trim() !== ''
+  && migratedCustomDirectoryPath !== normalizedSavedCustomDirectoryPath;
+const customPathRaw = ref(
+  shouldMigrateStoredTildePath
+    ? migratedCustomDirectoryPath
+    : normalizePath(savedCustomDirectoryPath),
+);
 const pathError = ref<string | null>(null);
 
 const customPath = computed({
@@ -74,10 +87,6 @@ const customPath = computed({
     customPathRaw.value = normalizePath(value);
   },
 });
-
-function storedCustomDirectoryPath(value: string): string {
-  return expandLeadingTilde(value, userPathsStore.userPaths.homeDir);
-}
 
 function commitCustomDirectoryPath() {
   const storedPath = storedCustomDirectoryPath(customPath.value);
@@ -126,6 +135,10 @@ watch(() => selectedKind.value?.value, (kind) => {
     validateCustomPath(storedCustomDirectoryPath(customPath.value));
   }
 }, { immediate: true });
+
+if (shouldMigrateStoredTildePath) {
+  queueCustomDirectorySave(migratedCustomDirectoryPath);
+}
 
 async function handleBrowse() {
   const expandedPath = storedCustomDirectoryPath(customPath.value);
