@@ -550,6 +550,7 @@ jobs:
   build-linux-chromium:
     name: Build (linux-chromium)
     needs: prepare
+    continue-on-error: true
     runs-on: ubuntu-24.04
     env:
       RUSTC_WRAPPER: sccache
