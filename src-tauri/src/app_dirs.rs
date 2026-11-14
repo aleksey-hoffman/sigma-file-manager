@@ -20,8 +20,22 @@ use std::sync::OnceLock;
 
 use serde::Serialize;
 use sha2::{Digest, Sha256};
+#[cfg(not(feature = "cef"))]
 use tauri::utils::config::AppDirectoriesOverride;
 use tauri::{Manager, Runtime};
+
+#[cfg(feature = "cef")]
+#[allow(dead_code)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum AppDirectoriesOverride {
+    Root(PathBuf),
+    Directories(AppDirectoryOverrides),
+}
+
+#[cfg(feature = "cef")]
+#[allow(dead_code)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+pub struct AppDirectoryOverrides;
 
 const INSTALLED_IDENTIFIER: &str = "com.sigma-file-manager.app";
 const PORTABLE_IDENTIFIER_PREFIX: &str = "com.sigma-file-manager.portable";
@@ -127,7 +141,10 @@ pub fn apply_portable_mode<R: Runtime>(context: &mut tauri::Context<R>) {
     let config = context.config_mut();
 
     if is_isolated() {
-        config.app.app_directories_override = None;
+        #[cfg(not(feature = "cef"))]
+        {
+            config.app.app_directories_override = None;
+        }
         return;
     }
 
@@ -156,8 +173,13 @@ pub fn apply_portable_mode<R: Runtime>(context: &mut tauri::Context<R>) {
         .as_deref()
         .and_then(|binary| binary.parent().map(Path::to_path_buf));
 
+    #[cfg(not(feature = "cef"))]
+    let configured_override = config.app.app_directories_override.as_ref();
+    #[cfg(feature = "cef")]
+    let configured_override: Option<&AppDirectoriesOverride> = None;
+
     let mode = match resolve_portable_mode_for_startup(
-        config.app.app_directories_override.as_ref(),
+        configured_override,
         app_dir.as_deref(),
         running_as_appimage,
     ) {
@@ -170,7 +192,10 @@ pub fn apply_portable_mode<R: Runtime>(context: &mut tauri::Context<R>) {
     };
 
     config.identifier = portable_identifier(&mode.root);
-    config.app.app_directories_override = Some(AppDirectoriesOverride::Root(mode.root.clone()));
+    #[cfg(not(feature = "cef"))]
+    {
+        config.app.app_directories_override = Some(AppDirectoriesOverride::Root(mode.root.clone()));
+    }
     let _ = PORTABLE_MODE.set(mode);
 }
 
@@ -308,10 +333,24 @@ fn appimage_portable_root(_app_dir: &Path) -> Option<PathBuf> {
     None
 }
 
+#[cfg(any(feature = "cef", test))]
+fn portable_dir(root: &Path, dir: AppDir) -> PathBuf {
+    match dir {
+        AppDir::Data | AppDir::Config | AppDir::LocalData => root.to_path_buf(),
+        AppDir::Cache => root.join("caches"),
+        AppDir::Log => root.join("logs"),
+    }
+}
+
 /// Resolve one of the app's own folders, honouring the e2e override.
 pub fn resolve<R: Runtime, M: Manager<R>>(manager: &M, dir: AppDir) -> tauri::Result<PathBuf> {
     if let Some(root) = isolated_root() {
         return Ok(isolated_dir(&root, dir));
+    }
+
+    #[cfg(feature = "cef")]
+    if let Some(mode) = portable_mode() {
+        return Ok(portable_dir(&mode.root, dir));
     }
 
     let path_resolver = manager.path();
@@ -342,16 +381,48 @@ pub fn local_data_dir_without_app() -> Option<PathBuf> {
 /// Absolute window-state file path when isolated; the plugin joins it onto
 /// its config folder, and joining an absolute path replaces the base.
 pub fn window_state_file_override() -> Option<String> {
-    isolated_root().map(|root| {
-        isolated_dir(&root, AppDir::Config)
-            .join(tauri_plugin_window_state::DEFAULT_FILENAME)
-            .to_string_lossy()
-            .into_owned()
-    })
+    if let Some(root) = isolated_root() {
+        return Some(
+            isolated_dir(&root, AppDir::Config)
+                .join(tauri_plugin_window_state::DEFAULT_FILENAME)
+                .to_string_lossy()
+                .into_owned(),
+        );
+    }
+
+    #[cfg(feature = "cef")]
+    if let Some(mode) = portable_mode() {
+        return Some(
+            portable_dir(&mode.root, AppDir::Config)
+                .join(tauri_plugin_window_state::DEFAULT_FILENAME)
+                .to_string_lossy()
+                .into_owned(),
+        );
+    }
+
+    None
 }
 
 pub fn log_dir_override() -> Option<PathBuf> {
-    isolated_root().map(|root| isolated_dir(&root, AppDir::Log))
+    if let Some(root) = isolated_root() {
+        return Some(isolated_dir(&root, AppDir::Log));
+    }
+
+    #[cfg(feature = "cef")]
+    if let Some(mode) = portable_mode() {
+        return Some(portable_dir(&mode.root, AppDir::Log));
+    }
+
+    None
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+pub fn cef_cache_dir_override() -> Option<PathBuf> {
+    if let Some(root) = isolated_root() {
+        return Some(isolated_dir(&root, AppDir::Cache).join("cef"));
+    }
+
+    portable_mode().map(|mode| portable_dir(&mode.root, AppDir::Cache).join("cef"))
 }
 
 /// Must run at the very start of `run()`, before any thread or WebView exists.
@@ -480,10 +551,21 @@ mod tests {
 mod portable_tests {
     use super::*;
     use std::ffi::OsStr;
+    #[cfg(not(feature = "cef"))]
     use tauri::utils::config::AppDirectoryOverrides;
 
     fn root_override(path: &str) -> AppDirectoriesOverride {
         AppDirectoriesOverride::Root(PathBuf::from(path))
+    }
+
+    #[test]
+    fn portable_root_layout_matches_the_sidecar_directories() {
+        let root = Path::new("/portable/sigma-file-manager-data");
+        assert_eq!(portable_dir(root, AppDir::Data), root);
+        assert_eq!(portable_dir(root, AppDir::Config), root);
+        assert_eq!(portable_dir(root, AppDir::LocalData), root);
+        assert_eq!(portable_dir(root, AppDir::Cache), root.join("caches"));
+        assert_eq!(portable_dir(root, AppDir::Log), root.join("logs"));
     }
 
     #[test]

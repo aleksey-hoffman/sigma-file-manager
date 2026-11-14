@@ -1,0 +1,3 @@
+#!/bin/sh
+notify() { return 1; }
+run_gui_sudo() { return 1; }

@@ -1,5 +1,11 @@
 name: Install Linux Tauri dependencies
-description: Install pinned WebKitGTK packages for reproducible Tauri Linux builds on Ubuntu 24.04.
+description: Install Linux packages for Tauri builds. WebKitGTK stays pinned on the WebKit jobs.
+
+inputs:
+  pin-webkit:
+    description: Install the pinned WebKitGTK 2.44.0-2 packages
+    required: false
+    default: "true"
 
 runs:
   using: composite
@@ -7,17 +13,22 @@ runs:
     - name: Install apt packages
       shell: bash
       run: |
-        # Pin WebKitGTK 2.44.0-2 on Ubuntu 24.04 to avoid EGL_BAD_PARAMETER in shipped Linux binaries.
-        # https://github.com/audioling/audioling/issues/40
-        # https://github.com/OmniKee/OmniKee/blob/main/.github/workflows/release.yml
         sudo apt-get update
+        if [[ "${{ inputs.pin-webkit }}" == "true" ]]; then
+          # Pin WebKitGTK 2.44.0-2 on Ubuntu 24.04 to avoid EGL_BAD_PARAMETER in shipped Linux binaries.
+          # https://github.com/audioling/audioling/issues/40
+          # https://github.com/OmniKee/OmniKee/blob/main/.github/workflows/release.yml
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-0=2.44.0-2 \
+            libwebkit2gtk-4.1-dev=2.44.0-2 \
+            libjavascriptcoregtk-4.1-0=2.44.0-2 \
+            libjavascriptcoregtk-4.1-dev=2.44.0-2 \
+            gir1.2-javascriptcoregtk-4.1=2.44.0-2 \
+            gir1.2-webkit2-4.1=2.44.0-2
+        else
+          sudo apt-get install -y libgtk-3-dev
+        fi
         sudo apt-get install -y \
-          libwebkit2gtk-4.1-0=2.44.0-2 \
-          libwebkit2gtk-4.1-dev=2.44.0-2 \
-          libjavascriptcoregtk-4.1-0=2.44.0-2 \
-          libjavascriptcoregtk-4.1-dev=2.44.0-2 \
-          gir1.2-javascriptcoregtk-4.1=2.44.0-2 \
-          gir1.2-webkit2-4.1=2.44.0-2 \
           libayatana-appindicator3-dev \
           librsvg2-dev \
           patchelf
