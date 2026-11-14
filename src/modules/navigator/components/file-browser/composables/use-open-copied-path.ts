@@ -5,7 +5,8 @@
 import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { toast } from '@/components/ui/toaster';
-import normalizePath from '@/utils/normalize-path';
+import { useUserPathsStore } from '@/stores/storage/user-paths';
+import { expandCopiedPath } from '@/utils/expand-leading-tilde';
 import type { DirEntry } from '@/types/dir-entry';
 
 const PATH_LOOKUP_TIMEOUT_MS = 750;
@@ -17,6 +18,7 @@ type OpenCopiedPathOptions = {
 
 export function useOpenCopiedPath(options: OpenCopiedPathOptions) {
   const { t } = useI18n();
+  const userPathsStore = useUserPathsStore();
 
   async function getClipboardPathEntry(path: string): Promise<DirEntry | null> {
     try {
@@ -43,7 +45,10 @@ export function useOpenCopiedPath(options: OpenCopiedPathOptions) {
         return false;
       }
 
-      const clipboardPath = normalizePath(clipboardValue.trim());
+      const clipboardPath = expandCopiedPath(
+        clipboardValue,
+        userPathsStore.userPaths.homeDir,
+      );
 
       if (!clipboardPath) {
         showInvalidClipboardPathToast();

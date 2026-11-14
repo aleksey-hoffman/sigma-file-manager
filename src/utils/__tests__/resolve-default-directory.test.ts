@@ -64,6 +64,14 @@ describe('resolveDefaultDirectoryPath', () => {
     })).toBe('D:/Work/Projects');
   });
 
+  it('leaves a stored tilde path unchanged', () => {
+    expect(resolveDefaultDirectoryPath({
+      kind: 'custom',
+      customPath: '~/Desktop',
+      homeDir: HOME_DIR,
+    })).toBe('~/Desktop');
+  });
+
   it('falls back to user home when the custom path is empty', () => {
     expect(resolveDefaultDirectoryPath({
       kind: 'custom',
