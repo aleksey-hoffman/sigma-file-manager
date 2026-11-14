@@ -1,0 +1,20 @@
+[patch.crates-io]
+tauri = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-build = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-codegen = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-macros = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-plugin = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-runtime = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-runtime-cef = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+tauri-utils = { git = "https://github.com/readest/tauri", rev = "d6ef6e4c755228713e7358a27794a89cfd30969f" }
+
+tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-clipboard-manager = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-global-shortcut = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-opener = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-os = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", rev = "835adce473e8f059f6ba84660dd07bcb19fb9030" }

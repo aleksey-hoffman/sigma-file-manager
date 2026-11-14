@@ -6,6 +6,7 @@ mod app_dirs;
 mod app_updater;
 mod archive;
 mod background_sources;
+mod cef_launch;
 mod clipboard_source;
 mod clipboard_watcher;
 mod copy_move_job;
@@ -36,6 +37,9 @@ pub mod utils;
 mod windows_installation;
 #[cfg(windows)]
 mod windows_print_view_webview;
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+use std::os::unix::fs::MetadataExt;
 
 use serde::Serialize;
 use tauri::{Emitter, Manager};
@@ -253,7 +257,17 @@ fn handle_second_instance(app: &tauri::AppHandle, argv: Vec<String>, cwd: String
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg_attr(
+    all(feature = "cef", target_os = "linux"),
+    tauri_runtime_cef::cef_entry_point
+)]
 pub fn run() {
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    if let Err(message) = check_cef_display() {
+        eprintln!("{message}");
+        std::process::exit(1);
+    }
+
     app_dirs::prepare_isolated_environment();
     let mut context = tauri::generate_context!();
     app_dirs::apply_portable_mode(&mut context);
@@ -279,6 +293,11 @@ pub fn run() {
                 .args([SIGMA_AUTOSTART_CLI_FLAG])
                 .build(),
         );
+    }
+
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    {
+        builder = builder.runtime(build_cef_runtime());
     }
 
     builder
@@ -457,6 +476,116 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn check_cef_display() -> Result<(), String> {
+    match std::env::var_os("DISPLAY") {
+        Some(display) if !display.is_empty() => Ok(()),
+        _ => Err(
+            "Sigma File Manager needs an X11 display (DISPLAY is not set). \
+             On a Wayland session, install and start XWayland."
+                .to_string(),
+        ),
+    }
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn build_cef_runtime() -> tauri_runtime_cef::Cef {
+    let plan = cef_launch::ChromiumLaunchPlan::from_environment();
+    let sandbox_dropped = chromium_appimage_auto_disables_sandbox(
+        std::env::var_os("APPIMAGE").is_some_and(|path| !path.is_empty()),
+        chrome_devel_sandbox_is_usable(),
+        read_sysctl_u64("/proc/sys/kernel/apparmor_restrict_unprivileged_userns"),
+        read_sysctl_u64("/proc/sys/user/max_user_namespaces"),
+    );
+    let cache_dir = app_dirs::cef_cache_dir_override();
+    if !cef_launch::is_chromium_subprocess(&std::env::args().skip(1).collect::<Vec<_>>()) {
+        eprintln!("{}", plan.startup_report(sandbox_dropped));
+        match &cache_dir {
+            Some(cache_dir) => {
+                eprintln!("Chromium log file: {}/cef.log", cache_dir.display());
+            }
+            None => {
+                eprintln!("Chromium log file: cef.log in the Chromium cache directory");
+            }
+        }
+    }
+
+    let mut cef = cef_launch::apply(
+        &plan,
+        tauri_runtime_cef::Cef::default().sandbox(tauri_runtime_cef::SandboxPolicy::Auto),
+    );
+    if let Some(cache_dir) = cache_dir {
+        cef = cef.root_cache_path(cache_dir);
+    }
+
+    // SFM_CDP_PORT opens an unauthenticated DevTools server on localhost.
+    // Any local process can attach. Leave the variable unset in normal use.
+    match std::env::var("SFM_CDP_PORT").map(|port| port.parse::<u16>()) {
+        Ok(Ok(port)) => cef.remote_debugging(tauri_runtime_cef::RemoteDebugging::Port {
+            port,
+            allowed_origins: Vec::new(),
+        }),
+        _ => cef,
+    }
+}
+
+/// Same answer as the runtime's `SandboxPolicy::Auto` for an AppImage: the
+/// sandbox is dropped when the image cannot use a setuid helper and the kernel
+/// either restricts unprivileged user namespaces or disables them.
+fn chromium_appimage_auto_disables_sandbox(
+    running_from_appimage: bool,
+    external_helper_usable: bool,
+    apparmor_restrict_unprivileged_userns: Option<u64>,
+    max_user_namespaces: Option<u64>,
+) -> bool {
+    if !running_from_appimage || external_helper_usable {
+        return false;
+    }
+
+    apparmor_restrict_unprivileged_userns == Some(1) || max_user_namespaces == Some(0)
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn read_sysctl_u64(path: &str) -> Option<u64> {
+    std::fs::read_to_string(path).ok()?.trim().parse().ok()
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn chrome_devel_sandbox_is_usable() -> bool {
+    let Some(path) = std::env::var_os("CHROME_DEVEL_SANDBOX").filter(|path| !path.is_empty())
+    else {
+        return false;
+    };
+    let Ok(metadata) = std::fs::metadata(&path) else {
+        return false;
+    };
+
+    const SETUID: u32 = 0o4000;
+    const OTHER_EXECUTE: u32 = 0o0001;
+    metadata.uid() == 0 && metadata.mode() & SETUID != 0 && metadata.mode() & OTHER_EXECUTE != 0
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn warn_if_chromium_appimage_drops_sandbox() {
+    let running_from_appimage = std::env::var_os("APPIMAGE").is_some_and(|path| !path.is_empty());
+    let drops_sandbox = chromium_appimage_auto_disables_sandbox(
+        running_from_appimage,
+        chrome_devel_sandbox_is_usable(),
+        read_sysctl_u64("/proc/sys/kernel/apparmor_restrict_unprivileged_userns"),
+        read_sysctl_u64("/proc/sys/user/max_user_namespaces"),
+    );
+    if !drops_sandbox {
+        return;
+    }
+
+    let message = "Chromium sandbox is off for this AppImage. This distro restricts unprivileged \
+        user namespaces (for example Ubuntu 24.04), and the image cannot use the setuid \
+        chrome-sandbox helper. A compromised renderer process runs with the privileges of the \
+        current user.";
+    log::warn!("{message}");
+    eprintln!("{message}");
+}
+
 fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     if cfg!(debug_assertions) {
         let mut log_plugin = tauri_plugin_log::Builder::default().level(log::LevelFilter::Info);
@@ -471,6 +600,12 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         }
         app.handle().plugin(log_plugin.build())?;
     }
+
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    warn_if_chromium_appimage_drops_sandbox();
+
+    #[cfg(all(feature = "cef", target_os = "linux"))]
+    system_icons::init_gtk_thread(app.handle().clone())?;
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
@@ -526,6 +661,58 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod chromium_sandbox_tests {
+    use super::chromium_appimage_auto_disables_sandbox;
+
+    #[test]
+    fn ubuntu_24_04_appimage_drops_the_sandbox() {
+        assert!(chromium_appimage_auto_disables_sandbox(
+            true,
+            false,
+            Some(1),
+            Some(1000),
+        ));
+    }
+
+    #[test]
+    fn an_external_setuid_helper_keeps_the_sandbox() {
+        assert!(!chromium_appimage_auto_disables_sandbox(
+            true,
+            true,
+            Some(1),
+            Some(0),
+        ));
+    }
+
+    #[test]
+    fn a_non_appimage_keeps_the_sandbox_even_when_namespaces_are_restricted() {
+        assert!(!chromium_appimage_auto_disables_sandbox(
+            false,
+            false,
+            Some(1),
+            Some(0),
+        ));
+    }
+
+    #[test]
+    fn missing_sysctl_files_keep_the_sandbox() {
+        assert!(!chromium_appimage_auto_disables_sandbox(
+            true, false, None, None,
+        ));
+    }
+
+    #[test]
+    fn a_zero_namespace_quota_drops_the_sandbox() {
+        assert!(chromium_appimage_auto_disables_sandbox(
+            true,
+            false,
+            Some(0),
+            Some(0),
+        ));
+    }
 }
 
 #[cfg(all(test, windows))]

@@ -1,0 +1,75 @@
+#!/bin/sh
+set -e
+# Alternative to upstream fix-namespaces.hook that adds an app-specific profile instead of disabling user namespaces globally.
+# Major drawback is that this has to be re-done every time the users renames or moves the appimage.
+# Since Tauri+CEF apps cannot work without this, I removed the "remember decision" logic.
+
+_userns_check_msg="
+Unprivileged user-namespaces are disabled but required for Chromium!
+
+Certain Linux distributions like Ubuntu 24.04+ disable unprivileged user-namespaces by default due to safety concerns.
+This is what prevents applications to utilize sandboxing.
+Unprivileged user-namespaces are safe and a vital part of the security model of all web browsers, flatpak, electron apps, etc.
+
+For more details, see: https://github.com/pkgforge-dev/Anylinux-AppImages/blob/main/useful-tools/fix-namespaces.md#why
+"
+_userns_check_msg_no_fix="$_userns_check_msg
+We do not have an automated way to enable unprivileged user-namespaces for your Linux distribution at the moment, so you will have to enable those manually.
+"
+_userns_check_msg_with_fix="$_userns_check_msg
+To fix this issue, we can add an exception profile to AppArmor, like all chromium-based browser have.
+This profile has to be updated every time you move or rename the AppImage.
+
+Do you want to proceed?
+"
+
+_is_userns_possible() {
+	unshare --help 2>&1 | grep -q -- '--user'
+	# userns need kernel major 4 or higher
+	_kernel_ver=$(uname -r)
+	[ ${_kernel_ver%%.*} -ge 4 ]
+}
+
+_check_userns() {
+	unshare -Urm /bin/true
+}
+
+_is_apparmor() {
+	sysctl -a | grep -q -m 1 'kernel.apparmor_restrict_unprivileged_userns.*1'
+}
+
+_fix_userns() {
+	if [ -z "$APPIMAGE" ]; then
+		notify -di "$_userns_check_msg_no_fix"
+		return 1
+	fi
+	if _is_apparmor 2>/dev/null; then
+		if notify -dq "$_userns_check_msg_with_fix"; then
+			run_gui_sudo /bin/sh -c "
+			  echo 'abi <abi/4.0>,
+include <tunables/global>
+
+profile "$MAIN_BIN"-appimage "$APPIMAGE" flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/"$MAIN_BIN"-appimage>
+}' \
+			  | tee /etc/apparmor.d/"$MAIN_BIN"-appimage
+			  apparmor_parser --replace --write-cache --skip-read-cache /etc/apparmor.d/"$MAIN_BIN"-appimage
+			"
+			return 0
+		fi
+	else
+		notify -di "$_userns_check_msg_no_fix"
+	fi
+	return 1
+}
+
+check_and_fix_userns() {
+	if _is_userns_possible; then
+		_check_userns || _fix_userns
+	fi
+}
+
+check_and_fix_userns || :

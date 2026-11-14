@@ -4,7 +4,7 @@
 
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine;
-use file_icon_provider::{get_file_icon, Error as FileIconError};
+use file_icon_provider::{get_file_icon, Error as FileIconError, Icon as FileIcon};
 use image::codecs::png::PngEncoder;
 use image::ImageEncoder;
 use lru::LruCache;
@@ -31,6 +31,15 @@ static ICON_PROBE_DIR: Lazy<Result<PathBuf, String>> = Lazy::new(|| {
 
 static UNSUPPORTED_SHELL_ICON_PATHS: Lazy<Mutex<HashSet<String>>> =
     Lazy::new(|| Mutex::new(HashSet::new()));
+
+enum PlatformIconError {
+    Provider(FileIconError),
+    GtkUnavailable,
+}
+
+fn is_permanent_icon_failure(error: &PlatformIconError) -> bool {
+    matches!(error, PlatformIconError::Provider(FileIconError::Failed))
+}
 
 fn normalize_path_for_os(path: &str) -> PathBuf {
     #[cfg(windows)]
@@ -301,6 +310,45 @@ fn encode_icon_to_png_data_url(width: u32, height: u32, pixels: Vec<u8>) -> Resu
     Ok(format!("data:image/png;base64,{base64_png}"))
 }
 
+#[cfg(all(feature = "cef", target_os = "linux"))]
+static GTK_THREAD: std::sync::OnceLock<(std::thread::ThreadId, tauri::AppHandle)> =
+    std::sync::OnceLock::new();
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+pub(crate) fn init_gtk_thread(app_handle: tauri::AppHandle) -> Result<(), gtk::glib::BoolError> {
+    gtk::init()?;
+    let _ = GTK_THREAD.set((std::thread::current().id(), app_handle));
+    Ok(())
+}
+
+#[cfg(all(feature = "cef", target_os = "linux"))]
+fn get_file_icon_for_platform(path: &Path, size: u16) -> Result<FileIcon, PlatformIconError> {
+    let Some((gtk_thread_id, app_handle)) = GTK_THREAD.get() else {
+        return Err(PlatformIconError::GtkUnavailable);
+    };
+
+    if std::thread::current().id() == *gtk_thread_id {
+        return get_file_icon(path, size).map_err(PlatformIconError::Provider);
+    }
+
+    let (sender, receiver) = std::sync::mpsc::channel();
+    let path = path.to_path_buf();
+    app_handle
+        .run_on_main_thread(move || {
+            let _ = sender.send(get_file_icon(&path, size));
+        })
+        .map_err(|_| PlatformIconError::GtkUnavailable)?;
+    receiver
+        .recv()
+        .map_err(|_| PlatformIconError::GtkUnavailable)?
+        .map_err(PlatformIconError::Provider)
+}
+
+#[cfg(not(all(feature = "cef", target_os = "linux")))]
+fn get_file_icon_for_platform(path: &Path, size: u16) -> Result<FileIcon, PlatformIconError> {
+    get_file_icon(path, size).map_err(PlatformIconError::Provider)
+}
+
 fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> {
     let shell_path = normalize_shell_icon_path(path);
 
@@ -319,22 +367,32 @@ fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> 
         return Err("Unsupported shell icon path".to_string());
     }
 
-    let icon = match get_file_icon(&shell_path, size) {
+    let icon = match get_file_icon_for_platform(&shell_path, size) {
         Ok(icon) => icon,
-        Err(FileIconError::PathDoesNotExist) => {
+        Err(PlatformIconError::Provider(FileIconError::PathDoesNotExist)) => {
             return Err("Path does not exist".to_string());
         }
-        Err(FileIconError::NullIconSize) => {
+        Err(PlatformIconError::Provider(FileIconError::NullIconSize)) => {
             return Err("Invalid icon size".to_string());
         }
-        Err(FileIconError::Failed) => {
-            remember_unsupported_shell_icon_path(&shell_path);
+        Err(error @ PlatformIconError::Provider(FileIconError::Failed)) => {
+            if is_permanent_icon_failure(&error) {
+                remember_unsupported_shell_icon_path(&shell_path);
+            }
             log::debug!(
                 "[shell-icon] get_file_icon failed path={} size={}",
                 shell_path.display(),
                 size,
             );
             return Err("Failed to get icon".to_string());
+        }
+        Err(PlatformIconError::GtkUnavailable) => {
+            log::debug!(
+                "[shell-icon] GTK thread is not ready path={} size={}",
+                shell_path.display(),
+                size,
+            );
+            return Err("GTK is not ready for icon lookup".to_string());
         }
     };
 
@@ -381,6 +439,19 @@ pub fn get_system_icon(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn gtk_thread_miss_is_not_remembered_as_an_unsupported_path() {
+        assert!(is_permanent_icon_failure(&PlatformIconError::Provider(
+            FileIconError::Failed
+        )));
+        assert!(!is_permanent_icon_failure(
+            &PlatformIconError::GtkUnavailable
+        ));
+        assert!(!is_permanent_icon_failure(&PlatformIconError::Provider(
+            FileIconError::PathDoesNotExist
+        )));
+    }
 
     #[test]
     fn normalize_extension_for_probe_rejects_invalid_values() {

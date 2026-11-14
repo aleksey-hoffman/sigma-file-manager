@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+# Use this hook for applications that require yt-dlp
+
+_denyfile=$CACHEDIR/.no-ytdlp-${APPIMAGE##*/}
+PATH=$PATH:$BINDIR
+export PATH
+
+_yt_dlp_message="${APPIMAGE##*/} needs yt-dlp to play online videos, but yt-dlp is not installed on your system. Do you want to download and install it now? You can also install it using your distro’s package manager."
+
+_get_ytdlp() {
+	mkdir -p "$BINDIR"
+	_ytdlp_link=$(download - https://api.github.com/repos/pkgforge-dev/yt-dlp-AppImage/releases \
+	  | sed 's/[()",{} ]/\n/g' | grep -oi "https.*$APPIMAGE_ARCH.*AppImage$" | head -n 1)
+	>&2 echo "Downloading '$_ytdlp_link'..."
+	download "$BINDIR"/yt-dlp "$_ytdlp_link"
+	chmod +x "$BINDIR"/yt-dlp
+}
+
+
+if ! command -v yt-dlp 1>/dev/null && [ ! -f "$_denyfile" ]; then
+	if notify -dq "$_yt_dlp_message"; then
+		_get_ytdlp || notify -de 'Something went wrong downloading yt-dlp'
+	else
+		mkdir -p "$CACHEDIR"
+		:> "$_denyfile"
+	fi
+fi

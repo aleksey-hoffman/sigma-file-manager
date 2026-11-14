@@ -18,7 +18,7 @@ import {
 import { flushPromises, mount } from '@vue/test-utils';
 import AddressBarEditorDialog from '../address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode, AddressBarSuggestion } from '../address-bar-editor-utils';
-import type { DirContents } from '@/types/dir-entry';
+import type { DirContents, DirEntry } from '@/types/dir-entry';
 
 const userStatsMock = vi.hoisted(() => ({
   sortedHistory: [] as Array<{
@@ -29,6 +29,12 @@ const userStatsMock = vi.hoisted(() => ({
   taggedItems: [],
   tags: [],
   removeFromHistory: vi.fn(),
+}));
+
+const invokeMock = vi.hoisted(() => vi.fn());
+const matchesShortcutMock = vi.hoisted(() => vi.fn());
+const userPathsMock = vi.hoisted(() => ({
+  homeDir: 'C:/Users/aleks',
 }));
 
 vi.mock('vue-i18n', () => ({
@@ -67,7 +73,13 @@ vi.mock('@/stores/storage/user-settings', () => ({
 }));
 
 vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn().mockResolvedValue(true),
+  invoke: invokeMock,
+}));
+
+vi.mock('@/stores/storage/user-paths', () => ({
+  useUserPathsStore: () => ({
+    userPaths: userPathsMock,
+  }),
 }));
 
 vi.mock('@/stores/storage/user-stats', () => ({
@@ -86,10 +98,33 @@ vi.mock('@/stores/runtime/dir-sizes', () => ({
 }));
 
 vi.mock('@/stores/runtime/shortcuts', () => ({
-  matchesShortcut: () => false,
+  matchesShortcut: matchesShortcutMock,
   useShortcutsStore: () => ({
     getShortcutLabel: (shortcutId: string) => shortcutId,
-    getShortcutKeys: () => [],
+    getShortcutKeys: (shortcutId: string) => {
+      if (shortcutId === 'goUpDirectory') {
+        return {
+          alt: true,
+          key: 'ArrowUp',
+        };
+      }
+
+      if (shortcutId === 'navigateHistoryBack') {
+        return {
+          alt: true,
+          key: 'ArrowLeft',
+        };
+      }
+
+      if (shortcutId === 'navigateHistoryForward') {
+        return {
+          alt: true,
+          key: 'ArrowRight',
+        };
+      }
+
+      return {};
+    },
   }),
 }));
 
@@ -232,12 +267,14 @@ function createCurrentDirContents(): DirContents {
   };
 }
 
-function mountAddressBarEditor() {
+function mountAddressBarEditor(currentPath = 'C:/Folder') {
   return mount(AddressBarEditorDialog, {
     attachTo: document.body,
     props: {
-      currentPath: 'C:/Folder',
-      currentDirContents: createCurrentDirContents(),
+      currentPath,
+      currentDirContents: currentPath === 'C:/Folder'
+        ? createCurrentDirContents()
+        : emptyDirectory(currentPath),
     },
     global: {
       stubs: {
@@ -278,10 +315,101 @@ async function waitForAnimationFrame() {
   });
 }
 
+function directoryEntryForPath(path: string): DirEntry {
+  const name = path.split('/').filter(Boolean).pop() ?? path;
+
+  return {
+    name,
+    ext: null,
+    path,
+    size: 0,
+    item_count: 0,
+    modified_time: 0,
+    accessed_time: 0,
+    created_time: 0,
+    mime: null,
+    is_file: false,
+    is_dir: true,
+    is_symlink: false,
+    is_hidden: false,
+  };
+}
+
+function emptyDirectory(path: string): DirContents {
+  return {
+    path,
+    entries: [],
+    total_count: 0,
+    dir_count: 0,
+    file_count: 0,
+    opened_directory_times: {
+      modified_time: 0,
+      accessed_time: 0,
+      created_time: 0,
+    },
+  };
+}
+
+function mockAddressBarInvoke(homeEntries: DirEntry[] = []) {
+  invokeMock.mockImplementation(async (command: string, args?: { path?: string }) => {
+    if (command === 'read_dir' && args?.path === 'C:/Users/aleks' && homeEntries.length > 0) {
+      return {
+        ...emptyDirectory('C:/Users/aleks'),
+        entries: homeEntries,
+        total_count: homeEntries.length,
+        dir_count: homeEntries.length,
+        file_count: 0,
+      };
+    }
+
+    if (command === 'read_dir') {
+      return emptyDirectory(args?.path ?? '');
+    }
+
+    if (command === 'get_dir_entry_with_timeout') {
+      return directoryEntryForPath(args?.path ?? '');
+    }
+
+    return true;
+  });
+}
+
+type ShortcutMatchEvent = {
+  altKey?: boolean;
+  key?: string;
+};
+
+type ShortcutMatchKeys = {
+  alt?: boolean;
+  key?: string;
+};
+
+function enableAddressBarHistoryShortcuts() {
+  matchesShortcutMock.mockImplementation((event: ShortcutMatchEvent, keys: ShortcutMatchKeys) => {
+    if (!event.altKey || !keys.alt) {
+      return false;
+    }
+
+    return event.key === keys.key;
+  });
+}
+
+async function waitForSuggestionDebounce() {
+  await new Promise((resolveDelay) => {
+    setTimeout(resolveDelay, 200);
+  });
+  await flushPromises();
+}
+
 describe('address bar editor dialog', () => {
   beforeEach(() => {
     userStatsMock.sortedHistory = [];
     userStatsMock.removeFromHistory.mockReset();
+    userPathsMock.homeDir = 'C:/Users/aleks';
+    invokeMock.mockReset();
+    invokeMock.mockResolvedValue(true);
+    matchesShortcutMock.mockReset();
+    matchesShortcutMock.mockReturnValue(false);
   });
 
   it('keeps a collapsed group item count', async () => {
@@ -327,6 +455,162 @@ describe('address bar editor dialog', () => {
     expect(document.activeElement).toBe(input.element);
     expect((input.element as HTMLInputElement).value).toBe(queryBefore);
     expect(wrapper.get('[data-selected]').attributes('data-address-bar-editor-index')).toBe(selectedIndexBefore);
+    wrapper.unmount();
+  });
+
+  it('keeps a typed ~/ query while suggesting home children', async () => {
+    mockAddressBarInvoke([directoryEntryForPath('C:/Users/aleks/Desktop')]);
+
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'path');
+    const input = wrapper.get('input');
+    await input.setValue('~/de');
+    await waitForSuggestionDebounce();
+
+    expect((input.element as HTMLInputElement).value).toBe('~/de');
+    expect(invokeMock).toHaveBeenCalledWith('read_dir', expect.objectContaining({
+      path: 'C:/Users/aleks',
+    }));
+    expect(wrapper.text()).toContain('Desktop');
+    wrapper.unmount();
+  });
+
+  it('rewrites ~ to an absolute path when going up and restores that path from history', async () => {
+    mockAddressBarInvoke();
+    enableAddressBarHistoryShortcuts();
+
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'path');
+    const input = wrapper.get('input');
+    (input.element as HTMLInputElement).focus();
+    await input.setValue('~');
+    await input.trigger('keydown', {
+      key: 'ArrowUp',
+      altKey: true,
+    });
+    await flushPromises();
+    await waitForAnimationFrame();
+
+    const inputElement = input.element as HTMLInputElement;
+    expect(inputElement.value).toBe('C:/Users/');
+    expect(inputElement.selectionStart).toBe(inputElement.value.length);
+
+    await input.trigger('keydown', {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    await flushPromises();
+    expect(inputElement.value).toBe('C:/Users/aleks');
+
+    await input.trigger('keydown', {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    await flushPromises();
+    expect(inputElement.value).toBe('C:/Folder/');
+
+    await input.trigger('keydown', {
+      key: 'ArrowRight',
+      altKey: true,
+    });
+    await flushPromises();
+    expect(inputElement.value).toBe('C:/Users/aleks');
+    wrapper.unmount();
+  });
+
+  it('seeds a bare tilde typed from search as the home listing', async () => {
+    mockAddressBarInvoke();
+    enableAddressBarHistoryShortcuts();
+
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'entry');
+    const input = wrapper.get('input');
+    const inputElement = input.element as HTMLInputElement;
+
+    await input.setValue('~');
+    await waitForSuggestionDebounce();
+    inputElement.focus();
+    await input.trigger('keydown', {
+      key: 'ArrowUp',
+      altKey: true,
+    });
+    await flushPromises();
+
+    expect(inputElement.value).toBe('C:/Users/');
+
+    await input.trigger('keydown', {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    await flushPromises();
+
+    expect(inputElement.value).toBe('C:/Users/aleks/');
+    wrapper.unmount();
+  });
+
+  it('goes up from ~ in home and returns to the home listing', async () => {
+    mockAddressBarInvoke();
+    enableAddressBarHistoryShortcuts();
+
+    const wrapper = mountAddressBarEditor('C:/Users/aleks');
+    await openEditor(wrapper, 'path');
+    const input = wrapper.get('input');
+    const inputElement = input.element as HTMLInputElement;
+
+    expect(inputElement.value).toBe('C:/Users/aleks/');
+
+    inputElement.focus();
+    await input.setValue('~');
+    await input.trigger('keydown', {
+      key: 'ArrowUp',
+      altKey: true,
+    });
+    await flushPromises();
+
+    expect(inputElement.value).toBe('C:/Users/');
+
+    await input.trigger('keydown', {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    await flushPromises();
+
+    expect(inputElement.value).toBe('C:/Users/aleks/');
+    wrapper.unmount();
+  });
+
+  it('rewrites ~/de to an absolute directory on tab', async () => {
+    mockAddressBarInvoke([directoryEntryForPath('C:/Users/aleks/Desktop')]);
+    enableAddressBarHistoryShortcuts();
+
+    const wrapper = mountAddressBarEditor();
+    await openEditor(wrapper, 'entry');
+    const input = wrapper.get('input');
+    const inputElement = input.element as HTMLInputElement;
+
+    await input.setValue('~/de');
+    await waitForSuggestionDebounce();
+    await input.trigger('keydown', {
+      key: 'Tab',
+    });
+    await flushPromises();
+
+    expect(inputElement.value).toBe('C:/Users/aleks/Desktop/');
+
+    inputElement.focus();
+    await input.trigger('keydown', {
+      key: 'ArrowUp',
+      altKey: true,
+    });
+    await flushPromises();
+    expect(inputElement.value).toBe('C:/Users/aleks/');
+
+    await input.trigger('keydown', {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    await flushPromises();
+    expect(inputElement.value).toBe('C:/Users/aleks/Desktop/');
     wrapper.unmount();
   });
 });

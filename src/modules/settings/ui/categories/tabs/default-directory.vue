@@ -25,11 +25,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { SettingsItem } from '@/modules/settings';
+import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { DefaultDirectoryKind } from '@/types/user-settings';
+import { customDirectoryPathForStorage } from '@/utils/expand-leading-tilde';
 import normalizePath from '@/utils/normalize-path';
 
 const userSettingsStore = useUserSettingsStore();
+const userPathsStore = useUserPathsStore();
 const { t } = useI18n();
 
 const kindOptions: {
@@ -62,7 +65,20 @@ const selectedKind = computed({
   },
 });
 
-const customPathRaw = ref(userSettingsStore.userSettings.navigator?.defaultDirectory?.customPath ?? '');
+function storedCustomDirectoryPath(value: string): string {
+  return customDirectoryPathForStorage(value, userPathsStore.userPaths.homeDir);
+}
+
+const savedCustomDirectoryPath = userSettingsStore.userSettings.navigator?.defaultDirectory?.customPath ?? '';
+const migratedCustomDirectoryPath = storedCustomDirectoryPath(savedCustomDirectoryPath);
+const normalizedSavedCustomDirectoryPath = normalizePath(savedCustomDirectoryPath).trim();
+const shouldMigrateStoredTildePath = normalizePath(userPathsStore.userPaths.homeDir).trim() !== ''
+  && migratedCustomDirectoryPath !== normalizedSavedCustomDirectoryPath;
+const customPathRaw = ref(
+  shouldMigrateStoredTildePath
+    ? migratedCustomDirectoryPath
+    : normalizePath(savedCustomDirectoryPath),
+);
 const pathError = ref<string | null>(null);
 
 const customPath = computed({
@@ -71,6 +87,14 @@ const customPath = computed({
     customPathRaw.value = normalizePath(value);
   },
 });
+
+function commitCustomDirectoryPath() {
+  const storedPath = storedCustomDirectoryPath(customPath.value);
+
+  if (storedPath !== customPath.value) {
+    customPath.value = storedPath;
+  }
+}
 
 async function validateCustomPath(newPath: string) {
   if (!newPath) {
@@ -89,22 +113,39 @@ async function validateCustomPath(newPath: string) {
   }
 }
 
-watch(customPath, async (newPath) => {
-  await userSettingsStore.set('navigator.defaultDirectory.customPath', newPath);
-  await validateCustomPath(newPath);
+let customDirectorySaveQueue: Promise<void> = Promise.resolve();
+
+function queueCustomDirectorySave(storedPath: string) {
+  customDirectorySaveQueue = customDirectorySaveQueue
+    .then(async () => {
+      await userSettingsStore.set('navigator.defaultDirectory.customPath', storedPath);
+      await validateCustomPath(storedPath);
+    })
+    .catch((saveError: unknown) => {
+      console.error('Failed to save custom default directory:', saveError);
+    });
+}
+
+watch(customPath, (newPath) => {
+  queueCustomDirectorySave(storedCustomDirectoryPath(newPath));
 });
 
 watch(() => selectedKind.value?.value, (kind) => {
   if (kind === 'custom') {
-    validateCustomPath(customPath.value);
+    validateCustomPath(storedCustomDirectoryPath(customPath.value));
   }
 }, { immediate: true });
 
+if (shouldMigrateStoredTildePath) {
+  queueCustomDirectorySave(migratedCustomDirectoryPath);
+}
+
 async function handleBrowse() {
+  const expandedPath = storedCustomDirectoryPath(customPath.value);
   const selected = await open({
     directory: true,
     multiple: false,
-    defaultPath: customPath.value || undefined,
+    defaultPath: expandedPath || undefined,
   });
 
   if (selected) {
@@ -157,6 +198,8 @@ async function handleBrowse() {
             id="default-directory-custom-path"
             v-model="customPath"
             :class="{ 'default-directory-path__input--error': pathError }"
+            @blur="commitCustomDirectoryPath"
+            @keydown.enter="commitCustomDirectoryPath"
           />
           <Tooltip>
             <TooltipTrigger as-child>

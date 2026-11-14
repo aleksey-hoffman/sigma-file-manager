@@ -50,6 +50,7 @@ import {
   consumeNavigatorLayoutResetPending,
   useInfoPanelLayout,
 } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
+import { useInfoPanelVisibility } from '@/modules/navigator/components/info-panel/composables/use-info-panel-visibility';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
 import { NavigationPanelFrame, NavigationPanelToggle } from '@/modules/navigator/components/navigation-panel';
 import {
@@ -218,8 +219,34 @@ const {
 
 const navigationPanelLayout = useNavigationPanelLayout();
 provide(navigationPanelLayoutKey, navigationPanelLayout);
-const showInfoPanel = ref(true);
-const infoPanelSlideVisible = ref(true);
+const isSmallScreen = useIsSmallScreen();
+const {
+  showInfoPanel,
+  infoPanelSlideVisible,
+  handleToggleInfoPanel,
+} = useInfoPanelVisibility({
+  isSmallScreen,
+  showInfoPanelAnimated,
+  hideInfoPanelAnimated,
+  isInfoPanelVisibilityAnimating,
+});
+const infoPanelDefaultSize = ref(showInfoPanel.value ? infoPanelWidthDefault.value : 0);
+
+function syncInfoPanelDefaultSize() {
+  infoPanelDefaultSize.value = showInfoPanel.value ? infoPanelWidthDefault.value : 0;
+}
+
+watch(infoPanelLayoutSizingKey, () => {
+  syncInfoPanelDefaultSize();
+}, { flush: 'sync' });
+
+watch(isSmallScreen, (smallScreen) => {
+  if (smallScreen) {
+    return;
+  }
+
+  syncInfoPanelDefaultSize();
+}, { flush: 'sync' });
 
 const isInfoPanelHandleCollapsed = computed(() => {
   if (isInfoPanelVisibilityAnimating.value) {
@@ -243,7 +270,6 @@ const currentDirEntry = ref<DirEntry | null>(
   getDirectoryDirEntryFromTab(workspacesStore.currentTab),
 );
 const activeTabId = ref<string | null>(null);
-const isSmallScreen = useIsSmallScreen();
 
 watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   const currentTabIds = new Set(
@@ -448,24 +474,6 @@ async function handleNavigationPanelNavigate(path: string) {
   catch (caughtError: unknown) {
     console.error('Failed to open directory from navigation panel:', caughtError);
   }
-}
-
-async function handleToggleInfoPanel() {
-  if (isSmallScreen.value) {
-    showInfoPanel.value = !showInfoPanel.value;
-    return;
-  }
-
-  if (showInfoPanel.value) {
-    infoPanelSlideVisible.value = false;
-    await hideInfoPanelAnimated();
-    showInfoPanel.value = false;
-    return;
-  }
-
-  infoPanelSlideVisible.value = true;
-  showInfoPanel.value = true;
-  await showInfoPanelAnimated();
 }
 
 function activateTabPane(tabId: string) {
@@ -1247,17 +1255,6 @@ function registerShortcutHandlers() {
   });
 }
 
-watch(isInfoPanelVisibilityAnimating, (isAnimating, wasAnimating) => {
-  if (!isAnimating && wasAnimating && showInfoPanel.value) {
-    infoPanelSlideVisible.value = true;
-    return;
-  }
-
-  if (!isAnimating && !showInfoPanel.value) {
-    infoPanelSlideVisible.value = false;
-  }
-});
-
 onMounted(async () => {
   registerShortcutHandlers();
   dirSizesStore.recoverActiveCalculations();
@@ -1447,7 +1444,7 @@ onUnmounted(() => {
             :ref="setInfoPanelWidthPanelRef"
             class="navigator-page__info-panel"
             :order="2"
-            :default-size="infoPanelWidthDefault"
+            :default-size="infoPanelDefaultSize"
             collapsible
             :collapsed-size="0"
             size-unit="px"
