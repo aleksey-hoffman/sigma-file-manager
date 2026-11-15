@@ -24,12 +24,14 @@ export interface DashboardSizedItem {
 
 export function useDashboardItemSizes(items: Ref<readonly DashboardSizedItem[]>) {
   const dirSizesStore = useDirSizesStore();
+  const directorySizeWatch = dirSizesStore.createDirectorySizeWatch();
   const fileSizes = ref(new Map<string, number | null>());
   const pendingFilePaths = new Set<string>();
   let isDisposed = false;
 
   onUnmounted(() => {
     isDisposed = true;
+    directorySizeWatch.stop();
   });
 
   const sizeLabels = computed(() => {
@@ -74,12 +76,7 @@ export function useDashboardItemSizes(items: Ref<readonly DashboardSizedItem[]>)
   }
 
   function requestFolderSizes(folderPaths: readonly string[]) {
-    if (folderPaths.length === 0) {
-      return;
-    }
-
-    const limitedFolderPaths = folderPaths.slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT);
-    dirSizesStore.requestSizesBatch(limitedFolderPaths).catch(() => undefined);
+    directorySizeWatch.sync(folderPaths.slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT));
   }
 
   watch(items, (nextItems) => {

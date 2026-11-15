@@ -2,21 +2,33 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+mod walk;
+
+#[cfg(test)]
+mod tests;
+
 use crate::utils::normalize_path;
 use lru::LruCache;
 use once_cell::sync::Lazy;
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use walkdir::WalkDir;
+use tauri::AppHandle;
+use tauri::Emitter;
+#[cfg(windows)]
+use windows::Win32::System::Threading::{
+    GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_BELOW_NORMAL,
+};
 
 const CACHE_SIZE: usize = 2000;
 const CACHE_TTL_SECONDS: u64 = 300;
+const DIR_SIZE_POOL_THREADS: usize = 2;
+const DIR_SIZE_THREAD_NICE: i32 = 10;
+const DIR_SIZE_RESULT_EVENT: &str = "dir-size-result";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum SizeStatus {
@@ -47,14 +59,6 @@ struct CacheEntry {
     dir_mtime: u64,
 }
 
-static SIZE_CACHE: Lazy<Mutex<LruCache<String, CacheEntry>>> =
-    Lazy::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(CACHE_SIZE).unwrap())));
-
-// Map of path -> cancellation token for active calculations
-static ACTIVE_CALCULATIONS: Lazy<Mutex<HashMap<String, Arc<AtomicBool>>>> =
-    Lazy::new(|| Mutex::new(HashMap::new()));
-
-// Store for current progress of active calculations
 #[derive(Debug, Clone)]
 struct CalculationProgress {
     size: Arc<AtomicU64>,
@@ -62,35 +66,209 @@ struct CalculationProgress {
     dir_count: Arc<AtomicU64>,
 }
 
-static CALCULATION_PROGRESS: Lazy<Mutex<HashMap<String, CalculationProgress>>> =
+struct InFlightJob {
+    id: u64,
+    cancel: Arc<AtomicBool>,
+    timeout: Option<Duration>,
+    cancel_on_unpin: bool,
+    waiters: usize,
+    shared: Arc<JobShared>,
+    progress: Option<CalculationProgress>,
+}
+
+struct JobShared {
+    result: Mutex<Option<DirSizeResult>>,
+    finished: Condvar,
+}
+
+struct OwnedJob {
+    path: String,
+    id: u64,
+    cancel: Arc<AtomicBool>,
+    timeout: Option<Duration>,
+    progress: Option<CalculationProgress>,
+    shared: Arc<JobShared>,
+    emit: Option<ResultEmitter>,
+}
+
+struct JobRequest {
+    timeout: Option<Duration>,
+    use_cache: bool,
+    require_pin: bool,
+    track_progress: bool,
+    allow_pin_retry: bool,
+    emit: Option<ResultEmitter>,
+}
+
+struct DeferredDrain<Work> {
+    request: JobRequest,
+    work: Option<Work>,
+}
+
+struct JobWaiter<Work> {
+    path: String,
+    job_id: Option<u64>,
+    shared: Arc<JobShared>,
+    deferred: Option<DeferredDrain<Work>>,
+}
+
+struct FinishOnDrop {
+    job: Option<OwnedJob>,
+}
+
+struct JobLaunch<Work> {
+    job: Option<OwnedJob>,
+    work: Option<Work>,
+}
+
+enum Claim {
+    Abandoned,
+    Drain(Arc<JobShared>),
+    Joined {
+        path: String,
+        job_id: u64,
+        shared: Arc<JobShared>,
+    },
+    Owned(OwnedJob),
+}
+
+type ResultEmitter = Arc<dyn Fn(DirSizeResult) + Send + Sync>;
+
+static SIZE_CACHE: Lazy<Mutex<LruCache<String, CacheEntry>>> =
+    Lazy::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(CACHE_SIZE).unwrap())));
+
+static DIR_SIZE_PINS: Lazy<Mutex<HashMap<String, usize>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
-fn register_calculation(path: &str) -> (Arc<AtomicBool>, CalculationProgress) {
+static JOBS: Lazy<Mutex<HashMap<String, InFlightJob>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+static NEXT_JOB_ID: AtomicU64 = AtomicU64::new(1);
+
+static DIR_SIZE_POOL: Lazy<rayon::ThreadPool> = Lazy::new(|| {
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(DIR_SIZE_POOL_THREADS)
+        .thread_name(|index| format!("dir-size-{index}"))
+        .spawn_handler(spawn_dir_size_thread)
+        .build()
+        .expect("dir size thread pool")
+});
+
+fn lock_mutex<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+    match mutex.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}
+
+fn spawn_dir_size_thread(thread: rayon::ThreadBuilder) -> std::io::Result<()> {
+    let mut builder = std::thread::Builder::new();
+    if let Some(name) = thread.name() {
+        builder = builder.name(name.to_owned());
+    }
+    if let Some(stack_size) = thread.stack_size() {
+        builder = builder.stack_size(stack_size);
+    }
+    builder.spawn(move || {
+        lower_current_thread_priority();
+        thread.run();
+    })?;
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn lower_current_thread_priority() {
+    unsafe {
+        let thread_id = libc::gettid();
+        if thread_id > 0 {
+            let _ = libc::setpriority(
+                libc::PRIO_PROCESS,
+                thread_id as libc::id_t,
+                DIR_SIZE_THREAD_NICE,
+            );
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn lower_current_thread_priority() {
+    unsafe {
+        let _ = libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_UTILITY, 0);
+    }
+}
+
+#[cfg(windows)]
+fn lower_current_thread_priority() {
+    unsafe {
+        let _ = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+    }
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+fn lower_current_thread_priority() {}
+
+fn assert_not_on_listing_pool() {
+    #[cfg(test)]
+    {
+        let current_thread = std::thread::current();
+        let thread_name = current_thread.name().unwrap_or("");
+        assert!(
+            !thread_name.starts_with("rayon-"),
+            "directory size work ran on the listing pool ({thread_name})"
+        );
+    }
+}
+
+fn dir_size_result(
+    path: &str,
+    size: u64,
+    status: SizeStatus,
+    file_count: u64,
+    dir_count: u64,
+    error: Option<String>,
+) -> DirSizeResult {
+    DirSizeResult {
+        path: normalize_path(path),
+        size,
+        status,
+        file_count,
+        dir_count,
+        error,
+    }
+}
+
+fn error_result(path: &str, message: &str) -> DirSizeResult {
+    dir_size_result(path, 0, SizeStatus::Error, 0, 0, Some(message.to_string()))
+}
+
+fn cancelled_result(path: &str) -> DirSizeResult {
+    dir_size_result(path, 0, SizeStatus::Cancelled, 0, 0, None)
+}
+
+fn progress_result(path: &str, progress: &CalculationProgress) -> DirSizeResult {
+    dir_size_result(
+        path,
+        progress.size.load(Ordering::SeqCst),
+        SizeStatus::Partial,
+        progress.file_count.load(Ordering::SeqCst),
+        progress.dir_count.load(Ordering::SeqCst),
+        None,
+    )
+}
+
+fn in_progress_result(path: &str) -> DirSizeResult {
     let normalized = normalize_path(path);
-    let cancel_token = Arc::new(AtomicBool::new(false));
-    let progress = CalculationProgress {
+    let jobs = lock_mutex(&JOBS);
+    if let Some(progress) = jobs.get(&normalized).and_then(|job| job.progress.as_ref()) {
+        return progress_result(&normalized, progress);
+    }
+    dir_size_result(&normalized, 0, SizeStatus::Partial, 0, 0, None)
+}
+
+fn new_progress() -> CalculationProgress {
+    CalculationProgress {
         size: Arc::new(AtomicU64::new(0)),
         file_count: Arc::new(AtomicU64::new(0)),
         dir_count: Arc::new(AtomicU64::new(0)),
-    };
-
-    if let Ok(mut active) = ACTIVE_CALCULATIONS.lock() {
-        active.insert(normalized.clone(), cancel_token.clone());
-    }
-    if let Ok(mut prog) = CALCULATION_PROGRESS.lock() {
-        prog.insert(normalized, progress.clone());
-    }
-
-    (cancel_token, progress)
-}
-
-fn unregister_calculation(path: &str) {
-    let normalized = normalize_path(path);
-    if let Ok(mut active) = ACTIVE_CALCULATIONS.lock() {
-        active.remove(&normalized);
-    }
-    if let Ok(mut prog) = CALCULATION_PROGRESS.lock() {
-        prog.remove(&normalized);
     }
 }
 
@@ -112,11 +290,11 @@ fn get_current_timestamp() -> u64 {
 
 fn get_cached_size(path: &str) -> Option<CacheEntry> {
     let normalized = normalize_path(path);
-    let mut cache = SIZE_CACHE.lock().ok()?;
+    let mut cache = lock_mutex(&SIZE_CACHE);
     let entry = cache.get(&normalized)?;
 
     let now = get_current_timestamp();
-    if now - entry.calculated_at > CACHE_TTL_SECONDS {
+    if now.saturating_sub(entry.calculated_at) > CACHE_TTL_SECONDS {
         return None;
     }
 
@@ -130,321 +308,613 @@ fn get_cached_size(path: &str) -> Option<CacheEntry> {
 
 fn set_cached_size(path: &str, entry: CacheEntry) {
     let normalized = normalize_path(path);
-    if let Ok(mut cache) = SIZE_CACHE.lock() {
-        cache.put(normalized, entry);
-    }
+    lock_mutex(&SIZE_CACHE).put(normalized, entry);
 }
 
-fn calculate_dir_size_with_timeout(path: &Path, timeout: Duration) -> DirSizeResult {
-    let path_str = normalize_path(&path.to_string_lossy());
-
-    if !path.exists() {
-        return DirSizeResult {
-            path: path_str,
-            size: 0,
-            status: SizeStatus::Error,
-            file_count: 0,
-            dir_count: 0,
-            error: Some("Path does not exist".to_string()),
-        };
-    }
-
-    if !path.is_dir() {
-        return DirSizeResult {
-            path: path_str,
-            size: 0,
-            status: SizeStatus::Error,
-            file_count: 0,
-            dir_count: 0,
-            error: Some("Path is not a directory".to_string()),
-        };
-    }
-
-    let start_time = Instant::now();
-    let cancelled = Arc::new(AtomicBool::new(false));
-    let total_size = Arc::new(AtomicU64::new(0));
-    let file_count = Arc::new(AtomicU64::new(0));
-    let dir_count = Arc::new(AtomicU64::new(0));
-
-    let entries: Vec<_> = WalkDir::new(path)
-        .min_depth(1)
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-        .take_while(|_| {
-            if start_time.elapsed() > timeout {
-                cancelled.store(true, Ordering::SeqCst);
-                false
-            } else {
-                true
-            }
-        })
-        .collect();
-
-    let was_cancelled = cancelled.load(Ordering::SeqCst);
-
-    entries.par_iter().for_each(|entry| {
-        if let Ok(metadata) = entry.metadata() {
-            if metadata.is_file() {
-                total_size.fetch_add(metadata.len(), Ordering::Relaxed);
-                file_count.fetch_add(1, Ordering::Relaxed);
-            } else if metadata.is_dir() {
-                dir_count.fetch_add(1, Ordering::Relaxed);
-            }
-        }
-    });
-
-    let final_size = total_size.load(Ordering::SeqCst);
-    let final_file_count = file_count.load(Ordering::SeqCst);
-    let final_dir_count = dir_count.load(Ordering::SeqCst);
-
-    let status = if was_cancelled {
-        SizeStatus::Partial
-    } else {
-        SizeStatus::Complete
-    };
-
-    // Only cache complete results - partial sizes are not stored
-    if !was_cancelled {
-        let dir_mtime = get_dir_mtime(path);
-        set_cached_size(
-            &path_str,
-            CacheEntry {
-                size: final_size,
-                file_count: final_file_count,
-                dir_count: final_dir_count,
-                status: status.clone(),
-                calculated_at: get_current_timestamp(),
-                dir_mtime,
-            },
-        );
-    }
-
-    DirSizeResult {
-        path: path_str,
-        size: final_size,
-        status,
-        file_count: final_file_count,
-        dir_count: final_dir_count,
-        error: None,
-    }
+fn cached_dir_size_result(path: &str) -> Option<DirSizeResult> {
+    let cached = get_cached_size(path)?;
+    Some(dir_size_result(
+        path,
+        cached.size,
+        cached.status,
+        cached.file_count,
+        cached.dir_count,
+        None,
+    ))
 }
 
-fn calculate_dir_size_no_timeout(
-    path: &Path,
-    cancel_token: Arc<AtomicBool>,
-    progress: CalculationProgress,
-) -> DirSizeResult {
-    let path_str = normalize_path(&path.to_string_lossy());
-
-    if !path.exists() {
-        return DirSizeResult {
-            path: path_str,
-            size: 0,
-            status: SizeStatus::Error,
-            file_count: 0,
-            dir_count: 0,
-            error: Some("Path does not exist".to_string()),
-        };
-    }
-
-    if !path.is_dir() {
-        return DirSizeResult {
-            path: path_str,
-            size: 0,
-            status: SizeStatus::Error,
-            file_count: 0,
-            dir_count: 0,
-            error: Some("Path is not a directory".to_string()),
-        };
-    }
-
-    let was_cancelled = Arc::new(AtomicBool::new(false));
-    let was_cancelled_clone = was_cancelled.clone();
-    let cancel_token_clone = cancel_token.clone();
-
-    // Use the shared progress counters
-    let total_size = progress.size.clone();
-    let file_count = progress.file_count.clone();
-    let dir_count = progress.dir_count.clone();
-
-    let total_size_clone = total_size.clone();
-    let file_count_clone = file_count.clone();
-    let dir_count_clone = dir_count.clone();
-
-    // Process entries one by one, updating progress as we go
-    for entry in WalkDir::new(path)
-        .min_depth(1)
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-    {
-        // Check cancellation
-        if cancel_token_clone.load(Ordering::SeqCst) {
-            was_cancelled_clone.store(true, Ordering::SeqCst);
-            break;
-        }
-
-        if let Ok(metadata) = entry.metadata() {
-            if metadata.is_file() {
-                total_size_clone.fetch_add(metadata.len(), Ordering::Relaxed);
-                file_count_clone.fetch_add(1, Ordering::Relaxed);
-            } else if metadata.is_dir() {
-                dir_count_clone.fetch_add(1, Ordering::Relaxed);
-            }
-        }
-    }
-
-    // Check if cancelled
-    if cancel_token.load(Ordering::SeqCst) || was_cancelled.load(Ordering::SeqCst) {
-        return DirSizeResult {
-            path: path_str,
-            size: total_size.load(Ordering::SeqCst),
-            status: SizeStatus::Cancelled,
-            file_count: file_count.load(Ordering::SeqCst),
-            dir_count: dir_count.load(Ordering::SeqCst),
-            error: None,
-        };
-    }
-
-    let final_size = total_size.load(Ordering::SeqCst);
-    let final_file_count = file_count.load(Ordering::SeqCst);
-    let final_dir_count = dir_count.load(Ordering::SeqCst);
-
-    let dir_mtime = get_dir_mtime(path);
+fn store_complete_result(path: &Path, path_str: &str, size: u64, file_count: u64, dir_count: u64) {
     set_cached_size(
-        &path_str,
+        path_str,
         CacheEntry {
-            size: final_size,
-            file_count: final_file_count,
-            dir_count: final_dir_count,
+            size,
+            file_count,
+            dir_count,
             status: SizeStatus::Complete,
             calculated_at: get_current_timestamp(),
-            dir_mtime,
+            dir_mtime: get_dir_mtime(path),
         },
     );
-
-    DirSizeResult {
-        path: path_str,
-        size: final_size,
-        status: SizeStatus::Complete,
-        file_count: final_file_count,
-        dir_count: final_dir_count,
-        error: None,
-    }
 }
 
-#[tauri::command]
-pub async fn get_dir_size(path: String, timeout_ms: Option<u64>) -> DirSizeResult {
-    let path_clone = path.clone();
-    let (cancel_token, progress) = register_calculation(&path);
-
-    let result = tokio::task::spawn_blocking(move || {
-        let dir_path = Path::new(&path_clone);
-
-        match timeout_ms {
-            Some(ms) => calculate_dir_size_with_timeout(dir_path, Duration::from_millis(ms)),
-            None => calculate_dir_size_no_timeout(dir_path, cancel_token, progress),
-        }
-    })
-    .await
-    .unwrap_or_else(|_| DirSizeResult {
-        path: normalize_path(&path),
-        size: 0,
-        status: SizeStatus::Error,
-        file_count: 0,
-        dir_count: 0,
-        error: Some("Task failed".to_string()),
-    });
-
-    unregister_calculation(&path);
-    result
-}
-
-/// Get the current progress of an active calculation
-#[tauri::command]
-pub fn get_dir_size_progress(path: String) -> Option<DirSizeResult> {
-    let normalized = normalize_path(&path);
-
-    if let Ok(prog) = CALCULATION_PROGRESS.lock() {
-        if let Some(progress) = prog.get(&normalized) {
-            return Some(DirSizeResult {
-                path: normalized,
-                size: progress.size.load(Ordering::SeqCst),
-                status: SizeStatus::Partial, // In progress, so partial
-                file_count: progress.file_count.load(Ordering::SeqCst),
-                dir_count: progress.dir_count.load(Ordering::SeqCst),
-                error: None,
-            });
-        }
+fn reject_unreadable_dir(path: &Path) -> Option<DirSizeResult> {
+    let path_str = normalize_path(&path.to_string_lossy());
+    if !path.exists() {
+        return Some(error_result(&path_str, "Path does not exist"));
     }
-
+    if !path.is_dir() {
+        return Some(error_result(&path_str, "Path is not a directory"));
+    }
     None
 }
 
-/// Get all active calculations (for frontend recovery after reload)
-#[tauri::command]
-pub fn get_active_calculations() -> Vec<DirSizeResult> {
-    let mut results = Vec::new();
+fn timeouts_match(existing: Option<Duration>, requested: Option<Duration>) -> bool {
+    existing == requested
+}
 
-    if let Ok(prog) = CALCULATION_PROGRESS.lock() {
-        for (path, progress) in prog.iter() {
-            results.push(DirSizeResult {
-                path: path.clone(),
-                size: progress.size.load(Ordering::SeqCst),
-                status: SizeStatus::Partial,
-                file_count: progress.file_count.load(Ordering::SeqCst),
-                dir_count: progress.dir_count.load(Ordering::SeqCst),
-                error: None,
-            });
+fn pin_count(pins: &HashMap<String, usize>, path: &str) -> usize {
+    pins.get(path).copied().unwrap_or(0)
+}
+
+fn current_pin_count(path: &str) -> usize {
+    let pins = lock_mutex(&DIR_SIZE_PINS);
+    pin_count(&pins, &normalize_path(path))
+}
+
+impl JobShared {
+    fn pending() -> Arc<Self> {
+        Arc::new(Self {
+            result: Mutex::new(None),
+            finished: Condvar::new(),
+        })
+    }
+
+    fn ready(result: DirSizeResult) -> Arc<Self> {
+        Arc::new(Self {
+            result: Mutex::new(Some(result)),
+            finished: Condvar::new(),
+        })
+    }
+
+    fn publish(&self, result: DirSizeResult) {
+        let mut slot = lock_mutex(&self.result);
+        *slot = Some(result);
+        self.finished.notify_all();
+    }
+
+    fn wait(&self) -> DirSizeResult {
+        let mut slot = lock_mutex(&self.result);
+        while slot.is_none() {
+            slot = self
+                .finished
+                .wait(slot)
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+        }
+        slot.clone().expect("dir size result")
+    }
+
+    fn wait_timeout(&self, timeout: Duration) -> Option<DirSizeResult> {
+        let mut slot = lock_mutex(&self.result);
+        let deadline = Instant::now() + timeout;
+        loop {
+            if let Some(result) = slot.clone() {
+                return Some(result);
+            }
+
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return None;
+            }
+
+            let (guard, wait_result) = self
+                .finished
+                .wait_timeout(slot, remaining)
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            slot = guard;
+            if wait_result.timed_out() && slot.is_none() {
+                return None;
+            }
+        }
+    }
+}
+
+impl<Work> JobWaiter<Work>
+where
+    Work: FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static,
+{
+    fn ready(path: String, result: DirSizeResult) -> Self {
+        Self {
+            path,
+            job_id: None,
+            shared: JobShared::ready(result),
+            deferred: None,
         }
     }
 
-    results
+    fn waiting(
+        path: String,
+        job_id: u64,
+        shared: Arc<JobShared>,
+        deferred: DeferredDrain<Work>,
+    ) -> Self {
+        Self {
+            path,
+            job_id: Some(job_id),
+            shared,
+            deferred: Some(deferred),
+        }
+    }
+
+    fn draining(path: String, shared: Arc<JobShared>, deferred: DeferredDrain<Work>) -> Self {
+        Self {
+            path,
+            job_id: None,
+            shared,
+            deferred: Some(deferred),
+        }
+    }
+
+    fn wait(mut self) -> DirSizeResult {
+        let Some(mut deferred) = self.deferred.take() else {
+            return self.shared.wait();
+        };
+
+        if self.job_id.is_some() {
+            let result = self.shared.wait();
+            if deferred.request.allow_pin_retry
+                && result.status == SizeStatus::Cancelled
+                && deferred.request.require_pin
+                && current_pin_count(&self.path) > 0
+            {
+                return self.enqueue_again(deferred);
+            }
+            return result;
+        }
+
+        if !deferred.request.use_cache {
+            if detach_cancelled_job(&self.path) || !job_is_in_flight(&self.path) {
+                return self.enqueue_again(deferred);
+            }
+            let _ = self.shared.wait();
+            return self.enqueue_again(deferred);
+        }
+
+        let finished = match deferred.request.timeout {
+            Some(duration) => self.shared.wait_timeout(duration),
+            None => Some(self.shared.wait()),
+        };
+
+        if let Some(result) = finished {
+            if matches!(result.status, SizeStatus::Complete | SizeStatus::Error) {
+                return result;
+            }
+            return self.enqueue_again(deferred);
+        }
+
+        if detach_cancelled_job(&self.path) || !job_is_in_flight(&self.path) {
+            return self.enqueue_again(deferred);
+        }
+
+        if let Some(cached) = cached_dir_size_result(&self.path) {
+            return cached;
+        }
+        drop(deferred.work.take());
+        in_progress_result(&self.path)
+    }
+
+    fn enqueue_again(self, mut deferred: DeferredDrain<Work>) -> DirSizeResult {
+        deferred.request.allow_pin_retry = false;
+        let path = self.path.clone();
+        let request = deferred.request;
+        if let Some(work) = deferred.work.take() {
+            return schedule_dir_size_job(path, request, work).wait();
+        }
+        let timeout = request.timeout;
+        let retry_path = path.clone();
+        schedule_dir_size_job(path, request, calculate_work(retry_path, timeout)).wait()
+    }
+}
+
+impl<Work> Drop for JobWaiter<Work> {
+    fn drop(&mut self) {
+        let Some(job_id) = self.job_id else {
+            return;
+        };
+        let normalized = normalize_path(&self.path);
+        let mut jobs = lock_mutex(&JOBS);
+        let Some(job) = jobs.get_mut(&normalized) else {
+            return;
+        };
+        if job.id == job_id && job.waiters > 0 {
+            job.waiters -= 1;
+        }
+    }
+}
+
+impl FinishOnDrop {
+    fn complete(&mut self, result: DirSizeResult) {
+        if let Some(job) = self.job.take() {
+            finish_owned_job(&job, result);
+        }
+    }
+}
+
+impl Drop for FinishOnDrop {
+    fn drop(&mut self) {
+        if let Some(job) = self.job.take() {
+            let path = job.path.clone();
+            finish_owned_job(&job, error_result(&path, "Task failed"));
+        }
+    }
+}
+
+impl<Work> Drop for JobLaunch<Work> {
+    fn drop(&mut self) {
+        if let Some(job) = self.job.take() {
+            let path = job.path.clone();
+            finish_owned_job(&job, error_result(&path, "Task failed"));
+        }
+    }
+}
+
+fn finish_owned_job(job: &OwnedJob, result: DirSizeResult) {
+    let still_owner = {
+        let mut jobs = lock_mutex(&JOBS);
+        let owns_registry_entry = jobs.get(&job.path).map(|entry| entry.id) == Some(job.id);
+        if owns_registry_entry {
+            jobs.remove(&job.path);
+        }
+        owns_registry_entry
+    };
+    let cancelled = job.cancel.load(Ordering::SeqCst);
+    if still_owner && !cancelled && result.status == SizeStatus::Complete {
+        if let Some(emit) = &job.emit {
+            emit(result.clone());
+        }
+    }
+    job.shared.publish(result);
+}
+
+fn job_is_in_flight(path: &str) -> bool {
+    let normalized = normalize_path(path);
+    lock_mutex(&JOBS).contains_key(&normalized)
+}
+
+fn detach_cancelled_job(path: &str) -> bool {
+    let normalized = normalize_path(path);
+    let mut jobs = lock_mutex(&JOBS);
+    let Some(job) = jobs.get(&normalized) else {
+        return false;
+    };
+    if !job.cancel.load(Ordering::SeqCst) {
+        return false;
+    }
+    jobs.remove(&normalized);
+    true
+}
+
+fn claim_job(path: &str, request: &JobRequest) -> Claim {
+    let normalized = normalize_path(path);
+    let pins = lock_mutex(&DIR_SIZE_PINS);
+    let mut jobs = lock_mutex(&JOBS);
+    if request.require_pin && pin_count(&pins, &normalized) == 0 {
+        return Claim::Abandoned;
+    }
+
+    if let Some(existing) = jobs.get_mut(&normalized) {
+        let cancelled = existing.cancel.load(Ordering::SeqCst);
+        let can_join =
+            request.use_cache && !cancelled && timeouts_match(existing.timeout, request.timeout);
+        if can_join {
+            existing.waiters += 1;
+            return Claim::Joined {
+                path: normalized,
+                job_id: existing.id,
+                shared: Arc::clone(&existing.shared),
+            };
+        }
+        return Claim::Drain(Arc::clone(&existing.shared));
+    }
+
+    let job_id = NEXT_JOB_ID.fetch_add(1, Ordering::Relaxed);
+    let cancel = Arc::new(AtomicBool::new(false));
+    let shared = JobShared::pending();
+    let progress = if request.track_progress {
+        Some(new_progress())
+    } else {
+        None
+    };
+    jobs.insert(
+        normalized.clone(),
+        InFlightJob {
+            id: job_id,
+            cancel: Arc::clone(&cancel),
+            timeout: request.timeout,
+            cancel_on_unpin: request.require_pin,
+            waiters: 1,
+            shared: Arc::clone(&shared),
+            progress: progress.clone(),
+        },
+    );
+    drop(jobs);
+    drop(pins);
+
+    Claim::Owned(OwnedJob {
+        path: normalized,
+        id: job_id,
+        cancel,
+        timeout: request.timeout,
+        progress,
+        shared,
+        emit: request.emit.clone(),
+    })
+}
+
+fn spawn_owned_job<Work>(owned: OwnedJob, work: Work)
+where
+    Work: FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static,
+{
+    let timeout = owned.timeout;
+    let launch = JobLaunch {
+        job: Some(owned),
+        work: Some(work),
+    };
+    let run = move || {
+        lower_full_scan_priority(timeout);
+        let mut launch = launch;
+        let owned = launch.job.take().expect("dir size job");
+        let work = launch.work.take().expect("dir size work");
+        let mut finish = FinishOnDrop { job: Some(owned) };
+        let (cancel, progress) = {
+            let job = finish.job.as_ref().expect("dir size job");
+            (Arc::clone(&job.cancel), job.progress.clone())
+        };
+        let result = work(cancel, progress);
+        finish.complete(result);
+    };
+
+    if timeout.is_none() {
+        if std::thread::Builder::new()
+            .name("dir-size-full".to_string())
+            .spawn(run)
+            .is_err()
+        {
+            return;
+        }
+        return;
+    }
+    DIR_SIZE_POOL.spawn(run);
+}
+
+fn lower_full_scan_priority(timeout: Option<Duration>) {
+    if timeout.is_none() {
+        lower_current_thread_priority();
+    }
+}
+
+fn calculate_work(
+    path: String,
+    timeout: Option<Duration>,
+) -> impl FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static {
+    move |cancel, progress| {
+        walk::calculate_dir_size(Path::new(&path), timeout, &cancel, progress.as_ref())
+    }
+}
+
+fn schedule_dir_size_job<Work>(path: String, request: JobRequest, work: Work) -> JobWaiter<Work>
+where
+    Work: FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static,
+{
+    if request.use_cache {
+        if let Some(cached) = cached_dir_size_result(&path) {
+            return JobWaiter::ready(path, cached);
+        }
+    }
+
+    match claim_job(&path, &request) {
+        Claim::Abandoned => {
+            let result = cancelled_result(&path);
+            JobWaiter::ready(path, result)
+        }
+        Claim::Drain(shared) => JobWaiter::draining(
+            path,
+            shared,
+            DeferredDrain {
+                request,
+                work: Some(work),
+            },
+        ),
+        Claim::Joined {
+            path,
+            job_id,
+            shared,
+        } => JobWaiter::waiting(
+            path,
+            job_id,
+            shared,
+            DeferredDrain {
+                request,
+                work: Some(work),
+            },
+        ),
+        Claim::Owned(owned) => {
+            let waiter = JobWaiter::waiting(
+                owned.path.clone(),
+                owned.id,
+                Arc::clone(&owned.shared),
+                DeferredDrain {
+                    request,
+                    work: None,
+                },
+            );
+            spawn_owned_job(owned, work);
+            waiter
+        }
+    }
+}
+
+#[cfg(test)]
+fn enqueue_dir_size_job<Work>(
+    path: String,
+    timeout: Option<Duration>,
+    use_cache: bool,
+    require_pin: bool,
+    track_progress: bool,
+    work: Work,
+) -> JobWaiter<Work>
+where
+    Work: FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static,
+{
+    schedule_dir_size_job(
+        path,
+        JobRequest {
+            timeout,
+            use_cache,
+            require_pin,
+            track_progress,
+            allow_pin_retry: true,
+            emit: None,
+        },
+        work,
+    )
+}
+
+fn run_dir_sizes(
+    paths: Vec<String>,
+    timeout: Option<Duration>,
+    use_cache: bool,
+    require_pin: bool,
+    track_progress: bool,
+    emit: Option<ResultEmitter>,
+) -> Vec<DirSizeResult> {
+    let waiters: Vec<_> = paths
+        .into_iter()
+        .map(|path| {
+            let work_path = path.clone();
+            schedule_dir_size_job(
+                path,
+                JobRequest {
+                    timeout,
+                    use_cache,
+                    require_pin,
+                    track_progress,
+                    allow_pin_retry: true,
+                    emit: emit.clone(),
+                },
+                calculate_work(work_path, timeout),
+            )
+        })
+        .collect();
+    waiters.into_iter().map(JobWaiter::wait).collect()
+}
+
+fn result_emitter(app: AppHandle) -> ResultEmitter {
+    Arc::new(move |result| {
+        let _ = app.emit(DIR_SIZE_RESULT_EVENT, result);
+    })
+}
+
+#[tauri::command]
+pub async fn get_dir_size(app: AppHandle, path: String, timeout_ms: Option<u64>) -> DirSizeResult {
+    let timeout = timeout_ms.map(Duration::from_millis);
+    let fallback_path = path.clone();
+    let thread_fallback = fallback_path.clone();
+    let emit = result_emitter(app);
+    tokio::task::spawn_blocking(move || {
+        run_dir_sizes(vec![path], timeout, false, false, true, Some(emit))
+            .into_iter()
+            .next()
+            .unwrap_or_else(|| error_result(&thread_fallback, "Task failed"))
+    })
+    .await
+    .unwrap_or_else(|_| error_result(&fallback_path, "Task failed"))
+}
+
+#[tauri::command]
+pub fn get_dir_size_progress(path: String) -> Option<DirSizeResult> {
+    let normalized = normalize_path(&path);
+    let jobs = lock_mutex(&JOBS);
+    let progress = jobs.get(&normalized)?.progress.as_ref()?;
+    Some(progress_result(&normalized, progress))
+}
+
+#[tauri::command]
+pub fn get_active_calculations() -> Vec<DirSizeResult> {
+    lock_mutex(&JOBS)
+        .iter()
+        .filter_map(|(path, job)| {
+            job.progress
+                .as_ref()
+                .map(|progress| progress_result(path, progress))
+        })
+        .collect()
 }
 
 #[tauri::command]
 pub fn cancel_dir_size(path: String) -> bool {
     let normalized = normalize_path(&path);
-    if let Ok(active) = ACTIVE_CALCULATIONS.lock() {
-        if let Some(cancel_token) = active.get(&normalized) {
-            cancel_token.store(true, Ordering::SeqCst);
-            return true;
+    let jobs = lock_mutex(&JOBS);
+    let Some(job) = jobs.get(&normalized) else {
+        return false;
+    };
+    job.cancel.store(true, Ordering::SeqCst);
+    true
+}
+
+#[tauri::command]
+pub fn pin_dir_sizes(paths: Vec<String>) {
+    let mut pins = lock_mutex(&DIR_SIZE_PINS);
+    for path in paths {
+        let normalized = normalize_path(&path);
+        *pins.entry(normalized).or_insert(0) += 1;
+    }
+}
+
+#[tauri::command]
+pub fn unpin_dir_sizes(paths: Vec<String>) {
+    let mut pins = lock_mutex(&DIR_SIZE_PINS);
+    let jobs = lock_mutex(&JOBS);
+    for path in paths {
+        let normalized = normalize_path(&path);
+        let Some(count) = pins.get_mut(&normalized) else {
+            continue;
+        };
+        if *count > 1 {
+            *count -= 1;
+            continue;
+        }
+        pins.remove(&normalized);
+        let Some(job) = jobs.get(&normalized) else {
+            continue;
+        };
+        if job.cancel_on_unpin {
+            job.cancel.store(true, Ordering::SeqCst);
         }
     }
-    false
 }
 
 #[tauri::command]
 pub async fn get_dir_sizes_batch(
+    app: AppHandle,
     paths: Vec<String>,
     timeout_ms: Option<u64>,
     use_cache: Option<bool>,
+    require_pin: Option<bool>,
 ) -> Vec<DirSizeResult> {
+    let emit = result_emitter(app);
     tokio::task::spawn_blocking(move || {
         let timeout = match timeout_ms {
             None => Duration::from_secs(60 * 60 * 24 * 365),
-            Some(ms) => Duration::from_millis(ms),
+            Some(milliseconds) => Duration::from_millis(milliseconds),
         };
-        let should_use_cache = use_cache.unwrap_or(true);
-
-        paths
-            .par_iter()
-            .map(|path| {
-                if should_use_cache {
-                    if let Some(cached) = get_cached_size(path) {
-                        return DirSizeResult {
-                            path: normalize_path(path),
-                            size: cached.size,
-                            status: cached.status,
-                            file_count: cached.file_count,
-                            dir_count: cached.dir_count,
-                            error: None,
-                        };
-                    }
-                }
-
-                calculate_dir_size_with_timeout(Path::new(path), timeout)
-            })
-            .collect()
+        run_dir_sizes(
+            paths,
+            Some(timeout),
+            use_cache.unwrap_or(true),
+            require_pin.unwrap_or(false),
+            false,
+            Some(emit),
+        )
     })
     .await
     .unwrap_or_default()
@@ -452,33 +922,30 @@ pub async fn get_dir_sizes_batch(
 
 #[tauri::command]
 pub fn invalidate_dir_size_cache(paths: Vec<String>) {
-    if let Ok(mut cache) = SIZE_CACHE.lock() {
-        for path in paths {
-            let normalized = normalize_path(&path);
-            cache.pop(&normalized);
+    let mut cache = lock_mutex(&SIZE_CACHE);
+    for path in paths {
+        let normalized = normalize_path(&path);
+        cache.pop(&normalized);
 
-            let path_with_slash = if normalized.ends_with('/') {
-                normalized.clone()
-            } else {
-                format!("{}/", normalized)
-            };
+        let path_with_slash = if normalized.ends_with('/') {
+            normalized.clone()
+        } else {
+            format!("{normalized}/")
+        };
 
-            let keys_to_remove: Vec<String> = cache
-                .iter()
-                .filter(|(key, _)| key.starts_with(&path_with_slash))
-                .map(|(key, _)| key.clone())
-                .collect();
+        let keys_to_remove: Vec<String> = cache
+            .iter()
+            .filter(|(key, _)| key.starts_with(&path_with_slash))
+            .map(|(key, _)| key.clone())
+            .collect();
 
-            for key in keys_to_remove {
-                cache.pop(&key);
-            }
+        for key in keys_to_remove {
+            cache.pop(&key);
         }
     }
 }
 
 #[tauri::command]
 pub fn clear_dir_size_cache() {
-    if let Ok(mut cache) = SIZE_CACHE.lock() {
-        cache.clear();
-    }
+    lock_mutex(&SIZE_CACHE).clear();
 }

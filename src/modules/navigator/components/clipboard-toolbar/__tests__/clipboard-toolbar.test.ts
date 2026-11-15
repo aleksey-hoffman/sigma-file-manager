@@ -37,6 +37,10 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
 }));
 
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: vi.fn(async () => () => {}),
+}));
+
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
     t: (key: string, values?: Record<string, unknown>) => {

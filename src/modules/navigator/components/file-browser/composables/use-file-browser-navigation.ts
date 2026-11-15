@@ -111,6 +111,7 @@ export function useFileBrowserNavigation(
   const userSettingsStore = useUserSettingsStore();
   const userPathsStore = useUserPathsStore();
   const dirSizesStore = useDirSizesStore();
+  const directorySizeWatch = dirSizesStore.createDirectorySizeWatch();
   const navigatorIconsStore = useNavigatorIconsStore();
   const linkMetadataStore = useLinkMetadataStore();
   const itemCountsStore = useItemCountsStore();
@@ -146,6 +147,23 @@ export function useFileBrowserNavigation(
     return statusCenterStore.activeOperations.some(
       operation => operation.type === 'copy' || operation.type === 'move',
     );
+  }
+
+  function syncDirectorySizeRequests(entries: DirEntry[], directoryPath: string) {
+    if (isCopyOrMoveInProgress()) {
+      return;
+    }
+
+    if (isVirtualDirectoryPath(directoryPath)) {
+      directorySizeWatch.sync([]);
+      return;
+    }
+
+    const directoryPaths = entries
+      .filter(entry => entry.is_dir)
+      .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
+      .map(entry => entry.path);
+    directorySizeWatch.sync(directoryPaths);
   }
 
   const currentPath = ref('');
@@ -384,6 +402,7 @@ export function useFileBrowserNavigation(
     isDisposed = true;
     readGeneration += 1;
     cancelPendingDirectoryRecord();
+    directorySizeWatch.stop();
     stopWatching();
 
     if (iconPrefetchTimer) {
@@ -463,14 +482,7 @@ export function useFileBrowserNavigation(
       onNavigationComplete?.(currentDirEntry.value);
     });
 
-    const dirPaths = result.entries
-      .filter(entry => entry.is_dir)
-      .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
-      .map(entry => entry.path);
-
-    if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
-      dirSizesStore.requestSizesBatch(dirPaths);
-    }
+    syncDirectorySizeRequests(result.entries, result.path);
   }
 
   function scheduleDirectoryIconPrefetch(entries: DirEntry[]): void {
@@ -530,14 +542,7 @@ export function useFileBrowserNavigation(
 
       scheduleDirectoryIconPrefetch(result.entries);
 
-      const dirPaths = result.entries
-        .filter(entry => entry.is_dir)
-        .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
-        .map(entry => entry.path);
-
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
-        dirSizesStore.requestSizesBatch(dirPaths);
-      }
+      syncDirectorySizeRequests(result.entries, result.path);
     }
     catch {
       const currentTab = tab();
@@ -631,6 +636,10 @@ export function useFileBrowserNavigation(
     const cachedContents = !forceLoading
       ? getCachedDirContentsForPath(normalizedPath)
       : null;
+
+    if (isNewDirectory) {
+      syncDirectorySizeRequests(cachedContents?.entries ?? [], cachedContents?.path ?? normalizedPath);
+    }
 
     if (cachedContents) {
       dirContents.value = cachedContents;

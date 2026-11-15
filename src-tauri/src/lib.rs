@@ -349,6 +349,8 @@ pub fn run() {
             dir_size::invalidate_dir_size_cache,
             dir_size::clear_dir_size_cache,
             dir_size::cancel_dir_size,
+            dir_size::pin_dir_sizes,
+            dir_size::unpin_dir_sizes,
             file_operations::check_conflicts,
             file_operations::copy_items,
             file_operations::ensure_directory,
