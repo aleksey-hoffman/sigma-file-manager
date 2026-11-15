@@ -3,11 +3,12 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
-  beforeEach, describe, expect, it, vi,
+  afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import type { DirContents } from '@/types/dir-entry';
+import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { Tab, TabGroup, Workspace } from '@/types/workspaces';
+import * as pathComparisonCache from '@/utils/path-comparison-volume-cache';
 
 const {
   closeWindowMock,
@@ -787,6 +788,53 @@ describe('workspaces storage duplicate tabs', () => {
   });
 });
 
+describe('workspaces path rename', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('updates listed and selected entries when a file is renamed only by case', () => {
+    const entry = createDirEntry('file.txt', 'C:/Notes/file.txt');
+    const tab = createTab('notes', 'C:/Notes');
+    tab.dirEntries = [entry];
+    tab.selectedDirEntries = [entry];
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [createWorkspace([[tab]])];
+
+    workspacesStore.handlePathRenamed('C:/Notes/file.txt', 'C:/Notes/File.txt');
+
+    expect(tab.dirEntries[0]).toMatchObject({
+      name: 'File.txt',
+      path: 'C:/Notes/File.txt',
+    });
+    expect(tab.selectedDirEntries[0]).toMatchObject({
+      name: 'File.txt',
+      path: 'C:/Notes/File.txt',
+    });
+  });
+
+  it('updates the tab path and child paths when a directory is renamed only by case', () => {
+    const child = createDirEntry('inside.txt', 'C:/Notes/inside.txt');
+    const tab = createTab('notes-tab', 'C:/Notes');
+    tab.name = 'Notes';
+    tab.dirEntries = [child];
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [createWorkspace([[tab]])];
+
+    workspacesStore.handlePathRenamed('C:/Notes', 'C:/notes');
+
+    expect(tab.path).toBe('C:/notes');
+    expect(tab.name).toBe('notes');
+    expect(tab.dirEntries[0]?.path).toBe('C:/notes/inside.txt');
+    expect(tab.dirEntries[0]?.name).toBe('inside.txt');
+  });
+});
+
 function createWorkspace(tabGroups: TabGroup[]): Workspace {
   return {
     id: 0,
@@ -797,6 +845,24 @@ function createWorkspace(tabGroups: TabGroup[]): Workspace {
     tabGroups,
     currentTabGroupIndex: 0,
     currentTabIndex: 0,
+  };
+}
+
+function createDirEntry(name: string, path: string): DirEntry {
+  return {
+    name,
+    ext: null,
+    path,
+    size: 0,
+    item_count: null,
+    modified_time: 0,
+    accessed_time: 0,
+    created_time: 0,
+    mime: null,
+    is_file: true,
+    is_dir: false,
+    is_symlink: false,
+    is_hidden: false,
   };
 }
 

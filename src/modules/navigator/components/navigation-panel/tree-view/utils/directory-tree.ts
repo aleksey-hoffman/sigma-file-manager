@@ -96,6 +96,7 @@ export function toDirectoryTreeEntries(
 ): DirEntry[] {
   const directories = entries
     .filter(entry => entry.is_dir)
+    .filter(entry => !entry.name.startsWith('.sfm-rename-'))
     .filter(entry => !isAlwaysHiddenWindowsSystemEntry(entry.path, entry.name))
     .filter(entry => showHiddenFiles || !isHiddenDirectoryEntry(entry));
 

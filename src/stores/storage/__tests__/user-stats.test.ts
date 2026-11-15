@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
-  beforeEach, describe, expect, it, vi,
+  afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup-storage-bootstrap';
@@ -11,6 +11,7 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { DEFAULT_USER_STATS } from '@/types/user-stats';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
 import { reorderMatchingItems } from '@/utils/reorder-matching-items';
+import * as pathComparisonCache from '@/utils/path-comparison-volume-cache';
 
 const {
   lazyStoreSaveMock,
@@ -312,5 +313,96 @@ describe('user stats tagged item removal', () => {
 
     expect(store.taggedItems.map(item => item.path)).toEqual(['/personal-1']);
     expect(lazyStoreSetMock).toHaveBeenCalledWith('taggedItems', store.taggedItems);
+  });
+});
+
+describe('user stats path rename', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    storedValues.clear();
+    lazyStoreSaveMock.mockReset();
+    lazyStoreSetMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('updates a tagged item and its children when only letter case changes', async () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      taggedItems: [
+        createTaggedItem('C:/Notes/draft.txt', ['tag']),
+        createTaggedItem('C:/Notes/folder/child.txt', ['tag']),
+      ],
+    }));
+
+    await store.handlePathRenamed('C:/Notes/draft.txt', 'C:/Notes/Draft.txt');
+
+    expect(store.taggedItems.map(item => item.path)).toEqual([
+      'C:/Notes/Draft.txt',
+      'C:/Notes/folder/child.txt',
+    ]);
+
+    await store.handlePathRenamed('C:/Notes', 'C:/notes');
+
+    expect(store.taggedItems.map(item => item.path)).toEqual([
+      'C:/notes/Draft.txt',
+      'C:/notes/folder/child.txt',
+    ]);
+  });
+
+  it('does not retarget a different stored case when folding is off', async () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(false);
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      taggedItems: [createTaggedItem('/tmp/Draft.txt', ['tag'])],
+    }));
+
+    await store.handlePathRenamed('/tmp/draft.txt', '/tmp/Draft.txt');
+
+    expect(store.taggedItems.map(item => item.path)).toEqual(['/tmp/Draft.txt']);
+  });
+
+  it('updates an exactly matching path when folding is off', async () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(false);
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      taggedItems: [createTaggedItem('/tmp/draft.txt', ['tag'])],
+    }));
+
+    await store.handlePathRenamed('/tmp/draft.txt', '/tmp/Draft.txt');
+
+    expect(store.taggedItems.map(item => item.path)).toEqual(['/tmp/Draft.txt']);
+  });
+
+  it('updates favorites, history, and frequent items when only letter case changes', async () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      favorites: [createFavorite('C:/Notes/draft.txt')],
+      history: [{
+        path: 'C:/Notes/folder/child.txt',
+        openedAt: 1,
+        isFile: true,
+      }],
+      frequentItems: [{
+        path: 'C:/Notes',
+        openCount: 2,
+        lastOpenedAt: 3,
+        isFile: false,
+      }],
+    }));
+
+    await store.handlePathRenamed('C:/Notes', 'C:/notes');
+
+    expect(store.favorites.map(item => item.path)).toEqual(['C:/notes/draft.txt']);
+    expect(store.history.map(item => item.path)).toEqual(['C:/notes/folder/child.txt']);
+    expect(store.frequentItems.map(item => item.path)).toEqual(['C:/notes']);
   });
 });

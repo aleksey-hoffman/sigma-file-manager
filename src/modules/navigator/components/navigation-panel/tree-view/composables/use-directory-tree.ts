@@ -14,6 +14,7 @@ import type { DirEntry, ReadDirOptions } from '@/types/dir-entry';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
+import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import {
   DIR_CHANGE_EVENT,
@@ -21,7 +22,7 @@ import {
   type DirChangePayload,
 } from '@/modules/navigator/constants/dir-watcher';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
-import { arePathsEquivalent, normalizePathForComparison } from '@/utils/file-operation-paths';
+import { arePathsEquivalent, normalizePathForComparison, remapDirEntry, replacePathPrefix } from '@/utils/file-operation-paths';
 import {
   getNavigableParentPath,
   isVirtualLocationPath,
@@ -48,6 +49,7 @@ export function useDirectoryTree(options: {
   const platformStore = usePlatformStore();
   const userSettingsStore = useUserSettingsStore();
   const userStatsStore = useUserStatsStore();
+  const workspacesStore = useWorkspacesStore();
   const workingExpandedPaths = new Map<string, string>();
   const workingChildrenByPath = new Map<string, DirEntry[]>();
   const expandedPaths = shallowRef<ReadonlySet<string>>(new Set());
@@ -104,6 +106,54 @@ export function useDirectoryTree(options: {
       .sort();
 
     return `${navigatorSettings.showHiddenFiles ? '1' : '0'}|${folderParts.join('|')}`;
+  }
+
+  function rekeyStringMap<T>(map: Map<string, T>, oldPath: string, newPath: string): void {
+    const next = new Map<string, T>();
+
+    for (const [pathKey, value] of map) {
+      const updatedKeyPath = replacePathPrefix(pathKey, oldPath, newPath) ?? pathKey;
+      next.set(getPathKey(updatedKeyPath), value);
+    }
+
+    map.clear();
+
+    for (const [pathKey, value] of next) {
+      map.set(pathKey, value);
+    }
+  }
+
+  function remapDirectoryTreePaths(oldPath: string, newPath: string) {
+    const nextExpanded = new Map<string, string>();
+
+    for (const storedPath of workingExpandedPaths.values()) {
+      const updatedPath = replacePathPrefix(storedPath, oldPath, newPath) ?? storedPath;
+      nextExpanded.set(getPathKey(updatedPath), updatedPath);
+    }
+
+    workingExpandedPaths.clear();
+
+    for (const [pathKey, storedPath] of nextExpanded) {
+      workingExpandedPaths.set(pathKey, storedPath);
+    }
+
+    const nextChildren = new Map<string, DirEntry[]>();
+
+    for (const [pathKey, entries] of workingChildrenByPath) {
+      const updatedEntries = entries.map(entry => remapDirEntry(entry, oldPath, newPath));
+      const updatedKeyPath = replacePathPrefix(pathKey, oldPath, newPath) ?? pathKey;
+      nextChildren.set(getPathKey(updatedKeyPath), updatedEntries);
+    }
+
+    workingChildrenByPath.clear();
+
+    for (const [pathKey, entries] of nextChildren) {
+      workingChildrenByPath.set(pathKey, entries);
+    }
+
+    rekeyStringMap(loadGenerationByPath, oldPath, newPath);
+    rekeyStringMap(reloadTimers, oldPath, newPath);
+    publish();
   }
 
   function publish() {
@@ -263,6 +313,14 @@ export function useDirectoryTree(options: {
       loadDirectory(path);
     }
   }
+
+  watch(() => workspacesStore.lastRenamedPath, (renamed) => {
+    if (!renamed) {
+      return;
+    }
+
+    remapDirectoryTreePaths(renamed.oldPath, renamed.newPath);
+  });
 
   watch(() => options.areUpdatesPaused(), (updatesPaused) => {
     if (!updatesPaused) {

@@ -207,8 +207,8 @@ describe('user settings folder settings path lifecycle', () => {
     await userSettingsStore.handlePathRenamed('C:/Users/aleks/Old', 'C:/Users/aleks/New');
 
     expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
-      [normalizePathForComparison('C:/Users/aleks/New')]: folderSettings,
-      [normalizePathForComparison('C:/Users/aleks/New/Nested')]: folderSettings,
+      'C:/Users/aleks/New': folderSettings,
+      'C:/Users/aleks/New/Nested': folderSettings,
     });
   });
 
@@ -263,8 +263,8 @@ describe('user settings folder settings path lifecycle', () => {
     await userSettingsStore.handlePathRenamed('C:/Users/aleks/Old', 'C:/Users/aleks/New');
 
     expect(userSettingsStore.userSettings.navigator.folderSettings).toEqual({
-      [normalizePathForComparison('C:/Users/aleks/New')]: fullSettings,
-      [normalizePathForComparison('C:/Users/aleks/Keep')]: partialSettings,
+      'C:/Users/aleks/New': fullSettings,
+      'C:/Users/aleks/Keep': partialSettings,
     });
   });
 });
