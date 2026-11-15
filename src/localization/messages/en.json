@@ -292,6 +292,21 @@
         "enableBoxSelectionDescription": "Drag on empty space to select multiple items with a selection box. Hold Ctrl or Shift to add to the selection; hold Alt to invert.",
         "increaseFileViewGaps": "Increase file view gaps",
         "increaseFileViewGapsDescription": "Adds side padding in list layout and increases gaps in grid layout for easier targeting."
+      },
+      "defaultTerminal": {
+        "title": "Default terminal",
+        "description": "Choose which terminal opens for Open in terminal.",
+        "systemDefault": "System default",
+        "custom": "Custom",
+        "command": "Command",
+        "commandPlaceholder": "Path or command, for example kitty",
+        "arguments": "Arguments",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Use {placeholder} for the folder path. It is passed as an argument, not through a shell. If you leave it out, the terminal starts in that folder.",
+        "notInstalled": "This terminal is not installed. Open in terminal will use the system default until it is available.",
+        "commandNotFound": "This command was not found.",
+        "commandInvalid": "The terminal command is not valid.",
+        "argumentsInvalid": "The arguments have an unclosed quote."
       }
     },
     "actions": {
@@ -575,6 +590,7 @@
     "autostart": "autostart, startup, boot, login, launch, system, wake",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "file view, box selection, drag selection, list, grid, gaps, padding, spacing",
+    "defaultTerminal": "terminal, console, shell, command, prompt, default, open in terminal",
     "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "drag": {
@@ -877,7 +893,19 @@
     "openInTerminal": "Open in terminal",
     "noTerminalsFound": "No terminals found",
     "holdModifierForAdmin": "Hold {modifier} to open as admin",
-    "defaultLabel": "Default"
+    "defaultLabel": "Default",
+    "openWithAnotherTerminal": "Open with another terminal",
+    "openFailed": "Could not open the terminal",
+    "noTerminalAvailable": "No terminal is available",
+    "customCommandMissing": "Enter a command for the custom terminal",
+    "customCommandInvalid": "The custom terminal command is not valid",
+    "customArgumentsInvalid": "The custom terminal arguments have an unclosed quote",
+    "customCommandNotFound": "The custom terminal command was not found",
+    "selectedTerminalMissing": "The selected terminal is not installed",
+    "adminCancelled": "Administrator approval was cancelled.",
+    "adminUnavailable": "Opening this terminal as administrator is not available.",
+    "directoryNotFound": "Directory not found: {path}",
+    "openedSystemDefault": "Opened the system default terminal instead."
   },
   "conflict": "Conflict",
   "conflictDialog": {

@@ -180,6 +180,15 @@ export type ChangelogSettings = {
   lastSeenVersion: string;
 };
 
+export type DefaultTerminalMode = 'system' | 'detected' | 'custom';
+
+export type DefaultTerminalSettings = {
+  mode: DefaultTerminalMode;
+  terminalId: string;
+  customCommand: string;
+  customArgs: string;
+};
+
 export type PerformanceSettings = {
   prelaunchQuickViewWindow: boolean;
   prelaunchPrintViewWindow: boolean;
@@ -232,6 +241,7 @@ export type UserSettings = {
   performance: PerformanceSettings;
   appUpdates: AppUpdatesSettings;
   changelog: ChangelogSettings;
+  terminal: DefaultTerminalSettings;
 };
 
 export type UserSettingsGlobalSearch = {

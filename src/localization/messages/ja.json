@@ -259,6 +259,21 @@
         "increaseFileViewGaps": "ファイルビューの間隔を広げる",
         "increaseFileViewGapsDescription": "リスト表示の左右余白を追加し、グリッド表示の間隔を広げて選択しやすくします。"
       },
+      "defaultTerminal": {
+        "title": "既定のターミナル",
+        "description": "「ターミナルで開く」で起動するターミナルを選びます。",
+        "systemDefault": "システムの既定",
+        "custom": "カスタム",
+        "command": "コマンド",
+        "commandPlaceholder": "パスまたはコマンド (例: kitty)",
+        "arguments": "引数",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "フォルダのパスには {placeholder} を使います。パスはシェルを通さず引数として渡されます。省略すると、そのフォルダでターミナルが起動します。",
+        "notInstalled": "このターミナルはインストールされていません。使えるようになるまで、システムの既定を開きます。",
+        "commandNotFound": "このコマンドは見つかりませんでした。",
+        "commandInvalid": "ターミナルのコマンドが正しくありません。",
+        "argumentsInvalid": "引数に閉じられていない引用符があります。"
+      },
       "startupPage": {
         "title": "起動ページ",
         "description": "アプリ起動時に表示するページを選びます。",
@@ -544,6 +559,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白",
+    "defaultTerminal": "ターミナル, コンソール, シェル, コマンド, 既定, ターミナルで開く",
     "tabsWorkspaces": "タブ, ワークスペース, 閉じる, 最後のタブ, デフォルトタブ",
     "defaultDirectory": "ホーム, locations, このPC, コンピュータ, ドライブ, デフォルトフォルダー, デフォルトディレクトリ, 新しいタブ, カスタムパス",
     "startupPage": "起動ページ, 起動, スタート, 起動時に開く, ホーム, ダッシュボード, ナビゲーター, 最後のページ, 復元, ページ"
@@ -847,7 +863,19 @@
     "openInTerminal": "ターミナルで開く",
     "noTerminalsFound": "ターミナルが見つかりません",
     "holdModifierForAdmin": "{modifier}キーを押しながら管理者として開く",
-    "defaultLabel": "デフォルト"
+    "defaultLabel": "デフォルト",
+    "openWithAnotherTerminal": "別のターミナルで開く",
+    "openFailed": "ターミナルを開けませんでした",
+    "noTerminalAvailable": "使えるターミナルがありません",
+    "customCommandMissing": "カスタムターミナルのコマンドを入力してください",
+    "customCommandInvalid": "カスタムターミナルのコマンドが正しくありません",
+    "customArgumentsInvalid": "カスタムターミナルの引数に閉じられていない引用符があります",
+    "customCommandNotFound": "カスタムターミナルのコマンドが見つかりません",
+    "selectedTerminalMissing": "選択したターミナルはインストールされていません",
+    "adminCancelled": "管理者の承認がキャンセルされました。",
+    "adminUnavailable": "このターミナルを管理者として開くことはできません。",
+    "directoryNotFound": "フォルダが見つかりません: {path}",
+    "openedSystemDefault": "代わりにシステムの既定のターミナルを開きました。"
   },
   "conflict": "コンフリクト",
   "conflictDialog": {

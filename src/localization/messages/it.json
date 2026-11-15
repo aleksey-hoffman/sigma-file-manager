@@ -259,6 +259,21 @@
         "increaseFileViewGaps": "Aumenta gli spazi nella vista file",
         "increaseFileViewGapsDescription": "Aggiunge padding laterale nella vista elenco e aumenta le distanze nella vista griglia per una selezione più facile."
       },
+      "defaultTerminal": {
+        "title": "Terminale predefinito",
+        "description": "Scegli quale terminale si apre con Apri nel terminale.",
+        "systemDefault": "Predefinito di sistema",
+        "custom": "Personalizzato",
+        "command": "Comando",
+        "commandPlaceholder": "Percorso o comando, ad esempio kitty",
+        "arguments": "Argomenti",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Usa {placeholder} per il percorso della cartella. Il percorso viene passato come argomento, non tramite una shell. Se manca, il terminale si avvia in quella cartella.",
+        "notInstalled": "Questo terminale non è installato. Apri nel terminale userà quello di sistema finché non è disponibile.",
+        "commandNotFound": "Comando non trovato.",
+        "commandInvalid": "Il comando del terminale non è valido.",
+        "argumentsInvalid": "Gli argomenti hanno virgolette non chiuse."
+      },
       "startupPage": {
         "title": "Pagina di avvio",
         "description": "Scegli quale pagina mostrare all'avvio dell'app.",
@@ -544,6 +559,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding",
+    "defaultTerminal": "terminale, console, shell, comando, predefinito, apri nel terminale",
     "tabsWorkspaces": "schede, spazi di lavoro, chiudi, ultima scheda, scheda predefinita",
     "defaultDirectory": "home, locations, questo PC, computer, unità, cartella predefinita, nuova scheda, percorso personalizzato",
     "startupPage": "pagina di avvio, avvio, apri all'avvio, home, dashboard, navigator, ultima pagina, ripristina, pagina"
@@ -847,7 +863,19 @@
     "openInTerminal": "Apri nel terminale",
     "noTerminalsFound": "Nessun terminale trovato",
     "holdModifierForAdmin": "Tieni premuto {modifier} per aprire come amministratore",
-    "defaultLabel": "Predefinito"
+    "defaultLabel": "Predefinito",
+    "openWithAnotherTerminal": "Apri con un altro terminale",
+    "openFailed": "Impossibile aprire il terminale",
+    "noTerminalAvailable": "Nessun terminale disponibile",
+    "customCommandMissing": "Inserisci un comando per il terminale personalizzato",
+    "customCommandInvalid": "Il comando del terminale personalizzato non è valido",
+    "customArgumentsInvalid": "Gli argomenti del terminale personalizzato hanno virgolette non chiuse",
+    "customCommandNotFound": "Il comando del terminale personalizzato non è stato trovato",
+    "selectedTerminalMissing": "Il terminale selezionato non è installato",
+    "adminCancelled": "L'approvazione dell'amministratore è stata annullata.",
+    "adminUnavailable": "Non è possibile aprire questo terminale come amministratore.",
+    "directoryNotFound": "Directory non trovata: {path}",
+    "openedSystemDefault": "È stato aperto il terminale predefinito di sistema."
   },
   "conflict": "Conflitto",
   "conflictDialog": {

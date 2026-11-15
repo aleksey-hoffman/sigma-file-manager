@@ -288,6 +288,21 @@
         "increaseFileViewGaps": "הגדל רווחים בתצוגת קבצים",
         "increaseFileViewGapsDescription": "מוסיף ריווח צדדי בתצוגת רשימה ומגדיל רווחים בתצוגת רשת להקלה על הבחירה."
       },
+      "defaultTerminal": {
+        "title": "מסוף ברירת מחדל",
+        "description": "בחרו איזה מסוף נפתח בפעולה פתיחה במסוף.",
+        "systemDefault": "ברירת מחדל של המערכת",
+        "custom": "מותאם אישית",
+        "command": "פקודה",
+        "commandPlaceholder": "נתיב או פקודה, לדוגמה kitty",
+        "arguments": "ארגומנטים",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "השתמשו ב-{placeholder} עבור נתיב התיקייה. הנתיב מועבר כארגומנט ולא דרך מעטפת. בלי הסימון, המסוף נפתח בתיקייה הזו.",
+        "notInstalled": "המסוף הזה אינו מותקן. פתיחה במסוף תשתמש בברירת המחדל של המערכת עד שהוא יהיה זמין.",
+        "commandNotFound": "הפקודה לא נמצאה.",
+        "commandInvalid": "פקודת המסוף אינה תקינה.",
+        "argumentsInvalid": "בארגומנטים יש מירכאות שלא נסגרו."
+      },
       "startupPage": {
         "title": "דף הפעלה",
         "description": "בחרו איזה דף להציג בעת הפעלת היישום.",
@@ -573,6 +588,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "תצוגת קבצים, תיבה, בחירה, גרירה, רשימה, רשת, רווחים, padding",
+    "defaultTerminal": "מסוף, קונסולה, מעטפת, פקודה, ברירת מחדל, פתיחה במסוף",
     "tabsWorkspaces": "לשוניות, סביבות עבודה, סגור, לשונית אחרונה, לשונית ברירת מחדל",
     "defaultDirectory": "בית, locations, המחשב הזה, כוננים, תיקיית ברירת מחדל, לשונית חדשה, נתיב מותאם",
     "startupPage": "דף הפעלה, הפעלה, פתח בהפעלה, בית, לוח מחוונים, נווט, העמוד האחרון, שחזור, דף"
@@ -877,7 +893,19 @@
     "openInTerminal": "פתח במסוף",
     "noTerminalsFound": "לא נמצאו מסופים",
     "holdModifierForAdmin": "החזק {modifier} כדי לפתוח כמנהל",
-    "defaultLabel": "ברירת מחדל"
+    "defaultLabel": "ברירת מחדל",
+    "openWithAnotherTerminal": "פתיחה במסוף אחר",
+    "openFailed": "לא ניתן לפתוח את המסוף",
+    "noTerminalAvailable": "אין מסוף זמין",
+    "customCommandMissing": "הזינו פקודה למסוף המותאם אישית",
+    "customCommandInvalid": "הפקודה של המסוף המותאם אישית אינה תקינה",
+    "customArgumentsInvalid": "לארגומנטים של המסוף המותאם אישית יש מירכאות שלא נסגרו",
+    "customCommandNotFound": "הפקודה של המסוף המותאם אישית לא נמצאה",
+    "selectedTerminalMissing": "המסוף שנבחר אינו מותקן",
+    "adminCancelled": "אישור מנהל המערכת בוטל.",
+    "adminUnavailable": "לא ניתן לפתוח את המסוף הזה כמנהל.",
+    "directoryNotFound": "התיקייה לא נמצאה: {path}",
+    "openedSystemDefault": "במקום זאת נפתח מסוף ברירת המחדל של המערכת."
   },
   "conflict": "התנגשות",
   "conflictDialog": {

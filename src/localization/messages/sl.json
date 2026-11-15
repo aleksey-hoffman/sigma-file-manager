@@ -288,6 +288,21 @@
         "increaseFileViewGaps": "Povečaj razmike v pogledu datotek",
         "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje."
       },
+      "defaultTerminal": {
+        "title": "Privzeti terminal",
+        "description": "Izberite, kateri terminal se odpre z Odpri v terminalu.",
+        "systemDefault": "Sistemski privzeti",
+        "custom": "Po meri",
+        "command": "Ukaz",
+        "commandPlaceholder": "Pot ali ukaz, na primer kitty",
+        "arguments": "Argumenti",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Za pot mape uporabite {placeholder}. Pot se poda kot argument, ne prek lupine. Če ga izpustite, se terminal zažene v tej mapi.",
+        "notInstalled": "Ta terminal ni nameščen. Odpri v terminalu bo do takrat uporabil sistemski privzeti terminal.",
+        "commandNotFound": "Ukaz ni bil najden.",
+        "commandInvalid": "Ukaz terminala ni veljaven.",
+        "argumentsInvalid": "Argumenti imajo nezaključen narekovaj."
+      },
       "startupPage": {
         "title": "Stran ob zagonu",
         "description": "Izberite, katera stran naj se prikaže ob zagonu aplikacije.",
@@ -573,6 +588,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik",
+    "defaultTerminal": "terminal, konzola, lupina, ukaz, privzeti, odpri v terminalu",
     "tabsWorkspaces": "zavihki, delovni prostori, zapri, zadnji zavihek, privzet zavihek",
     "defaultDirectory": "domov, locations, ta računalnik, pogoni, privzeta mapa, nov zavihek, pot po meri",
     "startupPage": "stran ob zagonu, zagon, odpri ob zagonu, domača stran, nadzorna plošča, navigator, zadnja stran, obnovi, stran"
@@ -877,7 +893,19 @@
     "openInTerminal": "Odpri v terminalu",
     "noTerminalsFound": "Noben terminal ni bil najden",
     "holdModifierForAdmin": "Držite {modifier} za odprtje kot skrbnik",
-    "defaultLabel": "Privzeto"
+    "defaultLabel": "Privzeto",
+    "openWithAnotherTerminal": "Odpri z drugim terminalom",
+    "openFailed": "Terminala ni bilo mogoče odpreti",
+    "noTerminalAvailable": "Ni razpoložljivega terminala",
+    "customCommandMissing": "Vnesite ukaz za terminal po meri",
+    "customCommandInvalid": "Ukaz terminala po meri ni veljaven",
+    "customArgumentsInvalid": "Argumenti terminala po meri imajo nezaključen narekovaj",
+    "customCommandNotFound": "Ukaz terminala po meri ni bil najden",
+    "selectedTerminalMissing": "Izbrani terminal ni nameščen",
+    "adminCancelled": "Skrbniška odobritev je bila preklicana.",
+    "adminUnavailable": "Tega terminala ni mogoče odpreti kot skrbnik.",
+    "directoryNotFound": "Mapa ni bila najdena: {path}",
+    "openedSystemDefault": "Namesto tega je bil odprt sistemski privzeti terminal."
   },
   "conflict": "Spor",
   "conflictDialog": {

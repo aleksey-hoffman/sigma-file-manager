@@ -263,6 +263,21 @@
         "enableBoxSelectionDescription": "Faites glisser sur un espace vide pour sélectionner plusieurs éléments avec un cadre de sélection. Maintenez Ctrl ou Maj pour ajouter à la sélection ; Alt pour inverser.",
         "increaseFileViewGaps": "Augmenter les espacements de la vue fichiers",
         "increaseFileViewGapsDescription": "Ajoute un remplissage latéral en liste et augmente les espacements en grille pour faciliter le ciblage."
+      },
+      "defaultTerminal": {
+        "title": "Terminal par défaut",
+        "description": "Choisissez le terminal ouvert par Ouvrir dans un terminal.",
+        "systemDefault": "Terminal du système",
+        "custom": "Personnalisé",
+        "command": "Commande",
+        "commandPlaceholder": "Chemin ou commande, par exemple kitty",
+        "arguments": "Arguments",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Utilisez {placeholder} pour le chemin du dossier. Le chemin est passé comme argument, sans shell. Sans ce marqueur, le terminal démarre dans ce dossier.",
+        "notInstalled": "Ce terminal n'est pas installé. Ouvrir dans un terminal utilisera le terminal du système tant qu'il est absent.",
+        "commandNotFound": "Cette commande est introuvable.",
+        "commandInvalid": "La commande du terminal n'est pas valide.",
+        "argumentsInvalid": "Les arguments ont un guillemet non fermé."
       }
     },
     "actions": {
@@ -546,7 +561,8 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "vue fichiers, cadre, sélection, glisser, liste, grille, espacements, remplissage"
+    "fileView": "vue fichiers, cadre, sélection, glisser, liste, grille, espacements, remplissage",
+    "defaultTerminal": "terminal, console, shell, commande, défaut, ouvrir dans un terminal"
   },
   "drag": {
     "holdShiftToChangeMode": "Maintenez [Shift] pour changer de mode",
@@ -847,7 +863,19 @@
     "openInTerminal": "Ouvrir dans le terminal",
     "noTerminalsFound": "Aucun terminal trouvé",
     "holdModifierForAdmin": "Maintenez {modifier} pour ouvrir en tant qu'administrateur",
-    "defaultLabel": "Par défaut"
+    "defaultLabel": "Par défaut",
+    "openWithAnotherTerminal": "Ouvrir avec un autre terminal",
+    "openFailed": "Impossible d'ouvrir le terminal",
+    "noTerminalAvailable": "Aucun terminal disponible",
+    "customCommandMissing": "Indiquez une commande pour le terminal personnalisé",
+    "customCommandInvalid": "La commande du terminal personnalisé n'est pas valide",
+    "customArgumentsInvalid": "Les arguments du terminal personnalisé ont un guillemet non fermé",
+    "customCommandNotFound": "La commande du terminal personnalisé est introuvable",
+    "selectedTerminalMissing": "Le terminal sélectionné n'est pas installé",
+    "adminCancelled": "L'approbation de l'administrateur a été annulée.",
+    "adminUnavailable": "Impossible d'ouvrir ce terminal en tant qu'administrateur.",
+    "directoryNotFound": "Répertoire introuvable : {path}",
+    "openedSystemDefault": "Le terminal du système a été ouvert à la place."
   },
   "conflict": "Conflit",
   "conflictDialog": {

@@ -263,6 +263,21 @@
         "enableBoxSelectionDescription": "Arrastre en un espacio vacío para seleccionar varios elementos con un cuadro de selección. Mantenga Ctrl o Mayús para añadir a la selección; Alt para invertir.",
         "increaseFileViewGaps": "Aumentar espacios en la vista de archivos",
         "increaseFileViewGapsDescription": "Añade relleno lateral en la vista de lista y aumenta los espacios en la vista de cuadrícula para facilitar la selección."
+      },
+      "defaultTerminal": {
+        "title": "Terminal predeterminada",
+        "description": "Elige qué terminal se abre con Abrir en la terminal.",
+        "systemDefault": "Predeterminada del sistema",
+        "custom": "Personalizada",
+        "command": "Comando",
+        "commandPlaceholder": "Ruta o comando, por ejemplo kitty",
+        "arguments": "Argumentos",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Usa {placeholder} para la ruta de la carpeta. La ruta se pasa como argumento y no a través de un shell. Si no lo incluyes, la terminal se abre en esa carpeta.",
+        "notInstalled": "Esta terminal no está instalada. Abrir en la terminal usará la predeterminada del sistema hasta que esté disponible.",
+        "commandNotFound": "No se encontró este comando.",
+        "commandInvalid": "El comando de la terminal no es válido.",
+        "argumentsInvalid": "Los argumentos tienen comillas sin cerrar."
       }
     },
     "actions": {
@@ -546,7 +561,8 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "vista archivos, cuadro, selección, arrastrar, lista, cuadrícula, espacios, relleno"
+    "fileView": "vista archivos, cuadro, selección, arrastrar, lista, cuadrícula, espacios, relleno",
+    "defaultTerminal": "terminal, consola, shell, comando, predeterminada, abrir en la terminal"
   },
   "drag": {
     "holdShiftToChangeMode": "Mantén presionado [Shift] para cambiar de modo",
@@ -847,7 +863,19 @@
     "openInTerminal": "Abrir en terminal",
     "noTerminalsFound": "No se encontraron terminales",
     "holdModifierForAdmin": "Mantén {modifier} para abrir como administrador",
-    "defaultLabel": "Predeterminado"
+    "defaultLabel": "Predeterminado",
+    "openWithAnotherTerminal": "Abrir con otra terminal",
+    "openFailed": "No se pudo abrir la terminal",
+    "noTerminalAvailable": "No hay ninguna terminal disponible",
+    "customCommandMissing": "Escribe un comando para la terminal personalizada",
+    "customCommandInvalid": "El comando de la terminal personalizada no es válido",
+    "customArgumentsInvalid": "Los argumentos de la terminal personalizada tienen comillas sin cerrar",
+    "customCommandNotFound": "No se encontró el comando de la terminal personalizada",
+    "selectedTerminalMissing": "La terminal seleccionada no está instalada",
+    "adminCancelled": "Se canceló la aprobación de administrador.",
+    "adminUnavailable": "No se puede abrir este terminal como administrador.",
+    "directoryNotFound": "No se encontró el directorio: {path}",
+    "openedSystemDefault": "Se abrió la terminal predeterminada del sistema."
   },
   "conflict": "Conflicto",
   "conflictDialog": {

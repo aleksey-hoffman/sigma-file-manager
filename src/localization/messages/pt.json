@@ -259,6 +259,21 @@
         "increaseFileViewGaps": "Aumentar espaços na visualização de arquivos",
         "increaseFileViewGapsDescription": "Adiciona preenchimento lateral na lista e aumenta os espaços na grade para facilitar a seleção."
       },
+      "defaultTerminal": {
+        "title": "Terminal padrão",
+        "description": "Escolha qual terminal abre em Abrir no terminal.",
+        "systemDefault": "Padrão do sistema",
+        "custom": "Personalizado",
+        "command": "Comando",
+        "commandPlaceholder": "Caminho ou comando, por exemplo kitty",
+        "arguments": "Argumentos",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Use {placeholder} para o caminho da pasta. O caminho é passado como argumento, e não por um shell. Se você omitir, o terminal inicia nessa pasta.",
+        "notInstalled": "Este terminal não está instalado. Abrir no terminal usará o padrão do sistema até que ele esteja disponível.",
+        "commandNotFound": "Este comando não foi encontrado.",
+        "commandInvalid": "O comando do terminal não é válido.",
+        "argumentsInvalid": "Os argumentos têm aspas sem fechar."
+      },
       "startupPage": {
         "title": "Página de inicialização",
         "description": "Escolha qual página mostrar ao iniciar o aplicativo.",
@@ -544,6 +559,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "visualização arquivos, caixa, seleção, arrastar, lista, grade, espaços, preenchimento",
+    "defaultTerminal": "terminal, console, shell, comando, padrão, abrir no terminal",
     "tabsWorkspaces": "abas, espaços de trabalho, fechar, última aba, aba padrão",
     "defaultDirectory": "início, locations, este computador, unidades, pasta padrão, diretório padrão, nova aba, caminho personalizado",
     "startupPage": "página de inicialização, início, abrir ao iniciar, página inicial, dashboard, navigator, última página, restaurar, página"
@@ -846,7 +862,19 @@
     "openInTerminal": "Abrir no terminal",
     "noTerminalsFound": "Nenhum terminal encontrado",
     "holdModifierForAdmin": "Segure {modifier} para abrir como administrador",
-    "defaultLabel": "Padrão"
+    "defaultLabel": "Padrão",
+    "openWithAnotherTerminal": "Abrir com outro terminal",
+    "openFailed": "Não foi possível abrir o terminal",
+    "noTerminalAvailable": "Nenhum terminal disponível",
+    "customCommandMissing": "Informe um comando para o terminal personalizado",
+    "customCommandInvalid": "O comando do terminal personalizado não é válido",
+    "customArgumentsInvalid": "Os argumentos do terminal personalizado têm aspas sem fechar",
+    "customCommandNotFound": "O comando do terminal personalizado não foi encontrado",
+    "selectedTerminalMissing": "O terminal selecionado não está instalado",
+    "adminCancelled": "A aprovação de administrador foi cancelada.",
+    "adminUnavailable": "Não é possível abrir este terminal como administrador.",
+    "directoryNotFound": "Diretório não encontrado: {path}",
+    "openedSystemDefault": "O terminal padrão do sistema foi aberto."
   },
   "conflict": "Conflito",
   "conflictDialog": {

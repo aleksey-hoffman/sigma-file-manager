@@ -254,6 +254,21 @@
         "increaseFileViewGaps": "افزایش فاصله‌ها در نمای فایل",
         "increaseFileViewGapsDescription": "padding کناری در نمای فهرست اضافه می‌کند و فاصله‌ها در نمای شبکه‌ای را برای هدف‌گیری آسان‌تر افزایش می‌دهد."
       },
+      "defaultTerminal": {
+        "title": "ترمینال پیش‌فرض",
+        "description": "انتخاب کنید کدام ترمینال با باز کردن در ترمینال اجرا شود.",
+        "systemDefault": "پیش‌فرض سیستم",
+        "custom": "سفارشی",
+        "command": "فرمان",
+        "commandPlaceholder": "مسیر یا فرمان، برای مثال kitty",
+        "arguments": "آرگومان‌ها",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "برای مسیر پوشه از {placeholder} استفاده کنید. مسیر به عنوان آرگومان فرستاده می‌شود، نه از طریق پوسته. اگر آن را ننویسید، ترمینال در همان پوشه شروع می‌شود.",
+        "notInstalled": "این ترمینال نصب نشده است. تا وقتی در دسترس باشد، باز کردن در ترمینال از پیش‌فرض سیستم استفاده می‌کند.",
+        "commandNotFound": "این فرمان پیدا نشد.",
+        "commandInvalid": "فرمان ترمینال معتبر نیست.",
+        "argumentsInvalid": "آرگومان‌ها گیومه بسته نشده دارند."
+      },
       "startupPage": {
         "title": "صفحه راه‌اندازی",
         "description": "صفحه‌ای را که هنگام شروع برنامه نشان داده می‌شود انتخاب کنید.",
@@ -539,6 +554,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding",
+    "defaultTerminal": "ترمینال, کنسول, پوسته, فرمان, پیش‌فرض, باز کردن در ترمینال",
     "tabsWorkspaces": "برگه، فضای کاری، بستن، آخرین برگه، برگه پیش‌فرض",
     "defaultDirectory": "خانه، locations، این رایانه، درایو، پوشه پیش‌فرض، برگه جدید، مسیر سفارشی",
     "startupPage": "صفحه راه‌اندازی، راه‌اندازی، باز کردن هنگام راه‌اندازی، خانه، داشبورد، ناوبری، آخرین صفحه، بازیابی، صفحه"
@@ -842,7 +858,19 @@
     "openInTerminal": "باز کردن در ترمینال",
     "noTerminalsFound": "ترمینالی یافت نشد",
     "holdModifierForAdmin": "برای باز کردن به عنوان مدیر، {modifier} را نگه دارید",
-    "defaultLabel": "پیش‌فرض"
+    "defaultLabel": "پیش‌فرض",
+    "openWithAnotherTerminal": "باز کردن با ترمینال دیگر",
+    "openFailed": "ترمینال باز نشد",
+    "noTerminalAvailable": "ترمینالی در دسترس نیست",
+    "customCommandMissing": "فرمانی برای ترمینال سفارشی وارد کنید",
+    "customCommandInvalid": "فرمان ترمینال سفارشی معتبر نیست",
+    "customArgumentsInvalid": "آرگومان‌های ترمینال سفارشی گیومه بسته نشده دارند",
+    "customCommandNotFound": "فرمان ترمینال سفارشی پیدا نشد",
+    "selectedTerminalMissing": "ترمینال انتخاب‌شده نصب نشده است",
+    "adminCancelled": "تأیید مدیر لغو شد.",
+    "adminUnavailable": "باز کردن این ترمینال به عنوان مدیر ممکن نیست.",
+    "directoryNotFound": "پوشه پیدا نشد: {path}",
+    "openedSystemDefault": "به جای آن ترمینال پیش‌فرض سیستم باز شد."
   },
   "conflict": "تضاد",
   "conflictDialog": {

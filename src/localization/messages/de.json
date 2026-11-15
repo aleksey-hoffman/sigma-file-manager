@@ -263,6 +263,21 @@
         "enableBoxSelectionDescription": "Ziehen Sie auf leerem Bereich, um mehrere Elemente mit einem Auswahlrahmen auszuwählen. Halten Sie Strg oder Umschalttaste gedrückt, um zur Auswahl hinzuzufügen; Alt zum Invertieren.",
         "increaseFileViewGaps": "Abstände in der Dateiansicht vergrößern",
         "increaseFileViewGapsDescription": "Fügt Seitenabstände in der Listenansicht hinzu und vergrößert die Abstände in der Rasteransicht für einfachere Auswahl."
+      },
+      "defaultTerminal": {
+        "title": "Standardterminal",
+        "description": "Legt fest, welches Terminal bei \"Im Terminal öffnen\" gestartet wird.",
+        "systemDefault": "Systemstandard",
+        "custom": "Benutzerdefiniert",
+        "command": "Befehl",
+        "commandPlaceholder": "Pfad oder Befehl, zum Beispiel kitty",
+        "arguments": "Argumente",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Verwenden Sie {placeholder} für den Ordnerpfad. Der Pfad wird als Argument übergeben und nicht über eine Shell ausgeführt. Ohne Platzhalter startet das Terminal in diesem Ordner.",
+        "notInstalled": "Dieses Terminal ist nicht installiert. \"Im Terminal öffnen\" verwendet bis dahin den Systemstandard.",
+        "commandNotFound": "Dieser Befehl wurde nicht gefunden.",
+        "commandInvalid": "Der Terminalbefehl ist ungültig.",
+        "argumentsInvalid": "Die Argumente enthalten ein nicht geschlossenes Anführungszeichen."
       }
     },
     "actions": {
@@ -546,7 +561,8 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "dateiansicht, markierungsrahmen, rahmenauswahl, ziehauswahl, liste, raster, abstände, polsterung"
+    "fileView": "dateiansicht, markierungsrahmen, rahmenauswahl, ziehauswahl, liste, raster, abstände, polsterung",
+    "defaultTerminal": "terminal, konsole, shell, befehl, eingabeaufforderung, standard, im terminal öffnen"
   },
   "drag": {
     "holdShiftToChangeMode": "Halten Sie [Shift] gedrückt, um den Modus zu ändern",
@@ -847,7 +863,19 @@
     "openInTerminal": "Im Terminal öffnen",
     "noTerminalsFound": "Keine Terminals gefunden",
     "holdModifierForAdmin": "{modifier} gedrückt halten, um als Administrator zu öffnen",
-    "defaultLabel": "Standard"
+    "defaultLabel": "Standard",
+    "openWithAnotherTerminal": "Mit einem anderen Terminal öffnen",
+    "openFailed": "Das Terminal konnte nicht geöffnet werden",
+    "noTerminalAvailable": "Kein Terminal verfügbar",
+    "customCommandMissing": "Geben Sie einen Befehl für das benutzerdefinierte Terminal ein",
+    "customCommandInvalid": "Der Befehl des benutzerdefinierten Terminals ist ungültig",
+    "customArgumentsInvalid": "Die Argumente des benutzerdefinierten Terminals enthalten ein nicht geschlossenes Anführungszeichen",
+    "customCommandNotFound": "Der Befehl des benutzerdefinierten Terminals wurde nicht gefunden",
+    "selectedTerminalMissing": "Das ausgewählte Terminal ist nicht installiert",
+    "adminCancelled": "Die Administratorfreigabe wurde abgebrochen.",
+    "adminUnavailable": "Dieses Terminal kann nicht als Administrator geöffnet werden.",
+    "directoryNotFound": "Verzeichnis nicht gefunden: {path}",
+    "openedSystemDefault": "Stattdessen wurde das Systemstandard-Terminal geöffnet."
   },
   "conflict": "Konflikt",
   "conflictDialog": {

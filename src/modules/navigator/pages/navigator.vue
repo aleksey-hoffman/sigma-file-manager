@@ -1022,10 +1022,7 @@ async function openTerminalWithOptions(asAdmin: boolean) {
     return;
   }
 
-  const defaultTerminal = terminalsStore.terminals[0];
-  if (!defaultTerminal) return;
-
-  await terminalsStore.openTerminal(actionContext.actionDirectoryPath, defaultTerminal.id, asAdmin);
+  await terminalsStore.openConfiguredTerminal(actionContext.actionDirectoryPath, asAdmin);
 }
 
 async function handleOpenNewTabShortcut() {
