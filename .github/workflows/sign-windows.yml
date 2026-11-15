@@ -94,13 +94,13 @@ jobs:
           echo "artifact_configuration_slug=$resolved_slug" >> "$GITHUB_OUTPUT"
 
       - name: Setup Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@v0.0.11
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
@@ -116,7 +116,7 @@ jobs:
         run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
 
       - name: Cache npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -167,7 +167,7 @@ jobs:
 
       - name: Upload unsigned installer artifact
         id: upload-unsigned
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: unsigned-windows-${{ github.event.inputs.target }}
           path: unsigned/${{ steps.version.outputs.installer }}
@@ -222,7 +222,7 @@ jobs:
           Write-Host "StatusMessage: $($signature.StatusMessage)"
 
       - name: Upload signed installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: signed-windows-${{ github.event.inputs.target }}
           path: signed/${{ steps.version.outputs.installer }}

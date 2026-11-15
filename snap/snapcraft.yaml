@@ -17,7 +17,6 @@ confinement: strict
 platforms:
   amd64:
   arm64:
-  armhf:
 
 layout:
   /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1:
