@@ -61,7 +61,7 @@
     "@vueuse/core": "^14.3.0",
     "class-variance-authority": "^0.7.1",
     "dayjs": "^1.11.21",
-    "dompurify": "^3.4.11",
+    "dompurify": "^3.4.17",
     "lodash.clonedeep": "^4.5.0",
     "marked": "^18.0.5",
     "minimatch": "^10.2.5",
