@@ -5,12 +5,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { LoaderCircleIcon } from '@lucide/vue';
 import type { ListReorderableColumnId } from '@/types/user-settings';
 import type { ItemTag } from '@/types/user-stats';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ItemTagsField } from '@/components/ui/tag-selector';
 import type { DirEntry } from '@/types/dir-entry';
+import FileBrowserListSizeSpinner from './file-browser-list-size-spinner.vue';
+import FileBrowserListSizeValue from './file-browser-list-size-value.vue';
 
 interface FileBrowserListDateDisplay {
   primary: string;
@@ -83,19 +84,18 @@ const tagsColumnInteractionAttrs = computed(() => {
       {{ props.row.itemsDisplay }}
     </template>
     <template v-else-if="props.columnId === 'size'">
-      <LoaderCircleIcon
+      <FileBrowserListSizeSpinner
         v-if="props.row.isDirLoadingWithProgress"
-        :size="12"
-        class="file-browser-list-view__spinner"
+        v-memo="[props.row.isDirLoadingWithProgress]"
       />
       <Skeleton
         v-if="props.row.isSizeSkeletonVisible"
         class="file-browser-list-view__size-skeleton"
       />
-      <span
+      <FileBrowserListSizeValue
         v-else
-        class="file-browser-list-view__column-value"
-      >{{ props.row.sizeDisplay }}</span>
+        :display="props.row.sizeDisplay"
+      />
     </template>
     <template v-else-if="props.columnId === 'modified'">
       <span

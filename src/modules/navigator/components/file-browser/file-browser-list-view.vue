@@ -808,11 +808,6 @@ const visibleRows = computed<FileBrowserListVisibleRow[]>(() => {
   align-items: center;
 }
 
-.file-browser-list-view__entry-size .file-browser-list-view__column-value {
-  min-width: 50px;
-  flex: 1;
-}
-
 .file-browser-list-view__entry-links .file-browser-list-view__column-value,
 .file-browser-list-view__entry-link-status .file-browser-list-view__column-value {
   flex: 1;
@@ -821,22 +816,6 @@ const visibleRows = computed<FileBrowserListVisibleRow[]>(() => {
 .file-browser-list-view__size-skeleton {
   width: 50px;
   height: 12px;
-}
-
-.file-browser-list-view__spinner {
-  flex-shrink: 0;
-  animation: file-browser-list-view-spin 1s linear infinite;
-  color: hsl(var(--muted-foreground));
-}
-
-@keyframes file-browser-list-view-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 :deep(.file-browser-list-view__date-hover) {
