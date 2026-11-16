@@ -116,6 +116,7 @@ export function useFileBrowserNavigation(
   const statusCenterStore = useStatusCenterStore();
   const platformStore = usePlatformStore();
   let preserveSelectionForPath: string | null = null;
+  let consumedChildRenameToken: string | null = null;
 
   function getParentOfPath(path: string): string | null {
     return getNavigableParentPath(path, platformStore.currentPlatform);
@@ -916,7 +917,31 @@ export function useFileBrowserNavigation(
     if (!modifiedPaths || !currentPath.value) return;
 
     if (modifiedPaths.some(path => arePathsEquivalent(path, currentPath.value))) {
-      await readDir(currentPath.value, false, false, true);
+      const renamed = workspacesStore.lastRenamedPath;
+      const renamedParent = renamed === null ? null : getParentOfPath(renamed.newPath);
+      const renameToken = renamed === null
+        ? null
+        : `${renamed.oldPath}\0${renamed.newPath}`;
+      // The refresh after a child rename would otherwise clear the selection that
+      // was just remapped onto the new name. Preserve it for that one refresh.
+      const preserveChildRename = renamed !== null
+        && renamedParent !== null
+        && renameToken !== consumedChildRenameToken
+        && arePathsEquivalent(renamedParent, currentPath.value);
+
+      if (preserveChildRename) {
+        consumedChildRenameToken = renameToken;
+        preserveSelectionForPath = currentPath.value;
+      }
+
+      try {
+        await readDir(currentPath.value, false, false, true);
+      }
+      finally {
+        if (preserveChildRename) {
+          preserveSelectionForPath = null;
+        }
+      }
     }
   });
 

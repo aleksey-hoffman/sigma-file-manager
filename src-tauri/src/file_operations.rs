@@ -2313,8 +2313,96 @@ fn finish_temporary_rename(
     Ok(())
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CaseOnlyListingDecision {
+    SameFile,
+    SeparateEntry,
+    ListingFailed,
+}
+
+fn source_entry_name<'a>(
+    directory_names: &'a [OsString],
+    source_name: &OsStr,
+) -> Option<&'a OsStr> {
+    if let Some(exact_source) = directory_names
+        .iter()
+        .find(|name| name.as_os_str() == source_name)
+    {
+        return Some(exact_source.as_os_str());
+    }
+
+    let mut case_matches = directory_names.iter().filter(|name| {
+        names_equal_case_insensitive(name.as_os_str(), source_name)
+    });
+    let only_match = case_matches.next()?;
+
+    if case_matches.next().is_some() {
+        return None;
+    }
+
+    Some(only_match.as_os_str())
+}
+
+fn separate_exact_new_name_exists(
+    directory_names: &[OsString],
+    source_name: &OsStr,
+    new_name: &OsStr,
+) -> bool {
+    let source_entry = source_entry_name(directory_names, source_name);
+
+    directory_names.iter().any(|name| {
+        let entry_name = name.as_os_str();
+        entry_name == new_name && source_entry != Some(entry_name)
+    })
+}
+
+fn decide_case_only_from_listing(
+    listed_names: Option<&[OsString]>,
+    source_name: &OsStr,
+    new_name: &OsStr,
+) -> CaseOnlyListingDecision {
+    if source_name == new_name || !names_equal_case_insensitive(source_name, new_name) {
+        return CaseOnlyListingDecision::SeparateEntry;
+    }
+
+    let Some(names) = listed_names else {
+        return CaseOnlyListingDecision::ListingFailed;
+    };
+
+    if separate_exact_new_name_exists(names, source_name, new_name) {
+        CaseOnlyListingDecision::SeparateEntry
+    } else {
+        CaseOnlyListingDecision::SameFile
+    }
+}
+
+fn case_only_destination_is_same_file(source: &Path, dest: &Path) -> bool {
+    let (Some(source_name), Some(new_name)) = (source.file_name(), dest.file_name()) else {
+        return false;
+    };
+
+    if source_name == new_name || !names_equal_case_insensitive(source_name, new_name) {
+        return false;
+    }
+
+    if paths_are_same_file(source, dest) {
+        return true;
+    }
+
+    let Some(parent) = dest.parent().or_else(|| source.parent()) else {
+        return false;
+    };
+
+    let listed_names = read_directory_names(parent).ok();
+
+    match decide_case_only_from_listing(listed_names.as_deref(), source_name, new_name) {
+        CaseOnlyListingDecision::SameFile => true,
+        CaseOnlyListingDecision::SeparateEntry | CaseOnlyListingDecision::ListingFailed => false,
+    }
+}
+
 fn destination_blocks_rename(source: &Path, dest: &Path) -> bool {
-    dest.exists() && !paths_are_same_file(source, dest)
+    dest.exists() && !case_only_destination_is_same_file(source, dest)
 }
 
 fn finish_case_only_rename(
@@ -2414,12 +2502,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
         RenameConflict::OtherEntry => rename_name_already_exists(&new_name),
         RenameConflict::CaseOnlySource => rename_case_only(source, &dest_path, &new_name),
         RenameConflict::None => {
-            let same_file_case_change = dest_path.exists()
-                && source_name != new_name_os
-                && names_equal_case_insensitive(source_name, new_name_os)
-                && paths_are_same_file(source, &dest_path);
-
-            if same_file_case_change {
+            if dest_path.exists() && case_only_destination_is_same_file(source, &dest_path) {
                 rename_case_only(source, &dest_path, &new_name)
             } else if dest_path.exists() {
                 rename_name_already_exists(&new_name)
@@ -2900,6 +2983,72 @@ mod tests {
         assert_eq!(
             classify_rename_conflict(&names, &os("file.txt"), &os("other.txt"), true),
             RenameConflict::OtherEntry
+        );
+    }
+
+    #[test]
+    fn case_only_listing_treats_a_single_stored_name_as_the_same_file() {
+        let notes = vec![os("notes.txt")];
+        let uber = vec![os("Über")];
+
+        assert_eq!(
+            decide_case_only_from_listing(Some(&notes), &os("notes.txt"), &os("Notes.txt")),
+            CaseOnlyListingDecision::SameFile
+        );
+        assert_eq!(
+            decide_case_only_from_listing(Some(&uber), &os("Über"), &os("über")),
+            CaseOnlyListingDecision::SameFile
+        );
+        assert!(!separate_exact_new_name_exists(
+            &notes,
+            &os("notes.txt"),
+            &os("Notes.txt"),
+        ));
+    }
+
+    #[test]
+    fn case_only_listing_allows_the_stored_name_when_it_is_already_the_target_case() {
+        let names = vec![os("Notes.txt")];
+
+        assert_eq!(
+            decide_case_only_from_listing(Some(&names), &os("notes.txt"), &os("Notes.txt")),
+            CaseOnlyListingDecision::SameFile
+        );
+        assert!(!separate_exact_new_name_exists(
+            &names,
+            &os("notes.txt"),
+            &os("Notes.txt"),
+        ));
+    }
+
+    #[test]
+    fn case_only_listing_rejects_a_separate_exact_name() {
+        let names = vec![os("file.txt"), os("File.txt")];
+
+        assert_eq!(
+            decide_case_only_from_listing(Some(&names), &os("file.txt"), &os("File.txt")),
+            CaseOnlyListingDecision::SeparateEntry
+        );
+        assert!(separate_exact_new_name_exists(
+            &names,
+            &os("file.txt"),
+            &os("File.txt"),
+        ));
+        assert_eq!(
+            decide_case_only_from_listing(
+                Some(&names),
+                &os("notes.txt"),
+                &os("other.txt"),
+            ),
+            CaseOnlyListingDecision::SeparateEntry
+        );
+    }
+
+    #[test]
+    fn case_only_listing_refuses_when_the_directory_cannot_be_read() {
+        assert_eq!(
+            decide_case_only_from_listing(None, &os("notes.txt"), &os("Notes.txt")),
+            CaseOnlyListingDecision::ListingFailed
         );
     }
 
