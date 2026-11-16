@@ -865,6 +865,7 @@
     "holdModifierForAdmin": "{modifier} gedrückt halten, um als Administrator zu öffnen",
     "defaultLabel": "Standard",
     "openWithAnotherTerminal": "Mit einem anderen Terminal öffnen",
+    "errorTitle": "Das Terminal konnte nicht geöffnet werden",
     "openFailed": "Das Terminal konnte nicht geöffnet werden",
     "noTerminalAvailable": "Kein Terminal verfügbar",
     "customCommandMissing": "Geben Sie einen Befehl für das benutzerdefinierte Terminal ein",

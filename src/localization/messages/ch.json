@@ -865,6 +865,7 @@
     "holdModifierForAdmin": "按住 {modifier} 以管理员身份打开",
     "defaultLabel": "默认",
     "openWithAnotherTerminal": "用其他终端打开",
+    "errorTitle": "无法打开终端",
     "openFailed": "无法打开终端",
     "noTerminalAvailable": "没有可用的终端",
     "customCommandMissing": "请输入自定义终端的命令",

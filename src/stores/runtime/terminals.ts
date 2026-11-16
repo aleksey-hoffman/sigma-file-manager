@@ -11,6 +11,7 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import {
   resolveTerminalLaunch,
+  terminalErrorDescription,
   type ResolvedTerminalLaunch,
 } from '@/utils/default-terminal';
 
@@ -100,6 +101,21 @@ export const useTerminalsStore = defineStore('terminals', () => {
     }
   }
 
+  function showTerminalError(detail: string, openedFallback = false) {
+    const title = i18n.global.t('terminal.errorTitle');
+    const description = terminalErrorDescription(
+      detail,
+      openedFallback ? i18n.global.t('terminal.openedSystemDefault') : null,
+    );
+
+    if (!description || description === title) {
+      toast.error(title);
+      return;
+    }
+
+    toast.error(title, { description });
+  }
+
   async function openTerminal(
     directoryPath: string,
     terminalId: string,
@@ -119,7 +135,7 @@ export const useTerminalsStore = defineStore('terminals', () => {
         console.error('Failed to open terminal:', result.error);
 
         if (reportError) {
-          toast.error(result.error || i18n.global.t('terminal.openFailed'));
+          showTerminalError(result.error || i18n.global.t('terminal.openFailed'));
         }
 
         return false;
@@ -131,7 +147,7 @@ export const useTerminalsStore = defineStore('terminals', () => {
       console.error('Failed to open terminal:', invokeError);
 
       if (reportError) {
-        toast.error(i18n.global.t('terminal.openFailed'));
+        showTerminalError(i18n.global.t('terminal.openFailed'));
       }
 
       return false;
@@ -223,7 +239,7 @@ export const useTerminalsStore = defineStore('terminals', () => {
 
     switch (resolved.kind) {
       case 'unavailable':
-        toast.error(i18n.global.t(resolved.noticeKey));
+        showTerminalError(i18n.global.t(resolved.noticeKey));
         return;
 
       case 'detected': {
@@ -235,10 +251,7 @@ export const useTerminalsStore = defineStore('terminals', () => {
         const openedFallback = await openTerminal(directoryPath, resolved.terminalId, asAdmin, {
           reportError: false,
         });
-        const detail = i18n.global.t(resolved.noticeKey);
-        toast.error(openedFallback
-          ? `${detail} ${i18n.global.t('terminal.openedSystemDefault')}`
-          : `${detail} ${i18n.global.t('terminal.openFailed')}`);
+        showTerminalError(i18n.global.t(resolved.noticeKey), openedFallback);
         return;
       }
 
@@ -255,13 +268,11 @@ export const useTerminalsStore = defineStore('terminals', () => {
           const openedFallback = await openTerminal(directoryPath, systemTerminalId, asAdmin, {
             reportError: false,
           });
-          toast.error(openedFallback
-            ? `${customResult.error} ${i18n.global.t('terminal.openedSystemDefault')}`
-            : customResult.error);
+          showTerminalError(customResult.error, openedFallback);
           return;
         }
 
-        toast.error(customResult.error);
+        showTerminalError(customResult.error);
         return;
       }
 

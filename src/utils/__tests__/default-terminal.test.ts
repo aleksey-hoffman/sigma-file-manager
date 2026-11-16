@@ -9,6 +9,7 @@ import {
   normalizeDefaultTerminalSettings,
   resolveTerminalLaunch,
   selectedDetectedTerminalId,
+  terminalErrorDescription,
 } from '@/utils/default-terminal';
 
 const DETECTED_TERMINALS = [
@@ -216,6 +217,35 @@ describe('resolveTerminalLaunch', () => {
       kind: 'unavailable',
       noticeKey: 'terminal.noTerminalAvailable',
     });
+  });
+});
+
+describe('terminalErrorDescription', () => {
+  const fallback = 'Opened the system default terminal instead.';
+
+  it('keeps the detail on its own when nothing else opened', () => {
+    expect(terminalErrorDescription(
+      'Opening this terminal as administrator is not available.',
+      null,
+    )).toBe('Opening this terminal as administrator is not available.');
+  });
+
+  it('adds the fallback as its own sentence after a detail that has no period', () => {
+    expect(terminalErrorDescription(
+      'The custom terminal command was not found',
+      fallback,
+    )).toBe('The custom terminal command was not found. Opened the system default terminal instead.');
+  });
+
+  it('does not add a second period when the detail is already a sentence', () => {
+    expect(terminalErrorDescription(
+      'Directory not found: /tmp/missing.',
+      fallback,
+    )).toBe('Directory not found: /tmp/missing. Opened the system default terminal instead.');
+  });
+
+  it('uses the fallback sentence when there is no detail', () => {
+    expect(terminalErrorDescription('   ', fallback)).toBe(fallback);
   });
 });
 

@@ -865,6 +865,7 @@
     "holdModifierForAdmin": "Yönetici olarak açmak için {modifier} tuşunu basılı tutun",
     "defaultLabel": "Varsayılan",
     "openWithAnotherTerminal": "Başka bir terminalde aç",
+    "errorTitle": "Terminal açılamadı",
     "openFailed": "Terminal açılamadı",
     "noTerminalAvailable": "Kullanılabilir terminal yok",
     "customCommandMissing": "Özel terminal için bir komut girin",

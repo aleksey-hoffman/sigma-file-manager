@@ -895,6 +895,7 @@
     "holdModifierForAdmin": "ایڈمن کے طور پر کھولنے کے لیے {modifier} دبائے رکھیں",
     "defaultLabel": "طے شدہ",
     "openWithAnotherTerminal": "دوسرے ٹرمینل میں کھولیں",
+    "errorTitle": "ٹرمینل نہیں کھل سکا",
     "openFailed": "ٹرمینل نہیں کھل سکا",
     "noTerminalAvailable": "کوئی ٹرمینل دستیاب نہیں",
     "customCommandMissing": "حسب ضرورت ٹرمینل کے لیے کمانڈ درج کریں",

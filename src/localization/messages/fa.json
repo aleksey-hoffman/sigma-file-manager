@@ -860,6 +860,7 @@
     "holdModifierForAdmin": "برای باز کردن به عنوان مدیر، {modifier} را نگه دارید",
     "defaultLabel": "پیش‌فرض",
     "openWithAnotherTerminal": "باز کردن با ترمینال دیگر",
+    "errorTitle": "ترمینال باز نشد",
     "openFailed": "ترمینال باز نشد",
     "noTerminalAvailable": "ترمینالی در دسترس نیست",
     "customCommandMissing": "فرمانی برای ترمینال سفارشی وارد کنید",

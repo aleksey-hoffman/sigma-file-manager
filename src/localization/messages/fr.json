@@ -865,6 +865,7 @@
     "holdModifierForAdmin": "Maintenez {modifier} pour ouvrir en tant qu'administrateur",
     "defaultLabel": "Par défaut",
     "openWithAnotherTerminal": "Ouvrir avec un autre terminal",
+    "errorTitle": "Impossible d'ouvrir le terminal",
     "openFailed": "Impossible d'ouvrir le terminal",
     "noTerminalAvailable": "Aucun terminal disponible",
     "customCommandMissing": "Indiquez une commande pour le terminal personnalisé",

@@ -865,6 +865,7 @@
     "holdModifierForAdmin": "Giữ {modifier} để mở với quyền quản trị",
     "defaultLabel": "Mặc định",
     "openWithAnotherTerminal": "Mở bằng terminal khác",
+    "errorTitle": "Không mở được terminal",
     "openFailed": "Không mở được terminal",
     "noTerminalAvailable": "Không có terminal nào",
     "customCommandMissing": "Nhập lệnh cho terminal tùy chỉnh",

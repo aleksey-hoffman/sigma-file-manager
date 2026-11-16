@@ -895,6 +895,7 @@
     "holdModifierForAdmin": "Hold {modifier} to open as admin",
     "defaultLabel": "Default",
     "openWithAnotherTerminal": "Open with another terminal",
+    "errorTitle": "Could not open the terminal",
     "openFailed": "Could not open the terminal",
     "noTerminalAvailable": "No terminal is available",
     "customCommandMissing": "Enter a command for the custom terminal",

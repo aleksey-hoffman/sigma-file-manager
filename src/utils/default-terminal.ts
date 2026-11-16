@@ -10,6 +10,8 @@ import {
 
 export const TERMINAL_DIRECTORY_PLACEHOLDER = '{directory}';
 
+const TERMINAL_SENTENCE_END = /[.!?。！？؟।۔։]$/u;
+
 export type TerminalLaunchNoticeKey
   = | 'terminal.noTerminalAvailable'
     | 'terminal.customCommandMissing'
@@ -303,6 +305,26 @@ export function resolveTerminalLaunch(input: {
       return exhaustiveCheck;
     }
   }
+}
+
+export function terminalErrorDescription(detail: string, fallbackSentence: string | null): string {
+  const trimmedDetail = detail.trim();
+
+  if (!fallbackSentence) {
+    return trimmedDetail;
+  }
+
+  const fallback = fallbackSentence.trim();
+
+  if (!trimmedDetail) {
+    return fallback;
+  }
+
+  if (TERMINAL_SENTENCE_END.test(trimmedDetail)) {
+    return `${trimmedDetail} ${fallback}`;
+  }
+
+  return `${trimmedDetail}. ${fallback}`;
 }
 
 export function selectedDetectedTerminalId(

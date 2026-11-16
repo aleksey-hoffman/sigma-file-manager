@@ -865,6 +865,7 @@
     "holdModifierForAdmin": "Tieni premuto {modifier} per aprire come amministratore",
     "defaultLabel": "Predefinito",
     "openWithAnotherTerminal": "Apri con un altro terminale",
+    "errorTitle": "Impossibile aprire il terminale",
     "openFailed": "Impossibile aprire il terminale",
     "noTerminalAvailable": "Nessun terminale disponibile",
     "customCommandMissing": "Inserisci un comando per il terminale personalizzato",

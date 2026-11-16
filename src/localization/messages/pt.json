@@ -864,6 +864,7 @@
     "holdModifierForAdmin": "Segure {modifier} para abrir como administrador",
     "defaultLabel": "Padrão",
     "openWithAnotherTerminal": "Abrir com outro terminal",
+    "errorTitle": "Não foi possível abrir o terminal",
     "openFailed": "Não foi possível abrir o terminal",
     "noTerminalAvailable": "Nenhum terminal disponível",
     "customCommandMissing": "Informe um comando para o terminal personalizado",

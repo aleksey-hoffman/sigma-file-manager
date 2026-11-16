@@ -895,6 +895,7 @@
     "holdModifierForAdmin": "החזק {modifier} כדי לפתוח כמנהל",
     "defaultLabel": "ברירת מחדל",
     "openWithAnotherTerminal": "פתיחה במסוף אחר",
+    "errorTitle": "לא ניתן לפתוח את המסוף",
     "openFailed": "לא ניתן לפתוח את המסוף",
     "noTerminalAvailable": "אין מסוף זמין",
     "customCommandMissing": "הזינו פקודה למסוף המותאם אישית",
