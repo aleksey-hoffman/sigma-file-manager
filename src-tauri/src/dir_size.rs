@@ -27,6 +27,7 @@ use windows::Win32::System::Threading::{
 const CACHE_SIZE: usize = 2000;
 const CACHE_TTL_SECONDS: u64 = 300;
 const DIR_SIZE_POOL_THREADS: usize = 2;
+#[cfg(target_os = "linux")]
 const DIR_SIZE_THREAD_NICE: i32 = 10;
 const DIR_SIZE_RESULT_EVENT: &str = "dir-size-result";
 

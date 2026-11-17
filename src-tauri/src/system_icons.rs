@@ -34,6 +34,7 @@ static UNSUPPORTED_SHELL_ICON_PATHS: Lazy<Mutex<HashSet<String>>> =
 
 enum PlatformIconError {
     Provider(FileIconError),
+    #[cfg(any(test, all(feature = "cef", target_os = "linux")))]
     GtkUnavailable,
 }
 
@@ -386,6 +387,7 @@ fn get_icon_data_url_uncached(path: &Path, size: u16) -> Result<String, String> 
             );
             return Err("Failed to get icon".to_string());
         }
+        #[cfg(any(test, all(feature = "cef", target_os = "linux")))]
         Err(PlatformIconError::GtkUnavailable) => {
             log::debug!(
                 "[shell-icon] GTK thread is not ready path={} size={}",
