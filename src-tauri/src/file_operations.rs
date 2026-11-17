@@ -8,6 +8,7 @@ use crate::utils::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -1824,68 +1825,691 @@ pub fn move_items(
     .0
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RenameConflict {
+    None,
+    CaseOnlySource,
+    OtherEntry,
+}
+
+fn names_equal_case_insensitive(left: &OsStr, right: &OsStr) -> bool {
+    if left == right {
+        return true;
+    }
+
+    match (left.to_str(), right.to_str()) {
+        (Some(left_text), Some(right_text)) => {
+            left_text.eq_ignore_ascii_case(right_text)
+                || left_text.to_lowercase() == right_text.to_lowercase()
+        }
+        _ => false,
+    }
+}
+
+fn volume_is_case_insensitive(path: &Path) -> bool {
+    match crate::dir_reader::path_volume_is_case_sensitive(path.to_string_lossy().into_owned()) {
+        Ok(is_case_sensitive) => !is_case_sensitive,
+        Err(_) => cfg!(windows) || cfg!(target_os = "macos"),
+    }
+}
+
+fn read_directory_names(directory: &Path) -> std::io::Result<Vec<OsString>> {
+    let mut names = Vec::new();
+
+    for entry in fs::read_dir(directory)? {
+        names.push(entry?.file_name());
+    }
+
+    Ok(names)
+}
+
+fn classify_rename_conflict(
+    directory_names: &[OsString],
+    source_name: &OsStr,
+    new_name: &OsStr,
+    case_insensitive: bool,
+) -> RenameConflict {
+    let mut source_seen = false;
+
+    for name in directory_names {
+        let is_source = name.as_os_str() == source_name
+            || (case_insensitive && names_equal_case_insensitive(name.as_os_str(), source_name));
+
+        if is_source {
+            source_seen = true;
+            continue;
+        }
+
+        let conflicts = if case_insensitive {
+            names_equal_case_insensitive(name.as_os_str(), new_name)
+        } else {
+            name.as_os_str() == new_name
+        };
+
+        if conflicts {
+            return RenameConflict::OtherEntry;
+        }
+    }
+
+    if case_insensitive
+        && source_seen
+        && source_name != new_name
+        && names_equal_case_insensitive(source_name, new_name)
+    {
+        return RenameConflict::CaseOnlySource;
+    }
+
+    RenameConflict::None
+}
+
+fn classify_unreadable_directory_rename(
+    source: &Path,
+    dest: &Path,
+    source_name: &OsStr,
+    new_name: &OsStr,
+) -> RenameConflict {
+    if dest.exists() && !paths_are_same_file(source, dest) {
+        return RenameConflict::OtherEntry;
+    }
+
+    if dest.exists()
+        && source_name != new_name
+        && names_equal_case_insensitive(source_name, new_name)
+        && paths_are_same_file(source, dest)
+    {
+        return RenameConflict::CaseOnlySource;
+    }
+
+    if dest.exists() {
+        return RenameConflict::OtherEntry;
+    }
+
+    RenameConflict::None
+}
+
+fn paths_are_same_file(left: &Path, right: &Path) -> bool {
+    match (fs::canonicalize(left), fs::canonicalize(right)) {
+        (Ok(left_path), Ok(right_path)) => left_path == right_path,
+        _ => false,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum ObservedName {
+    Found(OsString),
+    Missing,
+    Unreadable,
+}
+
+fn read_directory_entry_name(directory: &Path, wanted: &OsStr) -> std::io::Result<Option<OsString>> {
+    let mut case_match = None;
+
+    for entry in fs::read_dir(directory)? {
+        let name = entry?.file_name();
+
+        if name.as_os_str() == wanted {
+            return Ok(Some(name));
+        }
+
+        if case_match.is_none() && names_equal_case_insensitive(name.as_os_str(), wanted) {
+            case_match = Some(name);
+        }
+    }
+
+    Ok(case_match)
+}
+
+fn observe_directory_name(directory: &Path, wanted: &OsStr) -> ObservedName {
+    match read_directory_entry_name(directory, wanted) {
+        Ok(Some(name)) => ObservedName::Found(name),
+        Ok(None) => ObservedName::Missing,
+        Err(_) => match read_directory_entry_name(directory, wanted) {
+            Ok(Some(name)) => ObservedName::Found(name),
+            Ok(None) => ObservedName::Missing,
+            Err(_) => ObservedName::Unreadable,
+        },
+    }
+}
+
+fn case_only_rename_needs_intermediate(
+    direct_succeeded: bool,
+    observed: &ObservedName,
+    new_name: &OsStr,
+) -> bool {
+    match observed {
+        ObservedName::Unreadable | ObservedName::Missing => !direct_succeeded,
+        ObservedName::Found(stored_name) => stored_name.as_os_str() != new_name,
+    }
+}
+
+fn rename_rejected(error: String) -> FileOperationResult {
+    FileOperationResult {
+        success: false,
+        error: Some(error),
+        copied_count: None,
+        failed_count: None,
+        skipped_count: None,
+        moved_paths: Vec::new(),
+    }
+}
+
+fn rename_failed(error: String) -> FileOperationResult {
+    FileOperationResult {
+        success: false,
+        error: Some(error),
+        copied_count: None,
+        failed_count: Some(1),
+        skipped_count: None,
+        moved_paths: Vec::new(),
+    }
+}
+
+fn rename_succeeded() -> FileOperationResult {
+    FileOperationResult {
+        success: true,
+        error: None,
+        copied_count: Some(1),
+        failed_count: Some(0),
+        skipped_count: Some(0),
+        moved_paths: Vec::new(),
+    }
+}
+
+fn rename_name_already_exists(new_name: &str) -> FileOperationResult {
+    rename_rejected(format!(
+        "A file or folder with the name '{new_name}' already exists"
+    ))
+}
+
+#[derive(Debug)]
+struct RenameFailure {
+    message: String,
+    stranded_at: Option<PathBuf>,
+}
+
+fn temporary_rename_candidate(parent: &Path, attempt: u32) -> PathBuf {
+    parent.join(format!(
+        ".sfm-rename-{}-{}-{attempt}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|duration| duration.as_nanos())
+            .unwrap_or(0),
+    ))
+}
+
+fn rename_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        rename_exclusive_linux(from, to)
+    }
+    #[cfg(target_os = "macos")]
+    {
+        rename_exclusive_macos(from, to)
+    }
+    #[cfg(windows)]
+    {
+        rename_exclusive_windows(from, to)
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+    {
+        match to.try_exists() {
+            Ok(true) => Err(std::io::Error::new(
+                std::io::ErrorKind::AlreadyExists,
+                "destination exists",
+            )),
+            Ok(false) => fs::rename(from, to),
+            Err(error) => Err(error),
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn rename_exclusive_linux(from: &Path, to: &Path) -> std::io::Result<()> {
+    let from_c = cstring_path(from)?;
+    let to_c = cstring_path(to)?;
+    let result = unsafe {
+        libc::renameat2(
+            libc::AT_FDCWD,
+            from_c.as_ptr(),
+            libc::AT_FDCWD,
+            to_c.as_ptr(),
+            libc::RENAME_NOREPLACE,
+        )
+    };
+
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(std::io::Error::last_os_error())
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn cstring_path(path: &Path) -> std::io::Result<std::ffi::CString> {
+    use std::os::unix::ffi::OsStrExt;
+
+    std::ffi::CString::new(path.as_os_str().as_bytes()).map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "path contains a NUL byte",
+        )
+    })
+}
+
+#[cfg(target_os = "macos")]
+fn rename_exclusive_macos(from: &Path, to: &Path) -> std::io::Result<()> {
+    const RENAME_EXCL: libc::c_uint = 0x0000_0004;
+
+    let from_c = cstring_path(from)?;
+    let to_c = cstring_path(to)?;
+    let result = unsafe { renamex_np(from_c.as_ptr(), to_c.as_ptr(), RENAME_EXCL) };
+
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(std::io::Error::last_os_error())
+    }
+}
+
+#[cfg(target_os = "macos")]
+extern "C" {
+    fn renamex_np(
+        from: *const libc::c_char,
+        to: *const libc::c_char,
+        flags: libc::c_uint,
+    ) -> libc::c_int;
+}
+
+#[cfg(windows)]
+fn wide_path(path: &Path) -> Vec<u16> {
+    use std::os::windows::ffi::OsStrExt;
+
+    path.as_os_str().encode_wide().chain(Some(0)).collect()
+}
+
+#[cfg(windows)]
+fn invalid_handle(handle: *mut std::ffi::c_void) -> bool {
+    handle.is_null() || handle == -1isize as *mut std::ffi::c_void
+}
+
+#[cfg(windows)]
+fn rename_exclusive_windows(from: &Path, to: &Path) -> std::io::Result<()> {
+    let from_wide = wide_path(from);
+    let to_wide = wide_path(to);
+    let moved = unsafe {
+        MoveFileExW(from_wide.as_ptr(), to_wide.as_ptr(), 0)
+    };
+
+    if moved == 0 {
+        Err(std::io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
+}
+
+#[cfg(windows)]
+fn rename_case_in_place(source: &Path, dest: &Path) -> std::io::Result<()> {
+    const DELETE_ACCESS: u32 = 0x0001_0000;
+    const FILE_SHARE_READ: u32 = 0x0000_0001;
+    const FILE_SHARE_WRITE: u32 = 0x0000_0002;
+    const FILE_SHARE_DELETE: u32 = 0x0000_0004;
+    const OPEN_EXISTING: u32 = 3;
+    const FILE_FLAG_BACKUP_SEMANTICS: u32 = 0x0200_0000;
+    const FILE_RENAME_INFO_EX: i32 = 22;
+
+    let source_wide = wide_path(source);
+    let handle = unsafe {
+        CreateFileW(
+            source_wide.as_ptr(),
+            DELETE_ACCESS,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            std::ptr::null_mut(),
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS,
+            std::ptr::null_mut(),
+        )
+    };
+
+    if invalid_handle(handle) {
+        return Err(std::io::Error::last_os_error());
+    }
+
+    let buffer = file_rename_info_ex_buffer(dest);
+    let renamed = unsafe {
+        SetFileInformationByHandle(
+            handle,
+            FILE_RENAME_INFO_EX,
+            buffer.as_ptr().cast(),
+            buffer.len() as u32,
+        )
+    };
+    unsafe {
+        CloseHandle(handle);
+    }
+
+    if renamed == 0 {
+        Err(std::io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
+}
+
+#[cfg(windows)]
+fn file_rename_info_ex_buffer(destination: &Path) -> Vec<u8> {
+    let wide = wide_path(destination);
+    let name_bytes = ((wide.len() - 1) * 2) as u32;
+    let header = if cfg!(target_pointer_width = "64") {
+        20
+    } else {
+        12
+    };
+    let mut buffer = vec![0u8; header + (wide.len() * 2)];
+    let length_offset = header - 4;
+    buffer[length_offset..length_offset + 4].copy_from_slice(&name_bytes.to_ne_bytes());
+
+    for (index, unit) in wide.iter().enumerate() {
+        let offset = header + (index * 2);
+        buffer[offset..offset + 2].copy_from_slice(&unit.to_ne_bytes());
+    }
+
+    buffer
+}
+
+#[cfg(windows)]
+fn windows_case_rename_done(source: &Path, dest: &Path, new_name: &OsStr) -> bool {
+    if rename_case_in_place(source, dest).is_err() {
+        return false;
+    }
+
+    let Some(parent) = dest.parent().or_else(|| source.parent()) else {
+        return true;
+    };
+
+    match observe_directory_name(parent, new_name) {
+        ObservedName::Found(stored_name) => stored_name.as_os_str() == new_name,
+        ObservedName::Missing | ObservedName::Unreadable => true,
+    }
+}
+
+#[cfg(windows)]
+extern "system" {
+    fn CreateFileW(
+        file_name: *const u16,
+        desired_access: u32,
+        share_mode: u32,
+        security_attributes: *mut std::ffi::c_void,
+        creation_disposition: u32,
+        flags_and_attributes: u32,
+        template_file: *mut std::ffi::c_void,
+    ) -> *mut std::ffi::c_void;
+
+    fn CloseHandle(handle: *mut std::ffi::c_void) -> i32;
+
+    fn MoveFileExW(existing_name: *const u16, new_name: *const u16, flags: u32) -> i32;
+
+    fn SetFileInformationByHandle(
+        file: *mut std::ffi::c_void,
+        file_information_class: i32,
+        file_information: *const std::ffi::c_void,
+        buffer_size: u32,
+    ) -> i32;
+}
+
+fn rename_through_temporary(
+    source: &Path,
+    dest: &Path,
+    restore_path: &Path,
+) -> Result<(), RenameFailure> {
+    let parent = source.parent().ok_or_else(|| RenameFailure {
+        message: "Cannot determine parent directory".to_string(),
+        stranded_at: None,
+    })?;
+
+    for attempt in 0..100 {
+        let temporary = temporary_rename_candidate(parent, attempt);
+
+        match rename_exclusive(source, &temporary) {
+            Ok(()) => return finish_temporary_rename(temporary, dest, restore_path),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => {
+                return Err(RenameFailure {
+                    message: error.to_string(),
+                    stranded_at: None,
+                });
+            }
+        }
+    }
+
+    Err(RenameFailure {
+        message: "Could not choose a temporary name for the rename".to_string(),
+        stranded_at: None,
+    })
+}
+
+fn finish_temporary_rename(
+    temporary: PathBuf,
+    dest: &Path,
+    restore_path: &Path,
+) -> Result<(), RenameFailure> {
+    if let Err(error) = rename_exclusive(&temporary, dest) {
+        return match rename_exclusive(&temporary, restore_path) {
+            Ok(()) => Err(RenameFailure {
+                message: error.to_string(),
+                stranded_at: None,
+            }),
+            Err(rollback_error) => {
+                let temporary_path = temporary.display().to_string();
+                Err(RenameFailure {
+                    message: format!(
+                        "{error}. Failed to restore the original name: {rollback_error}. The item is at {temporary_path}"
+                    ),
+                    stranded_at: Some(temporary),
+                })
+            }
+        };
+    }
+
+    Ok(())
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CaseOnlyListingDecision {
+    SameFile,
+    SeparateEntry,
+    ListingFailed,
+}
+
+fn source_entry_name<'a>(
+    directory_names: &'a [OsString],
+    source_name: &OsStr,
+) -> Option<&'a OsStr> {
+    if let Some(exact_source) = directory_names
+        .iter()
+        .find(|name| name.as_os_str() == source_name)
+    {
+        return Some(exact_source.as_os_str());
+    }
+
+    let mut case_matches = directory_names.iter().filter(|name| {
+        names_equal_case_insensitive(name.as_os_str(), source_name)
+    });
+    let only_match = case_matches.next()?;
+
+    if case_matches.next().is_some() {
+        return None;
+    }
+
+    Some(only_match.as_os_str())
+}
+
+fn separate_exact_new_name_exists(
+    directory_names: &[OsString],
+    source_name: &OsStr,
+    new_name: &OsStr,
+) -> bool {
+    let source_entry = source_entry_name(directory_names, source_name);
+
+    directory_names.iter().any(|name| {
+        let entry_name = name.as_os_str();
+        entry_name == new_name && source_entry != Some(entry_name)
+    })
+}
+
+fn decide_case_only_from_listing(
+    listed_names: Option<&[OsString]>,
+    source_name: &OsStr,
+    new_name: &OsStr,
+) -> CaseOnlyListingDecision {
+    if source_name == new_name || !names_equal_case_insensitive(source_name, new_name) {
+        return CaseOnlyListingDecision::SeparateEntry;
+    }
+
+    let Some(names) = listed_names else {
+        return CaseOnlyListingDecision::ListingFailed;
+    };
+
+    if separate_exact_new_name_exists(names, source_name, new_name) {
+        CaseOnlyListingDecision::SeparateEntry
+    } else {
+        CaseOnlyListingDecision::SameFile
+    }
+}
+
+fn case_only_destination_is_same_file(source: &Path, dest: &Path) -> bool {
+    let (Some(source_name), Some(new_name)) = (source.file_name(), dest.file_name()) else {
+        return false;
+    };
+
+    if source_name == new_name || !names_equal_case_insensitive(source_name, new_name) {
+        return false;
+    }
+
+    if paths_are_same_file(source, dest) {
+        return true;
+    }
+
+    let Some(parent) = dest.parent().or_else(|| source.parent()) else {
+        return false;
+    };
+
+    let listed_names = read_directory_names(parent).ok();
+
+    match decide_case_only_from_listing(listed_names.as_deref(), source_name, new_name) {
+        CaseOnlyListingDecision::SameFile => true,
+        CaseOnlyListingDecision::SeparateEntry | CaseOnlyListingDecision::ListingFailed => false,
+    }
+}
+
+fn destination_blocks_rename(source: &Path, dest: &Path) -> bool {
+    dest.exists() && !case_only_destination_is_same_file(source, dest)
+}
+
+fn finish_case_only_rename(
+    direct_succeeded: bool,
+    current: &Path,
+    dest: &Path,
+    restore_path: &Path,
+    observed: ObservedName,
+    new_name: &OsStr,
+) -> FileOperationResult {
+    if !case_only_rename_needs_intermediate(direct_succeeded, &observed, new_name) {
+        return rename_succeeded();
+    }
+
+    match rename_through_temporary(current, dest, restore_path) {
+        Ok(()) => rename_succeeded(),
+        Err(failure) => {
+            let mut result = rename_failed(failure.message);
+
+            if let Some(stranded) = failure.stranded_at {
+                result.moved_paths.push(MovedPathPair {
+                    from: restore_path.display().to_string(),
+                    to: stranded.display().to_string(),
+                });
+            }
+
+            result
+        }
+    }
+}
+
+fn rename_case_only(source: &Path, dest: &Path, new_name: &str) -> FileOperationResult {
+    if destination_blocks_rename(source, dest) {
+        return rename_name_already_exists(new_name);
+    }
+
+    let new_name_os = OsStr::new(new_name);
+
+    #[cfg(windows)]
+    if windows_case_rename_done(source, dest, new_name_os) {
+        return rename_succeeded();
+    }
+
+    let direct_succeeded = fs::rename(source, dest).is_ok();
+    let current = if direct_succeeded { dest } else { source };
+    let Some(parent) = current.parent() else {
+        return rename_failed("Cannot determine parent directory".to_string());
+    };
+    let observed = observe_directory_name(parent, new_name_os);
+
+    finish_case_only_rename(
+        direct_succeeded,
+        current,
+        dest,
+        source,
+        observed,
+        new_name_os,
+    )
+}
+
+fn rename_without_conflict(source: &Path, dest: &Path) -> FileOperationResult {
+    match fs::rename(source, dest) {
+        Ok(()) => rename_succeeded(),
+        Err(error) => rename_failed(error.to_string()),
+    }
+}
+
 #[tauri::command]
 pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult {
     let source = Path::new(&source_path);
 
     if !source.exists() {
-        return FileOperationResult {
-            success: false,
-            error: Some(format!("Source path does not exist: {}", source_path)),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-            moved_paths: Vec::new(),
-        };
+        return rename_rejected(format!("Source path does not exist: {source_path}"));
     }
 
-    let parent = match source.parent() {
-        Some(parent) => parent,
-        None => {
-            return FileOperationResult {
-                success: false,
-                error: Some("Cannot determine parent directory".to_string()),
-                copied_count: None,
-                failed_count: None,
-                skipped_count: None,
-                moved_paths: Vec::new(),
-            };
-        }
+    let Some(parent) = source.parent() else {
+        return rename_rejected("Cannot determine parent directory".to_string());
+    };
+    let Some(source_name) = source.file_name() else {
+        return rename_rejected("Cannot determine parent directory".to_string());
     };
 
     let dest_path = parent.join(&new_name);
+    let new_name_os = OsStr::new(&new_name);
+    let case_insensitive = volume_is_case_insensitive(parent);
+    let conflict = match read_directory_names(parent) {
+        Ok(names) => classify_rename_conflict(&names, source_name, new_name_os, case_insensitive),
+        Err(_) => classify_unreadable_directory_rename(
+            source,
+            &dest_path,
+            source_name,
+            new_name_os,
+        ),
+    };
 
-    if dest_path.exists() {
-        return FileOperationResult {
-            success: false,
-            error: Some(format!(
-                "A file or folder with the name '{}' already exists",
-                new_name
-            )),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-            moved_paths: Vec::new(),
-        };
-    }
-
-    match fs::rename(source, &dest_path) {
-        Ok(()) => FileOperationResult {
-            success: true,
-            error: None,
-            copied_count: Some(1),
-            failed_count: Some(0),
-            skipped_count: Some(0),
-            moved_paths: Vec::new(),
-        },
-        Err(error) => FileOperationResult {
-            success: false,
-            error: Some(error.to_string()),
-            copied_count: None,
-            failed_count: Some(1),
-            skipped_count: None,
-            moved_paths: Vec::new(),
-        },
+    match conflict {
+        RenameConflict::OtherEntry => rename_name_already_exists(&new_name),
+        RenameConflict::CaseOnlySource => rename_case_only(source, &dest_path, &new_name),
+        RenameConflict::None => {
+            if dest_path.exists() && case_only_destination_is_same_file(source, &dest_path) {
+                rename_case_only(source, &dest_path, &new_name)
+            } else if dest_path.exists() {
+                rename_name_already_exists(&new_name)
+            } else {
+                rename_without_conflict(source, &dest_path)
+            }
+        }
     }
 }
 
@@ -2307,5 +2931,413 @@ mod tests {
         );
         assert_eq!(read_file(&source_folder.join("common.txt")), b"source");
         assert!(!source_folder.join("only-source.txt").exists());
+    }
+
+    fn os(value: &str) -> OsString {
+        OsString::from(value)
+    }
+
+    fn listed_names(directory: &Path) -> Vec<OsString> {
+        let mut names: Vec<_> = fs::read_dir(directory)
+            .unwrap()
+            .flatten()
+            .map(|entry| entry.file_name())
+            .collect();
+        names.sort();
+        names
+    }
+
+    fn assert_no_temporary_rename_files(directory: &Path) {
+        let leftovers: Vec<_> = fs::read_dir(directory)
+            .unwrap()
+            .flatten()
+            .filter(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".sfm-rename-")
+            })
+            .map(|entry| entry.file_name())
+            .collect();
+
+        assert!(
+            leftovers.is_empty(),
+            "temporary rename files left behind: {leftovers:?}"
+        );
+    }
+
+    #[test]
+    fn classify_rename_conflict_allows_case_only_source_when_folding() {
+        let names = vec![os("file.txt"), os("other.txt")];
+
+        assert_eq!(
+            classify_rename_conflict(&names, &os("file.txt"), &os("File.txt"), true),
+            RenameConflict::CaseOnlySource
+        );
+    }
+
+    #[test]
+    fn classify_rename_conflict_rejects_another_entry_ignoring_case() {
+        let names = vec![os("file.txt"), os("Other.txt")];
+
+        assert_eq!(
+            classify_rename_conflict(&names, &os("file.txt"), &os("other.txt"), true),
+            RenameConflict::OtherEntry
+        );
+    }
+
+    #[test]
+    fn case_only_listing_treats_a_single_stored_name_as_the_same_file() {
+        let notes = vec![os("notes.txt")];
+        let uber = vec![os("Über")];
+
+        assert_eq!(
+            decide_case_only_from_listing(Some(&notes), &os("notes.txt"), &os("Notes.txt")),
+            CaseOnlyListingDecision::SameFile
+        );
+        assert_eq!(
+            decide_case_only_from_listing(Some(&uber), &os("Über"), &os("über")),
+            CaseOnlyListingDecision::SameFile
+        );
+        assert!(!separate_exact_new_name_exists(
+            &notes,
+            &os("notes.txt"),
+            &os("Notes.txt"),
+        ));
+    }
+
+    #[test]
+    fn case_only_listing_allows_the_stored_name_when_it_is_already_the_target_case() {
+        let names = vec![os("Notes.txt")];
+
+        assert_eq!(
+            decide_case_only_from_listing(Some(&names), &os("notes.txt"), &os("Notes.txt")),
+            CaseOnlyListingDecision::SameFile
+        );
+        assert!(!separate_exact_new_name_exists(
+            &names,
+            &os("notes.txt"),
+            &os("Notes.txt"),
+        ));
+    }
+
+    #[test]
+    fn case_only_listing_rejects_a_separate_exact_name() {
+        let names = vec![os("file.txt"), os("File.txt")];
+
+        assert_eq!(
+            decide_case_only_from_listing(Some(&names), &os("file.txt"), &os("File.txt")),
+            CaseOnlyListingDecision::SeparateEntry
+        );
+        assert!(separate_exact_new_name_exists(
+            &names,
+            &os("file.txt"),
+            &os("File.txt"),
+        ));
+        assert_eq!(
+            decide_case_only_from_listing(
+                Some(&names),
+                &os("notes.txt"),
+                &os("other.txt"),
+            ),
+            CaseOnlyListingDecision::SeparateEntry
+        );
+    }
+
+    #[test]
+    fn case_only_listing_refuses_when_the_directory_cannot_be_read() {
+        assert_eq!(
+            decide_case_only_from_listing(None, &os("notes.txt"), &os("Notes.txt")),
+            CaseOnlyListingDecision::ListingFailed
+        );
+    }
+
+    #[test]
+    fn classify_rename_conflict_keeps_case_sensitive_entries_distinct() {
+        let names = vec![os("file.txt"), os("File.txt")];
+
+        assert_eq!(
+            classify_rename_conflict(&names, &os("file.txt"), &os("File.txt"), false),
+            RenameConflict::OtherEntry
+        );
+        assert_eq!(
+            classify_rename_conflict(&names, &os("file.txt"), &os("FILE.txt"), false),
+            RenameConflict::None
+        );
+    }
+
+    #[test]
+    fn classify_rename_conflict_does_not_treat_the_same_name_as_case_only() {
+        let names = vec![os("file.txt")];
+
+        assert_eq!(
+            classify_rename_conflict(&names, &os("file.txt"), &os("file.txt"), true),
+            RenameConflict::None
+        );
+    }
+
+    #[test]
+    fn case_only_rename_needs_intermediate_when_direct_rename_misses_the_new_case() {
+        let new_name = OsStr::new("File.txt");
+
+        assert!(case_only_rename_needs_intermediate(
+            false,
+            &ObservedName::Found(os("file.txt")),
+            new_name,
+        ));
+        assert!(case_only_rename_needs_intermediate(
+            true,
+            &ObservedName::Found(os("file.txt")),
+            new_name,
+        ));
+        assert!(!case_only_rename_needs_intermediate(
+            true,
+            &ObservedName::Found(os("File.txt")),
+            new_name,
+        ));
+        assert!(!case_only_rename_needs_intermediate(
+            true,
+            &ObservedName::Unreadable,
+            new_name,
+        ));
+        assert!(!case_only_rename_needs_intermediate(
+            true,
+            &ObservedName::Missing,
+            new_name,
+        ));
+        assert!(!case_only_rename_needs_intermediate(
+            false,
+            &ObservedName::Found(os("File.txt")),
+            new_name,
+        ));
+    }
+
+    #[test]
+    fn rename_item_changes_only_letter_case() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("an example name.txt");
+        write_file(&source, b"hello");
+
+        let result = rename_item(
+            source.to_string_lossy().to_string(),
+            "An Example Name.txt".to_string(),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        let dest = temp.path().join("An Example Name.txt");
+        assert_eq!(read_file(&dest), b"hello");
+        assert!(!source.exists());
+        assert_no_temporary_rename_files(temp.path());
+    }
+
+    #[test]
+    fn rename_item_changes_directory_letter_case_and_keeps_children() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("notes");
+        write_file(&source.join("inside.txt"), b"inside");
+
+        let result = rename_item(source.to_string_lossy().to_string(), "Notes".to_string());
+
+        assert!(result.success, "{:?}", result.error);
+        assert_eq!(
+            read_file(&temp.path().join("Notes").join("inside.txt")),
+            b"inside"
+        );
+        assert!(!source.exists());
+        assert_no_temporary_rename_files(temp.path());
+    }
+
+    #[test]
+    fn rename_item_rejects_a_different_existing_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        write_file(&source, b"source");
+        write_file(&temp.path().join("other.txt"), b"other");
+
+        let result = rename_item(
+            source.to_string_lossy().to_string(),
+            "other.txt".to_string(),
+        );
+
+        assert!(!result.success);
+        assert_eq!(
+            result.error.as_deref(),
+            Some("A file or folder with the name 'other.txt' already exists")
+        );
+        assert_eq!(result.copied_count, None);
+        assert_eq!(result.failed_count, None);
+        assert_eq!(result.skipped_count, None);
+        assert!(result.moved_paths.is_empty());
+        assert_eq!(read_file(&source), b"source");
+        assert_eq!(read_file(&temp.path().join("other.txt")), b"other");
+    }
+
+    #[test]
+    fn rename_item_rejects_the_exact_same_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        write_file(&source, b"same");
+
+        let result = rename_item(source.to_string_lossy().to_string(), "file.txt".to_string());
+
+        assert!(!result.success);
+        assert_eq!(
+            result.error.as_deref(),
+            Some("A file or folder with the name 'file.txt' already exists")
+        );
+        assert_eq!(read_file(&source), b"same");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rename_item_rejects_a_different_case_entry_on_a_case_sensitive_volume() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let dest = temp.path().join("File.txt");
+        write_file(&source, b"lower");
+        write_file(&dest, b"upper");
+
+        let result = rename_item(source.to_string_lossy().to_string(), "File.txt".to_string());
+
+        assert!(!result.success);
+        assert_eq!(
+            result.error.as_deref(),
+            Some("A file or folder with the name 'File.txt' already exists")
+        );
+        assert_eq!(read_file(&source), b"lower");
+        assert_eq!(read_file(&dest), b"upper");
+    }
+
+    #[test]
+    fn rename_through_temporary_moves_to_the_requested_case() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let dest = temp.path().join("File.txt");
+        write_file(&source, b"data");
+
+        rename_through_temporary(&source, &dest, &source).unwrap();
+
+        assert!(!source.exists());
+        assert_eq!(read_file(&dest), b"data");
+        assert_no_temporary_rename_files(temp.path());
+    }
+
+    #[test]
+    fn rename_through_temporary_restores_the_source_when_the_second_rename_fails() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let blocked = temp.path().join("blocked");
+        write_file(&source, b"data");
+        write_file(&blocked.join("child.txt"), b"child");
+
+        let error = rename_through_temporary(&source, &blocked, &source).unwrap_err();
+
+        assert!(!error.message.contains("Failed to restore the original name"));
+        assert_eq!(read_file(&source), b"data");
+        assert_eq!(read_file(&blocked.join("child.txt")), b"child");
+        assert_no_temporary_rename_files(temp.path());
+    }
+
+    #[test]
+    fn rename_through_temporary_reports_when_rollback_fails() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let blocked = temp.path().join("blocked");
+        let restore = temp.path().join("restore");
+        write_file(&source, b"data");
+        write_file(&blocked.join("child.txt"), b"child");
+        write_file(&restore.join("child.txt"), b"restore");
+
+        let error = rename_through_temporary(&source, &blocked, &restore).unwrap_err();
+        let stranded = error.stranded_at.expect("temporary path");
+
+        assert!(error.message.contains("Failed to restore the original name"));
+        assert!(error.message.contains(&stranded.display().to_string()));
+        assert_eq!(read_file(&stranded), b"data");
+        assert_eq!(read_file(&blocked.join("child.txt")), b"child");
+        assert_eq!(read_file(&restore.join("child.txt")), b"restore");
+        assert!(!source.exists());
+    }
+
+    #[test]
+    fn direct_rename_that_keeps_the_old_case_uses_the_temporary_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let dest = temp.path().join("File.txt");
+        write_file(&source, b"data");
+
+        let result = finish_case_only_rename(
+            true,
+            &source,
+            &dest,
+            &source,
+            ObservedName::Found(os("file.txt")),
+            OsStr::new("File.txt"),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        assert_eq!(read_file(&dest), b"data");
+        assert_eq!(listed_names(temp.path()), vec![os("File.txt")]);
+        assert_no_temporary_rename_files(temp.path());
+    }
+
+    #[test]
+    fn direct_rename_with_an_unreadable_listing_does_not_use_a_temporary_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let dest = temp.path().join("File.txt");
+        write_file(&source, b"data");
+
+        let result = finish_case_only_rename(
+            true,
+            &source,
+            &dest,
+            &source,
+            ObservedName::Unreadable,
+            OsStr::new("File.txt"),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        assert!(result.moved_paths.is_empty());
+        assert_eq!(read_file(&source), b"data");
+        assert_eq!(listed_names(temp.path()), vec![os("file.txt")]);
+        assert_no_temporary_rename_files(temp.path());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rename_exclusive_does_not_replace_an_existing_file() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("source.txt");
+        let dest = temp.path().join("dest.txt");
+        write_file(&source, b"source");
+        write_file(&dest, b"dest");
+
+        let error = rename_exclusive(&source, &dest).unwrap_err();
+
+        assert_eq!(error.kind(), std::io::ErrorKind::AlreadyExists);
+        assert_eq!(read_file(&source), b"source");
+        assert_eq!(read_file(&dest), b"dest");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rename_case_only_refuses_to_replace_a_different_file() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("file.txt");
+        let dest = temp.path().join("File.txt");
+        write_file(&source, b"lower");
+        write_file(&dest, b"upper");
+
+        let result = rename_case_only(&source, &dest, "File.txt");
+
+        assert!(!result.success);
+        assert_eq!(
+            result.error.as_deref(),
+            Some("A file or folder with the name 'File.txt' already exists")
+        );
+        assert_eq!(read_file(&source), b"lower");
+        assert_eq!(read_file(&dest), b"upper");
+        assert_no_temporary_rename_files(temp.path());
     }
 }

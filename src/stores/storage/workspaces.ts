@@ -16,6 +16,7 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
+import { remapDirEntry, replacePathPrefix } from '@/utils/file-operation-paths';
 import normalizePath, { canonicalizePath, getPathDisplayName } from '@/utils/normalize-path';
 import {
   isVirtualLocationPath,
@@ -209,6 +210,9 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       if (updatedPath !== null) {
         updateTabPath(tab, updatedPath);
       }
+
+      tab.dirEntries = tab.dirEntries.map(entry => remapDirEntry(entry, oldPath, newPath));
+      tab.selectedDirEntries = tab.selectedDirEntries.map(entry => remapDirEntry(entry, oldPath, newPath));
     }
   }
 
@@ -784,6 +788,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     oldPath: string;
     newPath: string;
   } | null>(null);
+  const pathRenameEpoch = ref(0);
   const lastDeletedPaths = ref<string[] | null>(null);
   const lastModifiedDirectoryPaths = ref<string[] | null>(null);
 
@@ -802,16 +807,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       updateTabGroupPathsAfterRename(historyEntry.tabGroup, oldPath, newPath);
     }
 
+    pathRenameEpoch.value += 1;
     lastRenamedPath.value = {
       oldPath,
       newPath,
     };
-  }
-
-  function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
-    if (path === oldPrefix) return newPrefix;
-    if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
-    return null;
   }
 
   function handlePathsDeleted(paths: string[]) {
@@ -1017,6 +1017,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     setPendingLaunchReveal,
     clearPendingLaunchReveal,
     lastRenamedPath,
+    pathRenameEpoch,
     handlePathRenamed,
     lastDeletedPaths,
     handlePathsDeleted,

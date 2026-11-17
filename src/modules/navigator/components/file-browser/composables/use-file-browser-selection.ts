@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, markRaw, nextTick, type Ref } from 'vue';
+import {
+  ref, markRaw, nextTick, watch, type Ref,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
@@ -18,14 +20,18 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
+import { recordRenamedPath, recordStrandedRename } from '@/composables/record-renamed-path';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
-import normalizePath, { joinPath } from '@/utils/normalize-path';
+import normalizePath, { getParentDirectory, joinPath } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import {
+  arePathsEquivalent,
   getSharedSourceDirectory,
   isDestinationInsideAnySourceDirectory,
+  remapDirEntry,
 } from '@/utils/file-operation-paths';
+import { getRenameConflictError } from '@/utils/rename-conflict';
 import { useFileBrowserClickSelection } from '@/modules/navigator/components/file-browser/composables/use-file-browser-click-selection';
 import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-entry';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
@@ -129,6 +135,30 @@ export function useFileBrowserSelection(
     };
   }
 
+  watch(() => workspacesStore.lastRenamedPath, (renamed) => {
+    if (!renamed) {
+      return;
+    }
+
+    const nextEntries = selectedEntries.value.map(entry => remapDirEntry(entry, renamed.oldPath, renamed.newPath));
+    const selectionChanged = nextEntries.some((entry, index) => entry !== selectedEntries.value[index]);
+
+    if (selectionChanged) {
+      selectedEntries.value = nextEntries;
+      lastSelectedEntry.value = lastSelectedEntry.value
+        ? remapDirEntry(lastSelectedEntry.value, renamed.oldPath, renamed.newPath)
+        : null;
+      focusedEntry.value = focusedEntry.value
+        ? remapDirEntry(focusedEntry.value, renamed.oldPath, renamed.newPath)
+        : null;
+      onSelect(selectedEntries.value);
+    }
+
+    if (arePathsEquivalent(getParentDirectory(renamed.oldPath), currentPathRef.value)) {
+      requestFocusEntryAfterRefresh(currentPathRef.value, renamed.newPath);
+    }
+  }, { flush: 'sync' });
+
   function buildJoinedPath(parentPath: string, fileName: string): string {
     return joinPath(parentPath, fileName);
   }
@@ -169,7 +199,7 @@ export function useFileBrowserSelection(
   }
 
   function isEntrySelected(entry: DirEntry): boolean {
-    return selectedEntries.value.some(selectedEntry => selectedEntry.path === entry.path);
+    return selectedEntries.value.some(selectedEntry => arePathsEquivalent(selectedEntry.path, entry.path));
   }
 
   function getOrderedEntries(): DirEntry[] {
@@ -204,17 +234,17 @@ export function useFileBrowserSelection(
 
   function removeFromSelection(entry: DirEntry) {
     selectedEntries.value = selectedEntries.value.filter(
-      selectedEntry => selectedEntry.path !== entry.path,
+      selectedEntry => !arePathsEquivalent(selectedEntry.path, entry.path),
     );
 
-    if (lastSelectedEntry.value?.path === entry.path) {
+    if (lastSelectedEntry.value && arePathsEquivalent(lastSelectedEntry.value.path, entry.path)) {
       const lastEntry = selectedEntries.value.length > 0
         ? selectedEntries.value[selectedEntries.value.length - 1]
         : null;
       lastSelectedEntry.value = lastEntry;
     }
 
-    if (focusedEntry.value?.path === entry.path) {
+    if (focusedEntry.value && arePathsEquivalent(focusedEntry.value.path, entry.path)) {
       focusedEntry.value = lastSelectedEntry.value;
     }
 
@@ -243,9 +273,8 @@ export function useFileBrowserSelection(
   }
 
   function selectEntryByPath(path: string): boolean {
-    const normalizedPath = normalizePath(path);
     const targetEntry = entriesRef.value.find(
-      entry => normalizePath(entry.path) === normalizedPath,
+      entry => arePathsEquivalent(entry.path, path),
     );
 
     if (!targetEntry) {
@@ -783,6 +812,25 @@ export function useFileBrowserSelection(
       return true;
     }
 
+    const conflictError = getRenameConflictError(
+      entriesRef.value.map(directoryEntry => directoryEntry.name),
+      entry.name,
+      trimmedName,
+      currentPathRef.value,
+    );
+
+    if (conflictError) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.failedToRenameItem'),
+            description: conflictError,
+          },
+        },
+      });
+      return false;
+    }
+
     try {
       const result = await invoke<FileOperationResult>('rename_item', {
         sourcePath: entry.path,
@@ -800,21 +848,14 @@ export function useFileBrowserSelection(
         });
 
         const oldPath = entry.path;
-        const parentDir = oldPath.substring(0, oldPath.lastIndexOf('/'));
-        const newPath = `${parentDir}/${trimmedName}`;
+        const newPath = joinPath(getParentDirectory(oldPath), trimmedName);
 
-        workspacesStore.handlePathRenamed(oldPath, newPath);
-        userStatsStore.handlePathRenamed(oldPath, newPath);
-        userSettingsStore.handlePathRenamed(oldPath, newPath);
-
-        dirSizesStore.invalidate([entry.path, currentPathRef.value]);
-
+        await recordRenamedPath(oldPath, newPath);
         cancelRename();
-        clearSelection();
-        onRefresh();
         return true;
       }
       else {
+        await recordStrandedRename(result);
         toast.custom(markRaw(ToastStatic), {
           componentProps: {
             data: {

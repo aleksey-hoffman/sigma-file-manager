@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { normalizePathForComparison } from '@/utils/file-operation-paths';
+import { normalizePathForComparison, replacePathPrefix } from '@/utils/file-operation-paths';
 import { isRecord } from '@/stores/schemas/schema-utils';
 import { isListSortColumn } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import {
@@ -258,26 +258,6 @@ export function createNavigatorFolderSettingsWriteSnapshot(
   };
 }
 
-function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
-  const comparablePath = normalizePathForComparison(path);
-  const comparableOldPrefix = normalizePathForComparison(oldPrefix);
-  const comparableNewPrefix = normalizePathForComparison(newPrefix);
-
-  if (!comparablePath || !comparableOldPrefix || !comparableNewPrefix) {
-    return null;
-  }
-
-  if (comparablePath === comparableOldPrefix) {
-    return comparableNewPrefix;
-  }
-
-  if (comparablePath.startsWith(`${comparableOldPrefix}/`)) {
-    return comparableNewPrefix + comparablePath.slice(comparableOldPrefix.length);
-  }
-
-  return null;
-}
-
 function folderSettingsKeyExists(
   folderSettings: StoredNavigatorFolderSettingsMap,
   path: string,
@@ -298,20 +278,13 @@ export function remapNavigatorFolderSettingsPaths(
   oldPath: string,
   newPath: string,
 ): StoredNavigatorFolderSettingsMap | null {
-  const oldPrefix = normalizePathForComparison(oldPath);
-  const newPrefix = normalizePathForComparison(newPath);
-
-  if (!oldPrefix || !newPrefix || oldPrefix === newPrefix) {
-    return null;
-  }
-
   let didChange = false;
   const nextMap: StoredNavigatorFolderSettingsMap = {};
 
   for (const [path, settings] of Object.entries(folderSettings)) {
-    const remappedPath = replacePathPrefix(path, oldPrefix, newPrefix);
+    const remappedPath = replacePathPrefix(path, oldPath, newPath);
 
-    if (remappedPath === null) {
+    if (remappedPath === null || remappedPath === path) {
       nextMap[path] = settings;
       continue;
     }

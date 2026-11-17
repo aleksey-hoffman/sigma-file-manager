@@ -63,17 +63,17 @@ pub(crate) fn resolve_path_volume_case_sensitive(path: &str) -> Result<bool, Str
     };
 
     if status != 0 {
-        return Ok(true);
+        return Ok(false);
     }
 
     if buffer.len() < size_of::<u32>() + size_of::<vol_capabilities_attr_t>() {
-        return Ok(true);
+        return Ok(false);
     }
 
     let reported_length = u32::from_ne_bytes([buffer[0], buffer[1], buffer[2], buffer[3]]) as usize;
 
     if reported_length < size_of::<u32>() + size_of::<vol_capabilities_attr_t>() {
-        return Ok(true);
+        return Ok(false);
     }
 
     let vol_caps = unsafe { &*buffer.as_ptr().add(4).cast::<vol_capabilities_attr_t>() };

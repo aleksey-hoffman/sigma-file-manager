@@ -2,9 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import {
+  afterEach, describe, expect, it, vi,
+} from 'vitest';
 import type { NavigatorFolderSettings, UserSettingsNavigator } from '@/types/user-settings';
 import { normalizePathForComparison } from '@/utils/file-operation-paths';
+import * as pathComparisonCache from '@/utils/path-comparison-volume-cache';
 import {
   createNavigatorFolderSettingsSnapshot,
   createNavigatorFolderSettingsWriteSnapshot,
@@ -94,6 +97,10 @@ function createFolderSettings(
 }
 
 describe('resolve navigator folder settings', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('returns a global snapshot when the path has no folder settings', () => {
     const navigator = createNavigator({
       showHiddenFiles: true,
@@ -329,9 +336,25 @@ describe('resolve navigator folder settings', () => {
     );
 
     expect(remapped).toEqual({
-      [normalizePathForComparison('C:/Users/aleks/New')]: documentsSettings,
-      [normalizePathForComparison('C:/Users/aleks/New/Nested')]: nestedSettings,
+      'C:/Users/aleks/New': documentsSettings,
+      'C:/Users/aleks/New/Nested': nestedSettings,
       'C:/Users/aleks/Other': otherSettings,
+    });
+  });
+
+  it('updates the stored key when only letter case changes', () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+    const notesSettings = createFolderSettings({ layout: 'grid' });
+    const remapped = remapNavigatorFolderSettingsPaths(
+      {
+        'c:/users/aleks/notes': notesSettings,
+      },
+      'C:/Users/aleks/Notes',
+      'C:/Users/aleks/notes',
+    );
+
+    expect(remapped).toEqual({
+      'C:/Users/aleks/notes': notesSettings,
     });
   });
 

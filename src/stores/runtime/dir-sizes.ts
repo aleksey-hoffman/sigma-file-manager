@@ -5,6 +5,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { replacePathPrefix } from '@/utils/file-operation-paths';
+import { rekeyPathMap } from '@/utils/rekey-path-map';
 import normalizePath, { canonicalizePath } from '@/utils/normalize-path';
 import { useStatusCenterStore } from './status-center';
 
@@ -36,6 +38,8 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
   const sizes = ref<Map<string, DirSizeInfo>>(new Map());
   const pendingPaths = ref<Set<string>>(new Set());
   const progressIntervals = ref<Map<string, ReturnType<typeof setInterval>>>(new Map());
+  const completionIntervals = ref<Map<string, ReturnType<typeof setInterval>>>(new Map());
+  const renamedPaths = new Map<string, string>();
 
   const pendingCount = computed(() => pendingPaths.value.size);
 
@@ -60,6 +64,32 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
 
   function isLoading(path: string): boolean {
     return pendingPaths.value.has(path);
+  }
+
+  function rememberRenamedPath(from: string, to: string) {
+    if (!from || from === to) {
+      return;
+    }
+
+    renamedPaths.set(from, to);
+  }
+
+  function resolveRenamedPath(path: string): string {
+    let current = path;
+    const seen = new Set<string>();
+
+    while (!seen.has(current)) {
+      seen.add(current);
+      const next = renamedPaths.get(current);
+
+      if (!next || next === current) {
+        break;
+      }
+
+      current = next;
+    }
+
+    return current;
   }
 
   function setSize(path: string, result: DirSizeResult) {
@@ -149,12 +179,17 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
         timeoutMs: forceRecalculate ? null : 500,
       });
 
-      setSize(path, result);
-      return getSize(path) ?? null;
+      const currentPath = resolveRenamedPath(path);
+      setSize(currentPath, result);
+      pendingPaths.value.delete(path);
+      return getSize(currentPath) ?? null;
     }
     catch (error) {
+      const currentPath = resolveRenamedPath(path);
       pendingPaths.value.delete(path);
+      pendingPaths.value.delete(currentPath);
       sizes.value.delete(path);
+      sizes.value.delete(currentPath);
       console.error('Failed to get directory size:', error);
       return null;
     }
@@ -193,9 +228,13 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
         timeoutMs: null,
       });
 
+      const currentPath = resolveRenamedPath(path);
       stopProgressPolling(path);
-
-      setSize(path, result);
+      stopProgressPolling(currentPath);
+      stopCompletionWatch(path);
+      stopCompletionWatch(currentPath);
+      pendingPaths.value.delete(path);
+      setSize(currentPath, result);
 
       if (showInStatusCenter) {
         if (result.status === 'Cancelled') {
@@ -206,13 +245,18 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
         }
       }
 
-      return getSize(path) ?? null;
+      return getSize(currentPath) ?? null;
     }
     catch (error) {
+      const currentPath = resolveRenamedPath(path);
       stopProgressPolling(path);
-
+      stopProgressPolling(currentPath);
+      stopCompletionWatch(path);
+      stopCompletionWatch(currentPath);
       pendingPaths.value.delete(path);
+      pendingPaths.value.delete(currentPath);
       sizes.value.delete(path);
+      sizes.value.delete(currentPath);
 
       if (showInStatusCenter) {
         statusCenterStore.completeOperation(operationId, 'error', String(error));
@@ -333,6 +377,77 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     }
   }
 
+  function remapPathSet(paths: Set<string>, oldPath: string, newPath: string): Set<string> {
+    const nextPaths = new Set<string>();
+    let changed = false;
+
+    for (const path of paths) {
+      const nextPath = replacePathPrefix(path, oldPath, newPath) ?? path;
+
+      if (nextPath !== path) {
+        changed = true;
+      }
+
+      nextPaths.add(nextPath);
+    }
+
+    return changed ? nextPaths : paths;
+  }
+
+  function remapPath(oldPath: string, newPath: string): void {
+    rememberRenamedPath(oldPath, newPath);
+
+    for (const path of [
+      ...sizes.value.keys(),
+      ...pendingPaths.value,
+      ...progressIntervals.value.keys(),
+      ...completionIntervals.value.keys(),
+    ]) {
+      const nextPath = replacePathPrefix(path, oldPath, newPath);
+
+      if (nextPath && nextPath !== path) {
+        rememberRenamedPath(path, nextPath);
+      }
+    }
+
+    const changed = rekeyPathMap(sizes.value, oldPath, newPath);
+
+    if (changed) {
+      sizes.value = new Map(sizes.value);
+    }
+
+    pendingPaths.value = remapPathSet(pendingPaths.value, oldPath, newPath);
+
+    for (const path of [...progressIntervals.value.keys()]) {
+      const nextPath = replacePathPrefix(path, oldPath, newPath);
+
+      if (!nextPath || nextPath === path) {
+        continue;
+      }
+
+      stopProgressPolling(path);
+      startProgressPolling(nextPath);
+    }
+
+    for (const path of [...completionIntervals.value.keys()]) {
+      const nextPath = replacePathPrefix(path, oldPath, newPath);
+
+      if (!nextPath || nextPath === path) {
+        continue;
+      }
+
+      stopCompletionWatch(path);
+      watchCalculationCompletion(nextPath, `dir-size-${path}`);
+    }
+
+    invoke('remap_dir_size_cache', {
+      oldPath,
+      newPath,
+    }).catch((error) => {
+      console.error('Failed to remap directory size cache:', error);
+    });
+  }
+
   function invalidate(paths: string[]) {
     for (const path of paths) {
       sizes.value.delete(path);
@@ -406,10 +521,24 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
    * Watch for calculation completion by polling until the calculation
    * is no longer in the active list.
    */
+  function stopCompletionWatch(path: string) {
+    const interval = completionIntervals.value.get(path);
+
+    if (interval) {
+      clearInterval(interval);
+      completionIntervals.value.delete(path);
+    }
+  }
+
   function watchCalculationCompletion(path: string, operationId: string) {
     const statusCenterStore = useStatusCenterStore();
+    stopCompletionWatch(path);
 
     const checkInterval = setInterval(async () => {
+      if (completionIntervals.value.get(path) !== checkInterval) {
+        return;
+      }
+
       try {
         const progress = await invoke<DirSizeResult | null>('get_dir_size_progress', { path });
 
@@ -426,6 +555,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
         else {
           // Calculation completed or was cancelled
           clearInterval(checkInterval);
+          completionIntervals.value.delete(path);
           stopProgressPolling(path);
           pendingPaths.value.delete(path);
 
@@ -450,11 +580,14 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       catch {
         // Error checking, clean up
         clearInterval(checkInterval);
+        completionIntervals.value.delete(path);
         stopProgressPolling(path);
         pendingPaths.value.delete(path);
         statusCenterStore.completeOperation(operationId, 'error');
       }
     }, 1000);
+
+    completionIntervals.value.set(path, checkInterval);
   }
 
   return {
@@ -471,6 +604,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     requestSizesBatch,
     refreshSizesAfterCopyMove,
     cancelSize,
+    remapPath,
     invalidate,
     invalidateAll,
     clearLocalCache,

@@ -12,6 +12,7 @@ import type {
   DirEntryLinkType,
   ReadDirOptions,
 } from '@/types/dir-entry';
+import { replacePathPrefix } from '@/utils/file-operation-paths';
 import normalizePath from '@/utils/normalize-path';
 
 export type LinkMetadataStatus = 'loading' | 'loaded' | 'error';
@@ -530,6 +531,53 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
     skeletonVisibilityClock.value = Date.now();
   }
 
+  function remapPath(oldPath: string, newPath: string): void {
+    const keys = [...metadataByPath.keys()];
+    let changed = false;
+
+    for (const key of keys) {
+      const existing = metadataByPath.get(key);
+
+      if (!existing) {
+        continue;
+      }
+
+      const nextKey = replacePathPrefix(key, oldPath, newPath) ?? key;
+      const nextTarget = existing.link_target
+        ? replacePathPrefix(existing.link_target, oldPath, newPath) ?? existing.link_target
+        : existing.link_target;
+
+      if (nextKey === key && nextTarget === existing.link_target) {
+        continue;
+      }
+
+      if (nextKey !== key) {
+        cancelSkeletonDelay(key);
+        stopSkeletonVisibility(key);
+        metadataByPath.delete(key);
+        const wasSortScope = sortMetadataScopePaths.delete(key);
+
+        if (wasSortScope) {
+          sortMetadataScopePaths.add(nextKey);
+        }
+      }
+
+      metadataByPath.set(nextKey, {
+        ...existing,
+        path: nextKey,
+        link_target: nextTarget,
+      });
+      changed = true;
+    }
+
+    if (changed) {
+      bumpRevision({
+        display: true,
+        sort: true,
+      });
+    }
+  }
+
   function bumpRevision(options: {
     display: boolean;
     sort: boolean;
@@ -561,6 +609,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
     requestMetadataBatch,
     setSortMetadataScope,
     refreshSortRevision,
+    remapPath,
     invalidate,
     clear,
   };

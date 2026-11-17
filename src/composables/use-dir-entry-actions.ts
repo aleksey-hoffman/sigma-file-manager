@@ -19,10 +19,12 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
+import { recordRenamedPath, recordStrandedRename } from '@/composables/record-renamed-path';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
-import { getParentDirectory } from '@/utils/normalize-path';
-import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
+import { getParentDirectory, joinPath } from '@/utils/normalize-path';
+import { arePathsEquivalent, getSharedSourceDirectory } from '@/utils/file-operation-paths';
+import { getRenameConflictError } from '@/utils/rename-conflict';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
@@ -247,10 +249,40 @@ export function useDirEntryActions() {
     return allSucceeded;
   }
 
+  function directoryEntryNames(parentPath: string): string[] {
+    const currentTab = workspacesStore.currentTab;
+
+    if (!currentTab || !arePathsEquivalent(currentTab.path, parentPath)) {
+      return [];
+    }
+
+    return currentTab.dirEntries.map(directoryEntry => directoryEntry.name);
+  }
+
   async function renameItem(entry: DirEntry, newName: string): Promise<boolean> {
     const trimmedName = newName.trim();
 
     if (!trimmedName || trimmedName === entry.name) {
+      return false;
+    }
+
+    const parentDir = getParentDirectory(entry.path);
+    const conflictError = getRenameConflictError(
+      directoryEntryNames(parentDir),
+      entry.name,
+      trimmedName,
+      parentDir,
+    );
+
+    if (conflictError) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.failedToRenameItem'),
+            description: conflictError,
+          },
+        },
+      });
       return false;
     }
 
@@ -270,19 +302,12 @@ export function useDirEntryActions() {
           },
         });
 
-        const oldPath = entry.path;
-        const parentDir = getParentDirectory(oldPath);
-        const newPath = `${parentDir}${parentDir.endsWith('/') ? '' : '/'}${trimmedName}`;
-
-        workspacesStore.handlePathRenamed(oldPath, newPath);
-        userStatsStore.handlePathRenamed(oldPath, newPath);
-        userSettingsStore.handlePathRenamed(oldPath, newPath);
-        dirSizesStore.invalidate([entry.path]);
-        workspacesStore.handleDirectoryContentsChanged([parentDir]);
+        await recordRenamedPath(entry.path, joinPath(parentDir, trimmedName));
 
         return true;
       }
       else {
+        await recordStrandedRename(result);
         toast.custom(markRaw(ToastStatic), {
           componentProps: {
             data: {

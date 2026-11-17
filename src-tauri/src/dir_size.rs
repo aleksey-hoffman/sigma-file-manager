@@ -65,6 +65,39 @@ struct CalculationProgress {
 static CALCULATION_PROGRESS: Lazy<Mutex<HashMap<String, CalculationProgress>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
+static PATH_ALIASES: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+fn canonical_cache_path(path: &str) -> String {
+    let mut current = normalize_path(path);
+    let Ok(aliases) = PATH_ALIASES.lock() else {
+        return current;
+    };
+
+    for _ in 0..8 {
+        match aliases.get(&current) {
+            Some(next) if next != &current => current = next.clone(),
+            _ => break,
+        }
+    }
+
+    current
+}
+
+fn remember_path_aliases(moved: &[(String, String)]) {
+    let Ok(mut aliases) = PATH_ALIASES.lock() else {
+        return;
+    };
+
+    for (from, to) in moved {
+        let from = normalize_path(from);
+        let to = normalize_path(to);
+
+        if from != to {
+            aliases.insert(from, to);
+        }
+    }
+}
+
 fn register_calculation(path: &str) -> (Arc<AtomicBool>, CalculationProgress) {
     let normalized = normalize_path(path);
     let cancel_token = Arc::new(AtomicBool::new(false));
@@ -85,7 +118,7 @@ fn register_calculation(path: &str) -> (Arc<AtomicBool>, CalculationProgress) {
 }
 
 fn unregister_calculation(path: &str) {
-    let normalized = normalize_path(path);
+    let normalized = canonical_cache_path(path);
     if let Ok(mut active) = ACTIVE_CALCULATIONS.lock() {
         active.remove(&normalized);
     }
@@ -129,7 +162,7 @@ fn get_cached_size(path: &str) -> Option<CacheEntry> {
 }
 
 fn set_cached_size(path: &str, entry: CacheEntry) {
-    let normalized = normalize_path(path);
+    let normalized = canonical_cache_path(path);
     if let Ok(mut cache) = SIZE_CACHE.lock() {
         cache.put(normalized, entry);
     }
@@ -362,7 +395,7 @@ pub async fn get_dir_size(path: String, timeout_ms: Option<u64>) -> DirSizeResul
 /// Get the current progress of an active calculation
 #[tauri::command]
 pub fn get_dir_size_progress(path: String) -> Option<DirSizeResult> {
-    let normalized = normalize_path(&path);
+    let normalized = canonical_cache_path(&path);
 
     if let Ok(prog) = CALCULATION_PROGRESS.lock() {
         if let Some(progress) = prog.get(&normalized) {
@@ -403,7 +436,7 @@ pub fn get_active_calculations() -> Vec<DirSizeResult> {
 
 #[tauri::command]
 pub fn cancel_dir_size(path: String) -> bool {
-    let normalized = normalize_path(&path);
+    let normalized = canonical_cache_path(&path);
     if let Ok(active) = ACTIVE_CALCULATIONS.lock() {
         if let Some(cancel_token) = active.get(&normalized) {
             cancel_token.store(true, Ordering::SeqCst);
@@ -450,6 +483,132 @@ pub async fn get_dir_sizes_batch(
     .unwrap_or_default()
 }
 
+fn cached_paths_match(left: &str, right: &str, case_insensitive: bool) -> bool {
+    left == right
+        || (case_insensitive
+            && (left.eq_ignore_ascii_case(right) || left.to_lowercase() == right.to_lowercase()))
+}
+
+fn remap_cached_path(
+    path: &str,
+    old_path: &str,
+    new_path: &str,
+    case_insensitive: bool,
+) -> Option<String> {
+    let path = normalize_path(path);
+    let old_path = normalize_path(old_path).trim_end_matches('/').to_string();
+    let new_path = normalize_path(new_path).trim_end_matches('/').to_string();
+
+    if old_path.is_empty() || path.is_empty() {
+        return None;
+    }
+
+    if cached_paths_match(&path, &old_path, case_insensitive) {
+        return Some(new_path);
+    }
+
+    let old_len = old_path.len();
+
+    if path.len() <= old_len || !path.is_char_boundary(old_len) {
+        return None;
+    }
+
+    let (prefix, suffix) = path.split_at(old_len);
+
+    if suffix.starts_with('/') && cached_paths_match(prefix, &old_path, case_insensitive) {
+        return Some(format!("{new_path}{suffix}"));
+    }
+
+    None
+}
+
+fn remap_size_cache_keys(
+    old_path: &str,
+    new_path: &str,
+    case_insensitive: bool,
+) -> Vec<(String, String)> {
+    let Ok(mut cache) = SIZE_CACHE.lock() else {
+        return Vec::new();
+    };
+    let keys: Vec<String> = cache.iter().map(|(key, _)| key.clone()).collect();
+    let mut moved = Vec::new();
+
+    for key in keys {
+        let Some(remapped) = remap_cached_path(&key, old_path, new_path, case_insensitive) else {
+            continue;
+        };
+
+        if remapped == key {
+            continue;
+        }
+
+        if let Some(entry) = cache.pop(&key) {
+            cache.put(remapped.clone(), entry);
+            moved.push((key, remapped));
+        }
+    }
+
+    moved
+}
+
+fn remap_hash_map_keys<T>(
+    map: &mut HashMap<String, T>,
+    old_path: &str,
+    new_path: &str,
+    case_insensitive: bool,
+) -> Vec<(String, String)> {
+    let keys: Vec<String> = map.keys().cloned().collect();
+    let mut moved = Vec::new();
+
+    for key in keys {
+        let Some(remapped) = remap_cached_path(&key, old_path, new_path, case_insensitive) else {
+            continue;
+        };
+
+        if remapped == key {
+            continue;
+        }
+
+        if let Some(value) = map.remove(&key) {
+            map.insert(remapped.clone(), value);
+            moved.push((key, remapped));
+        }
+    }
+
+    moved
+}
+
+#[tauri::command]
+pub fn remap_dir_size_cache(old_path: String, new_path: String) {
+    let case_insensitive = match crate::dir_reader::path_volume_is_case_sensitive(old_path.clone())
+    {
+        Ok(is_case_sensitive) => !is_case_sensitive,
+        Err(_) => cfg!(windows) || cfg!(target_os = "macos"),
+    };
+
+    let mut moved = remap_size_cache_keys(&old_path, &new_path, case_insensitive);
+
+    if let Ok(mut active) = ACTIVE_CALCULATIONS.lock() {
+        moved.extend(remap_hash_map_keys(
+            &mut active,
+            &old_path,
+            &new_path,
+            case_insensitive,
+        ));
+    }
+
+    if let Ok(mut progress) = CALCULATION_PROGRESS.lock() {
+        moved.extend(remap_hash_map_keys(
+            &mut progress,
+            &old_path,
+            &new_path,
+            case_insensitive,
+        ));
+    }
+
+    remember_path_aliases(&moved);
+}
+
 #[tauri::command]
 pub fn invalidate_dir_size_cache(paths: Vec<String>) {
     if let Ok(mut cache) = SIZE_CACHE.lock() {
@@ -480,5 +639,106 @@ pub fn invalidate_dir_size_cache(paths: Vec<String>) {
 pub fn clear_dir_size_cache() {
     if let Ok(mut cache) = SIZE_CACHE.lock() {
         cache.clear();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cache_entry() -> CacheEntry {
+        CacheEntry {
+            size: 42,
+            file_count: 2,
+            dir_count: 1,
+            status: SizeStatus::Complete,
+            calculated_at: get_current_timestamp(),
+            dir_mtime: 0,
+        }
+    }
+
+    #[test]
+    fn remap_cached_path_keeps_sensitive_paths_distinct() {
+        assert_eq!(
+            remap_cached_path("/tmp/Notes/child", "/tmp/notes", "/tmp/Notes", false),
+            None
+        );
+        assert_eq!(
+            remap_cached_path("/tmp/notes/child", "/tmp/notes", "/tmp/Notes", false).as_deref(),
+            Some("/tmp/Notes/child")
+        );
+    }
+
+    #[test]
+    fn remap_cached_path_folds_case_and_keeps_the_suffix() {
+        assert_eq!(
+            remap_cached_path("C:/Notes/file.txt", "c:/notes", "C:/Project", true).as_deref(),
+            Some("C:/Project/file.txt")
+        );
+        assert_eq!(
+            remap_cached_path("C:/Notes", "c:/notes", "C:/Project", true).as_deref(),
+            Some("C:/Project")
+        );
+        assert_eq!(
+            remap_cached_path("/tmp/Older", "/tmp/Old", "/tmp/New", true),
+            None
+        );
+        assert_eq!(remap_cached_path("aéb", "ab", "cd", true), None);
+    }
+
+    #[test]
+    fn remap_dir_size_cache_moves_the_path_and_its_children() {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time")
+            .as_nanos();
+        let old_path = format!("/tmp/sigma-rename-cache-{}-old-{nanos}", std::process::id());
+        let new_path = format!("/tmp/sigma-rename-cache-{}-new-{nanos}", std::process::id());
+        let old_child = format!("{old_path}/child");
+        let new_child = format!("{new_path}/child");
+
+        set_cached_size(&old_path, cache_entry());
+        set_cached_size(&old_child, cache_entry());
+        remap_dir_size_cache(old_path.clone(), new_path.clone());
+
+        assert!(get_cached_size(&old_path).is_none());
+        assert!(get_cached_size(&old_child).is_none());
+        assert_eq!(get_cached_size(&new_path).map(|entry| entry.size), Some(42));
+        assert_eq!(
+            get_cached_size(&new_child).map(|entry| entry.size),
+            Some(42)
+        );
+
+        invalidate_dir_size_cache(vec![old_path, new_path, old_child, new_child]);
+    }
+
+    #[test]
+    fn remap_dir_size_cache_lets_the_worker_finish_on_its_original_path() {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time")
+            .as_nanos();
+        let old_path = format!("/tmp/sigma-rename-job-{}-old-{nanos}", std::process::id());
+        let new_path = format!("/tmp/sigma-rename-job-{}-new-{nanos}", std::process::id());
+
+        register_calculation(&old_path);
+        set_cached_size(&old_path, cache_entry());
+        remap_dir_size_cache(old_path.clone(), new_path.clone());
+
+        assert!(get_dir_size_progress(old_path.clone()).is_some());
+        assert!(get_dir_size_progress(new_path.clone()).is_some());
+
+        let mut finished = cache_entry();
+        finished.size = 7;
+        set_cached_size(&old_path, finished);
+
+        assert!(get_cached_size(&old_path).is_none());
+        assert_eq!(get_cached_size(&new_path).map(|entry| entry.size), Some(7));
+
+        unregister_calculation(&old_path);
+
+        assert!(get_dir_size_progress(old_path.clone()).is_none());
+        assert!(get_dir_size_progress(new_path.clone()).is_none());
+        invalidate_dir_size_cache(vec![old_path, new_path]);
     }
 }

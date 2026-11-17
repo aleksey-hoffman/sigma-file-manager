@@ -347,6 +347,7 @@ pub fn run() {
             dir_size::get_dir_size_progress,
             dir_size::get_active_calculations,
             dir_size::invalidate_dir_size_cache,
+            dir_size::remap_dir_size_cache,
             dir_size::clear_dir_size_cache,
             dir_size::cancel_dir_size,
             file_operations::check_conflicts,

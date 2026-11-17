@@ -26,6 +26,11 @@ import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
+import {
+  arePathsEquivalent,
+  remapDirEntry,
+  replacePathPrefix,
+} from '@/utils/file-operation-paths';
 import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import {
@@ -95,12 +100,6 @@ function buildDirContentsFromEntries(path: string, entries: DirEntry[]): DirCont
   };
 }
 
-function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
-  if (path === oldPrefix) return newPrefix;
-  if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
-  return null;
-}
-
 export function useFileBrowserNavigation(
   tab: () => Tab | undefined,
   onNavigationComplete?: (dirEntry: DirEntry | null) => void,
@@ -116,6 +115,8 @@ export function useFileBrowserNavigation(
   const itemCountsStore = useItemCountsStore();
   const statusCenterStore = useStatusCenterStore();
   const platformStore = usePlatformStore();
+  let preserveSelectionForPath: string | null = null;
+  let consumedChildRenameToken: string | null = null;
 
   function getParentOfPath(path: string): string | null {
     return getNavigableParentPath(path, platformStore.currentPlatform);
@@ -487,9 +488,38 @@ export function useFileBrowserNavigation(
     }, 0);
   }
 
+  function omitTemporaryRenameEntries(result: DirContents): DirContents {
+    const entries = result.entries.filter(entry => !entry.name.startsWith('.sfm-rename-'));
+
+    if (entries.length === result.entries.length) {
+      return result;
+    }
+
+    let dirCount = 0;
+    let fileCount = 0;
+
+    for (const entry of entries) {
+      if (entry.is_dir) {
+        dirCount += 1;
+      }
+      else {
+        fileCount += 1;
+      }
+    }
+
+    return {
+      ...result,
+      entries,
+      total_count: entries.length,
+      dir_count: dirCount,
+      file_count: fileCount,
+    };
+  }
+
   async function silentRefresh(): Promise<void> {
     const requestGeneration = ++silentRefreshGeneration;
     const startingReadGeneration = readGeneration;
+    const startingRenameEpoch = workspacesStore.pathRenameEpoch;
     const refreshPath = currentPath.value;
     const refreshTabId = tab()?.id;
 
@@ -514,28 +544,30 @@ export function useFileBrowserNavigation(
         || startingReadGeneration !== readGeneration
         || currentPath.value !== refreshPath
         || currentTab?.id !== refreshTabId
+        || workspacesStore.pathRenameEpoch !== startingRenameEpoch
         || (currentTab && normalizePath(currentTab.path) !== normalizePath(refreshPath))
       ) {
         return;
       }
 
-      invalidateDirectoryLinkMetadata(result);
-      invalidateDirectoryItemCounts(result);
-      primeDirectoryMetadataCaches(result, readOptions);
-      dirContents.value = result;
+      const visibleResult = omitTemporaryRenameEntries(result);
+      invalidateDirectoryLinkMetadata(visibleResult);
+      invalidateDirectoryItemCounts(visibleResult);
+      primeDirectoryMetadataCaches(visibleResult, readOptions);
+      dirContents.value = visibleResult;
 
       if (currentTab) {
-        currentTab.dirEntries = result.entries;
+        currentTab.dirEntries = visibleResult.entries;
       }
 
-      scheduleDirectoryIconPrefetch(result.entries);
+      scheduleDirectoryIconPrefetch(visibleResult.entries);
 
-      const dirPaths = result.entries
+      const dirPaths = visibleResult.entries
         .filter(entry => entry.is_dir)
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(result.path)) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualDirectoryPath(visibleResult.path)) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
     }
@@ -548,6 +580,7 @@ export function useFileBrowserNavigation(
         || startingReadGeneration !== readGeneration
         || currentPath.value !== refreshPath
         || currentTab?.id !== refreshTabId
+        || workspacesStore.pathRenameEpoch !== startingRenameEpoch
         || (currentTab && normalizePath(currentTab.path) !== normalizePath(refreshPath))
       ) {
         return;
@@ -627,7 +660,9 @@ export function useFileBrowserNavigation(
   ) {
     const requestGeneration = ++readGeneration;
     const normalizedPath = normalizePath(path);
-    const isNewDirectory = normalizedPath !== currentPath.value;
+    const preserveSelection = preserveSelectionForPath !== null
+      && normalizePath(preserveSelectionForPath) === normalizedPath;
+    const isNewDirectory = normalizedPath !== currentPath.value && !preserveSelection;
     const cachedContents = !forceLoading
       ? getCachedDirContentsForPath(normalizedPath)
       : null;
@@ -645,7 +680,9 @@ export function useFileBrowserNavigation(
 
     error.value = null;
 
-    onSelectionClear?.();
+    if (!preserveSelection) {
+      onSelectionClear?.();
+    }
 
     const stopWatcherPromise = (watchedPath && watchedPath !== normalizedPath)
       ? (() => {
@@ -825,17 +862,42 @@ export function useFileBrowserNavigation(
     }
   }
 
+  function applyRenamedPathToVisibleEntries(oldPath: string, newPath: string) {
+    if (!dirContents.value) {
+      return;
+    }
+
+    const updatedDirectoryPath = replacePathPrefix(dirContents.value.path, oldPath, newPath);
+
+    dirContents.value = {
+      ...dirContents.value,
+      path: updatedDirectoryPath ?? dirContents.value.path,
+      entries: dirContents.value.entries.map(entry => remapDirEntry(entry, oldPath, newPath)),
+    };
+  }
+
   watch(() => workspacesStore.lastRenamedPath, async (renamed) => {
     if (!renamed || !currentPath.value) return;
 
-    const updatedPath = replacePathPrefix(currentPath.value, renamed.oldPath, renamed.newPath);
+    const pathBeforeRename = currentPath.value;
+    applyRenamedPathToVisibleEntries(renamed.oldPath, renamed.newPath);
+    history.value = history.value.map(historyPath => (
+      replacePathPrefix(historyPath, renamed.oldPath, renamed.newPath) ?? historyPath
+    ));
 
-    if (updatedPath) {
-      history.value = history.value.map((historyPath) => {
-        return replacePathPrefix(historyPath, renamed.oldPath, renamed.newPath) ?? historyPath;
-      });
+    const updatedPath = replacePathPrefix(pathBeforeRename, renamed.oldPath, renamed.newPath);
 
+    if (!updatedPath || normalizePath(updatedPath) === normalizePath(pathBeforeRename)) {
+      return;
+    }
+
+    preserveSelectionForPath = updatedPath;
+
+    try {
       await readDir(updatedPath, false);
+    }
+    finally {
+      preserveSelectionForPath = null;
     }
   });
 
@@ -854,8 +916,32 @@ export function useFileBrowserNavigation(
   watch(() => workspacesStore.lastModifiedDirectoryPaths, async (modifiedPaths) => {
     if (!modifiedPaths || !currentPath.value) return;
 
-    if (modifiedPaths.includes(currentPath.value)) {
-      await readDir(currentPath.value, false, false, true);
+    if (modifiedPaths.some(path => arePathsEquivalent(path, currentPath.value))) {
+      const renamed = workspacesStore.lastRenamedPath;
+      const renamedParent = renamed === null ? null : getParentOfPath(renamed.newPath);
+      const renameToken = renamed === null
+        ? null
+        : `${renamed.oldPath}\0${renamed.newPath}`;
+      // The refresh after a child rename would otherwise clear the selection that
+      // was just remapped onto the new name. Preserve it for that one refresh.
+      const preserveChildRename = renamed !== null
+        && renamedParent !== null
+        && renameToken !== consumedChildRenameToken
+        && arePathsEquivalent(renamedParent, currentPath.value);
+
+      if (preserveChildRename) {
+        consumedChildRenameToken = renameToken;
+        preserveSelectionForPath = currentPath.value;
+      }
+
+      try {
+        await readDir(currentPath.value, false, false, true);
+      }
+      finally {
+        if (preserveChildRename) {
+          preserveSelectionForPath = null;
+        }
+      }
     }
   });
 

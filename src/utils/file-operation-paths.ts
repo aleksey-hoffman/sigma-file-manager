@@ -2,9 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import type { DirEntry } from '@/types/dir-entry';
 import {
   canonicalizePath,
   getParentDirectory,
+  getPathLeafName,
   isSameOrDescendantPath,
 } from '@/utils/normalize-path';
 import { shouldFoldPathCaseForComparison } from '@/utils/path-comparison-volume-cache';
@@ -21,6 +23,61 @@ export function normalizePathForComparison(path: string): string {
 
 export function arePathsEquivalent(firstPath: string, secondPath: string): boolean {
   return normalizePathForComparison(firstPath) === normalizePathForComparison(secondPath);
+}
+
+export function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
+  const canonicalPath = canonicalizePath(path);
+  const canonicalOldPrefix = canonicalizePath(oldPrefix);
+  const canonicalNewPrefix = canonicalizePath(newPrefix);
+
+  if (!canonicalPath || !canonicalOldPrefix) {
+    return null;
+  }
+
+  const foldCase = shouldFoldPathCaseForComparison(canonicalOldPrefix);
+  const pathForComparison = foldCase ? canonicalPath.toLowerCase() : canonicalPath;
+  const oldPrefixForComparison = foldCase ? canonicalOldPrefix.toLowerCase() : canonicalOldPrefix;
+
+  if (pathForComparison === oldPrefixForComparison) {
+    return canonicalNewPrefix;
+  }
+
+  if (!pathForComparison.startsWith(`${oldPrefixForComparison}/`)) {
+    return null;
+  }
+
+  if (
+    foldCase
+    && (
+      pathForComparison.length !== canonicalPath.length
+      || oldPrefixForComparison.length !== canonicalOldPrefix.length
+    )
+  ) {
+    return null;
+  }
+
+  return `${canonicalNewPrefix}${canonicalPath.slice(canonicalOldPrefix.length)}`;
+}
+
+export function remapDirEntry(entry: DirEntry, oldPath: string, newPath: string): DirEntry {
+  const updatedPath = replacePathPrefix(entry.path, oldPath, newPath);
+
+  if (!updatedPath || updatedPath === entry.path) {
+    return entry;
+  }
+
+  if (arePathsEquivalent(entry.path, oldPath)) {
+    return {
+      ...entry,
+      path: updatedPath,
+      name: getPathLeafName(updatedPath),
+    };
+  }
+
+  return {
+    ...entry,
+    path: updatedPath,
+  };
 }
 
 export function getParentPath(path: string): string {

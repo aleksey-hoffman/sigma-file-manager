@@ -653,9 +653,19 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   }
 
   async function handlePathRenamed(oldPath: string, newPath: string) {
-    await updateFolderSettings(currentMap => (
-      remapNavigatorFolderSettingsPaths(currentMap, oldPath, newPath)
-    ));
+    await updateFolderSettings(() => {
+      const folderSettings = userSettings.value.navigator.folderSettings;
+
+      if (!folderSettings || typeof folderSettings !== 'object') {
+        return null;
+      }
+
+      return remapNavigatorFolderSettingsPaths(
+        folderSettings as StoredNavigatorFolderSettingsMap,
+        oldPath,
+        newPath,
+      );
+    });
   }
 
   async function handlePathsDeleted(deletedPaths: string[]) {
