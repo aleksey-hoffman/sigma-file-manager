@@ -6,6 +6,7 @@ mod app_dirs;
 mod app_updater;
 mod archive;
 mod background_sources;
+#[cfg(any(test, all(feature = "cef", target_os = "linux")))]
 mod cef_launch;
 mod clipboard_source;
 mod clipboard_watcher;
@@ -537,6 +538,7 @@ fn build_cef_runtime() -> tauri_runtime_cef::Cef {
 /// Same answer as the runtime's `SandboxPolicy::Auto` for an AppImage: the
 /// sandbox is dropped when the image cannot use a setuid helper and the kernel
 /// either restricts unprivileged user namespaces or disables them.
+#[cfg(any(test, all(feature = "cef", target_os = "linux")))]
 fn chromium_appimage_auto_disables_sandbox(
     running_from_appimage: bool,
     external_helper_usable: bool,
