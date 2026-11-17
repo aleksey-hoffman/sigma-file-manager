@@ -102,22 +102,15 @@ pub(super) fn open_terminal_macos(
                 .args(["--directory", directory_path])
                 .spawn(),
             _ => {
-                return OpenTerminalResult {
-                    success: false,
-                    error: Some(format!("Unknown terminal: {}", terminal_id)),
-                };
+                return OpenTerminalResult::failed(format!("Unknown terminal: {terminal_id}"));
             }
         }
     };
 
     match spawn_result {
-        Ok(_) => OpenTerminalResult {
-            success: true,
-            error: None,
-        },
-        Err(spawn_error) => OpenTerminalResult {
-            success: false,
-            error: Some(format!("Failed to open terminal: {}", spawn_error)),
-        },
+        Ok(_) => OpenTerminalResult::opened(),
+        Err(spawn_error) => {
+            OpenTerminalResult::failed(format!("Failed to open terminal: {spawn_error}"))
+        }
     }
 }

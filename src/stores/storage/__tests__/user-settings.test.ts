@@ -8,6 +8,7 @@ import {
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { USER_SETTINGS_SCHEMA_VERSION } from '@/stores/schemas/user-settings';
+import { createDefaultTerminalSettings } from '@/utils/default-terminal';
 import {
   USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT,
   USER_SETTINGS_THEME_CHANGED_EVENT,
@@ -436,5 +437,71 @@ describe('user settings info panel visibility', () => {
     expect(lazyStoreSetMock).not.toHaveBeenCalled();
     expect(lazyStoreSaveMock).not.toHaveBeenCalled();
     expect(emitMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('default terminal setting', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    emitMock.mockReset().mockResolvedValue(undefined);
+    lazyStoreSaveMock.mockReset();
+    lazyStoreSetMock.mockReset();
+    webviewSetZoomMock.mockReset();
+    themeEventCallbacks.clear();
+    listenMock.mockReset().mockImplementation(async (
+      eventName: string,
+      callback: SettingsEventCallback,
+    ) => {
+      themeEventCallbacks.set(eventName, callback);
+      return vi.fn();
+    });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+      })),
+    });
+  });
+
+  it('keeps the system terminal when stored settings do not mention one', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    expect(userSettingsStore.userSettings.terminal).toEqual(createDefaultTerminalSettings());
+
+    await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+
+    expect(userSettingsStore.userSettings.terminal).toEqual({
+      mode: 'system',
+      terminalId: '',
+      customCommand: '',
+      customArgs: '',
+    });
+    expect(lazyStoreSetMock).not.toHaveBeenCalledWith('terminal.mode', 'system');
+  });
+
+  it('keeps a saved custom terminal instead of resetting it', async () => {
+    const userSettingsStore = useUserSettingsStore();
+
+    await userSettingsStore.init({
+      path: '/tmp/user-data/user-settings.json',
+      status: 'ready',
+      data: {
+        '__schemaVersion': USER_SETTINGS_SCHEMA_VERSION,
+        'terminal.mode': 'custom',
+        'terminal.customCommand': 'kitty',
+        'terminal.customArgs': '--directory {directory}',
+      },
+      schemaVersion: USER_SETTINGS_SCHEMA_VERSION,
+      error: null,
+    });
+
+    expect(userSettingsStore.userSettings.terminal).toEqual({
+      mode: 'custom',
+      terminalId: '',
+      customCommand: 'kitty',
+      customArgs: '--directory {directory}',
+    });
   });
 });

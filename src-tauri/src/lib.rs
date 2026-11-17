@@ -403,6 +403,8 @@ pub fn run() {
             terminal::get_available_terminals,
             terminal::get_terminal_icons,
             terminal::open_terminal,
+            terminal::open_custom_terminal,
+            terminal::validate_custom_terminal_program,
             dir_watcher::watch_directory,
             dir_watcher::unwatch_directory,
             dir_watcher::get_watched_directories,

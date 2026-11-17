@@ -259,6 +259,21 @@
         "increaseFileViewGaps": "增大文件视图间距",
         "increaseFileViewGapsDescription": "增加列表布局的左右内边距以及网格布局的间距，便于选择。"
       },
+      "defaultTerminal": {
+        "title": "默认终端",
+        "description": "选择“在终端中打开”时启动的终端。",
+        "systemDefault": "系统默认",
+        "custom": "自定义",
+        "command": "命令",
+        "commandPlaceholder": "路径或命令，例如 kitty",
+        "arguments": "参数",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "用 {placeholder} 表示文件夹路径。路径作为参数传递，不会经过 shell。如果省略，终端会在该文件夹中启动。",
+        "notInstalled": "未安装此终端。在它可用之前，“在终端中打开”会使用系统默认终端。",
+        "commandNotFound": "未找到此命令。",
+        "commandInvalid": "终端命令无效。",
+        "argumentsInvalid": "参数中有未闭合的引号。"
+      },
       "startupPage": {
         "title": "启动页",
         "description": "选择应用启动时显示的页面。",
@@ -544,6 +559,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, full-size, quick view, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "文件视图, 框选, 拖动选择, 列表, 网格, 间距, 内边距",
+    "defaultTerminal": "终端, 控制台, shell, 命令, 默认, 在终端中打开",
     "tabsWorkspaces": "标签, 工作区, 关闭, 最后一个标签, 默认标签",
     "defaultDirectory": "主页, locations, 此电脑, 计算机, 驱动器, 默认文件夹, 默认目录, 新标签, 自定义路径",
     "startupPage": "启动页, 启动, 启动时打开, 主页, 仪表板, 导航器, 上次打开的页面, 恢复, 页面"
@@ -847,7 +863,20 @@
     "openInTerminal": "在终端中打开",
     "noTerminalsFound": "未找到终端",
     "holdModifierForAdmin": "按住 {modifier} 以管理员身份打开",
-    "defaultLabel": "默认"
+    "defaultLabel": "默认",
+    "openWithAnotherTerminal": "用其他终端打开",
+    "errorTitle": "无法打开终端",
+    "openFailed": "无法打开终端",
+    "noTerminalAvailable": "没有可用的终端",
+    "customCommandMissing": "请输入自定义终端的命令",
+    "customCommandInvalid": "自定义终端的命令无效",
+    "customArgumentsInvalid": "自定义终端的参数中有未闭合的引号",
+    "customCommandNotFound": "未找到自定义终端的命令",
+    "selectedTerminalMissing": "所选终端未安装",
+    "adminCancelled": "已取消管理员批准。",
+    "adminUnavailable": "无法以管理员身份打开此终端。",
+    "directoryNotFound": "找不到目录: {path}",
+    "openedSystemDefault": "已改为打开系统默认终端。"
   },
   "conflict": "冲突",
   "conflictDialog": {

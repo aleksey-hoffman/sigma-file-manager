@@ -288,6 +288,21 @@
         "increaseFileViewGaps": "फ़ाइल दृश्य में अंतर बढ़ाएँ",
         "increaseFileViewGapsDescription": "सूची लेआउट में साइड padding जोड़ता है और ग्रिड लेआउट में अंतर बढ़ाकर चयन आसान बनाता है।"
       },
+      "defaultTerminal": {
+        "title": "डिफ़ॉल्ट टर्मिनल",
+        "description": "चुनें कि टर्मिनल में खोलें किस टर्मिनल को खोले।",
+        "systemDefault": "सिस्टम डिफ़ॉल्ट",
+        "custom": "कस्टम",
+        "command": "कमांड",
+        "commandPlaceholder": "पथ या कमांड, जैसे kitty",
+        "arguments": "आर्ग्युमेंट",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "फ़ोल्डर पथ के लिए {placeholder} का उपयोग करें। पथ शेल से नहीं, आर्ग्युमेंट के रूप में जाता है। इसे छोड़ने पर टर्मिनल उसी फ़ोल्डर में शुरू होता है।",
+        "notInstalled": "यह टर्मिनल इंस्टॉल नहीं है। उपलब्ध होने तक टर्मिनल में खोलें सिस्टम डिफ़ॉल्ट का उपयोग करेगा।",
+        "commandNotFound": "यह कमांड नहीं मिली।",
+        "commandInvalid": "टर्मिनल कमांड मान्य नहीं है।",
+        "argumentsInvalid": "आर्ग्युमेंट में बंद नहीं हुआ उद्धरण है।"
+      },
       "startupPage": {
         "title": "स्टार्टअप पेज",
         "description": "ऐप शुरू होने पर कौन सा पृष्ठ दिखाना है चुनें।",
@@ -573,6 +588,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "फ़ाइल दृश्य, बॉक्स चयन, खींचकर चयन, सूची, ग्रिड, अंतर, padding",
+    "defaultTerminal": "टर्मिनल, कंसोल, शेल, कमांड, डिफ़ॉल्ट, टर्मिनल में खोलें",
     "tabsWorkspaces": "टैब, वर्कस्पेस, बंद, अंतिम टैब, डिफ़ॉल्ट टैब",
     "defaultDirectory": "होम, locations, यह पीसी, कंप्यूटर, ड्राइव, डिफ़ॉल्ट फ़ोल्डर, नया टैब, कस्टम पथ",
     "startupPage": "स्टार्टअप पेज, स्टार्टअप, लॉन्च पर खोलें, होम, डैशबोर्ड, नेविगेटर, अंतिम पृष्ठ, पुनर्स्थापित, पेज"
@@ -877,7 +893,20 @@
     "openInTerminal": "टर्मिनल में खोलें",
     "noTerminalsFound": "कोई टर्मिनल नहीं मिला",
     "holdModifierForAdmin": "व्यवस्थापक के रूप में खोलने के लिए {modifier} दबाए रखें",
-    "defaultLabel": "गलती करना"
+    "defaultLabel": "गलती करना",
+    "openWithAnotherTerminal": "दूसरे टर्मिनल में खोलें",
+    "errorTitle": "टर्मिनल नहीं खुल सका",
+    "openFailed": "टर्मिनल नहीं खुल सका",
+    "noTerminalAvailable": "कोई टर्मिनल उपलब्ध नहीं है",
+    "customCommandMissing": "कस्टम टर्मिनल के लिए कमांड दर्ज करें",
+    "customCommandInvalid": "कस्टम टर्मिनल की कमांड मान्य नहीं है",
+    "customArgumentsInvalid": "कस्टम टर्मिनल के आर्ग्युमेंट में बंद नहीं हुआ उद्धरण है",
+    "customCommandNotFound": "कस्टम टर्मिनल की कमांड नहीं मिली",
+    "selectedTerminalMissing": "चुना हुआ टर्मिनल इंस्टॉल नहीं है",
+    "adminCancelled": "व्यवस्थापक स्वीकृति रद्द कर दी गई।",
+    "adminUnavailable": "इस टर्मिनल को व्यवस्थापक के रूप में नहीं खोला जा सकता।",
+    "directoryNotFound": "निर्देशिका नहीं मिली: {path}",
+    "openedSystemDefault": "इसके बजाय सिस्टम डिफ़ॉल्ट टर्मिनल खोला गया।"
   },
   "conflict": "टकराव",
   "conflictDialog": {

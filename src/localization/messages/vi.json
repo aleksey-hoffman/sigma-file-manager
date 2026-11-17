@@ -259,6 +259,21 @@
         "increaseFileViewGaps": "Tăng khoảng cách trong chế độ xem tệp",
         "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn."
       },
+      "defaultTerminal": {
+        "title": "Terminal mặc định",
+        "description": "Chọn terminal được mở bằng Mở trong terminal.",
+        "systemDefault": "Mặc định của hệ thống",
+        "custom": "Tùy chỉnh",
+        "command": "Lệnh",
+        "commandPlaceholder": "Đường dẫn hoặc lệnh, ví dụ kitty",
+        "arguments": "Tham số",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Dùng {placeholder} cho đường dẫn thư mục. Đường dẫn được truyền như một tham số, không qua shell. Nếu bỏ qua, terminal sẽ mở trong thư mục đó.",
+        "notInstalled": "Terminal này chưa được cài. Mở trong terminal sẽ dùng mặc định của hệ thống cho đến khi nó có sẵn.",
+        "commandNotFound": "Không tìm thấy lệnh này.",
+        "commandInvalid": "Lệnh terminal không hợp lệ.",
+        "argumentsInvalid": "Tham số có dấu nháy chưa đóng."
+      },
       "startupPage": {
         "title": "Trang khởi động",
         "description": "Chọn trang hiển thị khi ứng dụng khởi động.",
@@ -544,6 +559,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm",
+    "defaultTerminal": "terminal, console, shell, lệnh, mặc định, mở trong terminal",
     "tabsWorkspaces": "tab, không gian làm việc, đóng, tab cuối, tab mặc định",
     "defaultDirectory": "home, locations, máy tính, ổ đĩa, thư mục mặc định, tab mới, đường dẫn tùy chỉnh",
     "startupPage": "trang khởi động, khởi động, mở khi khởi động, trang chủ, bảng điều khiển, navigator, trang gần nhất, khôi phục, trang"
@@ -847,7 +863,20 @@
     "openInTerminal": "Mở trong terminal",
     "noTerminalsFound": "Không tìm thấy terminal nào",
     "holdModifierForAdmin": "Giữ {modifier} để mở với quyền quản trị",
-    "defaultLabel": "Mặc định"
+    "defaultLabel": "Mặc định",
+    "openWithAnotherTerminal": "Mở bằng terminal khác",
+    "errorTitle": "Không mở được terminal",
+    "openFailed": "Không mở được terminal",
+    "noTerminalAvailable": "Không có terminal nào",
+    "customCommandMissing": "Nhập lệnh cho terminal tùy chỉnh",
+    "customCommandInvalid": "Lệnh của terminal tùy chỉnh không hợp lệ",
+    "customArgumentsInvalid": "Tham số của terminal tùy chỉnh có dấu nháy chưa đóng",
+    "customCommandNotFound": "Không tìm thấy lệnh của terminal tùy chỉnh",
+    "selectedTerminalMissing": "Terminal đã chọn chưa được cài",
+    "adminCancelled": "Đã hủy phê duyệt quản trị viên.",
+    "adminUnavailable": "Không thể mở terminal này với quyền quản trị.",
+    "directoryNotFound": "Không tìm thấy thư mục: {path}",
+    "openedSystemDefault": "Đã mở terminal mặc định của hệ thống."
   },
   "conflict": "Xung đột",
   "conflictDialog": {

@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { selectedDetectedTerminalId } from '@/utils/default-terminal';
 import { getDirectoryPathFromEntry } from '@/utils/virtual-location-action-target';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 import { TerminalSquareIcon } from '@lucide/vue';
@@ -30,6 +32,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const terminalsStore = useTerminalsStore();
+const userSettingsStore = useUserSettingsStore();
 
 const ADMIN_MODIFIER_KEY = 'Shift';
 
@@ -49,6 +52,17 @@ const targetDirectoryPath = computed(() => {
   return path;
 });
 
+const preferredTerminalId = computed(() => selectedDetectedTerminalId(
+  userSettingsStore.userSettings.terminal,
+  terminalsStore.terminals,
+));
+
+async function handleOpenConfiguredTerminal() {
+  if (!targetDirectoryPath.value) return;
+
+  await terminalsStore.openConfiguredTerminal(targetDirectoryPath.value, props.isShiftHeld);
+}
+
 async function handleOpenTerminal(terminalId: string) {
   if (!targetDirectoryPath.value) return;
 
@@ -57,13 +71,32 @@ async function handleOpenTerminal(terminalId: string) {
 </script>
 
 <template>
+  <ContextMenuLabel class="terminal-submenu__hint">
+    <i18n-t
+      keypath="terminal.holdModifierForAdmin"
+      tag="span"
+    >
+      <template #modifier>
+        <kbd>{{ ADMIN_MODIFIER_KEY }}</kbd>
+      </template>
+    </i18n-t>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminalAdmin')">
+      {{ shortcutsStore.getShortcutLabel('openTerminalAdmin') }}
+    </ContextMenuShortcut>
+  </ContextMenuLabel>
+  <ContextMenuItem
+    class="terminal-submenu__item"
+    @select="handleOpenConfiguredTerminal"
+  >
+    <TerminalSquareIcon :size="16" />
+    <span>{{ t('terminal.openInTerminal') }}</span>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminal')">
+      {{ shortcutsStore.getShortcutLabel('openTerminal') }}
+    </ContextMenuShortcut>
+  </ContextMenuItem>
   <ContextMenuSub>
     <ContextMenuSubTrigger class="terminal-submenu__trigger">
-      <TerminalSquareIcon :size="16" />
-      <span>{{ t('terminal.openInTerminal') }}</span>
-      <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminal')">
-        {{ shortcutsStore.getShortcutLabel('openTerminal') }}
-      </ContextMenuShortcut>
+      <span>{{ t('terminal.openWithAnotherTerminal') }}</span>
     </ContextMenuSubTrigger>
     <ContextMenuSubContent class="terminal-submenu">
       <template v-if="terminalsStore.loadError">
@@ -112,7 +145,7 @@ async function handleOpenTerminal(terminalId: string) {
           />
           <span>{{ terminal.name }}</span>
           <span
-            v-if="terminal.isDefault"
+            v-if="terminal.id === preferredTerminalId"
             class="terminal-submenu__default-badge"
           >
             {{ t('terminal.defaultLabel') }}

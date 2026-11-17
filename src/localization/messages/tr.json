@@ -259,6 +259,21 @@
         "increaseFileViewGaps": "Dosya görünümü boşluklarını artır",
         "increaseFileViewGapsDescription": "Liste düzeninde yan dolgu ekler ve ızgara düzenindeki boşlukları artırarak hedeflemeyi kolaylaştırır."
       },
+      "defaultTerminal": {
+        "title": "Varsayılan terminal",
+        "description": "Terminalde aç için hangi terminalin açılacağını seçin.",
+        "systemDefault": "Sistem varsayılanı",
+        "custom": "Özel",
+        "command": "Komut",
+        "commandPlaceholder": "Yol veya komut, örneğin kitty",
+        "arguments": "Argümanlar",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Klasör yolu için {placeholder} kullanın. Yol bir kabuk üzerinden değil, argüman olarak iletilir. Bırakırsanız terminal o klasörde başlar.",
+        "notInstalled": "Bu terminal yüklü değil. Kullanılabilir olana kadar Terminalde aç sistem varsayılanını kullanır.",
+        "commandNotFound": "Bu komut bulunamadı.",
+        "commandInvalid": "Terminal komutu geçersiz.",
+        "argumentsInvalid": "Argümanlarda kapanmamış bir tırnak var."
+      },
       "startupPage": {
         "title": "Başlangıç sayfası",
         "description": "Uygulama başladığında hangi sayfanın gösterileceğini seçin.",
@@ -544,6 +559,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu",
+    "defaultTerminal": "terminal, konsol, kabuk, komut, varsayılan, terminalde aç",
     "tabsWorkspaces": "sekmeler, çalışma alanları, kapat, son sekme, varsayılan sekme",
     "defaultDirectory": "ana sayfa, locations, bu bilgisayar, sürücüler, varsayılan klasör, varsayılan dizin, yeni sekme, özel yol",
     "startupPage": "başlangıç sayfası, başlangıç, başlangıçta aç, ana sayfa, pano, gezgin, son sayfa, geri yükle, sayfa"
@@ -847,7 +863,20 @@
     "openInTerminal": "Terminalde aç",
     "noTerminalsFound": "Terminal bulunamadı",
     "holdModifierForAdmin": "Yönetici olarak açmak için {modifier} tuşunu basılı tutun",
-    "defaultLabel": "Varsayılan"
+    "defaultLabel": "Varsayılan",
+    "openWithAnotherTerminal": "Başka bir terminalde aç",
+    "errorTitle": "Terminal açılamadı",
+    "openFailed": "Terminal açılamadı",
+    "noTerminalAvailable": "Kullanılabilir terminal yok",
+    "customCommandMissing": "Özel terminal için bir komut girin",
+    "customCommandInvalid": "Özel terminal komutu geçersiz",
+    "customArgumentsInvalid": "Özel terminal argümanlarında kapanmamış bir tırnak var",
+    "customCommandNotFound": "Özel terminal komutu bulunamadı",
+    "selectedTerminalMissing": "Seçilen terminal yüklü değil",
+    "adminCancelled": "Yönetici onayı iptal edildi.",
+    "adminUnavailable": "Bu terminal yönetici olarak açılamıyor.",
+    "directoryNotFound": "Dizin bulunamadı: {path}",
+    "openedSystemDefault": "Bunun yerine sistem varsayılan terminali açıldı."
   },
   "conflict": "Çatışma",
   "conflictDialog": {

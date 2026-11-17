@@ -288,6 +288,21 @@
         "increaseFileViewGaps": "فائل منظر کے فاصلے بڑھائیں",
         "increaseFileViewGapsDescription": "فہرست لے آؤٹ میں سائیڈ padding شامل کرتا ہے اور گرڈ لے آؤٹ میں فاصلے بڑھا کر نشانہ لگانا آسان بناتا ہے۔"
       },
+      "defaultTerminal": {
+        "title": "طے شدہ ٹرمینل",
+        "description": "منتخب کریں کہ ٹرمینل میں کھولیں کس ٹرمینل کو کھولے۔",
+        "systemDefault": "سسٹم کا طے شدہ",
+        "custom": "حسب ضرورت",
+        "command": "کمانڈ",
+        "commandPlaceholder": "راستہ یا کمانڈ، مثلا kitty",
+        "arguments": "آرگومنٹس",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "فولڈر کے راستے کے لیے {placeholder} استعمال کریں۔ راستہ شیل کے ذریعے نہیں، آرگومنٹ کے طور پر جاتا ہے۔ اگر اسے چھوڑ دیں تو ٹرمینل اسی فولڈر میں شروع ہوتا ہے۔",
+        "notInstalled": "یہ ٹرمینل نصب نہیں ہے۔ دستیاب ہونے تک ٹرمینل میں کھولیں سسٹم کا طے شدہ استعمال کرے گا۔",
+        "commandNotFound": "یہ کمانڈ نہیں ملی۔",
+        "commandInvalid": "ٹرمینل کی کمانڈ درست نہیں ہے۔",
+        "argumentsInvalid": "آرگومنٹس میں بند نہ ہونے والا اقتباس ہے۔"
+      },
       "startupPage": {
         "title": "اسٹارٹ اپ صفحہ",
         "description": "منتخب کریں کہ ایپ شروع ہونے پر کون سا صفحہ دکھایا جائے۔",
@@ -573,6 +588,7 @@
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
     "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding",
+    "defaultTerminal": "ٹرمینل, کنسول, شیل, کمانڈ, طے شدہ, ٹرمینل میں کھولیں",
     "tabsWorkspaces": "ٹیب, ورک اسپیس, بند, آخری ٹیب, ڈیفالٹ ٹیب",
     "defaultDirectory": "ہوم, locations, یہ پی سی, کمپیوٹر, ڈرائیو, ڈیفالٹ فولڈر, نیا ٹیب, حسب ضرورت راستہ",
     "startupPage": "اسٹارٹ اپ صفحہ, اسٹارٹ اپ, لانچ پر کھولیں, ہوم, ڈیش بورڈ, نیویگیٹر, آخری صفحہ, بحال, صفحہ"
@@ -877,7 +893,20 @@
     "openInTerminal": "ٹرمینل میں کھولیں",
     "noTerminalsFound": "کوئی ٹرمینل نہیں",
     "holdModifierForAdmin": "ایڈمن کے طور پر کھولنے کے لیے {modifier} دبائے رکھیں",
-    "defaultLabel": "طے شدہ"
+    "defaultLabel": "طے شدہ",
+    "openWithAnotherTerminal": "دوسرے ٹرمینل میں کھولیں",
+    "errorTitle": "ٹرمینل نہیں کھل سکا",
+    "openFailed": "ٹرمینل نہیں کھل سکا",
+    "noTerminalAvailable": "کوئی ٹرمینل دستیاب نہیں",
+    "customCommandMissing": "حسب ضرورت ٹرمینل کے لیے کمانڈ درج کریں",
+    "customCommandInvalid": "حسب ضرورت ٹرمینل کی کمانڈ درست نہیں ہے",
+    "customArgumentsInvalid": "حسب ضرورت ٹرمینل کے آرگومنٹس میں بند نہ ہونے والا اقتباس ہے",
+    "customCommandNotFound": "حسب ضرورت ٹرمینل کی کمانڈ نہیں ملی",
+    "selectedTerminalMissing": "منتخب ٹرمینل نصب نہیں ہے",
+    "adminCancelled": "منتظم کی منظوری منسوخ ہو گئی۔",
+    "adminUnavailable": "اس ٹرمینل کو منتظم کے طور پر نہیں کھولا جا سکتا۔",
+    "directoryNotFound": "فولڈر نہیں ملا: {path}",
+    "openedSystemDefault": "اس کی جگہ سسٹم کا طے شدہ ٹرمینل کھولا گیا۔"
   },
   "conflict": "تصادم",
   "conflictDialog": {
