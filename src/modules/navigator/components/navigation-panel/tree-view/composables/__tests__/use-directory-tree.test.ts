@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { effectScope, ref, type EffectScope } from 'vue';
+import { effectScope, reactive, ref, type EffectScope } from 'vue';
 import { flushPromises } from '@vue/test-utils';
 import {
   afterEach,
@@ -62,6 +62,17 @@ vi.mock('@/stores/storage/user-stats', () => ({
     tags: [],
     taggedItems: [],
   }),
+}));
+
+const workspacesState = reactive({
+  lastRenamedPath: null as {
+    oldPath: string;
+    newPath: string;
+  } | null,
+});
+
+vi.mock('@/stores/storage/workspaces', () => ({
+  useWorkspacesStore: () => workspacesState,
 }));
 
 vi.mock('@/modules/navigator/utils/resolve-navigator-folder-settings', () => ({
@@ -149,6 +160,7 @@ describe('useDirectoryTree', () => {
   beforeEach(() => {
     activePath.value = '/home';
     updatesPaused.value = false;
+    workspacesState.lastRenamedPath = null;
     dirChangeHandlers.length = 0;
     directoryEntriesByPath.clear();
     directoryEntriesByPath.set(LOCATIONS_VIRTUAL_PATH, [createDirectory('/')]);
@@ -323,5 +335,28 @@ describe('useDirectoryTree', () => {
     await flushPromises();
 
     expect(getChildNames(tree, '/home')).toEqual(['newer']);
+  });
+
+  it('keeps expanded directories when a parent is renamed by letter case', async () => {
+    activePath.value = '/home/user';
+    directoryEntriesByPath.set('/home/user', []);
+    const tree = createTree();
+    await flushPromises();
+
+    expect(tree.isExpanded('/home')).toBe(true);
+
+    workspacesState.lastRenamedPath = {
+      oldPath: '/home',
+      newPath: '/Home',
+    };
+    await flushPromises();
+
+    expect(tree.isExpanded('/Home')).toBe(true);
+    expect(tree.isExpanded('/home')).toBe(false);
+    expect(tree.getChildren('/')?.find(entry => entry.path === '/Home')).toMatchObject({
+      name: 'Home',
+      path: '/Home',
+    });
+    expect(tree.getChildren('/Home')?.map(entry => entry.path)).toContain('/Home/user');
   });
 });

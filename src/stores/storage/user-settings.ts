@@ -57,6 +57,7 @@ import {
   removeNavigatorFolderSettingsPaths,
   type StoredNavigatorFolderSettingsMap,
 } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
+import { createDefaultTerminalSettings } from '@/utils/default-terminal';
 
 export const USER_SETTINGS_THEME_CHANGED_EVENT = 'user-settings:theme-changed';
 export const USER_SETTINGS_INFO_PANEL_SHOW_CHANGED_EVENT = 'user-settings:info-panel-show-changed';
@@ -244,6 +245,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       showOnUpdate: true,
       lastSeenVersion: '',
     },
+    terminal: createDefaultTerminalSettings(),
   });
 
   function createDefaultInfusionBackground() {
@@ -651,9 +653,19 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   }
 
   async function handlePathRenamed(oldPath: string, newPath: string) {
-    await updateFolderSettings(currentMap => (
-      remapNavigatorFolderSettingsPaths(currentMap, oldPath, newPath)
-    ));
+    await updateFolderSettings(() => {
+      const folderSettings = userSettings.value.navigator.folderSettings;
+
+      if (!folderSettings || typeof folderSettings !== 'object') {
+        return null;
+      }
+
+      return remapNavigatorFolderSettingsPaths(
+        folderSettings as StoredNavigatorFolderSettingsMap,
+        oldPath,
+        newPath,
+      );
+    });
   }
 
   async function handlePathsDeleted(deletedPaths: string[]) {

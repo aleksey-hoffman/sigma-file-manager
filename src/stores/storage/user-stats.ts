@@ -23,6 +23,7 @@ import {
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
 import { i18n } from '@/localization';
+import { replacePathPrefix } from '@/utils/file-operation-paths';
 import { getTagsByIdsInListOrder } from '@/utils/item-tag-order';
 import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
 import { haveSameKeyOrder, haveSameKeys } from '@/utils/reorder-matching-items';
@@ -503,12 +504,6 @@ export const useUserStatsStore = defineStore('userStats', () => {
     if (hasChanges) {
       await saveStats();
     }
-  }
-
-  function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
-    if (path === oldPrefix) return newPrefix;
-    if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
-    return null;
   }
 
   function isPathAffectedByDeletion(path: string | null, deletedPaths: string[]): boolean {

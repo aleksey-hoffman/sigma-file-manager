@@ -6,6 +6,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry, DirEntryItemCount, DirItemCountOptions } from '@/types/dir-entry';
+import { rekeyPathMap } from '@/utils/rekey-path-map';
 import normalizePath from '@/utils/normalize-path';
 
 export type ItemCountStatus = 'loading' | 'loaded' | 'error';
@@ -248,6 +249,18 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     displayRevision.value++;
   }
 
+  function remapPath(oldPath: string, newPath: string): void {
+    const changed = rekeyPathMap(countsByPath, oldPath, newPath, (entry, nextPath) => ({
+      ...entry,
+      path: nextPath,
+    }));
+
+    if (changed) {
+      displayRevision.value++;
+      sortRevision.value++;
+    }
+  }
+
   function refreshSortRevision(): void {
     sortRevision.value++;
   }
@@ -280,6 +293,7 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     primeItemCounts,
     requestItemCountsBatch,
     syncIncludeHiddenFiles,
+    remapPath,
     invalidate,
     clear,
   };

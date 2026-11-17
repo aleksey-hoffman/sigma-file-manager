@@ -345,13 +345,9 @@ pub(super) fn open_terminal_linux(
     };
 
     match spawn_result {
-        Ok(_) => OpenTerminalResult {
-            success: true,
-            error: None,
-        },
-        Err(spawn_error) => OpenTerminalResult {
-            success: false,
-            error: Some(format!("Failed to open terminal: {}", spawn_error)),
-        },
+        Ok(_) => OpenTerminalResult::opened(),
+        Err(spawn_error) => {
+            OpenTerminalResult::failed(format!("Failed to open terminal: {spawn_error}"))
+        }
     }
 }

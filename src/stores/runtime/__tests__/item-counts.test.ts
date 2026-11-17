@@ -81,6 +81,27 @@ describe('item counts store', () => {
     });
   });
 
+  it('moves cached counts onto a renamed path and its children', () => {
+    const store = useItemCountsStore();
+
+    store.primeItemCounts([
+      createEntry({
+        path: '/tmp/notes',
+        item_count: 4,
+      }),
+      createEntry({
+        path: '/tmp/notes/nested',
+        item_count: 2,
+      }),
+    ], { includeHiddenFiles: false });
+
+    store.remapPath('/tmp/notes', '/tmp/Notes');
+
+    expect(store.getItemCount('/tmp/notes')).toBeUndefined();
+    expect(store.getItemCount('/tmp/Notes')).toBe(4);
+    expect(store.getItemCount('/tmp/Notes/nested')).toBe(2);
+  });
+
   it('primes item counts from directory entries', async () => {
     const store = useItemCountsStore();
 

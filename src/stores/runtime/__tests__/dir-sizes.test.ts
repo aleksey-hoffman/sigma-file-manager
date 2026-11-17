@@ -403,3 +403,39 @@ describe('useDirSizesStore directory size watch', () => {
     await waitFor(() => dirSizesStore.sizes.get('/drive/photos')?.size === 6);
   });
 });
+
+describe('dir sizes store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    invokeMock.mockReset();
+    invokeMock.mockResolvedValue(undefined);
+  });
+
+  it('moves a cached size onto the renamed path', () => {
+    const store = useDirSizesStore();
+    store.sizes.set('/tmp/notes', {
+      size: 10,
+      status: 'Complete',
+      fileCount: 1,
+      dirCount: 0,
+      calculatedAt: 1,
+    });
+    store.sizes.set('/tmp/notes/child', {
+      size: 4,
+      status: 'Complete',
+      fileCount: 1,
+      dirCount: 0,
+      calculatedAt: 1,
+    });
+
+    store.remapPath('/tmp/notes', '/tmp/Notes');
+
+    expect(store.getSize('/tmp/notes')).toBeUndefined();
+    expect(store.getSize('/tmp/Notes')?.size).toBe(10);
+    expect(store.getSize('/tmp/Notes/child')?.size).toBe(4);
+    expect(invokeMock).toHaveBeenCalledWith('remap_dir_size_cache', {
+      oldPath: '/tmp/notes',
+      newPath: '/tmp/Notes',
+    });
+  });
+});

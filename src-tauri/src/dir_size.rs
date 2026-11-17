@@ -144,6 +144,9 @@ static JOBS: Lazy<Mutex<HashMap<String, InFlightJob>>> = Lazy::new(|| Mutex::new
 
 static NEXT_JOB_ID: AtomicU64 = AtomicU64::new(1);
 
+static PATH_ALIASES: Lazy<Mutex<HashMap<String, String>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+
 static DIR_SIZE_POOL: Lazy<rayon::ThreadPool> = Lazy::new(|| {
     rayon::ThreadPoolBuilder::new()
         .num_threads(DIR_SIZE_POOL_THREADS)
@@ -158,6 +161,55 @@ fn lock_mutex<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
         Ok(guard) => guard,
         Err(poisoned) => poisoned.into_inner(),
     }
+}
+
+fn canonical_cache_path(path: &str) -> String {
+    let mut current = normalize_path(path);
+    let aliases = lock_mutex(&PATH_ALIASES);
+
+    for _ in 0..8 {
+        match aliases.get(&current) {
+            Some(next) if next != &current => current = next.clone(),
+            _ => break,
+        }
+    }
+
+    current
+}
+
+fn remember_path_aliases(moved: &[(String, String)]) {
+    let mut aliases = lock_mutex(&PATH_ALIASES);
+
+    for (from, to) in moved {
+        let from = normalize_path(from);
+        let to = normalize_path(to);
+
+        if from != to {
+            aliases.insert(from, to);
+        }
+    }
+}
+
+fn job_key(jobs: &HashMap<String, InFlightJob>, path: &str) -> Option<String> {
+    let normalized = normalize_path(path);
+    if jobs.contains_key(&normalized) {
+        return Some(normalized);
+    }
+    let canonical = canonical_cache_path(&normalized);
+    if canonical != normalized && jobs.contains_key(&canonical) {
+        return Some(canonical);
+    }
+    None
+}
+
+fn job_key_by_id(jobs: &HashMap<String, InFlightJob>, path: &str, job_id: u64) -> Option<String> {
+    let normalized = normalize_path(path);
+    if jobs.get(&normalized).map(|job| job.id) == Some(job_id) {
+        return Some(normalized);
+    }
+    jobs.iter()
+        .find(|(_, job)| job.id == job_id)
+        .map(|(key, _)| key.clone())
 }
 
 fn spawn_dir_size_thread(thread: rayon::ThreadBuilder) -> std::io::Result<()> {
@@ -258,7 +310,10 @@ fn progress_result(path: &str, progress: &CalculationProgress) -> DirSizeResult 
 fn in_progress_result(path: &str) -> DirSizeResult {
     let normalized = normalize_path(path);
     let jobs = lock_mutex(&JOBS);
-    if let Some(progress) = jobs.get(&normalized).and_then(|job| job.progress.as_ref()) {
+    let progress = job_key(&jobs, &normalized)
+        .and_then(|key| jobs.get(&key))
+        .and_then(|job| job.progress.as_ref());
+    if let Some(progress) = progress {
         return progress_result(&normalized, progress);
     }
     dir_size_result(&normalized, 0, SizeStatus::Partial, 0, 0, None)
@@ -307,7 +362,7 @@ fn get_cached_size(path: &str) -> Option<CacheEntry> {
 }
 
 fn set_cached_size(path: &str, entry: CacheEntry) {
-    let normalized = normalize_path(path);
+    let normalized = canonical_cache_path(path);
     lock_mutex(&SIZE_CACHE).put(normalized, entry);
 }
 
@@ -520,12 +575,14 @@ impl<Work> Drop for JobWaiter<Work> {
         let Some(job_id) = self.job_id else {
             return;
         };
-        let normalized = normalize_path(&self.path);
         let mut jobs = lock_mutex(&JOBS);
-        let Some(job) = jobs.get_mut(&normalized) else {
+        let Some(key) = job_key_by_id(&jobs, &self.path, job_id) else {
             return;
         };
-        if job.id == job_id && job.waiters > 0 {
+        let Some(job) = jobs.get_mut(&key) else {
+            return;
+        };
+        if job.waiters > 0 {
             job.waiters -= 1;
         }
     }
@@ -560,11 +617,13 @@ impl<Work> Drop for JobLaunch<Work> {
 fn finish_owned_job(job: &OwnedJob, result: DirSizeResult) {
     let still_owner = {
         let mut jobs = lock_mutex(&JOBS);
-        let owns_registry_entry = jobs.get(&job.path).map(|entry| entry.id) == Some(job.id);
-        if owns_registry_entry {
-            jobs.remove(&job.path);
+        match job_key_by_id(&jobs, &job.path, job.id) {
+            Some(key) => {
+                jobs.remove(&key);
+                true
+            }
+            None => false,
         }
-        owns_registry_entry
     };
     let cancelled = job.cancel.load(Ordering::SeqCst);
     if still_owner && !cancelled && result.status == SizeStatus::Complete {
@@ -576,20 +635,21 @@ fn finish_owned_job(job: &OwnedJob, result: DirSizeResult) {
 }
 
 fn job_is_in_flight(path: &str) -> bool {
-    let normalized = normalize_path(path);
-    lock_mutex(&JOBS).contains_key(&normalized)
+    job_key(&lock_mutex(&JOBS), path).is_some()
 }
 
 fn detach_cancelled_job(path: &str) -> bool {
-    let normalized = normalize_path(path);
     let mut jobs = lock_mutex(&JOBS);
-    let Some(job) = jobs.get(&normalized) else {
+    let Some(key) = job_key(&jobs, path) else {
+        return false;
+    };
+    let Some(job) = jobs.get(&key) else {
         return false;
     };
     if !job.cancel.load(Ordering::SeqCst) {
         return false;
     }
-    jobs.remove(&normalized);
+    jobs.remove(&key);
     true
 }
 
@@ -832,10 +892,10 @@ pub async fn get_dir_size(app: AppHandle, path: String, timeout_ms: Option<u64>)
 
 #[tauri::command]
 pub fn get_dir_size_progress(path: String) -> Option<DirSizeResult> {
-    let normalized = normalize_path(&path);
     let jobs = lock_mutex(&JOBS);
-    let progress = jobs.get(&normalized)?.progress.as_ref()?;
-    Some(progress_result(&normalized, progress))
+    let key = job_key(&jobs, &path)?;
+    let progress = jobs.get(&key)?.progress.as_ref()?;
+    Some(progress_result(&key, progress))
 }
 
 #[tauri::command]
@@ -852,9 +912,8 @@ pub fn get_active_calculations() -> Vec<DirSizeResult> {
 
 #[tauri::command]
 pub fn cancel_dir_size(path: String) -> bool {
-    let normalized = normalize_path(&path);
     let jobs = lock_mutex(&JOBS);
-    let Some(job) = jobs.get(&normalized) else {
+    let Some(job) = job_key(&jobs, &path).and_then(|key| jobs.get(&key)) else {
         return false;
     };
     job.cancel.store(true, Ordering::SeqCst);
@@ -918,6 +977,121 @@ pub async fn get_dir_sizes_batch(
     })
     .await
     .unwrap_or_default()
+}
+
+fn cached_paths_match(left: &str, right: &str, case_insensitive: bool) -> bool {
+    left == right
+        || (case_insensitive
+            && (left.eq_ignore_ascii_case(right) || left.to_lowercase() == right.to_lowercase()))
+}
+
+fn remap_cached_path(
+    path: &str,
+    old_path: &str,
+    new_path: &str,
+    case_insensitive: bool,
+) -> Option<String> {
+    let path = normalize_path(path);
+    let old_path = normalize_path(old_path).trim_end_matches('/').to_string();
+    let new_path = normalize_path(new_path).trim_end_matches('/').to_string();
+
+    if old_path.is_empty() || path.is_empty() {
+        return None;
+    }
+
+    if cached_paths_match(&path, &old_path, case_insensitive) {
+        return Some(new_path);
+    }
+
+    let old_len = old_path.len();
+
+    if path.len() <= old_len || !path.is_char_boundary(old_len) {
+        return None;
+    }
+
+    let (prefix, suffix) = path.split_at(old_len);
+
+    if suffix.starts_with('/') && cached_paths_match(prefix, &old_path, case_insensitive) {
+        return Some(format!("{new_path}{suffix}"));
+    }
+
+    None
+}
+
+fn remap_size_cache_keys(
+    old_path: &str,
+    new_path: &str,
+    case_insensitive: bool,
+) -> Vec<(String, String)> {
+    let mut cache = lock_mutex(&SIZE_CACHE);
+    let keys: Vec<String> = cache.iter().map(|(key, _)| key.clone()).collect();
+    let mut moved = Vec::new();
+
+    for key in keys {
+        let Some(remapped) = remap_cached_path(&key, old_path, new_path, case_insensitive) else {
+            continue;
+        };
+
+        if remapped == key {
+            continue;
+        }
+
+        if let Some(entry) = cache.pop(&key) {
+            cache.put(remapped.clone(), entry);
+            moved.push((key, remapped));
+        }
+    }
+
+    moved
+}
+
+fn remap_hash_map_keys<T>(
+    map: &mut HashMap<String, T>,
+    old_path: &str,
+    new_path: &str,
+    case_insensitive: bool,
+) -> Vec<(String, String)> {
+    let keys: Vec<String> = map.keys().cloned().collect();
+    let mut moved = Vec::new();
+
+    for key in keys {
+        let Some(remapped) = remap_cached_path(&key, old_path, new_path, case_insensitive) else {
+            continue;
+        };
+
+        if remapped == key {
+            continue;
+        }
+
+        if let Some(value) = map.remove(&key) {
+            map.insert(remapped.clone(), value);
+            moved.push((key, remapped));
+        }
+    }
+
+    moved
+}
+
+#[tauri::command]
+pub fn remap_dir_size_cache(old_path: String, new_path: String) {
+    let case_insensitive = match crate::dir_reader::path_volume_is_case_sensitive(old_path.clone())
+    {
+        Ok(is_case_sensitive) => !is_case_sensitive,
+        Err(_) => cfg!(windows) || cfg!(target_os = "macos"),
+    };
+
+    let mut moved = remap_size_cache_keys(&old_path, &new_path, case_insensitive);
+    {
+        let mut jobs = lock_mutex(&JOBS);
+        moved.extend(remap_hash_map_keys(
+            &mut *jobs,
+            &old_path,
+            &new_path,
+            case_insensitive,
+        ));
+    }
+
+    remember_path_aliases(&moved);
 }
 
 #[tauri::command]

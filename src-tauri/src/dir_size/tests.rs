@@ -908,3 +908,110 @@ fn dir_size_threads_run_at_a_lower_priority() {
         "dir size priority changed the caller nice ({caller_nice})"
     );
 }
+
+fn cache_entry() -> CacheEntry {
+    CacheEntry {
+        size: 42,
+        file_count: 2,
+        dir_count: 1,
+        status: SizeStatus::Complete,
+        calculated_at: get_current_timestamp(),
+        dir_mtime: 0,
+    }
+}
+
+#[test]
+fn remap_cached_path_keeps_sensitive_paths_distinct() {
+    assert_eq!(
+        remap_cached_path("/tmp/Notes/child", "/tmp/notes", "/tmp/Notes", false),
+        None
+    );
+    assert_eq!(
+        remap_cached_path("/tmp/notes/child", "/tmp/notes", "/tmp/Notes", false).as_deref(),
+        Some("/tmp/Notes/child")
+    );
+}
+
+#[test]
+fn remap_cached_path_folds_case_and_keeps_the_suffix() {
+    assert_eq!(
+        remap_cached_path("C:/Notes/file.txt", "c:/notes", "C:/Project", true).as_deref(),
+        Some("C:/Project/file.txt")
+    );
+    assert_eq!(
+        remap_cached_path("C:/Notes", "c:/notes", "C:/Project", true).as_deref(),
+        Some("C:/Project")
+    );
+    assert_eq!(
+        remap_cached_path("/tmp/Older", "/tmp/Old", "/tmp/New", true),
+        None
+    );
+    assert_eq!(remap_cached_path("aéb", "ab", "cd", true), None);
+}
+
+#[test]
+fn remap_dir_size_cache_moves_the_path_and_its_children() {
+    let _lock = test_lock();
+    let old_path = unique_test_path("rename-cache-old");
+    let new_path = unique_test_path("rename-cache-new");
+    let old_child = format!("{old_path}/child");
+    let new_child = format!("{new_path}/child");
+
+    set_cached_size(&old_path, cache_entry());
+    set_cached_size(&old_child, cache_entry());
+    remap_dir_size_cache(old_path.clone(), new_path.clone());
+
+    assert!(get_cached_size(&old_path).is_none());
+    assert!(get_cached_size(&old_child).is_none());
+    assert_eq!(get_cached_size(&new_path).map(|entry| entry.size), Some(42));
+    assert_eq!(
+        get_cached_size(&new_child).map(|entry| entry.size),
+        Some(42)
+    );
+
+    invalidate_dir_size_cache(vec![old_path, new_path, old_child, new_child]);
+}
+
+#[test]
+fn remap_dir_size_cache_lets_the_worker_finish_on_its_original_path() {
+    let _lock = test_lock();
+    let old_path = unique_test_path("rename-job-old");
+    let new_path = unique_test_path("rename-job-new");
+    let release = Arc::new(AtomicBool::new(false));
+    let worker_release = Arc::clone(&release);
+    let worker_path = old_path.clone();
+
+    let waiter = enqueue_dir_size_job(
+        old_path.clone(),
+        Some(Duration::from_secs(30)),
+        false,
+        false,
+        true,
+        move |cancel, _progress| {
+            let blocked = blocked_result(&cancel, &worker_release);
+            if blocked.status != SizeStatus::Complete {
+                return blocked;
+            }
+            store_complete_result(Path::new(&worker_path), &worker_path, 7, 1, 0);
+            dir_size_result(&worker_path, 7, SizeStatus::Complete, 1, 0, None)
+        },
+    );
+
+    assert!(job_is_in_flight(&old_path));
+    remap_dir_size_cache(old_path.clone(), new_path.clone());
+
+    assert!(get_dir_size_progress(old_path.clone()).is_some());
+    assert!(get_dir_size_progress(new_path.clone()).is_some());
+
+    release.store(true, Ordering::SeqCst);
+    let result = waiter.wait();
+    assert_eq!(result.status, SizeStatus::Complete);
+
+    assert!(get_cached_size(&old_path).is_none());
+    assert_eq!(get_cached_size(&new_path).map(|entry| entry.size), Some(7));
+    assert!(get_dir_size_progress(old_path.clone()).is_none());
+    assert!(get_dir_size_progress(new_path.clone()).is_none());
+    assert!(!job_is_in_flight(&new_path));
+
+    invalidate_dir_size_cache(vec![old_path, new_path]);
+}

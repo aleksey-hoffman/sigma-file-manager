@@ -12,6 +12,7 @@ import {
   getParentPath,
   getSharedSourceDirectory,
   isDestinationInsideAnySourceDirectory,
+  remapDirEntry,
 } from '@/utils/file-operation-paths';
 import { getPathLeafName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
@@ -803,6 +804,20 @@ export const useClipboardStore = defineStore('clipboard', () => {
     }
   }
 
+  function remapPaths(oldPath: string, newPath: string): void {
+    const nextItems = clipboardItems.value.map(item => remapDirEntry(item, oldPath, newPath));
+    const changed = nextItems.some((item, index) => item !== clipboardItems.value[index]);
+
+    if (!changed) {
+      return;
+    }
+
+    clipboardItems.value = nextItems;
+    syncToSystemClipboard().catch((error: unknown) => {
+      console.error('Failed to sync renamed clipboard paths:', error);
+    });
+  }
+
   return {
     clipboardType,
     clipboardItems,
@@ -840,6 +855,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     pasteSavedClipboardImage,
     syncToSystemClipboard,
     syncFromSystemClipboard,
+    remapPaths,
     checkExternalClipboardConsumption,
     clearSystemClipboardFiles,
   };

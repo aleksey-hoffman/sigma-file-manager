@@ -6,7 +6,7 @@ import {
   nextTick, ref, watch, type ComponentPublicInstance, type Ref,
 } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import normalizePath from '@/utils/normalize-path';
+import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
 type PendingFocusRequest
   = | {
@@ -81,14 +81,13 @@ export function useFileBrowserFocus(options: {
       return;
     }
 
-    if (normalizePath(options.currentPath.value) !== normalizePath(request.targetPath)) {
+    if (!arePathsEquivalent(options.currentPath.value, request.targetPath)) {
       return;
     }
 
     if (request.type === 'path') {
-      const normalizedWanted = normalizePath(request.path);
       const targetEntry = options.entries.value.find(
-        entry => normalizePath(entry.path) === normalizedWanted,
+        entry => arePathsEquivalent(entry.path, request.path),
       );
 
       if (!targetEntry) {

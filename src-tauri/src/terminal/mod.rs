@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+mod custom;
 #[cfg(target_os = "windows")]
 mod jsonc;
 #[cfg(target_os = "linux")]
@@ -69,10 +70,7 @@ pub async fn open_terminal(
     .unwrap_or(false);
 
     if !path_exists_and_is_dir {
-        return OpenTerminalResult {
-            success: false,
-            error: Some(format!("Directory not found: {}", directory_path)),
-        };
+        return OpenTerminalResult::failed(format!("Directory not found: {directory_path}"));
     }
 
     tauri::async_runtime::spawn_blocking(move || {
@@ -91,17 +89,38 @@ pub async fn open_terminal(
         #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
         {
             let _ = (directory_path, terminal_id, as_admin);
-            OpenTerminalResult {
-                success: false,
-                error: Some("Opening terminal is not supported on this platform".to_string()),
-            }
+            OpenTerminalResult::failed("Opening terminal is not supported on this platform")
         }
     })
     .await
-    .unwrap_or_else(|join_error| OpenTerminalResult {
-        success: false,
-        error: Some(format!("Failed to open terminal: {join_error}")),
+    .unwrap_or_else(|join_error| {
+        OpenTerminalResult::failed(format!("Failed to open terminal: {join_error}"))
     })
+}
+
+#[tauri::command]
+pub async fn open_custom_terminal(
+    directory_path: String,
+    program: String,
+    args: Vec<String>,
+    as_admin: bool,
+) -> OpenTerminalResult {
+    tauri::async_runtime::spawn_blocking(move || {
+        custom::open_custom_terminal(&directory_path, &program, &args, as_admin)
+    })
+    .await
+    .unwrap_or_else(|join_error| {
+        OpenTerminalResult::failed(format!("Failed to open terminal: {join_error}"))
+    })
+}
+
+#[tauri::command]
+pub async fn validate_custom_terminal_program(program: String) -> bool {
+    tauri::async_runtime::spawn_blocking(move || {
+        custom::custom_terminal_program_is_available(&program)
+    })
+    .await
+    .unwrap_or(false)
 }
 
 #[tauri::command]

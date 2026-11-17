@@ -292,6 +292,21 @@
         "enableBoxSelectionDescription": "Перетаскивайте по пустому месту, чтобы выделить несколько элементов рамкой. Удерживайте Ctrl или Shift, чтобы добавить к выделению; Alt — чтобы инвертировать.",
         "increaseFileViewGaps": "Увеличить промежутки в виде файлов",
         "increaseFileViewGapsDescription": "Добавляет боковые отступы в списке и увеличивает промежутки в сетке для более удобного выделения."
+      },
+      "defaultTerminal": {
+        "title": "Терминал по умолчанию",
+        "description": "Какой терминал открывать командой «Открыть в терминале».",
+        "systemDefault": "Системный по умолчанию",
+        "custom": "Свой",
+        "command": "Команда",
+        "commandPlaceholder": "Путь или команда, например kitty",
+        "arguments": "Аргументы",
+        "argumentsPlaceholder": "--working-directory {placeholder}",
+        "argumentsHint": "Используйте {placeholder} для пути к папке. Путь передается аргументом, а не через оболочку. Если подстановки нет, терминал запускается в этой папке.",
+        "notInstalled": "Этот терминал не установлен. Пока его нет, будет использоваться системный по умолчанию.",
+        "commandNotFound": "Команда не найдена.",
+        "commandInvalid": "Команда терминала указана неверно.",
+        "argumentsInvalid": "В аргументах не закрыта кавычка."
       }
     },
     "actions": {
@@ -575,7 +590,8 @@
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
     "performance": "performance, memory, quick view, print, window, launch, preload",
-    "fileView": "вид файлов, рамка, выделение, перетаскивание, список, сетка, промежутки, отступы"
+    "fileView": "вид файлов, рамка, выделение, перетаскивание, список, сетка, промежутки, отступы",
+    "defaultTerminal": "терминал, консоль, оболочка, команда, по умолчанию, открыть в терминале"
   },
   "drag": {
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",
@@ -877,7 +893,20 @@
     "openInTerminal": "Открыть в терминале",
     "noTerminalsFound": "Терминалы не найдены",
     "holdModifierForAdmin": "Удерживайте {modifier} для открытия от имени администратора",
-    "defaultLabel": "По умолчанию"
+    "defaultLabel": "По умолчанию",
+    "openWithAnotherTerminal": "Открыть в другом терминале",
+    "errorTitle": "Не удалось открыть терминал",
+    "openFailed": "Не удалось открыть терминал",
+    "noTerminalAvailable": "Нет доступного терминала",
+    "customCommandMissing": "Укажите команду для своего терминала",
+    "customCommandInvalid": "Команда своего терминала указана неверно",
+    "customArgumentsInvalid": "В аргументах своего терминала не закрыта кавычка",
+    "customCommandNotFound": "Команда своего терминала не найдена",
+    "selectedTerminalMissing": "Выбранный терминал не установлен",
+    "adminCancelled": "Подтверждение администратора отменено.",
+    "adminUnavailable": "Нельзя открыть этот терминал от имени администратора.",
+    "directoryNotFound": "Папка не найдена: {path}",
+    "openedSystemDefault": "Вместо него открыт системный терминал по умолчанию."
   },
   "conflict": "Конфликт",
   "conflictDialog": {
