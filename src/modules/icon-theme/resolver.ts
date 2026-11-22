@@ -126,20 +126,22 @@ function getDefinitionSrc(theme: LoadedIconThemeDefinition, definitionId: string
 
 export function getFileExtensionCandidates(fileName: string): string[] {
   const normalizedName = fileName.trim().toLowerCase();
+  let dotIndex = normalizedName.indexOf('.');
 
-  if (!normalizedName.includes('.')) {
+  if (dotIndex === -1) {
     return [];
   }
 
-  const segments = normalizedName.split('.');
   const candidates: string[] = [];
 
-  for (let index = 1; index < segments.length; index += 1) {
-    const candidate = segments.slice(index).join('.');
+  while (dotIndex !== -1) {
+    const candidate = normalizedName.slice(dotIndex + 1);
 
     if (candidate) {
       candidates.push(candidate);
     }
+
+    dotIndex = normalizedName.indexOf('.', dotIndex + 1);
   }
 
   return candidates;
@@ -185,16 +187,39 @@ export function resolveLoadedIconThemeIcon(
   }
 
   const normalizedExtension = target.extension?.trim().toLowerCase() || null;
-  const extensionCandidates = getFileExtensionCandidates(target.name);
+  let dotIndex = normalizedName.indexOf('.');
+  let checkedNormalizedExtension = false;
 
-  if (normalizedExtension && !extensionCandidates.includes(normalizedExtension)) {
-    extensionCandidates.push(normalizedExtension);
+  while (dotIndex !== -1) {
+    const candidate = normalizedName.slice(dotIndex + 1);
+
+    if (candidate) {
+      if (candidate === normalizedExtension) {
+        checkedNormalizedExtension = true;
+      }
+
+      const extensionMatch = resolveAssociationRecord(
+        theme.fileExtensions,
+        candidate,
+        normalizedParentName,
+      );
+
+      if (extensionMatch) {
+        const extensionIconSrc = getDefinitionSrc(theme, extensionMatch);
+
+        if (extensionIconSrc) {
+          return extensionIconSrc;
+        }
+      }
+    }
+
+    dotIndex = normalizedName.indexOf('.', dotIndex + 1);
   }
 
-  for (const candidate of extensionCandidates) {
+  if (normalizedExtension && !checkedNormalizedExtension) {
     const extensionMatch = resolveAssociationRecord(
       theme.fileExtensions,
-      candidate,
+      normalizedExtension,
       normalizedParentName,
     );
 
