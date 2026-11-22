@@ -59,7 +59,7 @@ tauri-plugin-single-instance = "2"
 reqwest = { version = "0.13", default-features = false, features = ["rustls", "stream"] }
 httpdate = "1.0"
 futures-util = "0.3"
-zip = "8.6"
+zip = "9.8"
 tar = "0.4"
 xz2 = "0.1"
 flate2 = "1.1"

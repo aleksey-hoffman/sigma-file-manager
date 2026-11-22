@@ -21,6 +21,13 @@ pub fn is_safe_archive_relative_path(path: &Path) -> bool {
         .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
 }
 
+/// Keeps only the rwx permission bits of an archive entry, so setuid, setgid and sticky bits
+/// from an archive are never applied to extracted files.
+#[cfg(unix)]
+pub fn safe_unix_mode(mode: u32) -> u32 {
+    mode & 0o777
+}
+
 fn is_zip_password_incorrect(error: &ZipError) -> bool {
     matches!(error, ZipError::InvalidPassword)
 }
@@ -80,7 +87,10 @@ fn extract_entry_name<R: Read + ?Sized>(
 ) -> String {
     get_entry_path(file, encoding)
         .map(|path| path.display().to_string())
-        .unwrap_or_else(|_| file.name().to_string())
+        .unwrap_or_else(|_| match file.name() {
+            Ok(name) => name.into_owned(),
+            Err(_) => String::from_utf8_lossy(file.name_raw()).into_owned(),
+        })
 }
 
 fn read_entry<'a, R: Read + Seek>(
@@ -219,14 +229,29 @@ pub fn extract_zip_to_directory_with_sink(
                 }
             }
 
-            if outpath.exists() {
+            if fs::symlink_metadata(&outpath).is_ok() {
                 return Err(ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string());
             }
 
-            let entry_unix_mode = file.unix_mode();
+            // Symlink entries are written as regular files holding the link target, so an
+            // archive can never place a link that points outside the destination.
+            let entry_unix_mode = if file.is_symlink() {
+                None
+            } else {
+                file.unix_mode()
+            };
             let entry_is_encrypted = file.encrypted();
-            let mut outfile = fs::File::create(&outpath)
-                .map_err(|error| format!("Failed to create file: {}", error))?;
+            let mut outfile = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&outpath)
+                .map_err(|error| {
+                    if error.kind() == std::io::ErrorKind::AlreadyExists {
+                        ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string()
+                    } else {
+                        format!("Failed to create file: {}", error)
+                    }
+                })?;
 
             match copy_with_periodic_cancel(&mut file, &mut outfile, sink) {
                 Ok(()) => {}
@@ -245,7 +270,7 @@ pub fn extract_zip_to_directory_with_sink(
             {
                 use std::os::unix::fs::PermissionsExt;
                 if let Some(mode) = entry_unix_mode {
-                    fs::set_permissions(&outpath, fs::Permissions::from_mode(mode))
+                    fs::set_permissions(&outpath, fs::Permissions::from_mode(safe_unix_mode(mode)))
                         .map_err(|error| format!("Failed to set file permissions: {}", error))?;
                 }
             }
@@ -353,5 +378,109 @@ mod tests {
         fs::create_dir_all(&extract_dir).unwrap();
         let result = extract_zip_to_directory(&zip_path, &extract_dir, Some(b"wrong"), None);
         assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_WRONG_PASSWORD);
+    }
+
+    #[test]
+    fn extract_aes_encrypted_zip_with_password() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("aes.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options().with_aes_encryption(zip::AesMode::Aes256, "correct horse");
+        zip_writer.start_file("secret.txt", options).unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+
+        let wrong_dir = temp.path().join("wrong");
+        let result = extract_zip_to_directory(&zip_path, &wrong_dir, Some(b"wrong"), None);
+        assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_WRONG_PASSWORD);
+        assert!(!wrong_dir.join("secret.txt").exists());
+
+        let missing_dir = temp.path().join("missing");
+        let result = extract_zip_to_directory(&zip_path, &missing_dir, None, None);
+        assert!(result.is_err());
+        assert!(!missing_dir.join("secret.txt").exists());
+
+        let extract_dir = temp.path().join("extracted");
+        extract_zip_to_directory(&zip_path, &extract_dir, Some(b"correct horse"), None).unwrap();
+        assert_eq!(fs::read(extract_dir.join("secret.txt")).unwrap(), b"hidden");
+    }
+
+    #[test]
+    fn symlink_entry_is_extracted_as_regular_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("symlink.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options();
+        zip_writer
+            .add_symlink("link", "../outside.txt", options)
+            .unwrap();
+        zip_writer.finish().unwrap();
+
+        let extract_dir = temp.path().join("safe");
+        fs::create_dir_all(&extract_dir).unwrap();
+        extract_zip_to_directory(&zip_path, &extract_dir, None, None).unwrap();
+
+        let link_metadata = fs::symlink_metadata(extract_dir.join("link")).unwrap();
+        assert!(!link_metadata.file_type().is_symlink());
+        assert!(link_metadata.is_file());
+        assert_eq!(
+            fs::read(extract_dir.join("link")).unwrap(),
+            b"../outside.txt"
+        );
+        assert!(!temp.path().join("outside.txt").exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn extraction_does_not_follow_dangling_symlink_in_destination() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("archive.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        zip_writer
+            .start_file("hello.txt", zip_file_options())
+            .unwrap();
+        zip_writer.write_all(b"new").unwrap();
+        zip_writer.finish().unwrap();
+
+        let extract_dir = temp.path().join("extract");
+        fs::create_dir_all(&extract_dir).unwrap();
+        let outside_target = temp.path().join("outside.txt");
+        std::os::unix::fs::symlink(&outside_target, extract_dir.join("hello.txt")).unwrap();
+
+        let result = extract_zip_to_directory(&zip_path, &extract_dir, None, None);
+        assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS);
+        assert!(!outside_target.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn extraction_strips_setuid_setgid_and_sticky_bits() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("modes.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options().external_attributes((0o100000 | 0o7755) << 16);
+        zip_writer.start_file("tool", options).unwrap();
+        zip_writer.write_all(b"#!/bin/sh").unwrap();
+        zip_writer.finish().unwrap();
+
+        let extract_dir = temp.path().join("extract");
+        extract_zip_to_directory(&zip_path, &extract_dir, None, None).unwrap();
+
+        let mode = fs::metadata(extract_dir.join("tool"))
+            .unwrap()
+            .permissions()
+            .mode();
+        assert_eq!(mode & 0o7777, 0o755);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn safe_unix_mode_keeps_only_permission_bits() {
+        assert_eq!(safe_unix_mode(0o104755), 0o755);
+        assert_eq!(safe_unix_mode(0o102755), 0o755);
+        assert_eq!(safe_unix_mode(0o041777), 0o777);
+        assert_eq!(safe_unix_mode(0o100644), 0o644);
     }
 }

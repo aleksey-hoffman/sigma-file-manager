@@ -112,8 +112,11 @@ fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), St
             {
                 use std::os::unix::fs::PermissionsExt;
                 if let Some(mode) = entry_mode {
-                    fs::set_permissions(&outpath, fs::Permissions::from_mode(mode))
-                        .map_err(|error| format!("Failed to set file permissions: {}", error))?;
+                    fs::set_permissions(
+                        &outpath,
+                        fs::Permissions::from_mode(crate::archive::safe_unix_mode(mode)),
+                    )
+                    .map_err(|error| format!("Failed to set file permissions: {}", error))?;
                 }
             }
             #[cfg(not(unix))]
