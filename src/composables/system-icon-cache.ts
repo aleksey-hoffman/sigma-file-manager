@@ -43,13 +43,13 @@ export interface SystemIconRequest {
 function isSystemIconRequestPath(path: string): boolean {
   const trimmed = path.trim();
 
-  if (!trimmed || trimmed.includes('://')) {
+  if (!trimmed || trimmed.includes('://') || trimmed.startsWith('::{')) {
     return false;
   }
 
-  const lower = trimmed.toLowerCase();
+  const firstChar = trimmed.charCodeAt(0);
 
-  if (trimmed.startsWith('::{') || lower.startsWith('shell:')) {
+  if ((firstChar === 115 || firstChar === 83) && trimmed.slice(0, 6).toLowerCase() === 'shell:') {
     return false;
   }
 
@@ -122,15 +122,15 @@ export function getCachedSystemIcon(request: SystemIconRequest): string | null |
 }
 
 export async function fetchSystemIconCached(request: SystemIconRequest): Promise<string | null> {
+  if (!isSystemIconRequestPath(request.path)) {
+    return null;
+  }
+
   const iconSize = Math.max(8, Math.min(256, Math.round(request.size)));
   const requestCacheKey = getSystemIconCacheKey({
     ...request,
     size: iconSize,
   });
-
-  if (!isSystemIconRequestPath(request.path)) {
-    return null;
-  }
 
   const cached = systemIconCache.get(requestCacheKey);
 
@@ -179,7 +179,7 @@ export function prefetchSystemIconsForEntries(
   const pendingRequests = new Map<string, SystemIconRequest>();
 
   for (const entry of entries) {
-    if (entry.drive_metadata) {
+    if (entry.drive_metadata || !isSystemIconRequestPath(entry.path)) {
       continue;
     }
 
