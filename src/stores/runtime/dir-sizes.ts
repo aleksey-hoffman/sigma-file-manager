@@ -40,8 +40,8 @@ const DIR_SIZE_RESULT_EVENT = 'dir-size-result';
 export const useDirSizesStore = defineStore('dir-sizes', () => {
   const sizes = ref<Map<string, DirSizeInfo>>(new Map());
   const pendingPaths = ref<Set<string>>(new Set());
-  const progressIntervals = ref<Map<string, ReturnType<typeof setInterval>>>(new Map());
-  const completionIntervals = ref<Map<string, ReturnType<typeof setInterval>>>(new Map());
+  const progressIntervals = new Map<string, ReturnType<typeof setInterval>>();
+  const completionIntervals = new Map<string, ReturnType<typeof setInterval>>();
   const renamedPaths = new Map<string, string>();
   const directoryPins = new Map<string, number>();
   const batchRequestIds = new Map<string, Set<number>>();
@@ -155,15 +155,15 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       }
     }, 1000);
 
-    progressIntervals.value.set(path, interval);
+    progressIntervals.set(path, interval);
   }
 
   function stopProgressPolling(path: string) {
-    const interval = progressIntervals.value.get(path);
+    const interval = progressIntervals.get(path);
 
     if (interval) {
       clearInterval(interval);
-      progressIntervals.value.delete(path);
+      progressIntervals.delete(path);
     }
   }
 
@@ -671,8 +671,8 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     for (const path of [
       ...sizes.value.keys(),
       ...pendingPaths.value,
-      ...progressIntervals.value.keys(),
-      ...completionIntervals.value.keys(),
+      ...progressIntervals.keys(),
+      ...completionIntervals.keys(),
     ]) {
       const nextPath = replacePathPrefix(path, oldPath, newPath);
 
@@ -689,7 +689,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
 
     pendingPaths.value = remapPathSet(pendingPaths.value, oldPath, newPath);
 
-    for (const path of [...progressIntervals.value.keys()]) {
+    for (const path of [...progressIntervals.keys()]) {
       const nextPath = replacePathPrefix(path, oldPath, newPath);
 
       if (!nextPath || nextPath === path) {
@@ -700,7 +700,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       startProgressPolling(nextPath);
     }
 
-    for (const path of [...completionIntervals.value.keys()]) {
+    for (const path of [...completionIntervals.keys()]) {
       const nextPath = replacePathPrefix(path, oldPath, newPath);
 
       if (!nextPath || nextPath === path) {
@@ -800,11 +800,11 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
    * is no longer in the active list.
    */
   function stopCompletionWatch(path: string) {
-    const interval = completionIntervals.value.get(path);
+    const interval = completionIntervals.get(path);
 
     if (interval) {
       clearInterval(interval);
-      completionIntervals.value.delete(path);
+      completionIntervals.delete(path);
     }
   }
 
@@ -813,7 +813,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     stopCompletionWatch(path);
 
     const checkInterval = setInterval(async () => {
-      if (completionIntervals.value.get(path) !== checkInterval) {
+      if (completionIntervals.get(path) !== checkInterval) {
         return;
       }
 
@@ -833,7 +833,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
         else {
           // Calculation completed or was cancelled
           clearInterval(checkInterval);
-          completionIntervals.value.delete(path);
+          completionIntervals.delete(path);
           stopProgressPolling(path);
           pendingPaths.value.delete(path);
 
@@ -858,14 +858,14 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       catch {
         // Error checking, clean up
         clearInterval(checkInterval);
-        completionIntervals.value.delete(path);
+        completionIntervals.delete(path);
         stopProgressPolling(path);
         pendingPaths.value.delete(path);
         statusCenterStore.completeOperation(operationId, 'error');
       }
     }, 1000);
 
-    completionIntervals.value.set(path, checkInterval);
+    completionIntervals.set(path, checkInterval);
   }
 
   return {
