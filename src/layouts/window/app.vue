@@ -4,21 +4,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed, defineAsyncComponent } from 'vue';
 import { NavSidebar, WindowToolbar } from '@/modules/shell';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { InfusionWrapper } from '@/components/ui/infusion';
-import { ChangelogDialog } from '@/modules/changelog';
 import { PageIframeLayout } from '@/layouts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useChangelog } from '@/modules/changelog/composables/use-changelog';
 import { useEmbedPages } from '@/modules/extensions/composables/use-embed-pages';
-import ExtensionDialog from '@/modules/extensions/components/extension-dialog.vue';
-import ExtensionEmbed from '@/modules/extensions/components/extension-embed.vue';
-import CommandPalette from '@/modules/extensions/components/command-palette.vue';
-import ExtensionModalsContainer from '@/modules/extensions/components/extension-modals-container.vue';
+import { extensionDialogState } from '@/modules/extensions/api/dialog-state';
+import { getActiveModals } from '@/modules/extensions/api/modal-state';
+
+const ChangelogDialog = defineAsyncComponent(() => import('@/modules/changelog/components/changelog-dialog.vue'));
+const ExtensionDialog = defineAsyncComponent(() => import('@/modules/extensions/components/extension-dialog.vue'));
+const ExtensionEmbed = defineAsyncComponent(() => import('@/modules/extensions/components/extension-embed.vue'));
+const CommandPalette = defineAsyncComponent(() => import('@/modules/extensions/components/command-palette.vue'));
+const ExtensionModalsContainer = defineAsyncComponent(() => import('@/modules/extensions/components/extension-modals-container.vue'));
 
 const userSettingsStore = useUserSettingsStore();
+const { isOpen: isChangelogOpen } = useChangelog();
 const { activeEmbedPageId, visitedEmbedPages } = useEmbedPages();
+const activeModals = getActiveModals();
+const hasStandaloneModals = computed(() => activeModals.value.some(modal => !modal.renderedInPalette));
 </script>
 
 <template>
@@ -28,10 +36,10 @@ const { activeEmbedPageId, visitedEmbedPages } = useEmbedPages();
   >
     <InfusionWrapper />
     <Toaster />
-    <ChangelogDialog />
-    <ExtensionDialog />
+    <ChangelogDialog v-if="isChangelogOpen" />
+    <ExtensionDialog v-if="extensionDialogState.isOpen" />
     <CommandPalette />
-    <ExtensionModalsContainer />
+    <ExtensionModalsContainer v-if="hasStandaloneModals" />
     <TooltipProvider :delay-duration="userSettingsStore.userSettings.tooltipDelayMs">
       <NavSidebar />
       <div class="app-layout__main">
