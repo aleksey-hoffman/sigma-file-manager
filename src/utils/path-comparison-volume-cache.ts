@@ -9,7 +9,9 @@ import { canonicalizePath } from '@/utils/normalize-path';
 const volumeCaseSensitiveByKey = new Map<string, boolean>();
 
 export function getVolumeCacheKeyForNormalizedPath(normalizedPath: string): string {
-  const forward = normalizedPath.replace(/\\/g, '/');
+  const forward = normalizedPath.includes('\\')
+    ? normalizedPath.replace(/\\/g, '/')
+    : normalizedPath;
   const driveMatch = forward.match(/^([A-Za-z]:\/)/);
 
   if (driveMatch) {
@@ -44,24 +46,22 @@ export async function warmPathComparisonVolumeCache(): Promise<void> {
     return;
   }
 
-  const nextCache = new Map<string, boolean>();
-
-  for (const root of roots) {
+  const resolvedEntries = await Promise.all(roots.map(async (root) => {
     const normalizedRoot = canonicalizePath(root);
     const key = getVolumeCacheKeyForNormalizedPath(normalizedRoot);
 
     try {
       const isCaseSensitive = await invoke<boolean>('path_volume_is_case_sensitive', { path: root });
-      nextCache.set(key, isCaseSensitive);
+      return [key, isCaseSensitive] as const;
     }
     catch {
-      nextCache.set(key, true);
+      return [key, true] as const;
     }
-  }
+  }));
 
   volumeCaseSensitiveByKey.clear();
 
-  for (const [key, value] of nextCache) {
+  for (const [key, value] of resolvedEntries) {
     volumeCaseSensitiveByKey.set(key, value);
   }
 }
@@ -72,27 +72,29 @@ export function volumeIsCaseSensitiveForNormalizedPath(normalizedPath: string): 
 }
 
 export function shouldFoldPathCaseForComparison(normalizedPath: string): boolean {
-  const forward = normalizedPath.replace(/\\/g, '/');
+  if (isPlatformInfoInitialized()) {
+    const { isWindows, isMacos } = getPlatformInfo();
 
-  if (!isPlatformInfoInitialized()) {
-    return pathLooksLikeWindowsStyle(forward);
+    if (isWindows) {
+      return true;
+    }
+
+    if (!isMacos) {
+      return false;
+    }
+
+    const sensitivity = volumeIsCaseSensitiveForNormalizedPath(normalizedPath);
+
+    if (sensitivity === undefined) {
+      return true;
+    }
+
+    return !sensitivity;
   }
 
-  const { isWindows, isMacos } = getPlatformInfo();
+  const forward = normalizedPath.includes('\\')
+    ? normalizedPath.replace(/\\/g, '/')
+    : normalizedPath;
 
-  if (isWindows) {
-    return true;
-  }
-
-  if (!isMacos) {
-    return false;
-  }
-
-  const sensitivity = volumeIsCaseSensitiveForNormalizedPath(forward);
-
-  if (sensitivity === undefined) {
-    return true;
-  }
-
-  return !sensitivity;
+  return pathLooksLikeWindowsStyle(forward);
 }
