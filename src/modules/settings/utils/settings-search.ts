@@ -32,8 +32,10 @@ const SHORTCUT_DISPLAY_ALIASES: Array<[string, string]> = [
   ['Mouse Button 5', 'MouseButton5'],
 ];
 
-function getNestedValue(obj: Record<string, unknown>, path: string): string | undefined {
-  const keys = path.split('.');
+const localeMessageObjects = Object.values(messages) as Array<Record<string, unknown>>;
+const translationsCache = new Map<string, string[]>();
+
+function getNestedValue(obj: Record<string, unknown>, keys: readonly string[]): string | undefined {
   let current: unknown = obj;
 
   for (const key of keys) {
@@ -48,17 +50,24 @@ function getNestedValue(obj: Record<string, unknown>, path: string): string | un
 }
 
 export function getAllTranslations(key: string): string[] {
+  const cached = translationsCache.get(key);
+
+  if (cached) {
+    return cached;
+  }
+
+  const keys = key.split('.');
   const translations: string[] = [];
 
-  for (const locale of Object.keys(messages)) {
-    const localeMessages = messages[locale as keyof typeof messages];
-    const value = getNestedValue(localeMessages as Record<string, unknown>, key);
+  for (const localeMessages of localeMessageObjects) {
+    const value = getNestedValue(localeMessages, keys);
 
     if (value) {
       translations.push(value.toLowerCase());
     }
   }
 
+  translationsCache.set(key, translations);
   return translations;
 }
 
