@@ -36,6 +36,7 @@ export type CopyMoveSourceForSizeRefresh = {
 };
 
 const DIR_SIZE_RESULT_EVENT = 'dir-size-result';
+const QUICK_SCAN_GAVE_UP_STATUSES = new Set<DirSizeResult['status']>(['Partial', 'Timeout', 'Error']);
 
 export const useDirSizesStore = defineStore('dir-sizes', () => {
   const sizes = ref<Map<string, DirSizeInfo>>(new Map());
@@ -47,6 +48,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
   const batchRequestIds = new Map<string, Set<number>>();
   const explicitPaths = new Set<string>();
   const explicitRequestIds = new Map<string, number>();
+  let quickScanGaveUpPaths = new Set<string>();
   let nextBatchRequestId = 1;
   let dirSizeResultListener: Promise<void> | null = null;
 
@@ -116,6 +118,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       calculatedAt: Date.now(),
     });
     pendingPaths.value.delete(path);
+    quickScanGaveUpPaths.delete(path);
   }
 
   function setLoading(path: string) {
@@ -262,6 +265,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
 
     const requestId = trackExplicitRequest(path);
     explicitPaths.add(path);
+    quickScanGaveUpPaths.delete(path);
     setLoading(path);
 
     const operationId = `dir-size-${path}`;
@@ -392,12 +396,14 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     const requirePin = options?.requirePin ?? false;
     const attempt = options?.attempt ?? 0;
 
+    const isQuickScan = timeoutMs !== null;
     const pathsToFetch = [...new Set(paths)]
       .filter((path) => {
         const existing = sizes.value.get(path);
         const isPending = pendingPaths.value.has(path);
         const hasValidCache = existing && existing.status === 'Complete';
-        return !isPending && !hasValidCache;
+        const quickScanGaveUp = isQuickScan && quickScanGaveUpPaths.has(path);
+        return !isPending && !hasValidCache && !quickScanGaveUp;
       });
 
     if (pathsToFetch.length === 0) {
@@ -443,7 +449,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
           continue;
         }
 
-        const shouldRetry = (result.status === 'Cancelled' || result.status === 'Partial')
+        const shouldRetry = result.status === 'Cancelled'
           && directoryPins.has(path)
           && attempt < 1;
 
@@ -451,6 +457,10 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
           pendingPaths.value.delete(path);
           retryPaths.push(path);
           continue;
+        }
+
+        if (isQuickScan && QUICK_SCAN_GAVE_UP_STATUSES.has(result.status)) {
+          quickScanGaveUpPaths.add(path);
         }
 
         setSize(path, {
@@ -551,6 +561,12 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
         const removed = previousPaths.filter(path => !nextPaths.includes(path));
         const added = nextPaths.filter(path => !previousPaths.includes(path));
         heldPaths = nextPaths;
+
+        // A folder that stays in view is not quick-scanned again on every listing refresh:
+        // it gets one quick attempt each time it comes into view.
+        for (const path of added) {
+          quickScanGaveUpPaths.delete(path);
+        }
 
         try {
           if (removed.length > 0) {
@@ -688,6 +704,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     }
 
     pendingPaths.value = remapPathSet(pendingPaths.value, oldPath, newPath);
+    quickScanGaveUpPaths = remapPathSet(quickScanGaveUpPaths, oldPath, newPath);
 
     for (const path of [...progressIntervals.value.keys()]) {
       const nextPath = replacePathPrefix(path, oldPath, newPath);
@@ -726,6 +743,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       invalidateBatchRequests(path);
       explicitRequestIds.delete(path);
       explicitPaths.delete(path);
+      quickScanGaveUpPaths.delete(path);
       stopProgressPolling(path);
     }
 
@@ -740,6 +758,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
   function invalidateAll() {
     sizes.value.clear();
     pendingPaths.value.clear();
+    quickScanGaveUpPaths.clear();
 
     invoke('clear_dir_size_cache').catch((error) => {
       console.error('Failed to clear cache:', error);
@@ -749,6 +768,7 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
   function clearLocalCache() {
     sizes.value.clear();
     pendingPaths.value.clear();
+    quickScanGaveUpPaths.clear();
   }
 
   /**
