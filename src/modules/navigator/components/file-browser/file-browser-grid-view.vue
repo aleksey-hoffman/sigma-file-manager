@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
 import { getFileBrowserGridEntryVariant } from './file-browser-entry-groups';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import type {
@@ -30,6 +30,58 @@ function handleGridContextMenu(event: MouseEvent) {
 
   ctx.handleBackgroundContextMenu();
 }
+
+let pendingFolderMeterPointer: {
+  card: HTMLElement;
+  clientX: number;
+  clientY: number;
+} | null = null;
+let folderMeterPointerFrame: number | null = null;
+
+function applyFolderMeterPointer(): void {
+  folderMeterPointerFrame = null;
+  const pointer = pendingFolderMeterPointer;
+  pendingFolderMeterPointer = null;
+
+  if (!pointer) {
+    return;
+  }
+
+  const rect = pointer.card.getBoundingClientRect();
+  pointer.card.style.setProperty('--folder-meter-pointer-x', `${pointer.clientX - rect.left}px`);
+  pointer.card.style.setProperty('--folder-meter-pointer-y', `${pointer.clientY - rect.top}px`);
+}
+
+function handleGridPointerMove(event: PointerEvent): void {
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+
+  const card = event.target.closest<HTMLElement>('.file-browser-grid-card--folder-meter');
+
+  if (!card) {
+    return;
+  }
+
+  pendingFolderMeterPointer = {
+    card,
+    clientX: event.clientX,
+    clientY: event.clientY,
+  };
+
+  if (folderMeterPointerFrame === null) {
+    folderMeterPointerFrame = window.requestAnimationFrame(applyFolderMeterPointer);
+  }
+}
+
+onBeforeUnmount(() => {
+  if (folderMeterPointerFrame !== null) {
+    window.cancelAnimationFrame(folderMeterPointerFrame);
+    folderMeterPointerFrame = null;
+  }
+
+  pendingFolderMeterPointer = null;
+});
 
 function getSectionLabel(section: {
   labelKey: string | null;
@@ -71,6 +123,7 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
     :key="ctx.currentPath.value"
     class="file-browser-grid-view file-browser-grid-view--animate"
     @contextmenu="handleGridContextMenu"
+    @pointermove="handleGridPointerMove"
   >
     <div
       class="file-browser-grid-view__spacer"
@@ -127,6 +180,7 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
               :key="entry.path"
               :entry="entry"
               :variant="getFileBrowserGridEntryVariant(entry)"
+              :dir-card-size="row.cardHeight === 'file' ? 'large' : 'compact'"
             />
           </div>
         </template>

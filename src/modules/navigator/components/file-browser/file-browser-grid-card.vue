@@ -17,8 +17,13 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
+import FileBrowserGridFolderMeter from './file-browser-grid-folder-meter.vue';
+import { getFolderMeterFraction } from './utils/file-browser-folder-meter';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { BUILTIN_NAVIGATOR_ICON_THEME_IDS, normalizeNavigatorIconThemeId } from '@/types/icon-theme';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-display-src';
 import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
 import { getImageSrc } from './utils';
@@ -32,10 +37,12 @@ const DEFAULT_GRID_THUMBNAIL_SIZE = {
 const props = defineProps<{
   entry: DirEntry;
   variant: 'dir' | 'image' | 'video' | 'other';
+  dirCardSize?: 'compact' | 'large';
 }>();
 
 const ctx = useFileBrowserContext();
 const platformStore = usePlatformStore();
+const userSettingsStore = useUserSettingsStore();
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
 const itemCountsStore = useItemCountsStore();
@@ -67,6 +74,34 @@ const clipboardPathsMap = computed(() => {
   }
 
   return map;
+});
+const showFolderMeter = computed(() => props.variant === 'dir'
+  && !props.entry.drive_metadata
+  && !isVirtualLocationPath(props.entry.path));
+const showFolderMeterIcon = computed(() => {
+  if (!showFolderMeter.value) {
+    return false;
+  }
+
+  const folderIconTheme = normalizeNavigatorIconThemeId(userSettingsStore.userSettings.navigator.folderIconTheme);
+  return folderIconTheme !== BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+});
+const isFolderMeterLarge = computed(() => props.dirCardSize === 'large');
+const isFolderSizing = computed(() => {
+  if (!showFolderMeter.value) {
+    return false;
+  }
+
+  return dirSizesStore.isLoading(props.entry.path)
+    || dirSizesStore.getSize(props.entry.path)?.status === 'Loading';
+});
+const folderMeterFraction = computed(() => {
+  if (!showFolderMeter.value) {
+    return 0;
+  }
+
+  const sizeInfo = dirSizesStore.getSize(props.entry.path);
+  return sizeInfo?.status === 'Complete' ? getFolderMeterFraction(sizeInfo.size) : 0;
 });
 const imageThumbnailMaxDimension = computed(() => Math.max(previewSize.value.width, previewSize.value.height));
 const imagePreviewSrc = computed(() => {
@@ -314,6 +349,9 @@ watch(imagePreviewPlaceholderSrc, () => {
         'file-browser-grid-card--icon-full': props.variant === 'other'
           || shouldShowImageFallback
           || (props.variant === 'video' && !videoThumbnail),
+        'file-browser-grid-card--folder-meter': showFolderMeter,
+        'file-browser-grid-card--folder-meter-large': showFolderMeter && isFolderMeterLarge,
+        'file-browser-grid-card--folder-meter-icon': showFolderMeterIcon,
       },
     ]"
     :data-entry-path="props.entry.path"
@@ -337,8 +375,14 @@ watch(imagePreviewPlaceholderSrc, () => {
       ref="previewRef"
       class="file-browser-grid-card__preview"
     >
+      <FileBrowserGridFolderMeter
+        v-if="showFolderMeter"
+        :fraction="folderMeterFraction"
+        :sizing="isFolderSizing"
+        :large="isFolderMeterLarge"
+      />
       <FileBrowserEntryIcon
-        v-if="props.variant === 'dir'"
+        v-else-if="props.variant === 'dir'"
         :entry="props.entry"
         :size="24"
         class="file-browser-grid-card__icon file-browser-grid-card__icon--folder"
@@ -398,10 +442,16 @@ watch(imagePreviewPlaceholderSrc, () => {
         'file-browser-grid-card__info--bottom': props.variant === 'other',
       }"
     >
+      <FileBrowserEntryIcon
+        v-if="showFolderMeterIcon"
+        :entry="props.entry"
+        :size="24"
+        class="file-browser-grid-card__icon file-browser-grid-card__icon--folder file-browser-grid-card__folder-meter-icon"
+      />
       <span class="file-browser-grid-card__name">{{ entry.name }}</span>
       <div class="file-browser-grid-card__meta">
         <LoaderCircleIcon
-          v-if="props.variant === 'dir' && isDirLoadingWithProgress(props.entry)"
+          v-if="props.variant === 'dir' && !showFolderMeter && isDirLoadingWithProgress(props.entry)"
           :size="12"
           class="file-browser-grid-card__spinner"
         />
@@ -410,7 +460,7 @@ watch(imagePreviewPlaceholderSrc, () => {
           class="file-browser-grid-card__size"
         >
           <template v-if="getDirSizeDisplay(props.entry)">{{ getDirSizeDisplay(props.entry) }}</template>
-          <template v-else-if="shouldShowSizeSkeleton(props.entry)">
+          <template v-else-if="!showFolderMeter && shouldShowSizeSkeleton(props.entry)">
             <span
               v-if="getDirItemCount(props.entry) !== null"
               class="file-browser-grid-card__separator"
@@ -490,6 +540,66 @@ watch(imagePreviewPlaceholderSrc, () => {
   overflow: hidden;
   min-width: 0;
   flex: 1;
+}
+
+.file-browser-grid-card--folder-meter {
+  --folder-meter-tab-height: 6px;
+  --folder-meter-radius: 9px;
+
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.file-browser-grid-card--folder-meter-large {
+  --folder-meter-tab-height: 12px;
+  --folder-meter-radius: 12px;
+}
+
+.file-browser-grid-card--folder-meter .file-browser-grid-card__preview {
+  position: static;
+}
+
+.file-browser-grid-card--folder-meter .file-browser-grid-card__info {
+  position: absolute;
+  justify-content: center;
+  inset: var(--folder-meter-tab-height) 28px 0 12px;
+}
+
+.file-browser-grid-card--folder-meter-large .file-browser-grid-card__info {
+  justify-content: flex-start;
+  inset: calc(var(--folder-meter-tab-height) + 11px) 14px auto;
+}
+
+.file-browser-grid-card--folder-meter-icon .file-browser-grid-card__info {
+  display: grid;
+  align-content: center;
+  gap: 2px 8px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.file-browser-grid-card--folder-meter-icon.file-browser-grid-card--folder-meter-large .file-browser-grid-card__info {
+  align-content: start;
+}
+
+.file-browser-grid-card__folder-meter-icon {
+  flex-shrink: 0;
+  align-self: center;
+  grid-row: 1 / span 2;
+}
+
+.file-browser-grid-card--folder-meter-large .file-browser-grid-card__name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.file-browser-grid-card--folder-meter .file-browser-grid-card__overlay-container {
+  top: var(--folder-meter-tab-height);
+}
+
+.file-browser-grid-card--folder-meter .file-browser-grid-card__overlay {
+  border-radius: 0 var(--folder-meter-radius) var(--folder-meter-radius) var(--folder-meter-radius);
 }
 
 .file-browser-grid-card--image,
