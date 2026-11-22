@@ -50,31 +50,44 @@ export function useFileBrowserEntries(
 
   const entries = computed(() => {
     if (!dirContents.value) return [];
-    let items = dirContents.value.entries;
+    const rawItems = dirContents.value.entries;
+    const hideHiddenFiles = !showHiddenFiles.value;
+    const hasFilterQuery = filterQuery.value.trim().length > 0;
+    const matchesQuickSearch = hasFilterQuery
+      ? createFileBrowserQuickSearchMatcher(
+          filterQuery.value,
+          dirSizesStore,
+          quickSearchCache.value,
+        )
+      : null;
 
-    items = items.filter(item => !isAlwaysHiddenWindowsSystemEntry(item.path, item.name));
+    let items = rawItems.filter((item) => {
+      if (isAlwaysHiddenWindowsSystemEntry(item.path, item.name)) {
+        return false;
+      }
 
-    if (!showHiddenFiles.value) {
-      items = items.filter(item => !isHiddenFile(item));
-    }
+      if (hideHiddenFiles && isHiddenFile(item)) {
+        return false;
+      }
 
-    if (filterQuery.value.trim()) {
-      const matchesQuickSearch = createFileBrowserQuickSearchMatcher(
-        filterQuery.value,
-        dirSizesStore,
-        quickSearchCache.value,
-      );
+      if (matchesQuickSearch && !matchesQuickSearch(item)) {
+        return false;
+      }
 
-      items = items.filter(matchesQuickSearch);
-    }
+      return true;
+    });
 
     if (applySort.value) {
       const column = sortColumn.value ?? 'name';
       let entriesForSort = items;
-      const sortContext: FileBrowserEntrySortTagContext = {
-        tags: userStatsStore.tags,
-        taggedItems: userStatsStore.taggedItems,
-      };
+      let sortContext: FileBrowserEntrySortTagContext | undefined;
+
+      if (column === 'tags') {
+        sortContext = {
+          tags: userStatsStore.tags,
+          taggedItems: userStatsStore.taggedItems,
+        };
+      }
 
       if (column === 'items') {
         void itemCountsStore.sortRevision;
@@ -82,7 +95,11 @@ export function useFileBrowserEntries(
       }
 
       if (isLinkMetadataSortColumn(column) && linkMetadataStore.sortRevision >= 0) {
-        sortContext.getLinkSortFields = entry => linkMetadataStore.getSortFields(entry);
+        sortContext = {
+          tags: sortContext?.tags ?? [],
+          taggedItems: sortContext?.taggedItems ?? [],
+          getLinkSortFields: entry => linkMetadataStore.getSortFields(entry),
+        };
       }
 
       items = sortFileBrowserEntries(
