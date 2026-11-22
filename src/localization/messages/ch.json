@@ -654,7 +654,7 @@
     "deleteSelectedItemsFromDrive": "从驱动器中删除",
     "moveCurrentDirectoryToTrash": "将当前目录移至垃圾箱",
     "deleteCurrentDirectoryFromDrive": "从驱动器中删除当前目录",
-    "toggleCommandPalette": "Open / close command palette"
+    "toggleCommandPalette": "打开/关闭命令面板"
   },
   "dialogs": {
     "userDirectoryEditorDialog": {
