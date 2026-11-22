@@ -602,9 +602,9 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
   }
 
   async function registerAllShortcuts(): Promise<void> {
-    for (const definition of definitions.value) {
-      await registerShortcut(definition.id);
-    }
+    await Promise.all(
+      definitions.value.map(definition => registerShortcut(definition.id)),
+    );
   }
 
   async function unregisterAllShortcuts(): Promise<void> {
@@ -623,8 +623,10 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     if (isInitialized.value) return;
     if (getCurrentWebviewWindow().label !== 'main') return;
     isInitialized.value = true;
-    await registerAllShortcuts();
-    await syncTrayShortcutHint();
+    await Promise.all([
+      registerAllShortcuts(),
+      syncTrayShortcutHint(),
+    ]);
     startExtensionShortcutWatcher();
     await syncExtensionShortcuts();
   }
