@@ -52,7 +52,7 @@ fn is_virtual_filesystem(file_system: &str) -> bool {
 }
 
 #[cfg(any(target_os = "linux", test))]
-fn is_network_filesystem(file_system: &str) -> bool {
+pub(super) fn is_network_filesystem(file_system: &str) -> bool {
     let fs_lower = file_system.to_lowercase();
     let network_fs: [&str; 7] = [
         "nfs",

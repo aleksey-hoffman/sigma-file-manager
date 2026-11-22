@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "¿Reemplazar el recurso compartido?",
     "replaceShareDialogDescription": "Ya se están compartiendo archivos en la red. El recurso compartido actual se detendrá y será reemplazado por uno nuevo.",
     "replaceShareDialogConfirm": "Reemplazar"
+  },
+  "dirSizeHints": {
+    "partial": "Recuento parcial",
+    "unreadable": "No se puede leer",
+    "skipped": "Algunos elementos no se pueden leer"
   }
 }

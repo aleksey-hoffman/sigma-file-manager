@@ -28,6 +28,7 @@ import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-
 import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
 import { getImageSrc } from './utils';
 import { getDriveEntryVolumeSizeBytes } from '@/utils/drive-icon';
+import { DIR_SIZE_HINT_MESSAGE_KEYS, getSettledDirSizeDisplay, UNKNOWN_DIR_SIZE } from '@/utils/dir-size-display';
 
 const DEFAULT_GRID_THUMBNAIL_SIZE = {
   width: 340,
@@ -101,7 +102,9 @@ const folderMeterFraction = computed(() => {
   }
 
   const sizeInfo = dirSizesStore.getSize(props.entry.path);
-  return sizeInfo?.status === 'Complete' ? getFolderMeterFraction(sizeInfo.size) : 0;
+  return sizeInfo?.status === 'Complete' || sizeInfo?.status === 'Partial'
+    ? getFolderMeterFraction(sizeInfo.size)
+    : 0;
 });
 const imageThumbnailMaxDimension = computed(() => Math.max(previewSize.value.width, previewSize.value.height));
 const imagePreviewSrc = computed(() => {
@@ -268,7 +271,7 @@ function getDirSizeDisplay(entry: DirEntry): string | null {
   const sizeInfo = dirSizesStore.getSize(entry.path);
 
   if (!sizeInfo) {
-    return itemCountStr || '—';
+    return itemCountStr || UNKNOWN_DIR_SIZE;
   }
 
   if (sizeInfo.status === 'Loading') {
@@ -280,12 +283,18 @@ function getDirSizeDisplay(entry: DirEntry): string | null {
     return itemCountStr || null;
   }
 
-  if (sizeInfo.status === 'Complete') {
-    const sizeStr = formatBytes(sizeInfo.size);
-    return itemCountStr ? `${itemCountStr} · ${sizeStr}` : sizeStr;
+  const settledSize = getSettledDirSizeDisplay(sizeInfo);
+
+  if (settledSize && settledSize.text !== UNKNOWN_DIR_SIZE) {
+    return itemCountStr ? `${itemCountStr} · ${settledSize.text}` : settledSize.text;
   }
 
-  return itemCountStr || '—';
+  return itemCountStr || UNKNOWN_DIR_SIZE;
+}
+
+function getDirSizeHint(entry: DirEntry): string | undefined {
+  const hint = getSettledDirSizeDisplay(dirSizesStore.getSize(entry.path))?.hint;
+  return hint ? t(DIR_SIZE_HINT_MESSAGE_KEYS[hint]) : undefined;
 }
 
 function getDirItemCount(entry: DirEntry): number | null {
@@ -458,6 +467,7 @@ watch(imagePreviewPlaceholderSrc, () => {
         <span
           v-if="props.variant === 'dir'"
           class="file-browser-grid-card__size"
+          :title="getDirSizeHint(props.entry)"
         >
           <template v-if="getDirSizeDisplay(props.entry)">{{ getDirSizeDisplay(props.entry) }}</template>
           <template v-else-if="!showFolderMeter && shouldShowSizeSkeleton(props.entry)">

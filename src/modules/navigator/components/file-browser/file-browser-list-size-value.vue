@@ -6,11 +6,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 defineProps<{
   display: string | null;
+  title?: string;
 }>();
 </script>
 
 <template>
-  <span class="file-browser-list-size-value">{{ display }}</span>
+  <span
+    class="file-browser-list-size-value"
+    :class="{ 'file-browser-list-size-value--hinted': title }"
+    :title="title"
+  >{{ display }}</span>
 </template>
 
 <style scoped>
@@ -20,5 +25,9 @@ defineProps<{
   flex: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.file-browser-list-size-value--hinted {
+  color: hsl(var(--muted-foreground));
 }
 </style>

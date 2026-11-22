@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "Zamenjaj trenutno deljenje?",
     "replaceShareDialogDescription": "Datoteke se že delijo po omrežju. Trenutno deljenje bo ustavljeno in zamenjano z novim.",
     "replaceShareDialogConfirm": "Zamenjaj"
+  },
+  "dirSizeHints": {
+    "partial": "Delno šteto",
+    "unreadable": "Ni mogoče prebrati",
+    "skipped": "Nekaterih elementov ni mogoče prebrati"
   }
 }

@@ -59,7 +59,7 @@ describe('useDirSizesStore directory size watch', () => {
   const calls: InvokeCall[] = [];
   const batches: Array<ReturnType<typeof deferred<DirSizeResult[]>>> = [];
 
-  const listeners = new Map<string, (event: { payload: DirSizeResult }) => void>();
+  const listeners = new Map<string, (event: { payload: DirSizeResult | DirSizeResult[] }) => void>();
 
   beforeEach(() => {
     calls.length = 0;
@@ -70,7 +70,7 @@ describe('useDirSizesStore directory size watch', () => {
     listenMock.mockReset();
     listenMock.mockImplementation(async (
       event: string,
-      handler: (payload: { payload: DirSizeResult }) => void,
+      handler: (payload: { payload: DirSizeResult | DirSizeResult[] }) => void,
     ) => {
       listeners.set(event, handler);
 
@@ -443,6 +443,204 @@ describe('useDirSizesStore directory size watch', () => {
       error: null,
     }]);
     await waitFor(() => dirSizesStore.sizes.get('/drive/photos')?.size === 6);
+  });
+
+  async function settle() {
+    for (let round = 0; round < 5; round += 1) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
+
+  function folderResult(path: string, overrides: Partial<DirSizeResult> = {}): DirSizeResult {
+    return {
+      path,
+      size: 0,
+      status: 'Complete',
+      file_count: 0,
+      dir_count: 0,
+      error: null,
+      ...overrides,
+    };
+  }
+
+  it('keeps a lower bound and an unreadable folder instead of dropping them', async () => {
+    const dirSizesStore = useDirSizesStore();
+    const request = dirSizesStore.requestSizesBatch(['/drive/huge', '/drive/locked']);
+    await waitFor(() => batches.length === 1);
+
+    batches[0]?.resolve([
+      folderResult('/drive/huge', {
+        size: 2048,
+        status: 'Partial',
+        file_count: 10,
+      }),
+      folderResult('/drive/locked', {
+        status: 'Error',
+        error: 'Access denied',
+      }),
+    ]);
+    await request;
+
+    expect(dirSizesStore.getSize('/drive/huge')).toMatchObject({
+      status: 'Partial',
+      size: 2048,
+    });
+    expect(dirSizesStore.getSize('/drive/locked')).toMatchObject({
+      status: 'Error',
+      error: 'Access denied',
+    });
+    expect(dirSizesStore.isLoading('/drive/huge')).toBe(false);
+  });
+
+  it('cancels a queued quick scan when the user asks for the full size', async () => {
+    const dirSizesStore = useDirSizesStore();
+    const fullScan = deferred<DirSizeResult>();
+    invokeMock.mockImplementation((command: string, args?: { paths?: string[] }) => {
+      calls.push({
+        command,
+        paths: args?.paths ? [...args.paths] : [],
+      });
+
+      if (command === 'get_dir_sizes_batch') {
+        const batch = deferred<DirSizeResult[]>();
+        batches.push(batch);
+        return batch.promise;
+      }
+
+      if (command === 'get_dir_size') {
+        return fullScan.promise;
+      }
+
+      return Promise.resolve(true);
+    });
+
+    const quickScan = dirSizesStore.requestSizesBatch(['/drive/huge']);
+    await waitFor(() => batches.length === 1);
+    const fullRequest = dirSizesStore.requestSizeFull('/drive/huge', { showInStatusCenter: false });
+    await waitFor(() => calls.some(call => call.command === 'get_dir_size'));
+
+    const commands = calls.map(call => call.command);
+    expect(commands.indexOf('cancel_dir_size')).toBeGreaterThan(-1);
+    expect(commands.indexOf('cancel_dir_size')).toBeLessThan(commands.indexOf('get_dir_size'));
+    expect(dirSizesStore.isFullScanRunning('/drive/huge')).toBe(true);
+
+    batches[0]?.resolve([folderResult('/drive/huge', { status: 'Cancelled' })]);
+    await quickScan;
+    expect(dirSizesStore.isFullScanRunning('/drive/huge')).toBe(true);
+
+    fullScan.resolve(folderResult('/drive/huge', { size: 900 }));
+    await fullRequest;
+    expect(dirSizesStore.getSize('/drive/huge')).toMatchObject({
+      status: 'Complete',
+      size: 900,
+    });
+  });
+
+  it('shows progress events for a running full scan', async () => {
+    const dirSizesStore = useDirSizesStore();
+    const fullScan = deferred<DirSizeResult>();
+    invokeMock.mockImplementation((command: string) => {
+      if (command === 'get_dir_size') {
+        return fullScan.promise;
+      }
+
+      return Promise.resolve(null);
+    });
+
+    const fullRequest = dirSizesStore.requestSizeFull('/drive/photos', { showInStatusCenter: false });
+    await waitFor(() => listeners.has('dir-size-progress'));
+    listeners.get('dir-size-progress')?.({
+      payload: [folderResult('/drive/photos', {
+        size: 12,
+        status: 'Partial',
+        file_count: 3,
+      })],
+    });
+
+    expect(dirSizesStore.getSize('/drive/photos')).toMatchObject({
+      status: 'Loading',
+      size: 12,
+    });
+
+    fullScan.resolve(folderResult('/drive/photos', { size: 20 }));
+    await fullRequest;
+    expect(dirSizesStore.getSize('/drive/photos')?.size).toBe(20);
+  });
+
+  it('re-checks a folder that changed and keeps the old size if the re-check runs out of time', async () => {
+    const dirSizesStore = useDirSizesStore();
+    const calculatedAt = Date.now() - 60_000;
+    dirSizesStore.sizes.set('/drive/big', {
+      size: 100,
+      status: 'Complete',
+      fileCount: 1,
+      dirCount: 0,
+      calculatedAt,
+    });
+    const watch = dirSizesStore.createDirectorySizeWatch();
+
+    watch.sync(['/drive/big'], { modifiedTimes: new Map([['/drive/big', calculatedAt - 1]]) });
+    await waitFor(() => calls.some(call => call.command === 'pin_dir_sizes'));
+    await settle();
+    expect(batches).toHaveLength(0);
+
+    watch.sync(['/drive/big'], { modifiedTimes: new Map([['/drive/big', Date.now()]]) });
+    await waitFor(() => batches.length === 1);
+    expect(dirSizesStore.getSize('/drive/big')?.size).toBe(100);
+
+    batches[0]?.resolve([folderResult('/drive/big', {
+      size: 40,
+      status: 'Partial',
+    })]);
+    await settle();
+
+    expect(dirSizesStore.getSize('/drive/big')).toMatchObject({
+      status: 'Complete',
+      size: 100,
+    });
+    watch.stop();
+  });
+
+  it('does not re-check a changed folder again within the recheck interval', async () => {
+    const dirSizesStore = useDirSizesStore();
+    dirSizesStore.sizes.set('/drive/busy', {
+      size: 7,
+      status: 'Complete',
+      fileCount: 1,
+      dirCount: 0,
+      calculatedAt: Date.now() - 1000,
+    });
+    const watch = dirSizesStore.createDirectorySizeWatch();
+
+    watch.sync(['/drive/busy'], { modifiedTimes: new Map([['/drive/busy', Date.now()]]) });
+    await waitFor(() => calls.some(call => call.command === 'pin_dir_sizes'));
+    await settle();
+
+    expect(batches).toHaveLength(0);
+    watch.stop();
+  });
+
+  it('re-checks only folders on screen after a paste, without a full scan', async () => {
+    const dirSizesStore = useDirSizesStore();
+    const watch = dirSizesStore.createDirectorySizeWatch();
+    watch.sync(['/drive/dest/copied']);
+    await waitFor(() => batches.length === 1);
+    batches[0]?.resolve([folderResult('/drive/dest/copied', { size: 5 })]);
+    await settle();
+
+    await dirSizesStore.refreshSizesAfterCopyMove(
+      [{
+        path: '/drive/source/copied',
+        is_dir: true,
+      }],
+      '/drive/dest',
+    );
+    await waitFor(() => batches.length === 2);
+
+    const batchCalls = calls.filter(call => call.command === 'get_dir_sizes_batch');
+    expect(batchCalls[1]?.paths).toEqual(['/drive/dest/copied']);
+    expect(calls.some(call => call.command === 'get_dir_size')).toBe(false);
+    watch.stop();
   });
 });
 

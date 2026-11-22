@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "Thay thế chia sẻ hiện tại?",
     "replaceShareDialogDescription": "Các tập tin đang được chia sẻ qua mạng. Chia sẻ hiện tại sẽ bị dừng và thay thế bằng chia sẻ mới.",
     "replaceShareDialogConfirm": "Thay thế"
+  },
+  "dirSizeHints": {
+    "partial": "Đếm một phần",
+    "unreadable": "Không thể đọc",
+    "skipped": "Một số mục không thể đọc"
   }
 }

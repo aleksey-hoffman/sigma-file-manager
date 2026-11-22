@@ -21,6 +21,7 @@ import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-dis
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserTags } from './composables/use-file-browser-tags';
 import { getDriveEntryVolumeSizeBytes } from '@/utils/drive-icon';
+import { DIR_SIZE_HINT_MESSAGE_KEYS, getSettledDirSizeDisplay, UNKNOWN_DIR_SIZE } from '@/utils/dir-size-display';
 import {
   useFileBrowserVisibleListColumns,
   type FileBrowserVisibleOptionalListColumn,
@@ -57,6 +58,7 @@ interface FileBrowserListTagBadge {
 
 interface FileBrowserListSizeDisplay {
   display: string | null;
+  title?: string;
   isLoadingWithProgress: boolean;
   isSkeletonVisible: boolean;
 }
@@ -83,6 +85,7 @@ interface FileBrowserListDisplayRow extends FileBrowserListVirtualRow {
   clipboardType: string | undefined;
   itemsDisplay: string;
   sizeDisplay: string | null;
+  sizeTitle: string | undefined;
   isDirLoadingWithProgress: boolean;
   isSizeSkeletonVisible: boolean;
   modifiedDate: FileBrowserListDateDisplay;
@@ -214,7 +217,18 @@ function getEntrySizeDisplay(entry: DirEntry): FileBrowserListSizeDisplay {
 
   if (!sizeInfo) {
     return {
-      display: '—',
+      display: UNKNOWN_DIR_SIZE,
+      isLoadingWithProgress: false,
+      isSkeletonVisible: false,
+    };
+  }
+
+  const settledSize = getSettledDirSizeDisplay(sizeInfo);
+
+  if (settledSize) {
+    return {
+      display: settledSize.text,
+      title: settledSize.hint ? t(DIR_SIZE_HINT_MESSAGE_KEYS[settledSize.hint]) : undefined,
       isLoadingWithProgress: false,
       isSkeletonVisible: false,
     };
@@ -380,6 +394,7 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
     clipboardPathType ?? '',
     itemsDisplay,
     sizeDisplay.display ?? '',
+    sizeDisplay.title ?? '',
     sizeDisplay.isLoadingWithProgress ? 'loading-size' : '',
     sizeDisplay.isSkeletonVisible ? 'size-skeleton' : '',
     modifiedDate.primary,
@@ -406,6 +421,7 @@ function createDisplayRow(row: FileBrowserListVirtualRow): FileBrowserListDispla
     clipboardType: clipboardPathType,
     itemsDisplay,
     sizeDisplay: sizeDisplay.display,
+    sizeTitle: sizeDisplay.title,
     isDirLoadingWithProgress: sizeDisplay.isLoadingWithProgress,
     isSizeSkeletonVisible: sizeDisplay.isSkeletonVisible,
     modifiedDate,

@@ -20,6 +20,7 @@ pub use types::{
 };
 
 pub use commands::*;
+pub(crate) use path_volume::path_is_on_network_volume;
 
 #[cfg(all(test, windows))]
 mod tests {

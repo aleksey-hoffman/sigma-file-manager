@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "現在の共有を置き換えますか？",
     "replaceShareDialogDescription": "すでにネットワーク上でファイルが共有されています。現在の共有を停止し、新しいものに置き換えます。",
     "replaceShareDialogConfirm": "置き換え"
+  },
+  "dirSizeHints": {
+    "partial": "一部のみ集計",
+    "unreadable": "読み取れません",
+    "skipped": "一部の項目を読み取れません"
   }
 }
