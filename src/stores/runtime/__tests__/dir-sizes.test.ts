@@ -357,6 +357,48 @@ describe('useDirSizesStore directory size watch', () => {
     expect(dirSizesStore.pendingPaths.has('/drive/photos')).toBe(true);
   });
 
+  it('quick-scans a folder that is too large once while it stays in view', async () => {
+    const dirSizesStore = useDirSizesStore();
+    const watch = dirSizesStore.createDirectorySizeWatch();
+
+    function batchCount() {
+      return calls.filter(call => call.command === 'get_dir_sizes_batch').length;
+    }
+
+    async function settle() {
+      for (let round = 0; round < 5; round += 1) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+
+    watch.sync(['/drive/huge']);
+    await waitFor(() => batches.length === 1);
+    batches[0]?.resolve([{
+      path: '/drive/huge',
+      size: 5,
+      status: 'Partial',
+      file_count: 1,
+      dir_count: 0,
+      error: null,
+    }]);
+    await settle();
+
+    expect(batchCount()).toBe(1);
+    expect(dirSizesStore.isLoading('/drive/huge')).toBe(false);
+
+    watch.sync(['/drive/huge']);
+    watch.sync(['/drive/huge']);
+    await settle();
+
+    expect(batchCount()).toBe(1);
+    expect(dirSizesStore.isLoading('/drive/huge')).toBe(false);
+
+    watch.sync([]);
+    watch.sync(['/drive/huge']);
+    await waitFor(() => batchCount() === 2);
+    watch.stop();
+  });
+
   it('retries a pinned folder once when the batch is cancelled', async () => {
     const dirSizesStore = useDirSizesStore();
     const first = deferred<DirSizeResult[]>();
