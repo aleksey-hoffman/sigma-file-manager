@@ -26,7 +26,7 @@ import { useTheme } from './composables/use-theme';
 import type { ThemeTransitionOrigin } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { useExtensionsStorageStore } from './extensions';
-import { i18n } from '@/localization';
+import { setAppLocale } from '@/localization';
 import { getLanguage } from '@/localization/data';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
@@ -549,7 +549,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
   async function setLanguage(newLanguage: LocalizationLanguage) {
     userSettings.value.language = newLanguage;
-    i18n.global.locale.value = newLanguage.locale as typeof i18n.global.locale.value;
+    await setAppLocale(newLanguage.locale);
     applyTextDirection(newLanguage.locale);
     await setUserSettingsStorage('language', newLanguage);
   }
@@ -562,8 +562,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     themeTransitionOrigin.value = origin;
   }
 
-  function initLanguage() {
-    i18n.global.locale.value = userSettings.value.language.locale as typeof i18n.global.locale.value;
+  async function initLanguage() {
+    await setAppLocale(userSettings.value.language.locale);
     applyTextDirection(userSettings.value.language.locale);
   }
 
@@ -710,7 +710,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     themeTransitionsEnabled.value = true;
     await ensureThemeChangeListener();
     await ensureInfoPanelShowChangeListener();
-    initLanguage();
+    await initLanguage();
     await initZoom();
   }
 
