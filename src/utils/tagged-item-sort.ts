@@ -8,6 +8,8 @@ export const TAGGED_ITEM_SORT_MODES = ['custom', 'name', 'dateAdded', 'path'] as
 
 export type TaggedItemSortMode = typeof TAGGED_ITEM_SORT_MODES[number];
 
+const taggedItemCollator = new Intl.Collator();
+
 export function sortTaggedItems(
   items: TaggedItem[],
   mode: TaggedItemSortMode,
@@ -17,23 +19,24 @@ export function sortTaggedItems(
     return [...items];
   }
 
-  const nextItems = [...items];
+  if (mode === 'dateAdded') {
+    return [...items].sort((itemA, itemB) => itemB.addedAt - itemA.addedAt);
+  }
 
-  nextItems.sort((itemA, itemB) => {
-    switch (mode) {
-      case 'dateAdded':
-        return itemB.addedAt - itemA.addedAt;
-      case 'path':
-        return itemA.path.localeCompare(itemB.path);
-      case 'name':
-        return getName(itemA).localeCompare(getName(itemB));
+  if (mode === 'path') {
+    return [...items].sort((itemA, itemB) => taggedItemCollator.compare(itemA.path, itemB.path));
+  }
 
-      default: {
-        const exhaustiveCheck: never = mode;
-        return exhaustiveCheck;
-      }
-    }
-  });
+  if (mode === 'name') {
+    return items
+      .map(item => ({
+        item,
+        name: getName(item),
+      }))
+      .sort((entryA, entryB) => taggedItemCollator.compare(entryA.name, entryB.name))
+      .map(entry => entry.item);
+  }
 
-  return nextItems;
+  const exhaustiveCheck: never = mode;
+  return exhaustiveCheck;
 }
