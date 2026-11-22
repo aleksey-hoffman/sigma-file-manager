@@ -164,12 +164,11 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardOrigin.value = 'internal';
     clipboardSource.value = null;
 
-    for (const item of items) {
-      const itemAlreadyAdded = clipboardItems.value.some(
-        clipboardItem => clipboardItem.path === item.path,
-      );
+    const existingPaths = new Set(clipboardItems.value.map(clipboardItem => clipboardItem.path));
 
-      if (!itemAlreadyAdded) {
+    for (const item of items) {
+      if (!existingPaths.has(item.path)) {
+        existingPaths.add(item.path);
         clipboardItems.value.push({ ...item });
       }
     }
@@ -650,10 +649,12 @@ export const useClipboardStore = defineStore('clipboard', () => {
     return pendingSystemClipboardImageSave;
   }
 
+  const clipboardItemPaths = computed(() => new Set(
+    clipboardItems.value.map(clipboardItem => clipboardItem.path),
+  ));
+
   function isItemInClipboard(item: DirEntry): boolean {
-    return clipboardItems.value.some(
-      clipboardItem => clipboardItem.path === item.path,
-    );
+    return clipboardItemPaths.value.has(item.path);
   }
 
   /**
