@@ -50,24 +50,29 @@ export const useUserPathsStore = defineStore('userPaths', () => {
   });
 
   const platformSpecificPaths = new Set(['runtimeDir', 'fontDir', 'executableDir', 'templateDir']);
+  const criticalStartupPathKeys: Array<keyof UserPathsFunctions> = ['appDataDir', 'homeDir'];
+  const deferredPathKeys = (Object.keys(userPathsFunctions) as Array<keyof UserPathsFunctions>)
+    .filter(key => !criticalStartupPathKeys.includes(key));
+
+  async function resolvePathKey(key: keyof UserPathsFunctions) {
+    try {
+      const resolvedPath = await userPathsFunctions[key]();
+      userPaths.value[key] = normalizePath(resolvedPath);
+    }
+    catch {
+      if (!platformSpecificPaths.has(key)) {
+        console.warn(`Failed to resolve path for ${key}`);
+      }
+
+      userPaths.value[key] = '';
+    }
+  }
 
   async function init() {
     try {
-      const promises = Object.keys(userPathsFunctions).map(async (key) => {
-        try {
-          const resolvedPath = await userPathsFunctions[key as keyof UserPathsFunctions]();
-          userPaths.value[key as keyof UserPaths] = normalizePath(resolvedPath);
-        }
-        catch {
-          if (!platformSpecificPaths.has(key)) {
-            console.warn(`Failed to resolve path for ${key}`);
-          }
-
-          userPaths.value[key as keyof UserPaths] = '';
-        }
-      });
-      await Promise.allSettled(promises);
+      await Promise.allSettled(criticalStartupPathKeys.map(resolvePathKey));
       setCustomPaths();
+      void Promise.allSettled(deferredPathKeys.map(resolvePathKey));
     }
     catch (error) {
       console.error('Failed to initialize user paths:', error);
