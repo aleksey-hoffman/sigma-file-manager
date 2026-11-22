@@ -3,7 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { describe, expect, it } from 'vitest';
-import { renderMarkdownToSafeHtml, renderTextWithLinksToSafeHtml, sanitizeHtml } from '@/utils/safe-html';
+import { renderTextWithLinksToSafeHtml, sanitizeHtml } from '@/utils/safe-html';
+import { renderMarkdownToSafeHtml } from '@/utils/safe-markdown';
 
 describe('safe-html', () => {
   it('sanitizes rendered markdown', () => {
