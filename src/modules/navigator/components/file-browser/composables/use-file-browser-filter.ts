@@ -158,6 +158,10 @@ export function useFileBrowserFilter(options: {
   }
 
   function handleKeydownForFilter(event: KeyboardEvent) {
+    if (!shouldApplyKeyToFilterQuery(event)) {
+      return;
+    }
+
     if (isCursorInsideTextField()) {
       return;
     }
@@ -166,9 +170,7 @@ export function useFileBrowserFilter(options: {
       return;
     }
 
-    const extendOpenFilter = isFilterOpen.value && shouldApplyKeyToFilterQuery(event);
-
-    if (extendOpenFilter) {
+    if (isFilterOpen.value) {
       if (hasBlockingRekaDismissableLayers()) {
         return;
       }
@@ -189,15 +191,13 @@ export function useFileBrowserFilter(options: {
       return;
     }
 
-    if (shouldApplyKeyToFilterQuery(event)) {
-      if (!isActiveInThisFileBrowserPane()) {
-        return;
-      }
-
-      openFilter();
-      filterQuery.value += event.key;
-      event.preventDefault();
+    if (!isActiveInThisFileBrowserPane()) {
+      return;
     }
+
+    openFilter();
+    filterQuery.value += event.key;
+    event.preventDefault();
   }
 
   watch(isFilterOpen, (isOpen) => {
