@@ -396,8 +396,11 @@ mod tests {
         assert!(!wrong_dir.join("secret.txt").exists());
 
         let missing_dir = temp.path().join("missing");
-        let result = extract_zip_to_directory(&zip_path, &missing_dir, None, None);
-        assert!(result.is_err());
+        let error = extract_zip_to_directory(&zip_path, &missing_dir, None, None).unwrap_err();
+        assert!(
+            error.contains(ZipError::PASSWORD_REQUIRED),
+            "unexpected error: {error}"
+        );
         assert!(!missing_dir.join("secret.txt").exists());
 
         let extract_dir = temp.path().join("extracted");
@@ -428,6 +431,12 @@ mod tests {
             b"../outside.txt"
         );
         assert!(!temp.path().join("outside.txt").exists());
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_ne!(link_metadata.permissions().mode() & 0o777, 0o777);
+        }
     }
 
     #[cfg(unix)]
