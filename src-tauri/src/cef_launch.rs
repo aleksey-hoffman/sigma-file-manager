@@ -17,7 +17,6 @@ use std::mem;
 
 /// Chromium re-executes this binary for its zygote, GPU, and renderer processes.
 /// Those copies carry `--type=` and should not repeat the startup line.
-#[cfg(any(test, all(feature = "cef", target_os = "linux")))]
 pub fn is_chromium_subprocess(args: &[String]) -> bool {
     args.iter().any(|arg| arg.starts_with("--type="))
 }

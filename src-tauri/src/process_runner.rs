@@ -14,6 +14,7 @@ pub enum ProcessRunError {
 }
 
 pub struct ProcessRunOutput {
+    #[cfg(windows)]
     pub stdout: Vec<u8>,
     pub status: ExitStatus,
 }
@@ -80,6 +81,7 @@ pub fn run_command_blocking(
         .wait_with_output()
         .map_err(ProcessRunError::WaitFailed)?;
     Ok(ProcessRunOutput {
+        #[cfg(windows)]
         stdout: output.stdout,
         status: output.status,
     })
