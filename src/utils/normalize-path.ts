@@ -5,12 +5,31 @@
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 
 export default function normalizePath(path: string): string {
+  if (!path.includes('\\')) {
+    return path;
+  }
+
   return path.replace(/\\/g, '/');
 }
 
 export function canonicalizePath(path: string): string {
   const normalizedPath = normalizePath(path);
-  return normalizedPath.replace(/\/+$/, '') || (normalizedPath.startsWith('/') ? '/' : '');
+
+  if (!normalizedPath.endsWith('/')) {
+    return normalizedPath;
+  }
+
+  let end = normalizedPath.length;
+
+  while (end > 0 && normalizedPath.charCodeAt(end - 1) === 47) {
+    end--;
+  }
+
+  if (end === 0) {
+    return '/';
+  }
+
+  return normalizedPath.slice(0, end);
 }
 
 export function stripTrailingSlashesPreservingRoot(path: string): string {
@@ -55,7 +74,13 @@ export function isWslHostRootUncPath(path: string): boolean {
 
 export function isWindowsDriveRootPath(path: string): boolean {
   const normalizedPath = canonicalizePath(path);
-  return /^[A-Za-z]:$/.test(normalizedPath);
+
+  if (normalizedPath.length !== 2 || normalizedPath.charCodeAt(1) !== 58) {
+    return false;
+  }
+
+  const code = normalizedPath.charCodeAt(0);
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
 }
 
 export function isUncShareRootPath(path: string): boolean {
