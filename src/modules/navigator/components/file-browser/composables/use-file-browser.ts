@@ -38,6 +38,7 @@ import { useFileBrowserKeyboardNavigation } from './use-file-browser-keyboard-na
 import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
 import { useFileBrowserLinkMetadata } from './use-file-browser-link-metadata';
 import { useFileBrowserItemCounts } from './use-file-browser-item-counts';
+import { useFileBrowserDirSizes } from './use-file-browser-dir-sizes';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
@@ -348,6 +349,13 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     directoryEntries: computed(() => dataSource.dirContents.value?.entries ?? []),
     visibleRows: virtualLayout.visibleRows,
     layout: options.layout,
+  });
+  useFileBrowserDirSizes({
+    enabled: !isExternalMode,
+    currentPath: dataSource.currentPath,
+    dirContents: dataSource.dirContents,
+    displayEntries: visualEntries,
+    visibleRows: virtualLayout.visibleRows,
   });
 
   const { entriesContainerRef, setEntriesContainerRef: setFocusEntriesContainerRef } = useFileBrowserFocus({

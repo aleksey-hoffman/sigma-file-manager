@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "Replace current share?",
     "replaceShareDialogDescription": "Files are already being shared over the network. The current share will be stopped and replaced with the new one.",
     "replaceShareDialogConfirm": "Replace"
+  },
+  "dirSizeHints": {
+    "partial": "Partial count",
+    "unreadable": "Can't be read",
+    "skipped": "Some items can't be read"
   }
 }

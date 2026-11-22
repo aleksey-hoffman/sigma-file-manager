@@ -754,9 +754,10 @@ fn no_timeout_walk_does_not_block_a_pinned_batch() {
     let _lock = test_lock();
     let release = Arc::new(AtomicBool::new(false));
     let started = Arc::new(AtomicUsize::new(0));
-    let mut handles = Vec::with_capacity(4);
+    let full_scan_count = FULL_SCAN_POOL_THREADS + 2;
+    let mut handles = Vec::with_capacity(full_scan_count);
 
-    for index in 0..4 {
+    for index in 0..full_scan_count {
         let job_release = Arc::clone(&release);
         let job_started = Arc::clone(&started);
         let path = unique_test_path(&format!("full-{index}"));
@@ -765,7 +766,10 @@ fn no_timeout_walk_does_not_block_a_pinned_batch() {
                 job_started.fetch_add(1, Ordering::SeqCst);
                 let current_thread = thread::current();
                 let thread_name = current_thread.name().unwrap_or("");
-                assert_eq!(thread_name, "dir-size-full");
+                assert!(
+                    thread_name.starts_with("dir-size-full-"),
+                    "full scan ran on {thread_name}"
+                );
                 blocked_result(&cancel, &job_release)
             })
             .wait()
@@ -773,16 +777,22 @@ fn no_timeout_walk_does_not_block_a_pinned_batch() {
     }
 
     let ready_deadline = Instant::now() + Duration::from_secs(2);
-    while started.load(Ordering::SeqCst) < 4 {
+    while started.load(Ordering::SeqCst) < FULL_SCAN_POOL_THREADS {
         if Instant::now() > ready_deadline {
             release.store(true, Ordering::SeqCst);
             for handle in handles {
                 let _ = handle.join();
             }
-            panic!("no-timeout walks did not all start");
+            panic!("no-timeout walks did not start");
         }
         thread::sleep(Duration::from_millis(5));
     }
+    thread::sleep(Duration::from_millis(100));
+    assert_eq!(
+        started.load(Ordering::SeqCst),
+        FULL_SCAN_POOL_THREADS,
+        "full scans beyond the pool size started at once"
+    );
 
     let pinned_path = unique_test_path("pinned-while-full");
     pin_dir_sizes(vec![pinned_path.clone()]);
@@ -914,7 +924,9 @@ fn cache_entry() -> CacheEntry {
         size: 42,
         file_count: 2,
         dir_count: 1,
+        skipped_count: 0,
         status: SizeStatus::Complete,
+        partial_timeout: None,
         calculated_at: get_current_timestamp(),
         dir_mtime: 0,
     }
@@ -992,7 +1004,13 @@ fn remap_dir_size_cache_lets_the_worker_finish_on_its_original_path() {
             if blocked.status != SizeStatus::Complete {
                 return blocked;
             }
-            store_complete_result(Path::new(&worker_path), &worker_path, 7, 1, 0);
+            set_cached_size(
+                &worker_path,
+                CacheEntry {
+                    size: 7,
+                    ..cache_entry()
+                },
+            );
             dir_size_result(&worker_path, 7, SizeStatus::Complete, 1, 0, None)
         },
     );
@@ -1014,4 +1032,123 @@ fn remap_dir_size_cache_lets_the_worker_finish_on_its_original_path() {
     assert!(!job_is_in_flight(&new_path));
 
     invalidate_dir_size_cache(vec![old_path, new_path]);
+}
+
+#[test]
+fn parent_walk_caches_each_child_folder_size() {
+    let _lock = test_lock();
+    let temp_dir = tempfile::tempdir().expect("temp dir");
+    let root = temp_dir.path();
+    fs::create_dir_all(root.join("alpha/inner")).expect("create alpha");
+    fs::create_dir_all(root.join("beta")).expect("create beta");
+    fs::write(root.join("top.txt"), b"1").expect("write top");
+    fs::write(root.join("alpha/x.txt"), b"333").expect("write x");
+    fs::write(root.join("alpha/inner/y.txt"), b"4444").expect("write y");
+    fs::write(root.join("beta/z.txt"), b"55555").expect("write z");
+
+    let result = calculate_dir_size(
+        root,
+        Some(Duration::from_secs(5)),
+        &AtomicBool::new(false),
+        None,
+    );
+    assert_eq!(result.status, SizeStatus::Complete);
+    assert_eq!(result.size, 13);
+    assert_eq!(result.file_count, 4);
+    assert_eq!(result.dir_count, 3);
+    assert_eq!(result.skipped_count, 0);
+
+    let alpha = normalize_path(&root.join("alpha").to_string_lossy());
+    let beta = normalize_path(&root.join("beta").to_string_lossy());
+    let alpha_cached = cached_dir_size_result(&alpha, Some(Duration::from_millis(500)))
+        .expect("alpha cached by the parent walk");
+    assert_eq!(alpha_cached.status, SizeStatus::Complete);
+    assert_eq!(alpha_cached.size, 7);
+    assert_eq!(alpha_cached.file_count, 2);
+    assert_eq!(alpha_cached.dir_count, 1);
+    assert_eq!(
+        cached_dir_size_result(&beta, None).map(|cached| cached.size),
+        Some(5)
+    );
+
+    let root_path = normalize_path(&root.to_string_lossy());
+    invalidate_dir_size_cache(vec![root_path]);
+}
+
+#[test]
+fn timed_out_walk_is_reused_only_by_quick_requests() {
+    let _lock = test_lock();
+    let temp_dir = tempfile::tempdir().expect("temp dir");
+    fs::create_dir_all(temp_dir.path().join("child")).expect("create child");
+    fs::write(temp_dir.path().join("child/file.txt"), b"12345").expect("write file");
+    let path = normalize_path(&temp_dir.path().to_string_lossy());
+
+    let result = calculate_dir_size(
+        temp_dir.path(),
+        Some(Duration::ZERO),
+        &AtomicBool::new(false),
+        None,
+    );
+    assert_eq!(result.status, SizeStatus::Partial);
+
+    let quick = cached_dir_size_result(&path, Some(Duration::ZERO)).expect("partial cached");
+    assert_eq!(quick.status, SizeStatus::Partial);
+    assert!(cached_dir_size_result(&path, Some(Duration::from_secs(1))).is_none());
+    assert!(cached_dir_size_result(&path, None).is_none());
+
+    let full = calculate_dir_size(temp_dir.path(), None, &AtomicBool::new(false), None);
+    assert_eq!(full.status, SizeStatus::Complete);
+    assert_eq!(full.size, 5);
+    assert_eq!(
+        cached_dir_size_result(&path, Some(Duration::ZERO)).map(|cached| cached.status),
+        Some(SizeStatus::Complete)
+    );
+
+    invalidate_dir_size_cache(vec![path]);
+}
+
+#[test]
+fn missing_or_file_root_is_an_error_and_not_cached() {
+    let _lock = test_lock();
+    let temp_dir = tempfile::tempdir().expect("temp dir");
+    let file_path = temp_dir.path().join("plain.txt");
+    fs::write(&file_path, b"x").expect("write file");
+    let missing_path = temp_dir.path().join("missing");
+
+    let missing = calculate_dir_size(&missing_path, None, &AtomicBool::new(false), None);
+    assert_eq!(missing.status, SizeStatus::Error);
+    assert_eq!(missing.error.as_deref(), Some("Path does not exist"));
+
+    let file = calculate_dir_size(&file_path, None, &AtomicBool::new(false), None);
+    assert_eq!(file.status, SizeStatus::Error);
+    assert!(get_cached_size(&normalize_path(&file_path.to_string_lossy())).is_none());
+}
+
+#[cfg(unix)]
+#[test]
+fn unreadable_folders_are_counted_as_skipped() {
+    use std::os::unix::fs::PermissionsExt;
+
+    if unsafe { libc::geteuid() } == 0 {
+        return;
+    }
+    let _lock = test_lock();
+    let temp_dir = tempfile::tempdir().expect("temp dir");
+    let locked = temp_dir.path().join("locked");
+    fs::create_dir_all(&locked).expect("create locked");
+    fs::write(locked.join("secret.txt"), b"hidden").expect("write secret");
+    fs::write(temp_dir.path().join("open.txt"), b"ab").expect("write open");
+    fs::set_permissions(&locked, fs::Permissions::from_mode(0o000)).expect("lock folder");
+
+    let result = calculate_dir_size(temp_dir.path(), None, &AtomicBool::new(false), None);
+    let locked_result = calculate_dir_size(&locked, None, &AtomicBool::new(false), None);
+    fs::set_permissions(&locked, fs::Permissions::from_mode(0o755)).expect("unlock folder");
+
+    assert_eq!(result.status, SizeStatus::Complete);
+    assert_eq!(result.size, 2);
+    assert_eq!(result.skipped_count, 1);
+    assert_eq!(locked_result.status, SizeStatus::Error);
+    assert_eq!(locked_result.error.as_deref(), Some("Access denied"));
+
+    invalidate_dir_size_cache(vec![normalize_path(&temp_dir.path().to_string_lossy())]);
 }

@@ -111,3 +111,91 @@ pub(crate) fn resolve_path_comparison_volume_roots() -> Result<Vec<String>, Stri
 pub(crate) fn resolve_path_comparison_volume_roots() -> Result<Vec<String>, String> {
     Ok(Vec::new())
 }
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn deepest_mount_is_network(path: &str, mounts: impl Iterator<Item = (String, bool)>) -> bool {
+    let mut deepest: Option<(usize, bool)> = None;
+    for (mount_point, is_network) in mounts {
+        let contains_path =
+            path == mount_point || crate::utils::path_is_descendant_of(path, &mount_point);
+        if contains_path && deepest.map_or(true, |(length, _)| mount_point.len() > length) {
+            deepest = Some((mount_point.len(), is_network));
+        }
+    }
+    deepest.map(|(_, is_network)| is_network).unwrap_or(false)
+}
+
+#[cfg(windows)]
+pub(crate) fn path_is_on_network_volume(path: &str) -> bool {
+    use windows::core::PCWSTR;
+    use windows::Win32::Storage::FileSystem::GetDriveTypeW;
+
+    const DRIVE_REMOTE: u32 = 4;
+
+    let normalized = crate::utils::normalize_path(path);
+    if normalized.starts_with("//") {
+        return true;
+    }
+    let bytes = normalized.as_bytes();
+    if bytes.len() < 2 || bytes[1] != b':' || !bytes[0].is_ascii_alphabetic() {
+        return false;
+    }
+    let root: Vec<u16> = format!("{}:\\", bytes[0] as char)
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
+    unsafe { GetDriveTypeW(PCWSTR::from_raw(root.as_ptr())) == DRIVE_REMOTE }
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) fn path_is_on_network_volume(path: &str) -> bool {
+    let Ok(mounts) = std::fs::read_to_string("/proc/self/mounts") else {
+        return false;
+    };
+    deepest_mount_is_network(
+        path,
+        mounts.lines().filter_map(|line| {
+            let mut fields = line.split_whitespace();
+            let _device = fields.next()?;
+            let mount_point = fields.next()?.replace("\040", " ");
+            let file_system = fields.next()?;
+            Some((
+                mount_point,
+                super::drives_platform::is_network_filesystem(file_system),
+            ))
+        }),
+    )
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn path_is_on_network_volume(path: &str) -> bool {
+    use std::ffi::CStr;
+
+    let mut mounts: *mut libc::statfs = std::ptr::null_mut();
+    let count = unsafe { libc::getmntinfo(&mut mounts, libc::MNT_NOWAIT) };
+    if count <= 0 || mounts.is_null() {
+        return false;
+    }
+    let mounts = unsafe { std::slice::from_raw_parts(mounts, count as usize) };
+    deepest_mount_is_network(
+        path,
+        mounts.iter().map(|mount| {
+            let mount_point = unsafe { CStr::from_ptr(mount.f_mntonname.as_ptr()) }
+                .to_string_lossy()
+                .into_owned();
+            let file_system = unsafe { CStr::from_ptr(mount.f_fstypename.as_ptr()) }
+                .to_string_lossy()
+                .to_lowercase();
+            let is_network = matches!(
+                file_system.as_str(),
+                "smbfs" | "nfs" | "afpfs" | "webdav" | "cifs" | "ftp"
+            );
+            (mount_point, is_network)
+        }),
+    )
+}
+
+#[cfg(all(not(windows), not(target_os = "linux"), not(target_os = "macos")))]
+pub(crate) fn path_is_on_network_volume(_path: &str) -> bool {
+    false
+}

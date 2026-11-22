@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "Substituir o compartilhamento atual?",
     "replaceShareDialogDescription": "Já existem arquivos sendo compartilhados na rede. O compartilhamento atual será interrompido e substituído pelo novo.",
     "replaceShareDialogConfirm": "Substituir"
+  },
+  "dirSizeHints": {
+    "partial": "Contagem parcial",
+    "unreadable": "Não é possível ler",
+    "skipped": "Alguns itens não podem ser lidos"
   }
 }

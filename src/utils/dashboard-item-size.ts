@@ -3,13 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
+import type { DirSizeInfo } from '@/stores/runtime/dir-sizes';
+import { getSettledDirSizeDisplay, UNKNOWN_DIR_SIZE } from '@/utils/dir-size-display';
 
-export const UNKNOWN_DASHBOARD_ITEM_SIZE = '—';
-
-export interface DashboardDirectorySizeInfo {
-  status: 'Complete' | 'Error' | 'Loading';
-  size: number;
-}
+export const UNKNOWN_DASHBOARD_ITEM_SIZE = UNKNOWN_DIR_SIZE;
 
 export function formatDashboardFileSize(size: number | null | undefined): string {
   if (typeof size !== 'number') {
@@ -20,11 +17,7 @@ export function formatDashboardFileSize(size: number | null | undefined): string
 }
 
 export function formatDashboardDirectorySize(
-  sizeInfo: DashboardDirectorySizeInfo | undefined,
+  sizeInfo: Pick<DirSizeInfo, 'status' | 'size' | 'skippedCount'> | undefined,
 ): string {
-  if (!sizeInfo || sizeInfo.status !== 'Complete') {
-    return UNKNOWN_DASHBOARD_ITEM_SIZE;
-  }
-
-  return formatBytes(sizeInfo.size);
+  return getSettledDirSizeDisplay(sizeInfo)?.text ?? UNKNOWN_DASHBOARD_ITEM_SIZE;
 }

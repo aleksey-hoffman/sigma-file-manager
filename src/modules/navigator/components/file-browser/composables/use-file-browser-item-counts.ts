@@ -7,6 +7,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { FileBrowserVirtualRow } from './use-file-browser-virtual-layout';
+import { getVirtualRowEntries } from '../utils/file-browser-virtual-rows';
 import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { resolveNavigatorFolderSettings } from '@/modules/navigator/utils/resolve-navigator-folder-settings';
 
@@ -73,7 +74,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
         return;
       }
 
-      const visiblePaths = getVisibleItemCountEntries(visibleRows)
+      const visiblePaths = getVirtualRowEntries(visibleRows)
         .filter(entry => entry.is_dir)
         .map(entry => entry.path);
 
@@ -145,7 +146,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
           .map(entry => entry.path);
         const pathsNeedingItemCounts = getPrioritizedItemCountPaths(
           paths,
-          getVisibleItemCountEntries(options.visibleRows.value).map(entry => entry.path),
+          getVirtualRowEntries(options.visibleRows.value).map(entry => entry.path),
           path => itemCountsStore.hasSufficientItemCount(path),
         );
 
@@ -185,21 +186,6 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
     },
     { immediate: true },
   );
-}
-
-function getVisibleItemCountEntries(rows: FileBrowserVirtualRow[]): DirEntry[] {
-  const entries: DirEntry[] = [];
-
-  for (const row of rows) {
-    if (row.type === 'list-entry') {
-      entries.push(row.entry);
-    }
-    else if (row.type === 'grid-items') {
-      entries.push(...row.entries);
-    }
-  }
-
-  return entries;
 }
 
 function getPrioritizedItemCountPaths(

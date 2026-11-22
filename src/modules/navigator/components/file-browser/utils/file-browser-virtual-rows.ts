@@ -142,3 +142,18 @@ export function getFileBrowserGridLayoutMetrics(
     availableWidth,
   };
 }
+
+export function getVirtualRowEntries(rows: FileBrowserVirtualRow[]): DirEntry[] {
+  const entries: DirEntry[] = [];
+
+  for (const row of rows) {
+    if (row.type === 'list-entry') {
+      entries.push(row.entry);
+    }
+    else if (row.type === 'grid-items') {
+      entries.push(...row.entries);
+    }
+  }
+
+  return entries;
+}

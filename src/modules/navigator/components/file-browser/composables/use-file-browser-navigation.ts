@@ -19,13 +19,10 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
-import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorIconsStore } from '@/stores/runtime/navigator-icons';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
-import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import { DIR_SIZE_CONSTANTS } from '@/constants';
 import {
   arePathsEquivalent,
   remapDirEntry,
@@ -109,12 +106,9 @@ export function useFileBrowserNavigation(
   const userStatsStore = useUserStatsStore();
   const userSettingsStore = useUserSettingsStore();
   const userPathsStore = useUserPathsStore();
-  const dirSizesStore = useDirSizesStore();
-  const directorySizeWatch = dirSizesStore.createDirectorySizeWatch();
   const navigatorIconsStore = useNavigatorIconsStore();
   const linkMetadataStore = useLinkMetadataStore();
   const itemCountsStore = useItemCountsStore();
-  const statusCenterStore = useStatusCenterStore();
   const platformStore = usePlatformStore();
   let preserveSelectionForPath: string | null = null;
   let consumedChildRenameToken: string | null = null;
@@ -142,29 +136,6 @@ export function useFileBrowserNavigation(
     catch {
       return false;
     }
-  }
-
-  function isCopyOrMoveInProgress(): boolean {
-    return statusCenterStore.activeOperations.some(
-      operation => operation.type === 'copy' || operation.type === 'move',
-    );
-  }
-
-  function syncDirectorySizeRequests(entries: DirEntry[], directoryPath: string) {
-    if (isCopyOrMoveInProgress()) {
-      return;
-    }
-
-    if (isVirtualDirectoryPath(directoryPath)) {
-      directorySizeWatch.sync([]);
-      return;
-    }
-
-    const directoryPaths = entries
-      .filter(entry => entry.is_dir)
-      .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
-      .map(entry => entry.path);
-    directorySizeWatch.sync(directoryPaths);
   }
 
   const currentPath = ref('');
@@ -403,7 +374,6 @@ export function useFileBrowserNavigation(
     isDisposed = true;
     readGeneration += 1;
     cancelPendingDirectoryRecord();
-    directorySizeWatch.stop();
     stopWatching();
 
     if (iconPrefetchTimer) {
@@ -482,8 +452,6 @@ export function useFileBrowserNavigation(
     nextTick(() => {
       onNavigationComplete?.(currentDirEntry.value);
     });
-
-    syncDirectorySizeRequests(result.entries, result.path);
   }
 
   function scheduleDirectoryIconPrefetch(entries: DirEntry[]): void {
@@ -573,8 +541,6 @@ export function useFileBrowserNavigation(
       }
 
       scheduleDirectoryIconPrefetch(visibleResult.entries);
-
-      syncDirectorySizeRequests(visibleResult.entries, visibleResult.path);
     }
     catch {
       const currentTab = tab();
@@ -671,10 +637,6 @@ export function useFileBrowserNavigation(
     const cachedContents = !forceLoading
       ? getCachedDirContentsForPath(normalizedPath)
       : null;
-
-    if (isNewDirectory) {
-      syncDirectorySizeRequests(cachedContents?.entries ?? [], cachedContents?.path ?? normalizedPath);
-    }
 
     if (cachedContents) {
       dirContents.value = cachedContents;

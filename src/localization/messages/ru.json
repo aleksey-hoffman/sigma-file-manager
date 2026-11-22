@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "Заменить текущий доступ?",
     "replaceShareDialogDescription": "Файлы уже доступны по сети. Текущий доступ будет остановлен и заменён новым.",
     "replaceShareDialogConfirm": "Заменить"
+  },
+  "dirSizeHints": {
+    "partial": "Подсчитано частично",
+    "unreadable": "Не удается прочитать",
+    "skipped": "Часть элементов не прочитана"
   }
 }

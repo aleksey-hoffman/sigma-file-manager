@@ -29,6 +29,7 @@ interface FileBrowserListViewColumnRow {
   entry: DirEntry;
   itemsDisplay: string;
   sizeDisplay: string | null;
+  sizeTitle?: string;
   isDirLoadingWithProgress: boolean;
   isSizeSkeletonVisible: boolean;
   modifiedDate: FileBrowserListDateDisplay;
@@ -95,6 +96,7 @@ const tagsColumnInteractionAttrs = computed(() => {
       <FileBrowserListSizeValue
         v-else
         :display="props.row.sizeDisplay"
+        :title="props.row.sizeTitle"
       />
     </template>
     <template v-else-if="props.columnId === 'modified'">

@@ -4,10 +4,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { LoaderCircleIcon, XIcon, RefreshCwIcon } from '@lucide/vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { LoaderCircleIcon, XIcon, RefreshCwIcon, TriangleAlertIcon } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import DateHoverDisplay from '@/components/ui/date-hover-display/date-hover-display.vue';
 import { useI18n } from 'vue-i18n';
 import {
@@ -22,6 +23,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { RelativeTimeTranslations } from '@/modules/navigator/components/file-browser/utils';
 import { getPathDisplayValue } from '@/utils/normalize-path';
 import { formatRelativeDateDisplay } from '@/utils/relative-date-display';
+import { DIR_SIZE_HINT_MESSAGE_KEYS, getSettledDirSizeDisplay, UNKNOWN_DIR_SIZE } from '@/utils/dir-size-display';
 import {
   getDirEntryKindKey,
   getDirEntryLinksDisplay,
@@ -80,27 +82,26 @@ const isDirSizeLoading = computed(() => {
   return dirSizesStore.isLoading(props.selectedEntry.path);
 });
 
-const showGetSizeButton = computed(() => {
+const isFullDirSizeScanRunning = computed(() => {
   if (!props.selectedEntry?.is_dir) return false;
-  const info = dirSizeInfo.value;
-  return !info;
+  return dirSizesStore.isFullScanRunning(props.selectedEntry.path);
 });
 
-const showRecalculateButton = computed(() => {
-  if (!props.selectedEntry?.is_dir) return false;
-  const info = dirSizeInfo.value;
-  if (!info) return false;
+const isDirSizeComplete = computed(() => dirSizeInfo.value?.status === 'Complete');
 
-  return info.status === 'Complete';
+const settledDirSize = computed(() => getSettledDirSizeDisplay(dirSizeInfo.value));
+
+const dirSizeHint = computed(() => {
+  const hint = settledDirSize.value?.hint;
+  return hint ? t(DIR_SIZE_HINT_MESSAGE_KEYS[hint]) : null;
 });
 
 const dirSizeDisplay = computed(() => {
   const info = dirSizeInfo.value;
   if (!info) return null;
-  if (info.status === 'Loading' && info.size > 0) return formatBytes(info.size);
-  if (info.status === 'Loading') return null;
-  if (info.status === 'Complete') return formatBytes(info.size);
-  return null;
+  if (info.status === 'Loading') return info.size > 0 ? formatBytes(info.size) : null;
+  const text = settledDirSize.value?.text;
+  return text && text !== UNKNOWN_DIR_SIZE ? text : null;
 });
 
 const relativeTimeTranslations = computed<RelativeTimeTranslations>(() => ({
@@ -119,13 +120,51 @@ const calculatedAgo = computed(() => {
   return formatRelativeTime(info.calculatedAt, relativeTimeTranslations.value);
 });
 
+// A small folder finishes in a few milliseconds. Without a minimum, the calculating
+// state flashes and the click looks like it did nothing.
+const MINIMUM_SIZE_CALCULATION_DISPLAY_MS = 500;
+const heldCalculationPath = ref<string | null>(null);
+let heldCalculationTimer: ReturnType<typeof setTimeout> | null = null;
+
+const isDirSizeCalculationShown = computed(() => {
+  if (!props.selectedEntry?.is_dir) return false;
+  return isFullDirSizeScanRunning.value || heldCalculationPath.value === props.selectedEntry.path;
+});
+
+function releaseHeldCalculation() {
+  if (heldCalculationTimer) {
+    clearTimeout(heldCalculationTimer);
+    heldCalculationTimer = null;
+  }
+
+  heldCalculationPath.value = null;
+}
+
+onUnmounted(releaseHeldCalculation);
+
 async function handleGetSize() {
   if (!props.selectedEntry?.is_dir) return;
-  await dirSizesStore.requestSizeForce(props.selectedEntry.path);
+  const path = props.selectedEntry.path;
+  const startedAt = Date.now();
+  releaseHeldCalculation();
+  heldCalculationPath.value = path;
+
+  await dirSizesStore.requestSizeForce(path);
+
+  if (heldCalculationPath.value !== path) return;
+  const remainingMs = MINIMUM_SIZE_CALCULATION_DISPLAY_MS - (Date.now() - startedAt);
+
+  if (remainingMs <= 0) {
+    releaseHeldCalculation();
+    return;
+  }
+
+  heldCalculationTimer = setTimeout(releaseHeldCalculation, remainingMs);
 }
 
 async function handleCancelSize() {
   if (!props.selectedEntry?.is_dir) return;
+  releaseHeldCalculation();
   await dirSizesStore.cancelSize(props.selectedEntry.path);
 }
 
@@ -323,51 +362,138 @@ watch(
           <template v-if="selectedEntryWithMetadata?.is_file">
             {{ formatBytes(selectedEntryWithMetadata.size) }}
           </template>
-          <template v-else-if="isDirSizeLoading">
-            <LoaderCircleIcon
-              :size="14"
-              class="info-panel-properties__spinner"
-            />
-            <div class="info-panel-properties__size-content">
-              <span v-if="dirSizeDisplay">{{ dirSizeDisplay }}</span>
-              <span v-else>{{ t('calculating') }}...</span>
-            </div>
-            <Button
-              size="xs"
-              variant="ghost"
-              class="info-panel-properties__cancel-btn"
-              @click="handleCancelSize"
-            >
-              <XIcon :size="14" />
-            </Button>
-          </template>
-          <template v-else-if="dirSizeDisplay && !showGetSizeButton">
-            <div class="info-panel-properties__size-content">
-              <span>{{ dirSizeDisplay }}</span>
-              <span
-                v-if="calculatedAgo"
-                class="info-panel-properties__calculated-ago"
-              >{{ t('calculatedAgo', { time: calculatedAgo }) }}</span>
-            </div>
-            <Button
-              v-if="showRecalculateButton"
-              size="xs"
-              variant="ghost"
-              class="info-panel-properties__recalculate-btn"
-              :title="t('recalculate')"
-              @click="handleGetSize"
-            >
-              <RefreshCwIcon :size="12" />
-            </Button>
-          </template>
-          <Button
-            v-else-if="showGetSizeButton"
-            size="xs"
-            variant="secondary"
-            @click="handleGetSize"
+          <div
+            v-else
+            class="info-panel-properties__size-states"
           >
-            {{ t('getSize') }}
-          </Button>
+            <Transition
+              name="info-panel-size-state"
+              mode="out-in"
+            >
+              <div
+                v-if="isDirSizeCalculationShown"
+                key="calculating"
+                class="info-panel-properties__size-state"
+              >
+                <LoaderCircleIcon
+                  :size="14"
+                  class="info-panel-properties__spinner"
+                />
+                <div class="info-panel-properties__size-content">
+                  <span
+                    v-if="dirSizeDisplay"
+                    class="info-panel-properties__size-value"
+                  >{{ dirSizeDisplay }}</span>
+                  <span
+                    v-else
+                    class="info-panel-properties__size-value"
+                  >{{ t('calculating') }}...</span>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      class="info-panel-properties__cancel-btn"
+                      @click="handleCancelSize"
+                    >
+                      <XIcon :size="14" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('cancel') }}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div
+                v-else-if="isDirSizeComplete && !isDirSizeLoading"
+                key="complete"
+                class="info-panel-properties__size-state"
+              >
+                <div class="info-panel-properties__size-content">
+                  <span class="info-panel-properties__size-value-line">
+                    <span class="info-panel-properties__size-value">{{ dirSizeDisplay }}</span>
+                    <Tooltip v-if="dirSizeHint">
+                      <TooltipTrigger as-child>
+                        <span class="info-panel-properties__size-warning">
+                          <TriangleAlertIcon :size="12" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {{ dirSizeHint }}
+                      </TooltipContent>
+                    </Tooltip>
+                  </span>
+                  <span
+                    v-if="calculatedAgo"
+                    class="info-panel-properties__calculated-ago"
+                  >{{ t('calculatedAgo', { time: calculatedAgo }) }}</span>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      class="info-panel-properties__recalculate-btn"
+                      @click="handleGetSize"
+                    >
+                      <RefreshCwIcon :size="12" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('recalculate') }}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div
+                v-else
+                key="pending"
+                class="info-panel-properties__size-state"
+              >
+                <LoaderCircleIcon
+                  v-if="isDirSizeLoading"
+                  :size="14"
+                  class="info-panel-properties__spinner"
+                />
+                <div
+                  v-if="dirSizeDisplay || dirSizeHint"
+                  class="info-panel-properties__size-content"
+                >
+                  <span
+                    v-if="dirSizeDisplay"
+                    class="info-panel-properties__size-value"
+                  >{{ dirSizeDisplay }}</span>
+                  <span
+                    v-if="dirSizeHint && !isDirSizeLoading"
+                    class="info-panel-properties__calculated-ago"
+                  >{{ dirSizeHint }}</span>
+                </div>
+                <Tooltip v-if="dirSizeDisplay || dirSizeHint">
+                  <TooltipTrigger as-child>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      class="info-panel-properties__recalculate-btn info-panel-properties__recalculate-btn--prominent"
+                      @click="handleGetSize"
+                    >
+                      <RefreshCwIcon :size="12" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('getSize') }}
+                  </TooltipContent>
+                </Tooltip>
+                <Button
+                  v-else
+                  size="xs"
+                  variant="secondary"
+                  @click="handleGetSize"
+                >
+                  {{ t('getSize') }}
+                </Button>
+              </div>
+            </Transition>
+          </div>
         </div>
       </div>
 
@@ -485,6 +611,73 @@ watch(
   gap: 6px;
 }
 
+.info-panel-properties__size-states {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  height: 100%;
+  flex: 1;
+  align-items: center;
+}
+
+.info-panel-properties__size-state {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-panel-size-state-enter-active {
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.18s ease-out;
+}
+
+.info-panel-size-state-leave-active {
+  transition:
+    transform 0.14s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.12s ease-in;
+}
+
+.info-panel-size-state-enter-from {
+  opacity: 0;
+  transform: translateY(60%);
+}
+
+.info-panel-size-state-leave-to {
+  opacity: 0;
+  transform: translateY(-60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-panel-size-state-enter-active,
+  .info-panel-size-state-leave-active {
+    transition-duration: 0.01ms;
+  }
+}
+
+.info-panel-properties__size-value-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-panel-properties__size-value {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+.info-panel-properties__size-warning {
+  display: flex;
+  flex-shrink: 0;
+  color: hsl(var(--warning));
+}
+
 .info-panel-properties__size-content {
   display: flex;
   overflow: hidden;
@@ -530,6 +723,10 @@ watch(
   color: hsl(var(--muted-foreground));
   opacity: 0.5;
   transition: opacity 0.15s ease;
+}
+
+.info-panel-properties__recalculate-btn--prominent {
+  opacity: 0.85;
 }
 
 .info-panel-properties__recalculate-btn:hover {

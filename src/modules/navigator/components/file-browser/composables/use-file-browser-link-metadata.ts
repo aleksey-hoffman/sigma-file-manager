@@ -9,6 +9,7 @@ import type { DirEntry, ReadDirOptions } from '@/types/dir-entry';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { FileBrowserVirtualRow } from './use-file-browser-virtual-layout';
+import { getVirtualRowEntries } from '../utils/file-browser-virtual-rows';
 import {
   getNavigatorSortSettingsForLayout,
   isLinkMetadataSortColumn,
@@ -92,7 +93,7 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
           return;
         }
 
-        const visiblePaths = getVisibleLinkMetadataEntries(visibleRows)
+        const visiblePaths = getVirtualRowEntries(visibleRows)
           .map(entry => entry.path);
 
         if (visiblePaths.length === 0) {
@@ -164,7 +165,7 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
           linkMetadataStore.setSortMetadataScope(paths);
           const pathsNeedingMetadata = getPrioritizedLinkMetadataPaths(
             paths,
-            getVisibleLinkMetadataEntries(options.visibleRows.value).map(entry => entry.path),
+            getVirtualRowEntries(options.visibleRows.value).map(entry => entry.path),
             path => linkMetadataStore.hasSufficientMetadata(path, requestOptions),
           );
 
@@ -224,21 +225,6 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
   return {
     isLinkMetadataLoading: computed(() => isHydratingDirectoryLinkMetadata.value),
   };
-}
-
-function getVisibleLinkMetadataEntries(rows: FileBrowserVirtualRow[]): DirEntry[] {
-  const entries: DirEntry[] = [];
-
-  for (const row of rows) {
-    if (row.type === 'list-entry') {
-      entries.push(row.entry);
-    }
-    else if (row.type === 'grid-items') {
-      entries.push(...row.entries);
-    }
-  }
-
-  return entries;
 }
 
 function getPrioritizedLinkMetadataPaths(

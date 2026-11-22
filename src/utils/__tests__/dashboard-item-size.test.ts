@@ -29,6 +29,13 @@ describe('formatDashboardDirectorySize', () => {
     })).toBe('1.0 MB');
   });
 
+  it('marks a size that is only a lower bound', () => {
+    expect(formatDashboardDirectorySize({
+      status: 'Partial',
+      size: 1048576,
+    })).toBe('1.0 MB+');
+  });
+
   it('uses a dash while a directory size is still unknown', () => {
     expect(formatDashboardDirectorySize(undefined)).toBe(UNKNOWN_DASHBOARD_ITEM_SIZE);
     expect(formatDashboardDirectorySize({

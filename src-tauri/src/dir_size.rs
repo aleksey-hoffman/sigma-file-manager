@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 use tauri::Emitter;
@@ -27,9 +27,13 @@ use windows::Win32::System::Threading::{
 const CACHE_SIZE: usize = 2000;
 const CACHE_TTL_SECONDS: u64 = 300;
 const DIR_SIZE_POOL_THREADS: usize = 2;
+const FULL_SCAN_POOL_THREADS: usize = 2;
+const NETWORK_SCAN_POOL_THREADS: usize = 2;
+const PROGRESS_EVENT_INTERVAL: Duration = Duration::from_millis(250);
 #[cfg(target_os = "linux")]
 const DIR_SIZE_THREAD_NICE: i32 = 10;
 const DIR_SIZE_RESULT_EVENT: &str = "dir-size-result";
+const DIR_SIZE_PROGRESS_EVENT: &str = "dir-size-progress";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum SizeStatus {
@@ -48,6 +52,8 @@ pub struct DirSizeResult {
     pub file_count: u64,
     pub dir_count: u64,
     pub error: Option<String>,
+    #[serde(default)]
+    pub skipped_count: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -55,7 +61,9 @@ struct CacheEntry {
     size: u64,
     file_count: u64,
     dir_count: u64,
+    skipped_count: u64,
     status: SizeStatus,
+    partial_timeout: Option<Duration>,
     calculated_at: u64,
     dir_mtime: u64,
 }
@@ -148,14 +156,27 @@ static NEXT_JOB_ID: AtomicU64 = AtomicU64::new(1);
 static PATH_ALIASES: Lazy<Mutex<HashMap<String, String>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
-static DIR_SIZE_POOL: Lazy<rayon::ThreadPool> = Lazy::new(|| {
+static DIR_SIZE_POOL: Lazy<rayon::ThreadPool> =
+    Lazy::new(|| build_dir_size_pool(DIR_SIZE_POOL_THREADS, "dir-size"));
+
+static FULL_SCAN_POOL: Lazy<rayon::ThreadPool> =
+    Lazy::new(|| build_dir_size_pool(FULL_SCAN_POOL_THREADS, "dir-size-full"));
+
+static NETWORK_SCAN_POOL: Lazy<rayon::ThreadPool> =
+    Lazy::new(|| build_dir_size_pool(NETWORK_SCAN_POOL_THREADS, "dir-size-network"));
+
+static PROGRESS_JOB_STARTED: Condvar = Condvar::new();
+
+static PROGRESS_TICKER: OnceLock<()> = OnceLock::new();
+
+fn build_dir_size_pool(threads: usize, name_prefix: &'static str) -> rayon::ThreadPool {
     rayon::ThreadPoolBuilder::new()
-        .num_threads(DIR_SIZE_POOL_THREADS)
-        .thread_name(|index| format!("dir-size-{index}"))
+        .num_threads(threads)
+        .thread_name(move |index| format!("{name_prefix}-{index}"))
         .spawn_handler(spawn_dir_size_thread)
         .build()
         .expect("dir size thread pool")
-});
+}
 
 fn lock_mutex<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     match mutex.lock() {
@@ -286,6 +307,7 @@ fn dir_size_result(
         file_count,
         dir_count,
         error,
+        skipped_count: 0,
     }
 }
 
@@ -333,7 +355,7 @@ fn get_dir_mtime(path: &Path) -> u64 {
         .and_then(|meta| meta.modified())
         .ok()
         .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-        .map(|duration| duration.as_secs())
+        .map(|duration| duration.as_millis() as u64)
         .unwrap_or(0)
 }
 
@@ -346,8 +368,7 @@ fn get_current_timestamp() -> u64 {
 
 fn get_cached_size(path: &str) -> Option<CacheEntry> {
     let normalized = normalize_path(path);
-    let mut cache = lock_mutex(&SIZE_CACHE);
-    let entry = cache.get(&normalized)?;
+    let entry = lock_mutex(&SIZE_CACHE).get(&normalized)?.clone();
 
     let now = get_current_timestamp();
     if now.saturating_sub(entry.calculated_at) > CACHE_TTL_SECONDS {
@@ -359,7 +380,7 @@ fn get_cached_size(path: &str) -> Option<CacheEntry> {
         return None;
     }
 
-    Some(entry.clone())
+    Some(entry)
 }
 
 fn set_cached_size(path: &str, entry: CacheEntry) {
@@ -367,41 +388,29 @@ fn set_cached_size(path: &str, entry: CacheEntry) {
     lock_mutex(&SIZE_CACHE).put(normalized, entry);
 }
 
-fn cached_dir_size_result(path: &str) -> Option<DirSizeResult> {
+fn cached_dir_size_result(path: &str, timeout: Option<Duration>) -> Option<DirSizeResult> {
     let cached = get_cached_size(path)?;
-    Some(dir_size_result(
+    let reusable = match cached.status {
+        SizeStatus::Complete => true,
+        SizeStatus::Partial => matches!(
+            (timeout, cached.partial_timeout),
+            (Some(requested), Some(scanned)) if requested <= scanned
+        ),
+        _ => false,
+    };
+    if !reusable {
+        return None;
+    }
+    let mut result = dir_size_result(
         path,
         cached.size,
         cached.status,
         cached.file_count,
         cached.dir_count,
         None,
-    ))
-}
-
-fn store_complete_result(path: &Path, path_str: &str, size: u64, file_count: u64, dir_count: u64) {
-    set_cached_size(
-        path_str,
-        CacheEntry {
-            size,
-            file_count,
-            dir_count,
-            status: SizeStatus::Complete,
-            calculated_at: get_current_timestamp(),
-            dir_mtime: get_dir_mtime(path),
-        },
     );
-}
-
-fn reject_unreadable_dir(path: &Path) -> Option<DirSizeResult> {
-    let path_str = normalize_path(&path.to_string_lossy());
-    if !path.exists() {
-        return Some(error_result(&path_str, "Path does not exist"));
-    }
-    if !path.is_dir() {
-        return Some(error_result(&path_str, "Path is not a directory"));
-    }
-    None
+    result.skipped_count = cached.skipped_count;
+    Some(result)
 }
 
 fn timeouts_match(existing: Option<Duration>, requested: Option<Duration>) -> bool {
@@ -551,7 +560,7 @@ where
             return self.enqueue_again(deferred);
         }
 
-        if let Some(cached) = cached_dir_size_result(&self.path) {
+        if let Some(cached) = cached_dir_size_result(&self.path, deferred.request.timeout) {
             return cached;
         }
         drop(deferred.work.take());
@@ -566,8 +575,14 @@ where
             return schedule_dir_size_job(path, request, work).wait();
         }
         let timeout = request.timeout;
+        let use_cache = request.use_cache;
         let retry_path = path.clone();
-        schedule_dir_size_job(path, request, calculate_work(retry_path, timeout)).wait()
+        schedule_dir_size_job(
+            path,
+            request,
+            calculate_work(retry_path, timeout, use_cache),
+        )
+        .wait()
     }
 }
 
@@ -618,13 +633,17 @@ impl<Work> Drop for JobLaunch<Work> {
 fn finish_owned_job(job: &OwnedJob, result: DirSizeResult) {
     let still_owner = {
         let mut jobs = lock_mutex(&JOBS);
-        match job_key_by_id(&jobs, &job.path, job.id) {
+        let still_owner = match job_key_by_id(&jobs, &job.path, job.id) {
             Some(key) => {
                 jobs.remove(&key);
                 true
             }
             None => false,
+        };
+        if jobs.is_empty() {
+            lock_mutex(&PATH_ALIASES).clear();
         }
+        still_owner
     };
     let cancelled = job.cancel.load(Ordering::SeqCst);
     if still_owner && !cancelled && result.status == SizeStatus::Complete {
@@ -699,6 +718,9 @@ fn claim_job(path: &str, request: &JobRequest) -> Claim {
     );
     drop(jobs);
     drop(pins);
+    if progress.is_some() {
+        PROGRESS_JOB_STARTED.notify_all();
+    }
 
     Claim::Owned(OwnedJob {
         path: normalized,
@@ -715,13 +737,18 @@ fn spawn_owned_job<Work>(owned: OwnedJob, work: Work)
 where
     Work: FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static,
 {
-    let timeout = owned.timeout;
+    let pool = if crate::dir_reader::path_is_on_network_volume(&owned.path) {
+        &NETWORK_SCAN_POOL
+    } else if owned.timeout.is_none() {
+        &FULL_SCAN_POOL
+    } else {
+        &DIR_SIZE_POOL
+    };
     let launch = JobLaunch {
         job: Some(owned),
         work: Some(work),
     };
     let run = move || {
-        lower_full_scan_priority(timeout);
         let mut launch = launch;
         let owned = launch.job.take().expect("dir size job");
         let work = launch.work.take().expect("dir size work");
@@ -733,31 +760,21 @@ where
         let result = work(cancel, progress);
         finish.complete(result);
     };
-
-    if timeout.is_none() {
-        if std::thread::Builder::new()
-            .name("dir-size-full".to_string())
-            .spawn(run)
-            .is_err()
-        {
-            return;
-        }
-        return;
-    }
-    DIR_SIZE_POOL.spawn(run);
-}
-
-fn lower_full_scan_priority(timeout: Option<Duration>) {
-    if timeout.is_none() {
-        lower_current_thread_priority();
-    }
+    pool.spawn(run);
 }
 
 fn calculate_work(
     path: String,
     timeout: Option<Duration>,
+    use_cache: bool,
 ) -> impl FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static {
     move |cancel, progress| {
+        // A walk of the parent folder may have cached this folder while the job was queued.
+        if use_cache {
+            if let Some(cached) = cached_dir_size_result(&path, timeout) {
+                return cached;
+            }
+        }
         walk::calculate_dir_size(Path::new(&path), timeout, &cancel, progress.as_ref())
     }
 }
@@ -767,7 +784,7 @@ where
     Work: FnOnce(Arc<AtomicBool>, Option<CalculationProgress>) -> DirSizeResult + Send + 'static,
 {
     if request.use_cache {
-        if let Some(cached) = cached_dir_size_result(&path) {
+        if let Some(cached) = cached_dir_size_result(&path, request.timeout) {
             return JobWaiter::ready(path, cached);
         }
     }
@@ -862,7 +879,7 @@ fn run_dir_sizes(
                     allow_pin_retry: true,
                     emit: emit.clone(),
                 },
-                calculate_work(work_path, timeout),
+                calculate_work(work_path, timeout, use_cache),
             )
         })
         .collect();
@@ -875,8 +892,42 @@ fn result_emitter(app: AppHandle) -> ResultEmitter {
     })
 }
 
+fn active_progress_results(jobs: &HashMap<String, InFlightJob>) -> Vec<DirSizeResult> {
+    jobs.iter()
+        .filter_map(|(path, job)| {
+            job.progress
+                .as_ref()
+                .map(|progress| progress_result(path, progress))
+        })
+        .collect()
+}
+
+fn ensure_progress_ticker(app: &AppHandle) {
+    PROGRESS_TICKER.get_or_init(|| {
+        let app = app.clone();
+        let _ = std::thread::Builder::new()
+            .name("dir-size-progress".to_string())
+            .spawn(move || loop {
+                {
+                    let mut jobs = lock_mutex(&JOBS);
+                    while !jobs.values().any(|job| job.progress.is_some()) {
+                        jobs = PROGRESS_JOB_STARTED
+                            .wait(jobs)
+                            .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    }
+                }
+                std::thread::sleep(PROGRESS_EVENT_INTERVAL);
+                // After the last calculation finishes this snapshot is empty, which tells
+                // listeners that nothing is running.
+                let snapshot = active_progress_results(&lock_mutex(&JOBS));
+                let _ = app.emit(DIR_SIZE_PROGRESS_EVENT, snapshot);
+            });
+    });
+}
+
 #[tauri::command]
 pub async fn get_dir_size(app: AppHandle, path: String, timeout_ms: Option<u64>) -> DirSizeResult {
+    ensure_progress_ticker(&app);
     let timeout = timeout_ms.map(Duration::from_millis);
     let fallback_path = path.clone();
     let thread_fallback = fallback_path.clone();
@@ -901,14 +952,7 @@ pub fn get_dir_size_progress(path: String) -> Option<DirSizeResult> {
 
 #[tauri::command]
 pub fn get_active_calculations() -> Vec<DirSizeResult> {
-    lock_mutex(&JOBS)
-        .iter()
-        .filter_map(|(path, job)| {
-            job.progress
-                .as_ref()
-                .map(|progress| progress_result(path, progress))
-        })
-        .collect()
+    active_progress_results(&lock_mutex(&JOBS))
 }
 
 #[tauri::command]

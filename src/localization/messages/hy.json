@@ -1342,5 +1342,10 @@
     "replaceShareDialogTitle": "Փոխարինե՞լ ներկայիս կիսումը:",
     "replaceShareDialogDescription": "Ֆայլերն արդեն կիսվում են ցանցում: Ընթացիկ կիսումը կդադարեցվի և կփոխարինվի նորով:",
     "replaceShareDialogConfirm": "Փոխարինել"
+  },
+  "dirSizeHints": {
+    "partial": "Մասնակի հաշվարկ",
+    "unreadable": "Հնարավոր չէ կարդալ",
+    "skipped": "Որոշ տարրեր հնարավոր չէ կարդալ"
   }
 }
