@@ -22,6 +22,10 @@ export const ALWAYS_HIDDEN_WINDOWS_DRIVE_ROOT_ENTRY_NAMES = new Set([
 ]);
 
 export function isAlwaysHiddenWindowsSystemEntry(path: string, entryName?: string): boolean {
+  if (entryName !== undefined && !ALWAYS_HIDDEN_WINDOWS_DRIVE_ROOT_ENTRY_NAMES.has(entryName.toLowerCase())) {
+    return false;
+  }
+
   const normalizedPath = normalizePath(path);
   const parentPath = getParentPath(normalizedPath);
 
@@ -29,7 +33,11 @@ export function isAlwaysHiddenWindowsSystemEntry(path: string, entryName?: strin
     return false;
   }
 
-  const name = (entryName ?? getPathLeafName(normalizedPath)).toLowerCase();
+  if (entryName !== undefined) {
+    return true;
+  }
+
+  const name = getPathLeafName(normalizedPath).toLowerCase();
 
   return ALWAYS_HIDDEN_WINDOWS_DRIVE_ROOT_ENTRY_NAMES.has(name);
 }
