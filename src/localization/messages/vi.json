@@ -902,6 +902,7 @@
     "applyToAll": "Áp dụng cho tất cả",
     "continue": "Tiếp tục",
     "typeMismatch": "Thư mục và tệp khác nhau tại đường dẫn này",
+    "replaceBlockedContainsSource": "Không thể thay thế: chứa mục nguồn",
     "actionForItem": "Thao tác cho xung đột này",
     "replaceOverview": "{replaced} trong {total} mục sẽ được thay thế tại đích",
     "checkingConflicts": "Đang kiểm tra xung đột…",

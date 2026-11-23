@@ -94,6 +94,7 @@ export interface ConflictItem {
   destination_size: number | null;
   destination_modified_ms: number | null;
   relative_path: string;
+  replace_removes_source: boolean;
 }
 
 export const useClipboardStore = defineStore('clipboard', () => {

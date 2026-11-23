@@ -902,6 +902,7 @@
     "applyToAll": "すべてに適用",
     "continue": "続行",
     "typeMismatch": "このパスでフォルダとファイルの種類が一致しません",
+    "replaceBlockedContainsSource": "置き換えできません: 元の項目を含んでいます",
     "actionForItem": "この競合の操作",
     "replaceOverview": "{total} 件中 {replaced} 件がコピー先で置き換えられます",
     "checkingConflicts": "競合を確認しています…",

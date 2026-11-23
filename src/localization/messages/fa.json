@@ -897,6 +897,7 @@
     "applyToAll": "اعمال به همه",
     "continue": "ادامه",
     "typeMismatch": "پوشه و پرونده در این مسیر متفاوت هستند",
+    "replaceBlockedContainsSource": "جایگزینی ممکن نیست: شامل مورد مبدأ است",
     "actionForItem": "اقدام برای این تداخل",
     "replaceOverview": "{replaced} مورد از {total} مورد در مقصد جایگزین می‌شوند",
     "checkingConflicts": "در حال بررسی تداخل‌ها…",

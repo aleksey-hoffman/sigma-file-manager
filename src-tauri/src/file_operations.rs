@@ -45,6 +45,7 @@ pub struct ConflictItem {
     pub destination_size: Option<u64>,
     pub destination_modified_ms: Option<u64>,
     pub relative_path: String,
+    pub replace_removes_source: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -588,6 +589,7 @@ fn push_file_conflict(
         destination_size,
         destination_modified_ms,
         relative_path: relative_path.to_string(),
+        replace_removes_source: replace_would_remove_source(source_path, dest_path),
     });
 }
 
@@ -623,6 +625,7 @@ fn push_type_mismatch_conflict(
         destination_size,
         destination_modified_ms: None,
         relative_path: relative_path.to_string(),
+        replace_removes_source: replace_would_remove_source(source_path, dest_path),
     });
 }
 
@@ -720,6 +723,50 @@ pub async fn check_conflicts(
     tokio::task::spawn_blocking(move || check_conflicts_sync(source_paths, destination_path))
         .await
         .map_err(|_| "Conflict check task failed".to_string())
+}
+
+fn resolved_entry_path(path: &Path) -> Option<PathBuf> {
+    let is_symlink = fs::symlink_metadata(path)
+        .map(|metadata| metadata.file_type().is_symlink())
+        .unwrap_or(false);
+
+    if !is_symlink {
+        if let Ok(canonical_path) = path.canonicalize() {
+            return Some(canonical_path);
+        }
+    }
+
+    let parent = path.parent()?;
+    let name = path.file_name()?;
+    Some(parent.canonicalize().ok()?.join(name))
+}
+
+fn replace_would_remove_source(source: &Path, dest: &Path) -> bool {
+    let (Some(source_entry), Some(dest_entry)) =
+        (resolved_entry_path(source), resolved_entry_path(dest))
+    else {
+        return false;
+    };
+
+    if source_entry.starts_with(&dest_entry) {
+        return true;
+    }
+
+    matches!(
+        (source.canonicalize(), dest.canonicalize()),
+        (Ok(source_target), Ok(dest_target)) if source_target == dest_target
+    )
+}
+
+fn ensure_replace_keeps_source(source: &Path, dest: &Path) -> Result<(), String> {
+    if replace_would_remove_source(source, dest) {
+        return Err(format!(
+            "Cannot replace {}: it is or contains the item being transferred",
+            dest.display()
+        ));
+    }
+
+    Ok(())
 }
 
 fn remove_dir_or_file(path: &Path) -> Result<(), String> {
@@ -893,9 +940,12 @@ fn copy_merge(
                     *skipped_count += 1;
                     Ok(())
                 }
-                ConflictResolution::Replace => copy_file_resilient(source, dest)
-                    .map(|_| ())
-                    .map_err(|error| error.to_string()),
+                ConflictResolution::Replace => {
+                    ensure_replace_keeps_source(source, dest)?;
+                    copy_file_resilient(source, dest)
+                        .map(|_| ())
+                        .map_err(|error| error.to_string())
+                }
                 ConflictResolution::AutoRename => {
                     let parent = dest.parent().ok_or("No parent directory")?;
                     let name = dest.file_name().ok_or("Invalid destination file name")?;
@@ -913,6 +963,7 @@ fn copy_merge(
                     Ok(())
                 }
                 ConflictResolution::Replace => {
+                    ensure_replace_keeps_source(source, dest)?;
                     fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
                     copy_file_resilient(source, dest)
                         .map(|_| ())
@@ -1026,6 +1077,7 @@ fn move_merge(
                     Ok(())
                 }
                 ConflictResolution::Replace => {
+                    ensure_replace_keeps_source(source, dest)?;
                     remove_dir_or_file(dest)?;
                     try_rename_or_copy_delete(source, dest)
                 }
@@ -1044,6 +1096,7 @@ fn move_merge(
                     Ok(())
                 }
                 ConflictResolution::Replace => {
+                    ensure_replace_keeps_source(source, dest)?;
                     fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
                     try_rename_or_copy_delete(source, dest)
                 }
@@ -1251,7 +1304,9 @@ pub(crate) fn copy_items_impl(
                         continue;
                     }
                     ConflictResolution::Replace => {
-                        if let Err(error) = remove_dir_or_file(&initial_dest) {
+                        if let Err(error) = ensure_replace_keeps_source(source, &initial_dest)
+                            .and_then(|()| remove_dir_or_file(&initial_dest))
+                        {
                             failed_count += 1;
                             last_error = Some(error);
                             report_progress_for_item(progress, index, total, &detail, false);
@@ -1587,7 +1642,9 @@ pub(crate) fn move_items_impl(
                     continue;
                 }
                 ConflictResolution::Replace => {
-                    if let Err(error) = remove_dir_or_file(&dest_path) {
+                    if let Err(error) = ensure_replace_keeps_source(source, &dest_path)
+                        .and_then(|()| remove_dir_or_file(&dest_path))
+                    {
                         failed_count += 1;
                         last_error = Some(error);
                         report_progress_for_item(progress, index, total, &detail, false);
@@ -2931,6 +2988,110 @@ mod tests {
         );
         assert_eq!(read_file(&source_folder.join("common.txt")), b"source");
         assert!(!source_folder.join("only-source.txt").exists());
+    }
+
+    fn nested_same_name_file(temp: &Path) -> (PathBuf, PathBuf, PathBuf) {
+        let parent = temp.join("A");
+        let containing_folder = parent.join("x");
+        let source_file = containing_folder.join("x");
+        write_file(&source_file, b"source");
+        (parent, containing_folder, source_file)
+    }
+
+    #[test]
+    fn check_conflicts_flags_replace_that_would_remove_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, containing_folder, source_file) = nested_same_name_file(temp.path());
+
+        let conflicts = check_conflicts_sync(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+        );
+
+        assert_eq!(conflicts.len(), 1);
+        assert!(conflicts[0].replace_removes_source);
+        assert_eq!(
+            normalize_path(&conflicts[0].destination_path),
+            normalize_path(&containing_folder.to_string_lossy())
+        );
+    }
+
+    #[test]
+    fn check_conflicts_allows_replace_of_an_unrelated_item() {
+        let temp = tempdir().unwrap();
+        let source_file = temp.path().join("source").join("a.txt");
+        let destination = temp.path().join("destination");
+        write_file(&source_file, b"source");
+        write_file(&destination.join("a.txt"), b"destination");
+
+        let conflicts = check_conflicts_sync(
+            vec![source_file.to_string_lossy().to_string()],
+            destination.to_string_lossy().to_string(),
+        );
+
+        assert_eq!(conflicts.len(), 1);
+        assert!(!conflicts[0].replace_removes_source);
+    }
+
+    #[test]
+    fn move_merge_replace_refuses_to_delete_the_folder_holding_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, containing_folder, source_file) = nested_same_name_file(temp.path());
+
+        let result = move_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            None,
+            Some(vec![PathResolution {
+                destination_path: containing_folder.to_string_lossy().to_string(),
+                resolution: "replace".to_string(),
+            }]),
+        );
+
+        assert!(!result.success);
+        assert_eq!(read_file(&source_file), b"source");
+    }
+
+    #[test]
+    fn copy_merge_replace_refuses_to_delete_the_folder_holding_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, containing_folder, source_file) = nested_same_name_file(temp.path());
+
+        let result = copy_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            None,
+            Some(vec![PathResolution {
+                destination_path: containing_folder.to_string_lossy().to_string(),
+                resolution: "replace".to_string(),
+            }]),
+        );
+
+        assert!(!result.success);
+        assert_eq!(read_file(&source_file), b"source");
+    }
+
+    #[test]
+    fn legacy_replace_refuses_to_delete_the_folder_holding_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, _, source_file) = nested_same_name_file(temp.path());
+
+        let move_result = move_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            Some("replace".to_string()),
+            None,
+        );
+        let copy_result = copy_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            Some("replace".to_string()),
+            None,
+        );
+
+        assert!(!move_result.success);
+        assert!(!copy_result.success);
+        assert_eq!(read_file(&source_file), b"source");
     }
 
     fn os(value: &str) -> OsString {

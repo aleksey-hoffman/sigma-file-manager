@@ -902,6 +902,7 @@
     "applyToAll": "Appliquer à tous",
     "continue": "Continuer",
     "typeMismatch": "Le dossier et le fichier diffèrent à ce chemin",
+    "replaceBlockedContainsSource": "Remplacement impossible : contient l'élément source",
     "actionForItem": "Action pour ce conflit",
     "replaceOverview": "{replaced} sur {total} éléments seront remplacés dans la destination",
     "checkingConflicts": "Vérification des conflits…",

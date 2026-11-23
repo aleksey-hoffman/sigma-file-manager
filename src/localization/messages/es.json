@@ -902,6 +902,7 @@
     "applyToAll": "Aplicar a todos",
     "continue": "Continuar",
     "typeMismatch": "La carpeta y el archivo difieren en esta ruta",
+    "replaceBlockedContainsSource": "No se puede reemplazar: contiene el elemento de origen",
     "actionForItem": "Acción para este conflicto",
     "replaceOverview": "{replaced} de {total} elementos se reemplazarán en el destino",
     "checkingConflicts": "Comprobando conflictos…",

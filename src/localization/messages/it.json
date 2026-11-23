@@ -902,6 +902,7 @@
     "applyToAll": "Applica a tutti",
     "continue": "Continua",
     "typeMismatch": "Cartella e file diversi in questo percorso",
+    "replaceBlockedContainsSource": "Impossibile sostituire: contiene l'elemento di origine",
     "actionForItem": "Azione per questo conflitto",
     "replaceOverview": "{replaced} di {total} elementi saranno sostituiti nella destinazione",
     "checkingConflicts": "Verifica conflitti in corso…",

@@ -902,6 +902,7 @@
     "applyToAll": "Auf alle anwenden",
     "continue": "Weiter",
     "typeMismatch": "Ordner und Datei unterscheiden sich an diesem Pfad",
+    "replaceBlockedContainsSource": "Ersetzen nicht möglich: enthält das Quellelement",
     "actionForItem": "Aktion für diesen Konflikt",
     "replaceOverview": "{replaced} von {total} Elementen werden im Ziel ersetzt",
     "checkingConflicts": "Konflikte werden geprüft…",

@@ -53,6 +53,7 @@ function createConflictItem(): ConflictItem {
     destination_size: 10,
     destination_modified_ms: 90,
     relative_path: 'file.txt',
+    replace_removes_source: false,
   };
 }
 

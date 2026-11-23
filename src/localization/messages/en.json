@@ -932,6 +932,7 @@
     "applyToAll": "Apply to all",
     "continue": "Continue",
     "typeMismatch": "Folder and file differ at this path",
+    "replaceBlockedContainsSource": "Can't replace: it contains the source item",
     "actionForItem": "Action for this conflict",
     "replaceOverview": "{replaced} of {total} items will be replaced at the destination",
     "checkingConflicts": "Checking for conflicts…",
