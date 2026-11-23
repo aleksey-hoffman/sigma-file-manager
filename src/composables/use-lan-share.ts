@@ -4,7 +4,6 @@
 
 import { markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
-import QRCode from 'qrcode';
 import { invoke } from '@tauri-apps/api/core';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShareStore } from '@/stores/runtime/lan-share';
@@ -75,6 +74,8 @@ function getEffectivePath(path: string, mode: LanShareMode, isFile: boolean): st
 }
 
 async function buildLanShareQrDataUrl(address: string): Promise<string> {
+  const { default: QRCode } = await import('qrcode');
+
   return QRCode.toDataURL(address, {
     width: 128,
     margin: 1,
