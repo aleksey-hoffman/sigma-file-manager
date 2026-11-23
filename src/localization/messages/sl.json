@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "Privzeto utišaj predogled videoposnetka",
       "muteVideoPreviewByDefaultDescription": "Samodejno utiša videoposnetke v predogledu info panela, da prepreči nepričakovano zvočno predvajanje med brskanjem po mapah.",
       "autoplayVideoPreview": "Samodejno predvajaj predogled videoposnetka",
-      "autoplayVideoPreviewDescription": "Začne predvajanje v predogledu info panela, ko izberete video datoteko."
+      "autoplayVideoPreviewDescription": "Začne predvajanje v predogledu info panela, ko izberete video datoteko.",
+      "autoPreviewFileTypes": "Samodejni predogled",
+      "autoPreviewFileTypesDescription": "Vrste datotek, katerih predogled se naloži takoj ob izbiri. Neoznačene vrste prikažejo gumb \"Naloži predogled\".",
+      "previewFileTypes": {
+        "image": "Slike",
+        "video": "Videi",
+        "audio": "Zvok",
+        "pdf": "PDF",
+        "text": "Besedilo"
+      },
+      "autoPreviewMaxSize": "Omejitev za velike datoteke",
+      "autoPreviewMaxSizeDescription": "Večji PDF-ji in slike v polni velikosti prikažejo gumb \"Naloži predogled\", namesto da se naložijo, zato izbira za preimenovanje ali premik ostane hitra.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "Brez omejitve"
     },
     "addressBar": {
       "addressBarActions": "Dejanja naslovne vrstice",
@@ -970,6 +983,10 @@
     "videos": "Videi",
     "video": "Video",
     "pdfPreviewFrameTitle": "Predogled PDF",
+    "infoPanelLoadPreview": "Naloži predogled",
+    "infoPanelPreviewDisabled": "Samodejni predogled je za to vrsto datoteke izklopljen",
+    "infoPanelPreviewTooLarge": "Velika datoteka ({size}). Predogled se ne naloži samodejno",
+    "infoPanelPreviewQuickViewHint": "Ali pritisnite {shortcut}, da jo odprete v hitrem ogledu",
     "otherFiles": "Drugi datoteki",
     "itemCount": "{count} predmetov",
     "itemCountShort": "{count} pr.",

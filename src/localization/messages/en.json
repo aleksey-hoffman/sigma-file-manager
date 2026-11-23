@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "Mute video preview by default",
       "muteVideoPreviewByDefaultDescription": "Automatically mutes videos in the info panel preview to prevent unexpected audio while browsing.",
       "autoplayVideoPreview": "Automatically play video previews",
-      "autoplayVideoPreviewDescription": "Starts playback in the info panel preview when you select a video file."
+      "autoplayVideoPreviewDescription": "Starts playback in the info panel preview when you select a video file.",
+      "autoPreviewFileTypes": "Preview automatically",
+      "autoPreviewFileTypesDescription": "File types that load a preview as soon as you select them. Unchecked types show a \"Load preview\" button instead.",
+      "previewFileTypes": {
+        "image": "Images",
+        "video": "Videos",
+        "audio": "Audio",
+        "pdf": "PDF",
+        "text": "Text"
+      },
+      "autoPreviewMaxSize": "Large file limit",
+      "autoPreviewMaxSizeDescription": "PDFs and full-size images larger than this show a \"Load preview\" button instead of loading, so selecting them to rename or move stays fast.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "No limit"
     },
     "addressBar": {
       "addressBarActions": "Address bar actions",
@@ -972,6 +985,10 @@
     "videos": "Videos",
     "video": "Video",
     "pdfPreviewFrameTitle": "PDF preview",
+    "infoPanelLoadPreview": "Load preview",
+    "infoPanelPreviewDisabled": "Automatic preview is off for this file type",
+    "infoPanelPreviewTooLarge": "Large file ({size}). The preview is not loaded automatically",
+    "infoPanelPreviewQuickViewHint": "Or press {shortcut} to open it in Quick view",
     "otherFiles": "Other Files",
     "itemCount": "{count} items",
     "itemCountShort": "{count} items",

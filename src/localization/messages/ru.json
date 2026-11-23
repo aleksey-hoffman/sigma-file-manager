@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "Отключать звук предпросмотра видео по умолчанию",
       "muteVideoPreviewByDefaultDescription": "Автоматически отключает звук видео в предпросмотре информационной панели, чтобы избежать неожиданного аудио при просмотре папок.",
       "autoplayVideoPreview": "Автоматически воспроизводить предпросмотр видео",
-      "autoplayVideoPreviewDescription": "Начинает воспроизведение в предпросмотре информационной панели при выборе видеофайла."
+      "autoplayVideoPreviewDescription": "Начинает воспроизведение в предпросмотре информационной панели при выборе видеофайла.",
+      "autoPreviewFileTypes": "Автоматическое превью",
+      "autoPreviewFileTypesDescription": "Типы файлов, превью которых загружается сразу при выделении. Для остальных типов показывается кнопка \"Загрузить превью\".",
+      "previewFileTypes": {
+        "image": "Изображения",
+        "video": "Видео",
+        "audio": "Аудио",
+        "pdf": "PDF",
+        "text": "Текст"
+      },
+      "autoPreviewMaxSize": "Лимит для больших файлов",
+      "autoPreviewMaxSizeDescription": "Для PDF и изображений в полном размере больше этого лимита показывается кнопка \"Загрузить превью\" вместо загрузки, чтобы выделение файла для переименования или перемещения оставалось быстрым.",
+      "autoPreviewSizeOption": "{size} МБ",
+      "autoPreviewNoLimit": "Без лимита"
     },
     "addressBar": {
       "addressBarActions": "Действия адресной строки",
@@ -970,6 +983,10 @@
     "videos": "Видео",
     "video": "Видео",
     "pdfPreviewFrameTitle": "Предпросмотр PDF",
+    "infoPanelLoadPreview": "Загрузить превью",
+    "infoPanelPreviewDisabled": "Автоматическое превью для этого типа файлов выключено",
+    "infoPanelPreviewTooLarge": "Большой файл ({size}). Превью не загружается автоматически",
+    "infoPanelPreviewQuickViewHint": "Или нажмите {shortcut}, чтобы открыть в быстром просмотре",
     "otherFiles": "Другие файлы",
     "itemCount": "{count} элементов",
     "itemCountShort": "{count} эл.",

@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "默认静音视频预览",
       "muteVideoPreviewByDefaultDescription": "自动将信息面板预览中的视频静音，避免浏览文件夹时出现意外声音。",
       "autoplayVideoPreview": "自动播放视频预览",
-      "autoplayVideoPreviewDescription": "选中视频文件时，在信息面板预览中自动开始播放。"
+      "autoplayVideoPreviewDescription": "选中视频文件时，在信息面板预览中自动开始播放。",
+      "autoPreviewFileTypes": "自动预览",
+      "autoPreviewFileTypesDescription": "选中这些类型的文件时会立即加载预览。未勾选的类型会显示\"加载预览\"按钮。",
+      "previewFileTypes": {
+        "image": "图片",
+        "video": "视频",
+        "audio": "音频",
+        "pdf": "PDF",
+        "text": "文本"
+      },
+      "autoPreviewMaxSize": "大文件限制",
+      "autoPreviewMaxSizeDescription": "超过此大小的 PDF 和以原始尺寸显示的图片会显示\"加载预览\"按钮，而不是直接加载，这样选中文件进行重命名或移动时依然流畅。",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "无限制"
     },
     "addressBar": {
       "addressBarActions": "地址栏操作",
@@ -940,6 +953,10 @@
     "videos": "视频",
     "video": "视频",
     "pdfPreviewFrameTitle": "PDF 预览",
+    "infoPanelLoadPreview": "加载预览",
+    "infoPanelPreviewDisabled": "此文件类型的自动预览已关闭",
+    "infoPanelPreviewTooLarge": "大文件 ({size})，不会自动加载预览",
+    "infoPanelPreviewQuickViewHint": "或按 {shortcut} 在快速查看中打开",
     "otherFiles": "其他文件",
     "itemCount": "{count} 个项目",
     "itemCountShort": "{count}项",

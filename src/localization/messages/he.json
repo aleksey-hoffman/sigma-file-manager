@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "השתקת תצוגה מקדימה של וידאו כברירת מחדל",
       "muteVideoPreviewByDefaultDescription": "משתיקה אוטומטית סרטונים בתצוגה המקדימה של חלונית המידע כדי למנוע שמע בלתי צפוי בעת דפדוף בתיקיות.",
       "autoplayVideoPreview": "הפעלת תצוגה מקדימה של וידאו באופן אוטומטי",
-      "autoplayVideoPreviewDescription": "מתחילה השמעה בתצוגה המקדימה של חלונית המידע כשבוחרים קובץ וידאו."
+      "autoplayVideoPreviewDescription": "מתחילה השמעה בתצוגה המקדימה של חלונית המידע כשבוחרים קובץ וידאו.",
+      "autoPreviewFileTypes": "תצוגה מקדימה אוטומטית",
+      "autoPreviewFileTypesDescription": "סוגי קבצים שהתצוגה המקדימה שלהם נטענת מיד עם הבחירה. סוגים שלא סומנו מציגים כפתור \"טען תצוגה מקדימה\".",
+      "previewFileTypes": {
+        "image": "תמונות",
+        "video": "סרטונים",
+        "audio": "שמע",
+        "pdf": "PDF",
+        "text": "טקסט"
+      },
+      "autoPreviewMaxSize": "מגבלה לקבצים גדולים",
+      "autoPreviewMaxSizeDescription": "קובצי PDF ותמונות בגודל מלא שגדולים יותר מציגים כפתור \"טען תצוגה מקדימה\" במקום להיטען, כך שבחירה לשינוי שם או העברה נשארת מהירה.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "ללא מגבלה"
     },
     "addressBar": {
       "addressBarActions": "פעולות שורת הכתובת",
@@ -972,6 +985,10 @@
     "videos": "סרטונים",
     "video": "סרטון",
     "pdfPreviewFrameTitle": "תצוגה מקדימה של PDF",
+    "infoPanelLoadPreview": "טען תצוגה מקדימה",
+    "infoPanelPreviewDisabled": "תצוגה מקדימה אוטומטית כבויה עבור סוג קובץ זה",
+    "infoPanelPreviewTooLarge": "קובץ גדול ({size}). התצוגה המקדימה לא נטענת אוטומטית",
+    "infoPanelPreviewQuickViewHint": "או לחץ {shortcut} כדי לפתוח בתצוגה מהירה",
     "otherFiles": "קבצים אחרים",
     "itemCount": "{count} פריטים",
     "itemCountShort": "{count} פריטים",

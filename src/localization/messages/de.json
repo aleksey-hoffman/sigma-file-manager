@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "Videovorschau standardmäßig stummschalten",
       "muteVideoPreviewByDefaultDescription": "Schaltet Videos in der Infotafel-Vorschau automatisch stumm, um unerwartete Geräusche beim Durchsuchen von Ordnern zu vermeiden.",
       "autoplayVideoPreview": "Videovorschau automatisch abspielen",
-      "autoplayVideoPreviewDescription": "Startet die Wiedergabe in der Infotafel-Vorschau, wenn Sie eine Videodatei auswählen."
+      "autoplayVideoPreviewDescription": "Startet die Wiedergabe in der Infotafel-Vorschau, wenn Sie eine Videodatei auswählen.",
+      "autoPreviewFileTypes": "Automatische Vorschau",
+      "autoPreviewFileTypesDescription": "Dateitypen, deren Vorschau sofort beim Auswählen geladen wird. Nicht ausgewählte Typen zeigen stattdessen die Schaltfläche \"Vorschau laden\".",
+      "previewFileTypes": {
+        "image": "Bilder",
+        "video": "Videos",
+        "audio": "Audio",
+        "pdf": "PDF",
+        "text": "Text"
+      },
+      "autoPreviewMaxSize": "Grenze für große Dateien",
+      "autoPreviewMaxSizeDescription": "Größere PDFs und in voller Größe angezeigte Bilder zeigen die Schaltfläche \"Vorschau laden\", statt sofort zu laden. So bleibt das Auswählen zum Umbenennen oder Verschieben schnell.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "Keine Grenze"
     },
     "addressBar": {
       "addressBarActions": "Aktionen in der Adressleiste",
@@ -942,6 +955,10 @@
     "videos": "Videos",
     "video": "Video",
     "pdfPreviewFrameTitle": "PDF-Vorschau",
+    "infoPanelLoadPreview": "Vorschau laden",
+    "infoPanelPreviewDisabled": "Automatische Vorschau ist für diesen Dateityp deaktiviert",
+    "infoPanelPreviewTooLarge": "Große Datei ({size}). Die Vorschau wird nicht automatisch geladen",
+    "infoPanelPreviewQuickViewHint": "Oder drücke {shortcut}, um sie in der Schnellansicht zu öffnen",
     "otherFiles": "Andere Dateien",
     "itemCount": "{count} Elemente",
     "itemCountShort": "{count} El.",

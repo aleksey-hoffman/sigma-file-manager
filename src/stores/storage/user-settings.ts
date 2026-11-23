@@ -38,6 +38,7 @@ import {
   USER_SETTINGS_SCHEMA_VERSION,
 } from '@/stores/schemas/user-settings';
 import { SEARCH_CONSTANTS } from '@/constants';
+import { DEFAULT_AUTO_PREVIEW_MAX_SIZE_MB } from '@/modules/navigator/components/info-panel/utils/info-panel-preview-gate';
 import {
   DEFAULT_INFUSION_BLEND_MODE,
   DEFAULT_INFUSION_BLEND_TARGET,
@@ -139,6 +140,14 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         showFullSizeImagePreview: false,
         muteVideoPreviewByDefault: false,
         autoplayVideoPreview: false,
+        autoPreviewFileTypes: {
+          image: true,
+          video: true,
+          audio: true,
+          pdf: true,
+          text: true,
+        },
+        autoPreviewMaxSizeMb: DEFAULT_AUTO_PREVIEW_MAX_SIZE_MB,
       },
       navigationPanel: {
         show: false,

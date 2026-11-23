@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "Silenciar a pré-visualização de vídeo por predefinição",
       "muteVideoPreviewByDefaultDescription": "Silencia automaticamente os vídeos na pré-visualização do painel de informações para evitar áudio inesperado ao navegar em pastas.",
       "autoplayVideoPreview": "Reproduzir automaticamente as pré-visualizações de vídeo",
-      "autoplayVideoPreviewDescription": "Inicia a reprodução na pré-visualização do painel de informações quando seleciona um ficheiro de vídeo."
+      "autoplayVideoPreviewDescription": "Inicia a reprodução na pré-visualização do painel de informações quando seleciona um ficheiro de vídeo.",
+      "autoPreviewFileTypes": "Pré-visualização automática",
+      "autoPreviewFileTypesDescription": "Tipos de arquivo cuja pré-visualização é carregada ao selecioná-los. Tipos desmarcados mostram o botão \"Carregar pré-visualização\".",
+      "previewFileTypes": {
+        "image": "Imagens",
+        "video": "Vídeos",
+        "audio": "Áudio",
+        "pdf": "PDF",
+        "text": "Texto"
+      },
+      "autoPreviewMaxSize": "Limite para arquivos grandes",
+      "autoPreviewMaxSizeDescription": "PDFs e imagens em tamanho original maiores mostram o botão \"Carregar pré-visualização\" em vez de carregar, para que selecioná-los para renomear ou mover continue rápido.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "Sem limite"
     },
     "addressBar": {
       "addressBarActions": "Ações da barra de endereço",
@@ -939,6 +952,10 @@
     "videos": "Vídeos",
     "video": "Vídeo",
     "pdfPreviewFrameTitle": "Pré-visualização de PDF",
+    "infoPanelLoadPreview": "Carregar pré-visualização",
+    "infoPanelPreviewDisabled": "A pré-visualização automática está desativada para este tipo de arquivo",
+    "infoPanelPreviewTooLarge": "Arquivo grande ({size}). A pré-visualização não é carregada automaticamente",
+    "infoPanelPreviewQuickViewHint": "Ou pressione {shortcut} para abrir na Visualização rápida",
     "otherFiles": "Outros arquivos",
     "itemCount": "{count} itens",
     "itemCountShort": "{count} itens",

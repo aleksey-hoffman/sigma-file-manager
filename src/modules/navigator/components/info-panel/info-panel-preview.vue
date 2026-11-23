@@ -12,15 +12,19 @@ import {
   FolderOpenIcon,
   FileIcon,
   FileImageIcon,
+  FileTextIcon,
   Loader2Icon,
 } from '@lucide/vue';
+import { Button } from '@/components/ui/button';
+import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 import { useInfoPanelImagePreview } from '@/modules/navigator/components/info-panel/composables/use-info-panel-image-preview';
+import { useInfoPanelPreviewGate } from '@/modules/navigator/components/info-panel/composables/use-info-panel-preview-gate';
 import { useInfoPanelVideoPreview } from '@/modules/navigator/components/info-panel/composables/use-info-panel-video-preview';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { isWslPath } from '@/utils/normalize-path';
 import type { DirEntry } from '@/types/dir-entry';
-import { determineFileType } from '@/stores/runtime/quick-view';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { decodeTextFileBytesWithEncoding } from '@/utils/decode-text-file-bytes';
 
 const { t } = useI18n();
@@ -50,20 +54,30 @@ const {
   muteVideoPreviewByDefault,
 } = useInfoPanelVideoPreview(() => props.selectedEntry);
 
+const {
+  previewFileType: infoPanelPreviewKind,
+  previewBlockReason,
+  isPreviewReady,
+  loadPreview,
+} = useInfoPanelPreviewGate(() => props.selectedEntry);
+
+const shortcutsStore = useShortcutsStore();
+const quickViewShortcutLabel = computed(() => shortcutsStore.getShortcutLabel('quickView'));
+
+const blockedPreviewMessage = computed(() => {
+  if (previewBlockReason.value === 'tooLarge') {
+    return t('fileBrowser.infoPanelPreviewTooLarge', {
+      size: formatBytes(props.selectedEntry?.size ?? 0),
+    });
+  }
+
+  return t('fileBrowser.infoPanelPreviewDisabled');
+});
+
 const textPreviewContent = ref('');
 const textPreviewLoading = ref(false);
 const textPreviewFailed = ref(false);
 let textPreviewRequestSequence = 0;
-
-const infoPanelPreviewKind = computed(() => {
-  const entry = props.selectedEntry;
-
-  if (!entry?.path || entry.is_dir) {
-    return null;
-  }
-
-  return determineFileType(entry.path);
-});
 
 const showWslDirectoryIcon = computed(() => {
   if (!props.selectedEntry?.is_dir) return false;
@@ -72,7 +86,7 @@ const showWslDirectoryIcon = computed(() => {
 });
 
 watch(
-  () => props.selectedEntry?.path,
+  [() => props.selectedEntry?.path, isPreviewReady],
   async () => {
     const entryAtStart = props.selectedEntry;
     const pathAtStart = entryAtStart?.path;
@@ -81,7 +95,7 @@ watch(
     textPreviewFailed.value = false;
     textPreviewLoading.value = false;
 
-    if (!pathAtStart || entryAtStart?.is_dir) {
+    if (!pathAtStart || entryAtStart?.is_dir || !isPreviewReady.value) {
       return;
     }
 
@@ -91,9 +105,7 @@ watch(
       return;
     }
 
-    const previewKind = determineFileType(pathAtStart);
-
-    if (previewKind === 'text') {
+    if (infoPanelPreviewKind.value === 'text') {
       textPreviewLoading.value = true;
       const requestSequence = ++textPreviewRequestSequence;
 
@@ -154,6 +166,34 @@ watch(
       />
     </div>
     <div
+      v-else-if="previewBlockReason"
+      class="info-panel-preview__blocked animate-fade-in-x2"
+    >
+      <p class="info-panel-preview__blocked-message">
+        {{ blockedPreviewMessage }}
+      </p>
+      <Button
+        size="xs"
+        variant="secondary"
+        @click="loadPreview"
+      >
+        {{ t('fileBrowser.infoPanelLoadPreview') }}
+      </Button>
+      <p
+        v-if="quickViewShortcutLabel"
+        class="info-panel-preview__blocked-hint"
+      >
+        <i18n-t
+          keypath="fileBrowser.infoPanelPreviewQuickViewHint"
+          tag="span"
+        >
+          <template #shortcut>
+            <kbd class="info-panel-preview__shortcut">{{ quickViewShortcutLabel }}</kbd>
+          </template>
+        </i18n-t>
+      </p>
+    </div>
+    <div
       v-else-if="isImageFile"
       ref="previewRef"
       class="info-panel-preview__media-container"
@@ -199,9 +239,15 @@ watch(
       class="info-panel-preview__media-container"
     >
       <iframe
+        v-if="isPreviewReady"
         :src="mediaSrc"
         :title="t('fileBrowser.pdfPreviewFrameTitle')"
         class="info-panel-preview__pdf animate-fade-in-x2"
+      />
+      <FileTextIcon
+        v-else
+        :size="48"
+        class="info-panel-preview__image-placeholder"
       />
     </div>
     <div
@@ -259,6 +305,43 @@ watch(
   align-items: center;
   justify-content: center;
   color: hsl(var(--muted-foreground) / 30%);
+}
+
+.info-panel-preview__blocked {
+  display: flex;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  text-align: center;
+}
+
+.info-panel-preview__image-placeholder {
+  color: hsl(var(--muted-foreground) / 30%);
+}
+
+.info-panel-preview__blocked-message,
+.info-panel-preview__blocked-hint {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.info-panel-preview__blocked-hint {
+  color: hsl(var(--muted-foreground) / 70%);
+  font-size: 11px;
+}
+
+.info-panel-preview__shortcut {
+  padding: 0 4px;
+  border-radius: calc(var(--radius-sm) - 1px);
+  background-color: hsl(var(--muted) / 70%);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .info-panel-preview__icon--folder {

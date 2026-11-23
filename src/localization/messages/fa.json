@@ -395,7 +395,20 @@
       "muteVideoPreviewByDefault": "بی‌صدا کردن پیش‌نمایش ویدیو به‌صورت پیش‌فرض",
       "muteVideoPreviewByDefaultDescription": "ویدیوها را در پیش‌نمایش پانل اطلاعات به‌صورت خودکار بی‌صدا می‌کند تا هنگام مرور پوشه‌ها صدای ناخواسته پخش نشود.",
       "autoplayVideoPreview": "پخش خودکار پیش‌نمایش ویدیو",
-      "autoplayVideoPreviewDescription": "هنگام انتخاب یک فایل ویدیویی، پخش را در پیش‌نمایش پانل اطلاعات آغاز می‌کند."
+      "autoplayVideoPreviewDescription": "هنگام انتخاب یک فایل ویدیویی، پخش را در پیش‌نمایش پانل اطلاعات آغاز می‌کند.",
+      "autoPreviewFileTypes": "پیش‌نمایش خودکار",
+      "autoPreviewFileTypesDescription": "نوع فایل‌هایی که با انتخاب، پیش‌نمایش آن‌ها بارگذاری می‌شود. نوع‌های انتخاب‌نشده دکمه \"بارگذاری پیش‌نمایش\" را نشان می‌دهند.",
+      "previewFileTypes": {
+        "image": "تصاویر",
+        "video": "ویدیوها",
+        "audio": "صدا",
+        "pdf": "PDF",
+        "text": "متن"
+      },
+      "autoPreviewMaxSize": "محدودیت فایل بزرگ",
+      "autoPreviewMaxSizeDescription": "فایل‌های PDF و تصاویر با اندازه کامل که بزرگ‌تر از این هستند، به جای بارگذاری، دکمه \"بارگذاری پیش‌نمایش\" را نشان می‌دهند تا انتخاب آن‌ها برای تغییر نام یا جابه‌جایی سریع بماند.",
+      "autoPreviewSizeOption": "{size} مگابایت",
+      "autoPreviewNoLimit": "بدون محدودیت"
     },
     "addressBar": {
       "addressBarActions": "عملکردهای نوار آدرس",
@@ -935,6 +948,10 @@
     "videos": "ویدیوها",
     "video": "ویدیو",
     "pdfPreviewFrameTitle": "پیش‌نمایش PDF",
+    "infoPanelLoadPreview": "بارگذاری پیش‌نمایش",
+    "infoPanelPreviewDisabled": "پیش‌نمایش خودکار برای این نوع فایل خاموش است",
+    "infoPanelPreviewTooLarge": "فایل بزرگ ({size}). پیش‌نمایش به‌طور خودکار بارگذاری نمی‌شود",
+    "infoPanelPreviewQuickViewHint": "یا {shortcut} را بزنید تا در نمای سریع باز شود",
     "otherFiles": "فایل‌های دیگر",
     "itemCount": "{count} مورد",
     "itemCountShort": "{count} مورد",

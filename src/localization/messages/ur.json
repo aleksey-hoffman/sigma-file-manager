@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "ویڈیو پری ویو کو بطور ڈیفالٹ خاموش کریں",
       "muteVideoPreviewByDefaultDescription": "فولڈرز براؤز کرتے وقت غیر متوقع آڈیو سے بچنے کے لیے معلوماتی پینل پری ویو میں ویڈیوز کو خودکار طور پر خاموش کرتا ہے۔",
       "autoplayVideoPreview": "ویڈیو پری ویوز خودکار طور پر چلائیں",
-      "autoplayVideoPreviewDescription": "جب آپ ویڈیو فائل منتخب کرتے ہیں تو معلوماتی پینل پری ویو میں پلے بیک شروع کرتا ہے۔"
+      "autoplayVideoPreviewDescription": "جب آپ ویڈیو فائل منتخب کرتے ہیں تو معلوماتی پینل پری ویو میں پلے بیک شروع کرتا ہے۔",
+      "autoPreviewFileTypes": "خودکار پیش نظارہ",
+      "autoPreviewFileTypesDescription": "وہ فائل اقسام جن کا پیش نظارہ منتخب کرتے ہی لوڈ ہوتا ہے۔ غیر منتخب اقسام \"پیش نظارہ لوڈ کریں\" بٹن دکھاتی ہیں۔",
+      "previewFileTypes": {
+        "image": "تصاویر",
+        "video": "ویڈیوز",
+        "audio": "آڈیو",
+        "pdf": "PDF",
+        "text": "متن"
+      },
+      "autoPreviewMaxSize": "بڑی فائل کی حد",
+      "autoPreviewMaxSizeDescription": "اس سے بڑی PDF فائلیں اور پورے سائز کی تصاویر لوڈ ہونے کے بجائے \"پیش نظارہ لوڈ کریں\" بٹن دکھاتی ہیں، تاکہ نام بدلنے یا منتقل کرنے کے لیے منتخب کرنا تیز رہے۔",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "کوئی حد نہیں"
     },
     "addressBar": {
       "addressBarActions": "پتہ پٹی کے اعمال",
@@ -970,6 +983,10 @@
     "videos": "ویڈیوز",
     "video": "ویڈیو",
     "pdfPreviewFrameTitle": "PDF پیش نظارہ",
+    "infoPanelLoadPreview": "پیش نظارہ لوڈ کریں",
+    "infoPanelPreviewDisabled": "اس فائل کی قسم کے لیے خودکار پیش نظارہ بند ہے",
+    "infoPanelPreviewTooLarge": "بڑی فائل ({size})۔ پیش نظارہ خود بخود لوڈ نہیں ہوتا",
+    "infoPanelPreviewQuickViewHint": "یا فوری منظر میں کھولنے کے لیے {shortcut} دبائیں",
     "otherFiles": "دیگر فائلیں",
     "itemCount": "{count} اشیاء",
     "itemCountShort": "{count} اش.",

@@ -429,7 +429,13 @@ export type UserSettingsNavigatorInfoPanel = {
   showFullSizeImagePreview: boolean;
   muteVideoPreviewByDefault: boolean;
   autoplayVideoPreview: boolean;
+  autoPreviewFileTypes: InfoPanelAutoPreviewFileTypes;
+  autoPreviewMaxSizeMb: number;
 };
+
+export type InfoPanelPreviewFileType = 'image' | 'video' | 'audio' | 'pdf' | 'text';
+
+export type InfoPanelAutoPreviewFileTypes = Record<InfoPanelPreviewFileType, boolean>;
 
 export type NavigatorLayout = {
   type: {
