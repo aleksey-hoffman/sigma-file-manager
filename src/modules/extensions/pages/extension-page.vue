@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { PageIframeLayout } from '@/layouts';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
@@ -25,6 +25,7 @@ type IframeContent = {
 defineOptions({ name: 'ExtensionPage' });
 
 const route = useRoute();
+const router = useRouter();
 const extensionsStore = useExtensionsStore();
 
 const fullPageId = computed(() => route.params.fullPageId as string);
@@ -82,6 +83,16 @@ async function resolveIframeContent() {
 }
 
 watch([rawUrl, fullPageId], resolveIframeContent, { immediate: true });
+
+watch(
+  () => extensionsStore.isInitialized && !pageRegistration.value,
+  (pageIsMissing) => {
+    if (pageIsMissing && route.name === 'extension-page') {
+      void router.replace({ name: 'home' });
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

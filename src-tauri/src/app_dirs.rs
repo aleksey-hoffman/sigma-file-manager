@@ -681,6 +681,7 @@ mod portable_tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn appimage_detection_requires_current_exe_inside_appdir() {
         let appimage = Some(OsStr::new("/home/user/Apps/Sigma.AppImage"));
         let appdir = Some(OsStr::new("/tmp/.mount_Sigma-123456"));

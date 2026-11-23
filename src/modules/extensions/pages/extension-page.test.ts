@@ -3,9 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
-  beforeEach, describe, expect, it, vi,
+  afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
-import { flushPromises, mount } from '@vue/test-utils';
+import { nextTick, reactive } from 'vue';
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import ExtensionPage from '@/modules/extensions/pages/extension-page.vue';
 import { EXTENSION_PAGE_CSP } from '@/modules/extensions/runtime/extension-frame-policy';
 
@@ -19,18 +20,27 @@ type SidebarPageRegistration = {
 
 const {
   invokeAsExtensionMock,
-  sidebarPagesMock,
+  routerReplaceMock,
 } = vi.hoisted(() => ({
   invokeAsExtensionMock: vi.fn(),
-  sidebarPagesMock: [] as SidebarPageRegistration[],
+  routerReplaceMock: vi.fn(),
 }));
 
+const extensionsStoreMock = reactive({
+  isInitialized: false,
+  sidebarPages: [] as SidebarPageRegistration[],
+});
+
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: { fullPageId: 'test.page' } }),
+  useRoute: () => ({
+    name: 'extension-page',
+    params: { fullPageId: 'test.page' },
+  }),
+  useRouter: () => ({ replace: routerReplaceMock }),
 }));
 
 vi.mock('@/stores/runtime/extensions', () => ({
-  useExtensionsStore: () => ({ sidebarPages: sidebarPagesMock }),
+  useExtensionsStore: () => extensionsStoreMock,
 }));
 
 vi.mock('@/modules/extensions/runtime/extension-invoke', () => ({
@@ -42,13 +52,13 @@ vi.mock('@/layouts', () => ({
 }));
 
 function registerPage(url: string) {
-  sidebarPagesMock.splice(0, sidebarPagesMock.length, {
+  extensionsStoreMock.sidebarPages = [{
     extensionId: 'test.extension',
     page: {
       id: 'test.page',
       url,
     },
-  });
+  }];
 }
 
 async function mountPage() {
@@ -58,9 +68,13 @@ async function mountPage() {
 }
 
 describe('extension page', () => {
+  enableAutoUnmount(afterEach);
+
   beforeEach(() => {
     invokeAsExtensionMock.mockReset();
-    sidebarPagesMock.splice(0, sidebarPagesMock.length);
+    routerReplaceMock.mockReset().mockResolvedValue(undefined);
+    extensionsStoreMock.isInitialized = false;
+    extensionsStoreMock.sidebarPages = [];
   });
 
   it('renders extension HTML in an opaque-origin sandbox with the page policy', async () => {
@@ -101,5 +115,26 @@ describe('extension page', () => {
     const wrapper = await mountPage();
 
     expect(wrapper.find('iframe').exists()).toBe(false);
+  });
+
+  it('waits for extensions to load before deciding the page is missing', async () => {
+    await mountPage();
+
+    expect(routerReplaceMock).not.toHaveBeenCalled();
+
+    registerPage('https://example.com/tool');
+    extensionsStoreMock.isInitialized = true;
+    await nextTick();
+
+    expect(routerReplaceMock).not.toHaveBeenCalled();
+  });
+
+  it('opens the home page when a restored extension page no longer exists', async () => {
+    await mountPage();
+
+    extensionsStoreMock.isInitialized = true;
+    await nextTick();
+
+    expect(routerReplaceMock).toHaveBeenCalledWith({ name: 'home' });
   });
 });
