@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import cloneDeep from 'lodash.clonedeep';
+import clone from '@/utils/clone';
 import { defineStore } from 'pinia';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { ref, computed, watch } from 'vue';
@@ -460,7 +460,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       }
 
       if (!userSettingsDefault.value) {
-        userSettingsDefault.value = cloneDeep(userSettings.value);
+        userSettingsDefault.value = clone(userSettings.value);
       }
 
       if (userSettingsDefault.value && allowedUserSettingsStorageKeys.value.size === 0) {

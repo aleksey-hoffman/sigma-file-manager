@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import cloneDeep from 'lodash.clonedeep';
+import clone from '@/utils/clone';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -334,7 +334,7 @@ async function resetVisualEffectsSection(): Promise<void> {
     return;
   }
 
-  const defaultInfusion = cloneDeep(defaultsSnapshot.infusion);
+  const defaultInfusion = clone(defaultsSnapshot.infusion);
 
   userSettingsStore.userSettings.infusion = defaultInfusion;
   userSettingsStore.userSettings.homeBannerPauseVideoWhenIdle = defaultsSnapshot.homeBannerPauseVideoWhenIdle;
