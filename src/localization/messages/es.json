@@ -877,7 +877,6 @@
     "noTerminalsFound": "No se encontraron terminales",
     "holdModifierForAdmin": "Mantén {modifier} para abrir como administrador",
     "defaultLabel": "Predeterminado",
-    "openWithAnotherTerminal": "Abrir con otra terminal",
     "errorTitle": "No se pudo abrir la terminal",
     "openFailed": "No se pudo abrir la terminal",
     "noTerminalAvailable": "No hay ninguna terminal disponible",

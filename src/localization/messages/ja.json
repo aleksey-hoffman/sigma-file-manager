@@ -877,7 +877,6 @@
     "noTerminalsFound": "ターミナルが見つかりません",
     "holdModifierForAdmin": "{modifier}キーを押しながら管理者として開く",
     "defaultLabel": "デフォルト",
-    "openWithAnotherTerminal": "別のターミナルで開く",
     "errorTitle": "ターミナルを開けませんでした",
     "openFailed": "ターミナルを開けませんでした",
     "noTerminalAvailable": "使えるターミナルがありません",

@@ -907,7 +907,6 @@
     "noTerminalsFound": "Noben terminal ni bil najden",
     "holdModifierForAdmin": "Držite {modifier} za odprtje kot skrbnik",
     "defaultLabel": "Privzeto",
-    "openWithAnotherTerminal": "Odpri z drugim terminalom",
     "errorTitle": "Terminala ni bilo mogoče odpreti",
     "openFailed": "Terminala ni bilo mogoče odpreti",
     "noTerminalAvailable": "Ni razpoložljivega terminala",

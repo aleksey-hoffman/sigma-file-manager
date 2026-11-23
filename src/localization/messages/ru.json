@@ -907,7 +907,6 @@
     "noTerminalsFound": "Терминалы не найдены",
     "holdModifierForAdmin": "Удерживайте {modifier} для открытия от имени администратора",
     "defaultLabel": "По умолчанию",
-    "openWithAnotherTerminal": "Открыть в другом терминале",
     "errorTitle": "Не удалось открыть терминал",
     "openFailed": "Не удалось открыть терминал",
     "noTerminalAvailable": "Нет доступного терминала",

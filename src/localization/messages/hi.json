@@ -907,7 +907,6 @@
     "noTerminalsFound": "कोई टर्मिनल नहीं मिला",
     "holdModifierForAdmin": "व्यवस्थापक के रूप में खोलने के लिए {modifier} दबाए रखें",
     "defaultLabel": "गलती करना",
-    "openWithAnotherTerminal": "दूसरे टर्मिनल में खोलें",
     "errorTitle": "टर्मिनल नहीं खुल सका",
     "openFailed": "टर्मिनल नहीं खुल सका",
     "noTerminalAvailable": "कोई टर्मिनल उपलब्ध नहीं है",

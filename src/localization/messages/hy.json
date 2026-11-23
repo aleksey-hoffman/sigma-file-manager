@@ -907,7 +907,6 @@
     "noTerminalsFound": "Տերմինալ չգտնվեց",
     "holdModifierForAdmin": "Սեղմեք {modifier}-ը՝ ադմինի անունից բացելու համար",
     "defaultLabel": "Լռելյայն",
-    "openWithAnotherTerminal": "Բացել այլ տերմինալով",
     "errorTitle": "Չհաջողվեց բացել տերմինալը",
     "openFailed": "Չհաջողվեց բացել տերմինալը",
     "noTerminalAvailable": "Հասանելի տերմինալ չկա",

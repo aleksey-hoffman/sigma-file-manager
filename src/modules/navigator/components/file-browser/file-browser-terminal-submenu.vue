@@ -11,7 +11,6 @@ import { ContextMenuSub } from 'reka-ui';
 import {
   ContextMenuItem,
   ContextMenuSeparator,
-  ContextMenuLabel,
   ContextMenuShortcut,
   ContextMenuSubTrigger,
   ContextMenuSubContent,
@@ -19,10 +18,12 @@ import {
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { selectedDetectedTerminalId } from '@/utils/default-terminal';
+import { normalizeDefaultTerminalSettings, normalizeTerminalProgram, selectedDetectedTerminalId } from '@/utils/default-terminal';
+import { basenameFromPath } from '@/utils/source-display-name';
 import { getDirectoryPathFromEntry } from '@/utils/virtual-location-action-target';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
-import { TerminalSquareIcon } from '@lucide/vue';
+import { ShieldIcon, TerminalSquareIcon } from '@lucide/vue';
+import FileBrowserTerminalAdminHint from './file-browser-terminal-admin-hint.vue';
 
 const props = defineProps<{
   selectedEntries: DirEntry[];
@@ -33,8 +34,6 @@ const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const terminalsStore = useTerminalsStore();
 const userSettingsStore = useUserSettingsStore();
-
-const ADMIN_MODIFIER_KEY = 'Shift';
 
 const targetDirectoryPath = computed(() => {
   const firstEntry = props.selectedEntries[0];
@@ -57,6 +56,38 @@ const preferredTerminalId = computed(() => selectedDetectedTerminalId(
   terminalsStore.terminals,
 ));
 
+const preferredTerminal = computed(() => {
+  const settings = normalizeDefaultTerminalSettings(userSettingsStore.userSettings.terminal);
+
+  if (settings.mode === 'custom') {
+    const program = normalizeTerminalProgram(settings.customCommand);
+
+    if (!program) {
+      return null;
+    }
+
+    return {
+      name: basenameFromPath(program),
+      icon: null,
+    };
+  }
+
+  const detectedTerminal = terminalsStore.terminals.find(terminal => terminal.id === preferredTerminalId.value);
+
+  if (!detectedTerminal) {
+    return null;
+  }
+
+  return {
+    name: detectedTerminal.name,
+    icon: detectedTerminal.icon,
+  };
+});
+
+const otherTerminals = computed(() => terminalsStore.terminals.filter(
+  terminal => terminal.id !== preferredTerminalId.value,
+));
+
 async function handleOpenConfiguredTerminal() {
   if (!targetDirectoryPath.value) return;
 
@@ -71,65 +102,67 @@ async function handleOpenTerminal(terminalId: string) {
 </script>
 
 <template>
-  <ContextMenuLabel class="terminal-submenu__hint">
-    <i18n-t
-      keypath="terminal.holdModifierForAdmin"
-      tag="span"
-    >
-      <template #modifier>
-        <kbd>{{ ADMIN_MODIFIER_KEY }}</kbd>
-      </template>
-    </i18n-t>
-    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminalAdmin')">
-      {{ shortcutsStore.getShortcutLabel('openTerminalAdmin') }}
-    </ContextMenuShortcut>
-  </ContextMenuLabel>
-  <ContextMenuItem
-    class="terminal-submenu__item"
-    @select="handleOpenConfiguredTerminal"
-  >
-    <TerminalSquareIcon :size="16" />
-    <span>{{ t('terminal.openInTerminal') }}</span>
-    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminal')">
-      {{ shortcutsStore.getShortcutLabel('openTerminal') }}
-    </ContextMenuShortcut>
-  </ContextMenuItem>
   <ContextMenuSub>
     <ContextMenuSubTrigger class="terminal-submenu__trigger">
-      <span>{{ t('terminal.openWithAnotherTerminal') }}</span>
+      <ShieldIcon
+        v-if="isShiftHeld"
+        :size="16"
+      />
+      <TerminalSquareIcon
+        v-else
+        :size="16"
+      />
+      <span>{{ t('terminal.openInTerminal') }}</span>
+      <FileBrowserTerminalAdminHint
+        is-main-menu-item
+        shows-shortcut
+      />
+      <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminal')">
+        {{ shortcutsStore.getShortcutLabel('openTerminal') }}
+      </ContextMenuShortcut>
     </ContextMenuSubTrigger>
     <ContextMenuSubContent class="terminal-submenu">
-      <template v-if="terminalsStore.loadError">
-        <div class="terminal-submenu__error">
-          {{ terminalsStore.loadError }}
-        </div>
+      <template v-if="preferredTerminal">
+        <ContextMenuItem
+          class="terminal-submenu__item"
+          @select="handleOpenConfiguredTerminal"
+        >
+          <img
+            v-if="preferredTerminal.icon"
+            :src="preferredTerminal.icon"
+            class="terminal-submenu__icon"
+          >
+          <TerminalSquareIcon
+            v-else
+            :size="16"
+          />
+          <span>{{ preferredTerminal.name }}</span>
+          <span class="terminal-submenu__default-badge">
+            {{ t('terminal.defaultLabel') }}
+          </span>
+          <FileBrowserTerminalAdminHint shows-shortcut />
+        </ContextMenuItem>
+
+        <ContextMenuSeparator v-if="otherTerminals.length > 0 || terminalsStore.loadError" />
       </template>
 
-      <template v-else-if="terminalsStore.hasLoaded && terminalsStore.terminals.length === 0">
-        <div class="terminal-submenu__empty">
-          {{ t('terminal.noTerminalsFound') }}
-        </div>
-      </template>
+      <div
+        v-if="terminalsStore.loadError"
+        class="terminal-submenu__error"
+      >
+        {{ terminalsStore.loadError }}
+      </div>
+
+      <div
+        v-else-if="!preferredTerminal && terminalsStore.hasLoaded && terminalsStore.terminals.length === 0"
+        class="terminal-submenu__empty"
+      >
+        {{ t('terminal.noTerminalsFound') }}
+      </div>
 
       <template v-else>
-        <ContextMenuLabel class="terminal-submenu__hint">
-          <i18n-t
-            keypath="terminal.holdModifierForAdmin"
-            tag="span"
-          >
-            <template #modifier>
-              <kbd>{{ ADMIN_MODIFIER_KEY }}</kbd>
-            </template>
-          </i18n-t>
-          <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminalAdmin')">
-            {{ shortcutsStore.getShortcutLabel('openTerminalAdmin') }}
-          </ContextMenuShortcut>
-        </ContextMenuLabel>
-
-        <ContextMenuSeparator />
-
         <ContextMenuItem
-          v-for="terminal in terminalsStore.terminals"
+          v-for="terminal in otherTerminals"
           :key="terminal.id"
           class="terminal-submenu__item"
           @select="handleOpenTerminal(terminal.id)"
@@ -144,12 +177,7 @@ async function handleOpenTerminal(terminalId: string) {
             :size="16"
           />
           <span>{{ terminal.name }}</span>
-          <span
-            v-if="terminal.id === preferredTerminalId"
-            class="terminal-submenu__default-badge"
-          >
-            {{ t('terminal.defaultLabel') }}
-          </span>
+          <FileBrowserTerminalAdminHint />
         </ContextMenuItem>
       </template>
     </ContextMenuSubContent>
@@ -180,14 +208,13 @@ async function handleOpenTerminal(terminalId: string) {
   font-size: 13px;
 }
 
-.terminal-submenu__hint {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  color: hsl(var(--muted-foreground));
-  font-size: 11px;
-  font-style: italic;
-  gap: 8px;
+.terminal-submenu__trigger .terminal-admin-hint__icon ~ .sigma-ui-context-menu-shortcut,
+.terminal-submenu__trigger .terminal-admin-hint__icon ~ .sigma-ui-context-menu-sub-trigger__icon {
+  margin-left: 0;
+}
+
+.terminal-submenu__default-badge ~ .terminal-admin-hint__icon {
+  margin-inline-start: 0;
 }
 
 .terminal-submenu__item {
