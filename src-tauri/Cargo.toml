@@ -65,7 +65,9 @@ xz2 = "0.1"
 flate2 = "1.1"
 sha2 = "0.11"
 tauri-plugin-clipboard-manager = "2.3.2"
-tauri-plugin-autostart = "2"
+# 2.6+ uses auto-launch 0.6, which registers autostart in HKLM (all users) when SFM runs elevated
+# and cannot remove that entry later from a normal launch. Keep the per-user registry entry.
+tauri-plugin-autostart = "~2.5.1"
 axum = { version = "0.8", features = ["multipart"] }
 mime_guess = "2"
 mdns-sd = { version = "0.20", features = ["async"] }

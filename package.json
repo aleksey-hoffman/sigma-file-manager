@@ -51,7 +51,7 @@
     "@crabnebula/tauri-plugin-drag": "^2.1.0",
     "@lucide/vue": "^1.23.0",
     "@tauri-apps/api": "^2.12.5",
-    "@tauri-apps/plugin-autostart": "^2.7.0",
+    "@tauri-apps/plugin-autostart": "~2.5.1",
     "@tauri-apps/plugin-clipboard-manager": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.8.4",
     "@tauri-apps/plugin-global-shortcut": "^2.4.1",
