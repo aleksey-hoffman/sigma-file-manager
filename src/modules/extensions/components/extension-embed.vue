@@ -12,6 +12,11 @@ import { getExtensionAPI } from '@/modules/extensions/runtime/loader';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { clearEmbedHostState, handleEmbedBridgeMessage } from '@/modules/extensions/runtime/embed-host-bridge';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
+import {
+  buildContentSecurityPolicyMeta,
+  EXTENSION_EMBED_CSP,
+  EXTENSION_PAGE_SANDBOX,
+} from '@/modules/extensions/runtime/extension-frame-policy';
 import pathApiCoreScript from '@/modules/extensions/api/path-api-core.js?raw';
 import embedBridgeScript from '@/modules/extensions/runtime/embed-bridge.js?raw';
 
@@ -90,10 +95,7 @@ function createEmbedSrcdoc(scriptSource: string): string {
 <html>
   <head>
     <meta charset="utf-8">
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self' data: blob: filesystem: https: http:; style-src 'self' 'unsafe-inline' data: blob: https: http:; img-src 'self' data: blob: filesystem: https: http:; font-src 'self' data: blob: https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: filesystem: https: http:; connect-src 'self' data: blob: filesystem: https: http:;"
-    >
+    ${buildContentSecurityPolicyMeta(EXTENSION_EMBED_CSP)}
     <style>
       html, body, #app {
         width: 100%;
@@ -244,7 +246,7 @@ onUnmounted(() => {
       <iframe
         ref="iframeRef"
         class="extension-embed__content"
-        sandbox="allow-scripts"
+        :sandbox="EXTENSION_PAGE_SANDBOX"
         title=""
       />
       <Transition name="extension-embed-loader">

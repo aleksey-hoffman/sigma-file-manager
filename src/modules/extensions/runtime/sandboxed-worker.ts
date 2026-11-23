@@ -8,6 +8,8 @@
 // them, which blocks remote `import()` and any other network access from
 // extension code without affecting the rest of the app.
 
+import { buildContentSecurityPolicyMeta } from '@/modules/extensions/runtime/extension-frame-policy';
+
 type WorkerMessageHandler = ((event: MessageEvent) => void) | null;
 
 export type SandboxedWorker = {
@@ -46,15 +48,8 @@ export function buildWorkerBootstrapSource(workerScriptUrl: string): string {
   return `import ${JSON.stringify(workerScriptUrl)};\n`;
 }
 
-function escapeHtmlAttribute(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('"', '&quot;')
-    .replaceAll('<', '&lt;');
-}
-
 export function buildSandboxFrameDocument(csp: string): string {
-  return `<!doctype html><meta http-equiv="Content-Security-Policy" content="${escapeHtmlAttribute(csp)}">`;
+  return `<!doctype html>${buildContentSecurityPolicyMeta(csp)}`;
 }
 
 async function createSandboxFrame(csp: string): Promise<HTMLIFrameElement> {
