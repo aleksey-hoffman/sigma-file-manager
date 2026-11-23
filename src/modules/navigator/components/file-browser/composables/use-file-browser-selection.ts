@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import {
-  ref, markRaw, nextTick, watch, type Ref,
+  computed, ref, markRaw, nextTick, watch, type Ref,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
@@ -28,6 +28,7 @@ import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import {
   arePathsEquivalent,
   getSharedSourceDirectory,
+  normalizePathForComparison,
   isDestinationInsideAnySourceDirectory,
   remapDirEntry,
 } from '@/utils/file-operation-paths';
@@ -198,8 +199,12 @@ export function useFileBrowserSelection(
     blurFocusedDirEntry();
   }
 
+  const selectedPathKeys = computed(() => new Set(
+    selectedEntries.value.map(selectedEntry => normalizePathForComparison(selectedEntry.path)),
+  ));
+
   function isEntrySelected(entry: DirEntry): boolean {
-    return selectedEntries.value.some(selectedEntry => arePathsEquivalent(selectedEntry.path, entry.path));
+    return selectedPathKeys.value.has(normalizePathForComparison(entry.path));
   }
 
   function getOrderedEntries(): DirEntry[] {
