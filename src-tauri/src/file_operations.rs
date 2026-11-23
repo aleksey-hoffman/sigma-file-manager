@@ -2428,9 +2428,29 @@ fn rename_without_conflict(source: &Path, dest: &Path) -> FileOperationResult {
     }
 }
 
+fn validate_item_name(name: &str) -> Result<(), String> {
+    if name.is_empty() {
+        return Err("Name cannot be empty".to_string());
+    }
+
+    if name.contains('/') || name.contains('\\') {
+        return Err("Name contains invalid path separators".to_string());
+    }
+
+    let mut components = Path::new(name).components();
+    match (components.next(), components.next()) {
+        (Some(std::path::Component::Normal(_)), None) => Ok(()),
+        _ => Err(format!("Invalid name: {name}")),
+    }
+}
+
 #[tauri::command]
 pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult {
     let source = Path::new(&source_path);
+
+    if let Err(error) = validate_item_name(&new_name) {
+        return rename_rejected(error);
+    }
 
     if !path_entry_exists(source) {
         return rename_rejected(format!("Source path does not exist: {source_path}"));
@@ -2566,21 +2586,10 @@ pub fn create_item(
 ) -> FileOperationResult {
     let trimmed_name = name.trim();
 
-    if trimmed_name.is_empty() {
+    if let Err(error) = validate_item_name(trimmed_name) {
         return FileOperationResult {
             success: false,
-            error: Some("Name cannot be empty".to_string()),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-            moved_paths: Vec::new(),
-        };
-    }
-
-    if trimmed_name.contains('/') || trimmed_name.contains('\\') {
-        return FileOperationResult {
-            success: false,
-            error: Some("Name contains invalid path separators".to_string()),
+            error: Some(error),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -3115,6 +3124,35 @@ mod tests {
             .file_type()
             .is_symlink());
         assert_eq!(read_file(&copied_link.join("a.txt")), b"outside");
+    }
+
+    #[test]
+    fn rename_item_rejects_names_that_leave_the_folder() {
+        let temp = tempdir().unwrap();
+        let folder = temp.path().join("folder");
+        let source = folder.join("a.txt");
+        write_file(&source, b"a");
+        fs::create_dir_all(folder.join("sub")).unwrap();
+
+        for new_name in ["../a.txt", "sub/a.txt", "sub\\a.txt", "..", "."] {
+            let result = rename_item(source.to_string_lossy().to_string(), new_name.to_string());
+            assert!(!result.success, "{new_name} should be rejected");
+        }
+
+        assert_eq!(read_file(&source), b"a");
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn rename_item_rejects_a_drive_relative_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("a.txt");
+        write_file(&source, b"a");
+
+        let result = rename_item(source.to_string_lossy().to_string(), "C:a.txt".to_string());
+
+        assert!(!result.success);
+        assert_eq!(read_file(&source), b"a");
     }
 
     fn broken_folder_link(temp: &Path) -> Option<PathBuf> {
