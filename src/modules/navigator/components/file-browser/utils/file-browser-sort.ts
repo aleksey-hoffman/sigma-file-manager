@@ -52,69 +52,72 @@ export function sortFileBrowserEntries(
   tagContext?: FileBrowserEntrySortTagContext,
 ): DirEntry[] {
   const multiplier = direction === 'asc' ? 1 : -1;
-  const tagNamesByPath = tagContext ? createTagNamesByPath(tagContext) : new Map<string, string[]>();
+
+  if (column === 'name') {
+    return [...items].sort((entryA, entryB) => nameCollator.compare(entryA.name, entryB.name) * multiplier);
+  }
+
+  if (column === 'items') {
+    return [...items].sort((entryA, entryB) => (Number(entryA.item_count ?? -1) - Number(entryB.item_count ?? -1)) * multiplier);
+  }
+
+  if (column === 'size') {
+    return [...items].sort((entryA, entryB) => (getFileBrowserEntryStaticSizeBytes(entryA) - getFileBrowserEntryStaticSizeBytes(entryB)) * multiplier);
+  }
+
+  if (column === 'modified') {
+    return [...items].sort((entryA, entryB) => (Number(entryA.modified_time) - Number(entryB.modified_time)) * multiplier);
+  }
+
+  if (column === 'created') {
+    return [...items].sort((entryA, entryB) => (Number(entryA.created_time) - Number(entryB.created_time)) * multiplier);
+  }
+
   const getLinkSortFields = tagContext?.getLinkSortFields;
 
-  return [...items].sort((entryA, entryB) => {
-    let comparison: number;
+  if (column === 'kind') {
+    const decorated = items.map((entry) => {
+      const linkFields = getLinkSortFields?.(entry);
+      return {
+        entry,
+        key: getDirEntryKindKeyFromFields(entry.is_dir, linkFields?.link_type ?? entry.link_type),
+      };
+    });
+    decorated.sort((itemA, itemB) => nameCollator.compare(itemA.key, itemB.key) * multiplier);
+    return decorated.map(item => item.entry);
+  }
 
-    if (column === 'name') {
-      comparison = nameCollator.compare(entryA.name, entryB.name);
-    }
-    else if (column === 'kind') {
-      const linkFieldsA = getLinkSortFields?.(entryA);
-      const linkFieldsB = getLinkSortFields?.(entryB);
+  if (column === 'links') {
+    const decorated = items.map((entry) => {
+      const linkFields = getLinkSortFields?.(entry);
+      return {
+        entry,
+        key: getDirEntryLinksSortValueFromFields(entry.is_file, linkFields?.hard_link_count ?? entry.hard_link_count),
+      };
+    });
+    decorated.sort((itemA, itemB) => (itemA.key - itemB.key) * multiplier);
+    return decorated.map(item => item.entry);
+  }
 
-      comparison = nameCollator.compare(
-        getDirEntryKindKeyFromFields(entryA.is_dir, linkFieldsA?.link_type ?? entryA.link_type),
-        getDirEntryKindKeyFromFields(entryB.is_dir, linkFieldsB?.link_type ?? entryB.link_type),
-      );
-    }
-    else if (column === 'links') {
-      const linkFieldsA = getLinkSortFields?.(entryA);
-      const linkFieldsB = getLinkSortFields?.(entryB);
-
-      comparison = getDirEntryLinksSortValueFromFields(
-        entryA.is_file,
-        linkFieldsA?.hard_link_count ?? entryA.hard_link_count,
-      ) - getDirEntryLinksSortValueFromFields(
-        entryB.is_file,
-        linkFieldsB?.hard_link_count ?? entryB.hard_link_count,
-      );
-    }
-    else if (column === 'items') {
-      const itemsA = Number(entryA.item_count ?? -1);
-      const itemsB = Number(entryB.item_count ?? -1);
-      comparison = itemsA - itemsB;
-    }
-    else if (column === 'size') {
-      const sizeA = getFileBrowserEntryStaticSizeBytes(entryA);
-      const sizeB = getFileBrowserEntryStaticSizeBytes(entryB);
-      comparison = sizeA - sizeB;
-    }
-    else if (column === 'modified') {
-      comparison = Number(entryA.modified_time) - Number(entryB.modified_time);
-    }
-    else if (column === 'created') {
-      comparison = Number(entryA.created_time) - Number(entryB.created_time);
-    }
-    else if (column === 'linkStatus') {
-      const linkFieldsA = getLinkSortFields?.(entryA);
-      const linkFieldsB = getLinkSortFields?.(entryB);
-
-      comparison = nameCollator.compare(
-        getDirEntryLinkStatusKeyFromFields(
-          linkFieldsA?.link_type ?? entryA.link_type,
-          linkFieldsA?.link_status ?? entryA.link_status,
+  if (column === 'linkStatus') {
+    const decorated = items.map((entry) => {
+      const linkFields = getLinkSortFields?.(entry);
+      return {
+        entry,
+        key: getDirEntryLinkStatusKeyFromFields(
+          linkFields?.link_type ?? entry.link_type,
+          linkFields?.link_status ?? entry.link_status,
         ) ?? '',
-        getDirEntryLinkStatusKeyFromFields(
-          linkFieldsB?.link_type ?? entryB.link_type,
-          linkFieldsB?.link_status ?? entryB.link_status,
-        ) ?? '',
-      );
-    }
-    else if (column === 'tags') {
-      comparison = compareTagNameLists(
+      };
+    });
+    decorated.sort((itemA, itemB) => nameCollator.compare(itemA.key, itemB.key) * multiplier);
+    return decorated.map(item => item.entry);
+  }
+
+  if (column === 'tags') {
+    const tagNamesByPath = tagContext ? createTagNamesByPath(tagContext) : new Map<string, string[]>();
+    return [...items].sort((entryA, entryB) => {
+      let comparison = compareTagNameLists(
         tagNamesByPath.get(entryA.path) ?? [],
         tagNamesByPath.get(entryB.path) ?? [],
       );
@@ -122,13 +125,12 @@ export function sortFileBrowserEntries(
       if (comparison === 0) {
         comparison = nameCollator.compare(entryA.name, entryB.name);
       }
-    }
-    else {
-      return 0;
-    }
 
-    return comparison * multiplier;
-  });
+      return comparison * multiplier;
+    });
+  }
+
+  return [...items];
 }
 
 function createTagNamesByPath(tagContext: FileBrowserEntrySortTagContext): Map<string, string[]> {
