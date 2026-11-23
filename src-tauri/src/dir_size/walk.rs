@@ -134,10 +134,21 @@ impl Walk {
         } else {
             0
         };
+        let directory_is_done = read.fully_read && (keep_walking || read.subdirectories.is_empty());
+        // The child is cached before this task leaves the queue's running count, so the
+        // owner can never return before every finished child folder is in the cache.
         if let Some(child) = child {
             child
                 .outstanding
                 .fetch_add(subdirectory_count, Ordering::SeqCst);
+            if directory_is_done && child.outstanding.fetch_sub(1, Ordering::SeqCst) == 1 {
+                cache_totals(
+                    &child.path,
+                    &child.totals,
+                    child.mtime,
+                    CachedStatus::Complete,
+                );
+            }
         }
 
         {
@@ -155,19 +166,6 @@ impl Walk {
         self.queue_changed.notify_all();
         if keep_walking && subdirectory_count > 0 && self.helped {
             WALK_AVAILABLE.notify_all();
-        }
-
-        if read.fully_read {
-            if let Some(child) = child {
-                if child.outstanding.fetch_sub(1, Ordering::SeqCst) == 1 {
-                    cache_totals(
-                        &child.path,
-                        &child.totals,
-                        child.mtime,
-                        CachedStatus::Complete,
-                    );
-                }
-            }
         }
     }
 
