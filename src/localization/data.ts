@@ -2,44 +2,49 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import ch from './messages/ch.json';
-import de from './messages/de.json';
 import en from './messages/en.json';
-import es from './messages/es.json';
-import fa from './messages/fa.json';
-import fr from './messages/fr.json';
-import he from './messages/he.json';
-import hi from './messages/hi.json';
-import hy from './messages/hy.json';
-import it from './messages/it.json';
-import ja from './messages/ja.json';
-import pt from './messages/pt.json';
-import ru from './messages/ru.json';
-import sl from './messages/sl.json';
-import tr from './messages/tr.json';
-import ur from './messages/ur.json';
-import vi from './messages/vi.json';
 import type { LocalizationLanguage } from '@/types/user-settings';
 
-export const messages = {
-  en,
-  ru,
-  es,
-  de,
-  fr,
-  tr,
-  ja,
-  fa,
-  ch,
-  vi,
-  it,
-  pt,
-  sl,
-  hi,
-  ur,
-  he,
-  hy,
+export type LocaleMessages = typeof en;
+
+const localeLoaders: Record<string, () => Promise<{ default: LocaleMessages }>> = {
+  ru: () => import('./messages/ru.json'),
+  es: () => import('./messages/es.json'),
+  de: () => import('./messages/de.json'),
+  fr: () => import('./messages/fr.json'),
+  tr: () => import('./messages/tr.json'),
+  ja: () => import('./messages/ja.json'),
+  fa: () => import('./messages/fa.json'),
+  ch: () => import('./messages/ch.json'),
+  vi: () => import('./messages/vi.json'),
+  it: () => import('./messages/it.json'),
+  pt: () => import('./messages/pt.json'),
+  sl: () => import('./messages/sl.json'),
+  hi: () => import('./messages/hi.json'),
+  ur: () => import('./messages/ur.json'),
+  he: () => import('./messages/he.json'),
+  hy: () => import('./messages/hy.json'),
 };
+
+export const messages: Record<string, LocaleMessages> = {
+  en,
+};
+
+export async function loadLocaleMessages(locale: string): Promise<LocaleMessages | undefined> {
+  if (messages[locale]) {
+    return messages[locale];
+  }
+
+  const loader = localeLoaders[locale];
+
+  if (!loader) {
+    return undefined;
+  }
+
+  const loaded = (await loader()).default;
+  messages[locale] = loaded;
+  return loaded;
+}
 
 export const languages: LocalizationLanguage[] = [
   {

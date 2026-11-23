@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { i18n } from '@/localization';
-import { messages as appMessages } from '@/localization/data';
+import { languages, messages as appMessages } from '@/localization/data';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
@@ -46,7 +46,7 @@ export function createI18nAPI(context: ExtensionContext) {
   }
 
   async function loadExtensionMessages(basePath: string): Promise<ExtensionLocaleMessages> {
-    const appLocales = Object.keys(appMessages) as string[];
+    const appLocales = Array.isArray(languages) ? languages.map(item => item.locale) : Object.keys(appMessages);
     const normalizedBase = basePath.replace(/\/+$/, '');
     let enMessages: Record<string, string> | null = null;
     const enPath = normalizedBase ? `${normalizedBase}/en.json` : 'en.json';

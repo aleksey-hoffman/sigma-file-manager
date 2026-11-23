@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { createI18n } from 'vue-i18n';
-import { messages as appMessages } from '@/localization/data';
+import { loadLocaleMessages, messages as appMessages } from '@/localization/data';
 import { pluralRules } from '@/localization/plural-rules';
 import { createPathAPI } from '@/modules/extensions/api/create-path-api';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
@@ -55,10 +55,24 @@ const progressState = new Map<string, ProgressState>();
 const shellTaskState = new Map<string, ShellTaskState>();
 const workerI18n = createI18n({
   locale: 'en',
+  fallbackLocale: 'en',
   legacy: false,
-  messages: structuredClone(appMessages),
+  messages: { en: structuredClone(appMessages.en) } as Record<string, typeof appMessages.en>,
   pluralRules,
 });
+
+async function setWorkerLocale(locale: string): Promise<void> {
+  if (locale !== 'en') {
+    const loaded = await loadLocaleMessages(locale);
+
+    if (loaded) {
+      workerI18n.global.setLocaleMessage(locale, structuredClone(loaded));
+    }
+  }
+
+  workerI18n.global.locale.value = locale;
+}
+
 let extensionNamespace = '';
 
 function blockFunctionConstructors(): void {
@@ -937,7 +951,7 @@ async function initializeExtensionModule(entryUrl: string): Promise<void> {
     method: 'i18n.getLocale',
     args: [],
   }) as string;
-  workerI18n.global.locale.value = locale as typeof workerI18n.global.locale.value;
+  await setWorkerLocale(locale);
 
   const sigma = createBridge() as Record<string, unknown>;
 
@@ -1164,10 +1178,10 @@ async function handleWorkerMessage(message: HostToWorkerMessage): Promise<void> 
       pendingActivationTasks = [];
       const activationContext = message.context as { extensionId: string };
       extensionNamespace = `extensions.${activationContext.extensionId}`;
-      workerI18n.global.locale.value = await postRequest('bridge-call', {
+      await setWorkerLocale(await postRequest('bridge-call', {
         method: 'i18n.getLocale',
         args: [],
-      }) as typeof workerI18n.global.locale.value;
+      }) as string);
 
       if (typeof extensionModule.activate === 'function') {
         await extensionModule.activate(activationContext);
