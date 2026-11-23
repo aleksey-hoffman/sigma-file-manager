@@ -3,8 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    delete_path_to_trash, minimize_delete_paths, normalize_path,
-    source_and_destination_same_directory, unique_path_with_index,
+    delete_path_to_trash, minimize_delete_paths, normalize_path, path_entry_exists,
+    remove_dir_or_file, source_and_destination_same_directory, unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -308,6 +308,16 @@ fn copy_leaf(source: &Path, dest: &Path) -> Result<(), String> {
         }
         Err(error) => Err(format!("{}: {}", dest.display(), error)),
     }
+}
+
+fn copy_top_level_leaf(source: &Path, dest: &Path) -> Result<(), String> {
+    if !source.exists() {
+        return copy_leaf(source, dest);
+    }
+
+    copy_file_resilient(source, dest)
+        .map(|_| ())
+        .map_err(|error| format!("{}: {}", dest.display(), error))
 }
 
 fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
@@ -784,14 +794,6 @@ fn ensure_replace_keeps_source(source: &Path, dest: &Path) -> Result<(), String>
     Ok(())
 }
 
-fn remove_dir_or_file(path: &Path) -> Result<(), String> {
-    if path.is_dir() {
-        fs::remove_dir_all(path).map_err(|error| error.to_string())
-    } else {
-        fs::remove_file(path).map_err(|error| error.to_string())
-    }
-}
-
 fn is_dir_empty(path: &Path) -> bool {
     fs::read_dir(path)
         .map(|mut iterator| iterator.next().is_none())
@@ -1161,7 +1163,7 @@ pub(crate) fn copy_items_impl(
             report_progress_for_item(progress, index, total, &detail, true);
         }
 
-        if !source.exists() {
+        if !path_entry_exists(source) {
             failed_count += 1;
             last_error = Some(format!("Source path does not exist: {}", source_path_str));
             report_progress_for_item(progress, index, total, &detail, false);
@@ -1201,7 +1203,7 @@ pub(crate) fn copy_items_impl(
             get_unique_destination_path(destination, &file_name)
         } else {
             let initial_dest = destination.join(&file_name);
-            if initial_dest.exists() {
+            if path_entry_exists(&initial_dest) {
                 let resolution = legacy_resolution.unwrap_or(ConflictResolution::AutoRename);
                 match resolution {
                     ConflictResolution::Skip => {
@@ -1299,8 +1301,8 @@ pub(crate) fn copy_items_impl(
                     .file_name()
                     .map(|name| name.to_string_lossy().to_string())
                     .unwrap_or_default();
-                match copy_file_resilient(source, &dest_path) {
-                    Ok(_) => {
+                match copy_top_level_leaf(source, &dest_path) {
+                    Ok(()) => {
                         local_done += 1;
                         emit_item_progress(
                             progress,
@@ -1315,7 +1317,7 @@ pub(crate) fn copy_items_impl(
                         );
                         Ok(())
                     }
-                    Err(error) => Err(format!("{}: {}", dest_path.display(), error)),
+                    Err(error) => Err(error),
                 }
             };
             if result.is_ok() {
@@ -1353,9 +1355,7 @@ pub(crate) fn copy_items_impl(
                 &mut inner_last_error,
             )
         } else {
-            copy_file_resilient(source, &dest_path)
-                .map(|_| ())
-                .map_err(|error| format!("{}: {}", dest_path.display(), error))
+            copy_top_level_leaf(source, &dest_path)
         };
 
         let copy_failed = copy_result.is_err();
@@ -1495,7 +1495,7 @@ pub(crate) fn move_items_impl(
             report_progress_for_item(progress, index, total, &detail, true);
         }
 
-        if !source.exists() {
+        if !path_entry_exists(source) {
             failed_count += 1;
             last_error = Some(format!("Source path does not exist: {}", source_path_str));
             report_progress_for_item(progress, index, total, &detail, false);
@@ -1539,7 +1539,7 @@ pub(crate) fn move_items_impl(
 
         let dest_path = destination.join(&file_name);
 
-        let final_dest_path = if dest_path.exists() {
+        let final_dest_path = if path_entry_exists(&dest_path) {
             let resolution = legacy_resolution.unwrap_or(ConflictResolution::Skip);
             match resolution {
                 ConflictResolution::Skip => {
@@ -1577,9 +1577,10 @@ pub(crate) fn move_items_impl(
             }
             Err(error) => {
                 if should_fallback_to_copy_delete(&error, source, &final_dest_path) {
+                    let source_is_dir = entry_kind(source) == EntryKind::Dir;
                     let mut weighted_local_total = 1u64;
                     let mut count_failed = false;
-                    if progress.is_some() && source.is_dir() {
+                    if progress.is_some() && source_is_dir {
                         if let Some(pfn) = progress.as_mut() {
                             pfn(0, format!("{} · Preparing", detail), Some(0), None);
                         }
@@ -1626,7 +1627,7 @@ pub(crate) fn move_items_impl(
                             &mut last_emitted_pct,
                             true,
                         );
-                        let inner = if source.is_dir() {
+                        let inner = if source_is_dir {
                             copy_dir_recursive_with_progress(
                                 source,
                                 &final_dest_path,
@@ -1647,8 +1648,8 @@ pub(crate) fn move_items_impl(
                                 .file_name()
                                 .map(|name| name.to_string_lossy().to_string())
                                 .unwrap_or_default();
-                            match copy_file_resilient(source, &final_dest_path) {
-                                Ok(_) => {
+                            match copy_leaf(source, &final_dest_path) {
+                                Ok(()) => {
                                     local_done += 1;
                                     emit_item_progress(
                                         progress,
@@ -1663,9 +1664,7 @@ pub(crate) fn move_items_impl(
                                     );
                                     Ok(())
                                 }
-                                Err(copy_error) => {
-                                    Err(format!("{}: {}", final_dest_path.display(), copy_error))
-                                }
+                                Err(copy_error) => Err(copy_error),
                             }
                         };
                         if inner.is_ok() {
@@ -1683,7 +1682,7 @@ pub(crate) fn move_items_impl(
                             skip_end_progress_report = true;
                         }
                         inner
-                    } else if source.is_dir() {
+                    } else if source_is_dir {
                         let mut progress_none: Option<
                             &mut dyn FnMut(u32, String, Option<u64>, Option<u64>),
                         > = None;
@@ -1705,11 +1704,7 @@ pub(crate) fn move_items_impl(
                             &mut inner_last_error,
                         )
                     } else {
-                        copy_file_resilient(source, &final_dest_path)
-                            .map(|_| ())
-                            .map_err(|copy_error| {
-                                format!("{}: {}", final_dest_path.display(), copy_error)
-                            })
+                        copy_leaf(source, &final_dest_path)
                     };
 
                     match copy_result {
@@ -2365,7 +2360,7 @@ fn case_only_destination_is_same_file(source: &Path, dest: &Path) -> bool {
 }
 
 fn destination_blocks_rename(source: &Path, dest: &Path) -> bool {
-    dest.exists() && !case_only_destination_is_same_file(source, dest)
+    path_entry_exists(dest) && !case_only_destination_is_same_file(source, dest)
 }
 
 fn finish_case_only_rename(
@@ -2437,7 +2432,7 @@ fn rename_without_conflict(source: &Path, dest: &Path) -> FileOperationResult {
 pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult {
     let source = Path::new(&source_path);
 
-    if !source.exists() {
+    if !path_entry_exists(source) {
         return rename_rejected(format!("Source path does not exist: {source_path}"));
     }
 
@@ -2465,9 +2460,11 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
         RenameConflict::OtherEntry => rename_name_already_exists(&new_name),
         RenameConflict::CaseOnlySource => rename_case_only(source, &dest_path, &new_name),
         RenameConflict::None => {
-            if dest_path.exists() && case_only_destination_is_same_file(source, &dest_path) {
+            if path_entry_exists(&dest_path)
+                && case_only_destination_is_same_file(source, &dest_path)
+            {
                 rename_case_only(source, &dest_path, &new_name)
-            } else if dest_path.exists() {
+            } else if path_entry_exists(&dest_path) {
                 rename_name_already_exists(&new_name)
             } else {
                 rename_without_conflict(source, &dest_path)
@@ -2497,7 +2494,7 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
     for path_str in &paths {
         let path = Path::new(path_str);
 
-        if !path.exists() {
+        if !path_entry_exists(path) {
             failed_count += 1;
             last_error = Some(format!("Path does not exist: {}", path_str));
             continue;
@@ -2505,10 +2502,8 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
 
         let result = if use_trash {
             delete_path_to_trash(path, path_str)
-        } else if path.is_dir() {
-            fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {
-            fs::remove_file(path).map_err(|error| error.to_string())
+            remove_dir_or_file(path)
         };
 
         match result {
@@ -2619,7 +2614,7 @@ pub fn create_item(
 
     let dest_path = directory.join(trimmed_name);
 
-    if dest_path.exists() {
+    if path_entry_exists(&dest_path) {
         return FileOperationResult {
             success: false,
             error: Some(format!("Path already exists: {}", dest_path.display())),
@@ -3120,6 +3115,83 @@ mod tests {
             .file_type()
             .is_symlink());
         assert_eq!(read_file(&copied_link.join("a.txt")), b"outside");
+    }
+
+    fn broken_folder_link(temp: &Path) -> Option<PathBuf> {
+        let target = temp.join("gone");
+        let link = temp.join("source").join("broken");
+        fs::create_dir_all(&target).unwrap();
+        fs::create_dir_all(link.parent().unwrap()).unwrap();
+
+        if !try_symlink_dir(&target, &link) {
+            return None;
+        }
+
+        fs::remove_dir(&target).unwrap();
+        Some(link)
+    }
+
+    fn is_symlink(path: &Path) -> bool {
+        fs::symlink_metadata(path)
+            .map(|metadata| metadata.file_type().is_symlink())
+            .unwrap_or(false)
+    }
+
+    #[test]
+    fn delete_items_removes_a_broken_link() {
+        let temp = tempdir().unwrap();
+        let Some(link) = broken_folder_link(temp.path()) else {
+            return;
+        };
+
+        let result = delete_items(vec![link.to_string_lossy().to_string()], false);
+
+        assert!(result.success, "{:?}", result.error);
+        assert!(!path_entry_exists(&link));
+    }
+
+    #[test]
+    fn copy_and_move_items_transfer_a_broken_link() {
+        let temp = tempdir().unwrap();
+        let Some(link) = broken_folder_link(temp.path()) else {
+            return;
+        };
+        let copy_destination = temp.path().join("copied");
+        let move_destination = temp.path().join("moved");
+        fs::create_dir_all(&copy_destination).unwrap();
+        fs::create_dir_all(&move_destination).unwrap();
+
+        let copy_result = copy_items(
+            vec![link.to_string_lossy().to_string()],
+            copy_destination.to_string_lossy().to_string(),
+            None,
+            None,
+        );
+        let move_result = move_items(
+            vec![link.to_string_lossy().to_string()],
+            move_destination.to_string_lossy().to_string(),
+            None,
+            None,
+        );
+
+        assert!(copy_result.success, "{:?}", copy_result.error);
+        assert!(move_result.success, "{:?}", move_result.error);
+        assert!(is_symlink(&copy_destination.join("broken")));
+        assert!(is_symlink(&move_destination.join("broken")));
+        assert!(!path_entry_exists(&link));
+    }
+
+    #[test]
+    fn rename_item_renames_a_broken_link() {
+        let temp = tempdir().unwrap();
+        let Some(link) = broken_folder_link(temp.path()) else {
+            return;
+        };
+
+        let result = rename_item(link.to_string_lossy().to_string(), "renamed".to_string());
+
+        assert!(result.success, "{:?}", result.error);
+        assert!(is_symlink(&link.parent().unwrap().join("renamed")));
     }
 
     #[test]
