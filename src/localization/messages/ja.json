@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "動画プレビューをデフォルトでミュート",
       "muteVideoPreviewByDefaultDescription": "情報パネルのプレビューで動画を自動的にミュートし、フォルダー閲覧中の予期しない音声を防ぎます。",
       "autoplayVideoPreview": "動画プレビューを自動再生",
-      "autoplayVideoPreviewDescription": "動画ファイルを選択したとき、情報パネルのプレビューで再生を開始します。"
+      "autoplayVideoPreviewDescription": "動画ファイルを選択したとき、情報パネルのプレビューで再生を開始します。",
+      "autoPreviewFileTypes": "自動プレビュー",
+      "autoPreviewFileTypesDescription": "選択するとすぐにプレビューを読み込むファイル形式です。チェックしていない形式には「プレビューを読み込む」ボタンが表示されます。",
+      "previewFileTypes": {
+        "image": "画像",
+        "video": "動画",
+        "audio": "音声",
+        "pdf": "PDF",
+        "text": "テキスト"
+      },
+      "autoPreviewMaxSize": "大きなファイルの上限",
+      "autoPreviewMaxSizeDescription": "これより大きな PDF と原寸表示の画像はすぐに読み込まず「プレビューを読み込む」ボタンを表示するため、名前の変更や移動のための選択が速いままです。",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "上限なし"
     },
     "addressBar": {
       "addressBarActions": "アドレスバーアクション",
@@ -940,6 +953,10 @@
     "videos": "動画",
     "video": "動画",
     "pdfPreviewFrameTitle": "PDFプレビュー",
+    "infoPanelLoadPreview": "プレビューを読み込む",
+    "infoPanelPreviewDisabled": "このファイル形式の自動プレビューはオフです",
+    "infoPanelPreviewTooLarge": "大きなファイル ({size})。プレビューは自動では読み込まれません",
+    "infoPanelPreviewQuickViewHint": "または {shortcut} を押してクイックビューで開きます",
     "otherFiles": "その他のファイル",
     "itemCount": "{count} 項目",
     "itemCountShort": "{count} 項目",

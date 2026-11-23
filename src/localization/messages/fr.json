@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "Couper le son de l'aperçu vidéo par défaut",
       "muteVideoPreviewByDefaultDescription": "Coupe automatiquement le son des vidéos dans l'aperçu du panneau d'informations pour éviter un audio inattendu lors de la navigation dans les dossiers.",
       "autoplayVideoPreview": "Lire automatiquement les aperçus vidéo",
-      "autoplayVideoPreviewDescription": "Démarre la lecture dans l'aperçu du panneau d'informations lorsque vous sélectionnez un fichier vidéo."
+      "autoplayVideoPreviewDescription": "Démarre la lecture dans l'aperçu du panneau d'informations lorsque vous sélectionnez un fichier vidéo.",
+      "autoPreviewFileTypes": "Aperçu automatique",
+      "autoPreviewFileTypesDescription": "Types de fichiers dont l'aperçu se charge dès la sélection. Les types non cochés affichent un bouton \"Charger l'aperçu\".",
+      "previewFileTypes": {
+        "image": "Images",
+        "video": "Vidéos",
+        "audio": "Audio",
+        "pdf": "PDF",
+        "text": "Texte"
+      },
+      "autoPreviewMaxSize": "Limite pour les fichiers volumineux",
+      "autoPreviewMaxSizeDescription": "Les PDF et les images en taille réelle plus volumineux affichent un bouton \"Charger l'aperçu\" au lieu de se charger, pour que la sélection afin de renommer ou déplacer reste rapide.",
+      "autoPreviewSizeOption": "{size} Mo",
+      "autoPreviewNoLimit": "Aucune limite"
     },
     "addressBar": {
       "addressBarActions": "Actions de la barre d'adresse",
@@ -942,6 +955,10 @@
     "videos": "Vidéos",
     "video": "Vidéo",
     "pdfPreviewFrameTitle": "Aperçu PDF",
+    "infoPanelLoadPreview": "Charger l'aperçu",
+    "infoPanelPreviewDisabled": "L'aperçu automatique est désactivé pour ce type de fichier",
+    "infoPanelPreviewTooLarge": "Fichier volumineux ({size}). L'aperçu n'est pas chargé automatiquement",
+    "infoPanelPreviewQuickViewHint": "Ou appuyez sur {shortcut} pour l'ouvrir dans l'aperçu rapide",
     "otherFiles": "Autres fichiers",
     "itemCount": "{count} éléments",
     "itemCountShort": "{count} él.",

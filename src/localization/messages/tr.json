@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "Video önizlemesini varsayılan olarak sessize al",
       "muteVideoPreviewByDefaultDescription": "Klasörlerde gezinirken beklenmedik sesleri önlemek için bilgi paneli önizlemesindeki videoları otomatik olarak sessize alır.",
       "autoplayVideoPreview": "Video önizlemelerini otomatik oynat",
-      "autoplayVideoPreviewDescription": "Bir video dosyası seçtiğinizde bilgi paneli önizlemesinde oynatmayı başlatır."
+      "autoplayVideoPreviewDescription": "Bir video dosyası seçtiğinizde bilgi paneli önizlemesinde oynatmayı başlatır.",
+      "autoPreviewFileTypes": "Otomatik önizleme",
+      "autoPreviewFileTypesDescription": "Seçildiğinde önizlemesi hemen yüklenen dosya türleri. İşaretlenmemiş türler \"Önizlemeyi yükle\" düğmesini gösterir.",
+      "previewFileTypes": {
+        "image": "Görseller",
+        "video": "Videolar",
+        "audio": "Ses",
+        "pdf": "PDF",
+        "text": "Metin"
+      },
+      "autoPreviewMaxSize": "Büyük dosya sınırı",
+      "autoPreviewMaxSizeDescription": "Daha büyük PDF'ler ve tam boyutlu görseller yüklenmek yerine \"Önizlemeyi yükle\" düğmesini gösterir, böylece yeniden adlandırmak veya taşımak için seçmek hızlı kalır.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "Sınır yok"
     },
     "addressBar": {
       "addressBarActions": "Adres çubuğu işlemleri",
@@ -940,6 +953,10 @@
     "videos": "Videolar",
     "video": "Video",
     "pdfPreviewFrameTitle": "PDF önizlemesi",
+    "infoPanelLoadPreview": "Önizlemeyi yükle",
+    "infoPanelPreviewDisabled": "Bu dosya türü için otomatik önizleme kapalı",
+    "infoPanelPreviewTooLarge": "Büyük dosya ({size}). Önizleme otomatik olarak yüklenmez",
+    "infoPanelPreviewQuickViewHint": "Veya Hızlı Görünüm'de açmak için {shortcut} tuşuna basın",
     "otherFiles": "Diğer dosyalar",
     "itemCount": "{count} öğe",
     "itemCountShort": "{count} öğe",

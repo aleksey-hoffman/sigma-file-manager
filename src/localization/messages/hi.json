@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "डिफ़ॉल्ट रूप से वीडियो पूर्वावलोकन म्यूट करें",
       "muteVideoPreviewByDefaultDescription": "फ़ोल्डर ब्राउज़ करते समय अप्रत्याशित ऑडियो से बचने के लिए जानकारी पैनल पूर्वावलोकन में वीडियो को स्वचालित रूप से म्यूट करता है।",
       "autoplayVideoPreview": "वीडियो पूर्वावलोकन स्वचालित रूप से चलाएं",
-      "autoplayVideoPreviewDescription": "जब आप कोई वीडियो फ़ाइल चुनते हैं, तो जानकारी पैनल पूर्वावलोकन में प्लेबैक शुरू करता है।"
+      "autoplayVideoPreviewDescription": "जब आप कोई वीडियो फ़ाइल चुनते हैं, तो जानकारी पैनल पूर्वावलोकन में प्लेबैक शुरू करता है।",
+      "autoPreviewFileTypes": "स्वचालित पूर्वावलोकन",
+      "autoPreviewFileTypesDescription": "वे फ़ाइल प्रकार जिनका पूर्वावलोकन चुनते ही लोड हो जाता है। बिना चुने प्रकार \"पूर्वावलोकन लोड करें\" बटन दिखाते हैं।",
+      "previewFileTypes": {
+        "image": "छवियाँ",
+        "video": "वीडियो",
+        "audio": "ऑडियो",
+        "pdf": "PDF",
+        "text": "टेक्स्ट"
+      },
+      "autoPreviewMaxSize": "बड़ी फ़ाइल की सीमा",
+      "autoPreviewMaxSizeDescription": "इससे बड़ी PDF और पूरे आकार में दिखाई जाने वाली छवियाँ लोड होने के बजाय \"पूर्वावलोकन लोड करें\" बटन दिखाती हैं, ताकि नाम बदलने या ले जाने के लिए चुनना तेज़ रहे।",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "कोई सीमा नहीं"
     },
     "addressBar": {
       "addressBarActions": "पता बार क्रियाएँ",
@@ -970,6 +983,10 @@
     "videos": "वीडियो",
     "video": "वीडियो",
     "pdfPreviewFrameTitle": "PDF पूर्वावलोकन",
+    "infoPanelLoadPreview": "पूर्वावलोकन लोड करें",
+    "infoPanelPreviewDisabled": "इस फ़ाइल प्रकार के लिए स्वचालित पूर्वावलोकन बंद है",
+    "infoPanelPreviewTooLarge": "बड़ी फ़ाइल ({size})। पूर्वावलोकन अपने आप लोड नहीं होता",
+    "infoPanelPreviewQuickViewHint": "या क्विक व्यू में खोलने के लिए {shortcut} दबाएँ",
     "otherFiles": "अन्य फ़ाइलें",
     "itemCount": "{count} आइटम",
     "itemCountShort": "{count} आइटम",

@@ -44,6 +44,14 @@ function createNavigatorSettings(overrides: Partial<UserSettingsNavigator> = {})
       showFullSizeImagePreview: false,
       muteVideoPreviewByDefault: false,
       autoplayVideoPreview: false,
+      autoPreviewFileTypes: {
+        image: true,
+        video: true,
+        audio: true,
+        pdf: true,
+        text: true,
+      },
+      autoPreviewMaxSizeMb: 25,
     },
     navigationPanel: {
       show: false,

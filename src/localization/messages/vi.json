@@ -400,7 +400,20 @@
       "muteVideoPreviewByDefault": "Tắt tiếng xem trước video theo mặc định",
       "muteVideoPreviewByDefaultDescription": "Tự động tắt tiếng video trong khu vực xem trước bảng thông tin để tránh phát âm thanh bất ngờ khi duyệt thư mục.",
       "autoplayVideoPreview": "Tự động phát xem trước video",
-      "autoplayVideoPreviewDescription": "Bắt đầu phát trong khu vực xem trước bảng thông tin khi bạn chọn tệp video."
+      "autoplayVideoPreviewDescription": "Bắt đầu phát trong khu vực xem trước bảng thông tin khi bạn chọn tệp video.",
+      "autoPreviewFileTypes": "Xem trước tự động",
+      "autoPreviewFileTypesDescription": "Các loại tệp được tải bản xem trước ngay khi chọn. Các loại không được đánh dấu sẽ hiển thị nút \"Tải bản xem trước\".",
+      "previewFileTypes": {
+        "image": "Hình ảnh",
+        "video": "Video",
+        "audio": "Âm thanh",
+        "pdf": "PDF",
+        "text": "Văn bản"
+      },
+      "autoPreviewMaxSize": "Giới hạn tệp lớn",
+      "autoPreviewMaxSizeDescription": "Các tệp PDF và hình ảnh kích thước đầy đủ lớn hơn sẽ hiển thị nút \"Tải bản xem trước\" thay vì tải ngay, để việc chọn tệp để đổi tên hoặc di chuyển vẫn nhanh.",
+      "autoPreviewSizeOption": "{size} MB",
+      "autoPreviewNoLimit": "Không giới hạn"
     },
     "addressBar": {
       "addressBarActions": "Hành động trên thanh địa chỉ",
@@ -940,6 +953,10 @@
     "videos": "Video",
     "video": "Video",
     "pdfPreviewFrameTitle": "Xem trước PDF",
+    "infoPanelLoadPreview": "Tải bản xem trước",
+    "infoPanelPreviewDisabled": "Xem trước tự động đã tắt cho loại tệp này",
+    "infoPanelPreviewTooLarge": "Tệp lớn ({size}). Bản xem trước không tự động tải",
+    "infoPanelPreviewQuickViewHint": "Hoặc nhấn {shortcut} để mở trong Xem nhanh",
     "otherFiles": "Tập tin khác",
     "itemCount": "{count} mục",
     "itemCountShort": "{count} mục",

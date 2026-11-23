@@ -429,7 +429,20 @@
       "muteVideoPreviewByDefault": "Անջատել վիդեոյի ձայնը նախադիտման մեջ՝ լռելյայնով",
       "muteVideoPreviewByDefaultDescription": "Ավտոմատ անջատում է ձայնը տեղեկատույում, բացառելով աուդիոյի պատահական միացումը պանակները նայելիս։",
       "autoplayVideoPreview": "Ավտոմատ նվագարկել տեսանյութերի նախադիտումները",
-      "autoplayVideoPreviewDescription": "Սկսում է վիդեոյի նվագարկումը, երբ դուք ընտրում եք վիդեոն նախադիտման մեջ։"
+      "autoplayVideoPreviewDescription": "Սկսում է վիդեոյի նվագարկումը, երբ դուք ընտրում եք վիդեոն նախադիտման մեջ։",
+      "autoPreviewFileTypes": "Ավտոմատ նախադիտում",
+      "autoPreviewFileTypesDescription": "Ֆայլերի տեսակներ, որոնց նախադիտումը բեռնվում է ընտրելիս: Չնշված տեսակները ցույց են տալիս \"Բեռնել նախադիտումը\" կոճակը:",
+      "previewFileTypes": {
+        "image": "Պատկերներ",
+        "video": "Տեսանյութեր",
+        "audio": "Աուդիո",
+        "pdf": "PDF",
+        "text": "Տեքստ"
+      },
+      "autoPreviewMaxSize": "Մեծ ֆայլերի սահմանաչափ",
+      "autoPreviewMaxSizeDescription": "Ավելի մեծ PDF ֆայլերը և ամբողջական չափով ցուցադրվող պատկերները բեռնվելու փոխարեն ցույց են տալիս \"Բեռնել նախադիտումը\" կոճակը, որպեսզի վերանվանելու կամ տեղափոխելու համար ընտրելը արագ մնա:",
+      "autoPreviewSizeOption": "{size} ՄԲ",
+      "autoPreviewNoLimit": "Առանց սահմանաչափի"
     },
     "addressBar": {
       "addressBarActions": "Գործողությունները հասցեի տողի հետ",
@@ -972,6 +985,10 @@
     "videos": "Վիդեոներ",
     "video": "Վիդեո",
     "pdfPreviewFrameTitle": "PDF-ի նախադիտում",
+    "infoPanelLoadPreview": "Բեռնել նախադիտումը",
+    "infoPanelPreviewDisabled": "Այս ֆայլի տեսակի համար ավտոմատ նախադիտումն անջատված է",
+    "infoPanelPreviewTooLarge": "Մեծ ֆայլ ({size}): Նախադիտումը ավտոմատ չի բեռնվում",
+    "infoPanelPreviewQuickViewHint": "Կամ սեղմեք {shortcut}՝ արագ դիտումում բացելու համար",
     "otherFiles": "Այլ ֆայլեր",
     "itemCount": "{count} իր",
     "itemCountShort": "{count} իր",
