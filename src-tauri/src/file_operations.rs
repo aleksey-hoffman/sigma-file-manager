@@ -252,6 +252,52 @@ fn emit_item_progress(
     progress_fn(pct, detail, Some(local_done), Some(local_total));
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EntryKind {
+    Missing,
+    Dir,
+    Leaf,
+}
+
+fn entry_kind(path: &Path) -> EntryKind {
+    match fs::symlink_metadata(path) {
+        Err(_) => EntryKind::Missing,
+        Ok(metadata) if metadata.is_dir() => EntryKind::Dir,
+        Ok(_) => EntryKind::Leaf,
+    }
+}
+
+fn is_regular_file(path: &Path) -> bool {
+    fs::symlink_metadata(path)
+        .map(|metadata| metadata.is_file())
+        .unwrap_or(false)
+}
+
+fn copy_leaf(source: &Path, dest: &Path) -> Result<(), String> {
+    let metadata =
+        fs::symlink_metadata(source).map_err(|error| format!("{}: {}", source.display(), error))?;
+
+    if !metadata.file_type().is_symlink() {
+        return copy_file_resilient(source, dest)
+            .map(|_| ())
+            .map_err(|error| format!("{}: {}", dest.display(), error));
+    }
+
+    match copy_symlink(source, dest) {
+        Ok(()) => Ok(()),
+        Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
+            if source.is_dir() {
+                copy_dir_recursive(source, dest)
+            } else {
+                copy_file_resilient(source, dest)
+                    .map(|_| ())
+                    .map_err(|copy_error| format!("{}: {}", dest.display(), copy_error))
+            }
+        }
+        Err(error) => Err(format!("{}: {}", dest.display(), error)),
+    }
+}
+
 fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
     if !destination.exists() {
         fs::create_dir_all(destination)
@@ -269,32 +315,13 @@ fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
 
     for entry in entries {
         let source_path = entry.path();
-        let meta = fs::symlink_metadata(&source_path)
-            .map_err(|error| format!("{}: {}", source_path.display(), error))?;
         let file_name = source_path.file_name().ok_or("Invalid file name")?;
         let dest_path = destination.join(file_name);
 
-        if meta.file_type().is_symlink() {
-            match copy_symlink(&source_path, &dest_path) {
-                Ok(()) => {}
-                Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
-                    if meta.is_dir() {
-                        copy_dir_recursive(&source_path, &dest_path)?;
-                    } else {
-                        copy_file_resilient(&source_path, &dest_path).map_err(|copy_error| {
-                            format!("{}: {}", dest_path.display(), copy_error)
-                        })?;
-                    }
-                }
-                Err(error) => {
-                    return Err(format!("{}: {}", dest_path.display(), error));
-                }
-            }
-        } else if meta.is_dir() {
+        if entry_kind(&source_path) == EntryKind::Dir {
             copy_dir_recursive(&source_path, &dest_path)?;
         } else {
-            copy_file_resilient(&source_path, &dest_path)
-                .map_err(|error| format!("{}: {}", dest_path.display(), error))?;
+            copy_leaf(&source_path, &dest_path)?;
         }
     }
 
@@ -617,16 +644,32 @@ fn push_type_mismatch_conflict(
             .file_name()
             .map(|name| name.to_string_lossy().to_string())
             .unwrap_or_default(),
-        source_is_dir: source_path.is_dir(),
+        source_is_dir: entry_kind(source_path) == EntryKind::Dir,
         source_size,
         source_modified_ms: None,
         destination_path: dest_path.to_string_lossy().to_string(),
-        destination_is_dir: dest_path.is_dir(),
+        destination_is_dir: entry_kind(dest_path) == EntryKind::Dir,
         destination_size,
         destination_modified_ms: None,
         relative_path: relative_path.to_string(),
         replace_removes_source: replace_would_remove_source(source_path, dest_path),
     });
+}
+
+fn push_conflict_for_kinds(
+    source: &Path,
+    dest: &Path,
+    relative_path: &str,
+    out: &mut Vec<ConflictItem>,
+) {
+    match (entry_kind(source), entry_kind(dest)) {
+        (EntryKind::Missing, _) | (_, EntryKind::Missing) => {}
+        (EntryKind::Dir, EntryKind::Dir) => {
+            collect_merge_conflicts(source, dest, relative_path, out)
+        }
+        (EntryKind::Leaf, EntryKind::Leaf) => push_file_conflict(source, dest, relative_path, out),
+        _ => push_type_mismatch_conflict(source, dest, relative_path, out),
+    }
 }
 
 fn collect_merge_conflicts(
@@ -641,28 +684,12 @@ fn collect_merge_conflicts(
 
     for entry in entries.flatten() {
         let child_source = entry.path();
-        let child_name = match child_source.file_name() {
-            Some(name) => name,
-            None => continue,
+        let Some(child_name) = child_source.file_name() else {
+            continue;
         };
         let child_dest = dest.join(child_name);
         let rel = join_relative(relative_prefix, &child_name.to_string_lossy());
-
-        if child_source.is_file() {
-            if child_dest.exists() {
-                if child_dest.is_file() {
-                    push_file_conflict(&child_source, &child_dest, &rel, out);
-                } else if child_dest.is_dir() {
-                    push_type_mismatch_conflict(&child_source, &child_dest, &rel, out);
-                }
-            }
-        } else if child_source.is_dir() && child_dest.exists() {
-            if child_dest.is_dir() {
-                collect_merge_conflicts(&child_source, &child_dest, &rel, out);
-            } else {
-                push_type_mismatch_conflict(&child_source, &child_dest, &rel, out);
-            }
-        }
+        push_conflict_for_kinds(&child_source, &child_dest, &rel, out);
     }
 }
 
@@ -670,46 +697,22 @@ fn check_conflicts_sync(source_paths: Vec<String>, destination_path: String) -> 
     let destination = Path::new(&destination_path);
     let mut conflicts = Vec::new();
 
-    if !destination.exists() || !destination.is_dir() {
+    if !destination.is_dir() {
         return conflicts;
     }
 
     for source_path_str in &source_paths {
         let source = Path::new(source_path_str);
-
-        if !source.exists() {
+        let Some(file_name) = source.file_name() else {
             continue;
-        }
-
-        let file_name = match source.file_name() {
-            Some(name) => name.to_string_lossy().to_string(),
-            None => continue,
         };
-
-        let dest_item_path = destination.join(&file_name);
-
-        if !dest_item_path.exists() {
-            continue;
-        }
-
-        let relative_top = file_name.replace('\\', "/");
-
-        if source.is_file() {
-            if dest_item_path.is_file() {
-                push_file_conflict(source, &dest_item_path, &relative_top, &mut conflicts);
-            } else {
-                push_type_mismatch_conflict(source, &dest_item_path, &relative_top, &mut conflicts);
-            }
-            continue;
-        }
-
-        if source.is_dir() {
-            if dest_item_path.is_file() {
-                push_type_mismatch_conflict(source, &dest_item_path, &relative_top, &mut conflicts);
-            } else if dest_item_path.is_dir() {
-                collect_merge_conflicts(source, &dest_item_path, &relative_top, &mut conflicts);
-            }
-        }
+        let relative_top = file_name.to_string_lossy().replace('\\', "/");
+        push_conflict_for_kinds(
+            source,
+            &destination.join(file_name),
+            &relative_top,
+            &mut conflicts,
+        );
     }
 
     conflicts
@@ -839,14 +842,12 @@ fn should_fallback_to_copy_delete(error: &std::io::Error, source: &Path, dest: &
 fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
     if let Err(rename_error) = fs::rename(source, dest) {
         if should_fallback_to_copy_delete(&rename_error, source, dest) {
-            if source.is_dir() {
+            if entry_kind(source) == EntryKind::Dir {
                 copy_dir_recursive(source, dest)?;
-                remove_dir_or_file(source)?;
             } else {
-                copy_file_resilient(source, dest).map_err(|copy_error| copy_error.to_string())?;
-                fs::remove_file(source).map_err(|remove_error| remove_error.to_string())?;
+                copy_leaf(source, dest)?;
             }
-            Ok(())
+            remove_dir_or_file(source)
         } else {
             Err(rename_error.to_string())
         }
@@ -881,33 +882,56 @@ fn record_completed_move_after_copy_delete(
     }
 }
 
+fn copy_merge_children(
+    source: &Path,
+    dest: &Path,
+    resolutions: &HashMap<String, ConflictResolution>,
+    skipped_count: &mut u32,
+) -> Result<(), String> {
+    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let file_name = source_path.file_name().ok_or("Invalid file name")?;
+        copy_merge(
+            &source_path,
+            &dest.join(file_name),
+            resolutions,
+            skipped_count,
+        )?;
+    }
+    Ok(())
+}
+
+fn unique_sibling_path(dest: &Path) -> Result<PathBuf, String> {
+    let parent = dest.parent().ok_or("No parent directory")?;
+    let name = dest.file_name().ok_or("Invalid destination file name")?;
+    Ok(get_unique_destination_path(
+        parent,
+        name.to_string_lossy().as_ref(),
+    ))
+}
+
 fn copy_merge(
     source: &Path,
     dest: &Path,
     resolutions: &HashMap<String, ConflictResolution>,
     skipped_count: &mut u32,
 ) -> Result<(), String> {
-    if !source.exists() {
+    let source_kind = entry_kind(source);
+
+    if source_kind == EntryKind::Missing {
         return Err(format!("Source path does not exist: {}", source.display()));
     }
 
     if normalize_path(&source.to_string_lossy()) == normalize_path(&dest.to_string_lossy()) {
-        if source.is_file() {
+        if source_kind == EntryKind::Leaf {
             return match get_path_resolution(resolutions, dest) {
                 ConflictResolution::Skip => {
                     *skipped_count += 1;
                     Ok(())
                 }
                 ConflictResolution::Replace => Ok(()),
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    copy_file_resilient(source, &unique_dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
+                ConflictResolution::AutoRename => copy_leaf(source, &unique_sibling_path(dest)?),
             };
         }
 
@@ -924,132 +948,77 @@ fn copy_merge(
         return Ok(());
     }
 
-    if source.is_file() {
-        if !dest.exists() {
+    match (source_kind, entry_kind(dest)) {
+        (EntryKind::Leaf, EntryKind::Missing) => {
             if let Some(parent) = dest.parent() {
                 fs::create_dir_all(parent).map_err(|error| error.to_string())?;
             }
-            return copy_file_resilient(source, dest)
-                .map(|_| ())
-                .map_err(|error| error.to_string());
+            copy_leaf(source, dest)
         }
-
-        if dest.is_file() {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    ensure_replace_keeps_source(source, dest)?;
-                    copy_file_resilient(source, dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    copy_file_resilient(source, &unique_dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-            }
-        } else {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    ensure_replace_keeps_source(source, dest)?;
-                    fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
-                    copy_file_resilient(source, dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    copy_file_resilient(source, &unique_dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-            }
+        (_, EntryKind::Missing) => {
+            fs::create_dir_all(dest).map_err(|error| error.to_string())?;
+            copy_merge_children(source, dest, resolutions, skipped_count)
         }
-    } else if !dest.exists() {
-        fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-        for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
-            let source_path = entry.path();
-            let file_name = source_path.file_name().ok_or("Invalid file name")?;
-            copy_merge(
-                &source_path,
-                &dest.join(file_name),
-                resolutions,
-                skipped_count,
-            )?;
-        }
-        Ok(())
-    } else if dest.is_file() {
-        match get_path_resolution(resolutions, dest) {
+        (EntryKind::Leaf, _) => match get_path_resolution(resolutions, dest) {
             ConflictResolution::Skip => {
                 *skipped_count += 1;
                 Ok(())
             }
             ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
+                if is_regular_file(source) && is_regular_file(dest) {
+                    copy_file_resilient(source, dest)
+                        .map(|_| ())
+                        .map_err(|error| error.to_string())
+                } else {
+                    remove_dir_or_file(dest)?;
+                    copy_leaf(source, dest)
+                }
+            }
+            ConflictResolution::AutoRename => copy_leaf(source, &unique_sibling_path(dest)?),
+        },
+        (_, EntryKind::Leaf) => match get_path_resolution(resolutions, dest) {
+            ConflictResolution::Skip => {
+                *skipped_count += 1;
+                Ok(())
+            }
+            ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
                 remove_dir_or_file(dest)?;
                 fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    copy_merge(
-                        &source_path,
-                        &dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                Ok(())
+                copy_merge_children(source, dest, resolutions, skipped_count)
             }
             ConflictResolution::AutoRename => {
-                let parent = dest.parent().ok_or("No parent directory")?;
-                let name = dest.file_name().ok_or("Invalid destination file name")?;
-                let unique_dest =
-                    get_unique_destination_path(parent, name.to_string_lossy().as_ref());
+                let unique_dest = unique_sibling_path(dest)?;
                 fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    copy_merge(
-                        &source_path,
-                        &unique_dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                Ok(())
+                copy_merge_children(source, &unique_dest, resolutions, skipped_count)
             }
-        }
-    } else {
-        for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
-            let source_path = entry.path();
-            let file_name = source_path.file_name().ok_or("Invalid file name")?;
-            copy_merge(
-                &source_path,
-                &dest.join(file_name),
-                resolutions,
-                skipped_count,
-            )?;
-        }
-        Ok(())
+        },
+        _ => copy_merge_children(source, dest, resolutions, skipped_count),
     }
+}
+
+fn move_merge_children(
+    source: &Path,
+    dest: &Path,
+    resolutions: &HashMap<String, ConflictResolution>,
+    skipped_count: &mut u32,
+) -> Result<(), String> {
+    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let file_name = source_path.file_name().ok_or("Invalid file name")?;
+        move_merge(
+            &source_path,
+            &dest.join(file_name),
+            resolutions,
+            skipped_count,
+        )?;
+    }
+    if is_dir_empty(source) {
+        fs::remove_dir(source).map_err(|error| error.to_string())?;
+    }
+    Ok(())
 }
 
 fn move_merge(
@@ -1058,126 +1027,51 @@ fn move_merge(
     resolutions: &HashMap<String, ConflictResolution>,
     skipped_count: &mut u32,
 ) -> Result<(), String> {
-    if !source.exists() {
+    let source_kind = entry_kind(source);
+
+    if source_kind == EntryKind::Missing {
         return Err(format!("Source path does not exist: {}", source.display()));
     }
 
-    if source.is_file() {
-        if !dest.exists() {
+    match (source_kind, entry_kind(dest)) {
+        (_, EntryKind::Missing) => {
             if let Some(parent) = dest.parent() {
                 fs::create_dir_all(parent).map_err(|error| error.to_string())?;
             }
-            return try_rename_or_copy_delete(source, dest);
+            try_rename_or_copy_delete(source, dest)
         }
-
-        if dest.is_file() {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    ensure_replace_keeps_source(source, dest)?;
-                    remove_dir_or_file(dest)?;
-                    try_rename_or_copy_delete(source, dest)
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    try_rename_or_copy_delete(source, &unique_dest)
-                }
-            }
-        } else {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    ensure_replace_keeps_source(source, dest)?;
-                    fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
-                    try_rename_or_copy_delete(source, dest)
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    try_rename_or_copy_delete(source, &unique_dest)
-                }
-            }
-        }
-    } else if !dest.exists() {
-        if let Some(parent) = dest.parent() {
-            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-        }
-        try_rename_or_copy_delete(source, dest)
-    } else if dest.is_file() {
-        match get_path_resolution(resolutions, dest) {
+        (EntryKind::Leaf, _) => match get_path_resolution(resolutions, dest) {
             ConflictResolution::Skip => {
                 *skipped_count += 1;
                 Ok(())
             }
             ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
                 remove_dir_or_file(dest)?;
-                fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    move_merge(
-                        &source_path,
-                        &dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                if is_dir_empty(source) {
-                    fs::remove_dir(source).map_err(|error| error.to_string())?;
-                }
-                Ok(())
+                try_rename_or_copy_delete(source, dest)
             }
             ConflictResolution::AutoRename => {
-                let parent = dest.parent().ok_or("No parent directory")?;
-                let name = dest.file_name().ok_or("Invalid destination file name")?;
-                let unique_dest =
-                    get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    move_merge(
-                        &source_path,
-                        &unique_dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                if is_dir_empty(source) {
-                    fs::remove_dir(source).map_err(|error| error.to_string())?;
-                }
+                try_rename_or_copy_delete(source, &unique_sibling_path(dest)?)
+            }
+        },
+        (_, EntryKind::Leaf) => match get_path_resolution(resolutions, dest) {
+            ConflictResolution::Skip => {
+                *skipped_count += 1;
                 Ok(())
             }
-        }
-    } else {
-        for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
-            let source_path = entry.path();
-            let file_name = source_path.file_name().ok_or("Invalid file name")?;
-            move_merge(
-                &source_path,
-                &dest.join(file_name),
-                resolutions,
-                skipped_count,
-            )?;
-        }
-        if is_dir_empty(source) {
-            fs::remove_dir(source).map_err(|error| error.to_string())?;
-        }
-        Ok(())
+            ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
+                remove_dir_or_file(dest)?;
+                fs::create_dir_all(dest).map_err(|error| error.to_string())?;
+                move_merge_children(source, dest, resolutions, skipped_count)
+            }
+            ConflictResolution::AutoRename => {
+                let unique_dest = unique_sibling_path(dest)?;
+                fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
+                move_merge_children(source, &unique_dest, resolutions, skipped_count)
+            }
+        },
+        _ => move_merge_children(source, dest, resolutions, skipped_count),
     }
 }
 
@@ -3092,6 +2986,95 @@ mod tests {
         assert!(!move_result.success);
         assert!(!copy_result.success);
         assert_eq!(read_file(&source_file), b"source");
+    }
+
+    fn try_symlink_dir(target: &Path, link: &Path) -> bool {
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink(target, link).is_ok()
+        }
+        #[cfg(windows)]
+        {
+            std::os::windows::fs::symlink_dir(target, link).is_ok()
+                || std::process::Command::new("cmd")
+                    .arg("/C")
+                    .arg("mklink")
+                    .arg("/J")
+                    .arg(link)
+                    .arg(target)
+                    .output()
+                    .map(|output| output.status.success())
+                    .unwrap_or(false)
+        }
+    }
+
+    fn empty_merge() -> Option<Vec<PathResolution>> {
+        Some(Vec::new())
+    }
+
+    #[test]
+    fn move_merge_moves_a_linked_folder_as_a_link() {
+        let temp = tempdir().unwrap();
+        let outside = temp.path().join("outside");
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&outside.join("secret.txt"), b"outside");
+        write_file(&source_folder.join("own.txt"), b"own");
+        write_file(
+            &dest_root.join("project").join("link").join("existing.txt"),
+            b"existing",
+        );
+
+        if !try_symlink_dir(&outside, &source_folder.join("link")) {
+            return;
+        }
+
+        let result = move_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            empty_merge(),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        assert_eq!(read_file(&outside.join("secret.txt")), b"outside");
+        assert!(!dest_root
+            .join("project")
+            .join("link")
+            .join("secret.txt")
+            .exists());
+        assert_eq!(
+            read_file(&dest_root.join("project").join("own.txt")),
+            b"own"
+        );
+    }
+
+    #[test]
+    fn check_conflicts_does_not_descend_into_a_linked_folder() {
+        let temp = tempdir().unwrap();
+        let outside = temp.path().join("outside");
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&outside.join("a.txt"), b"outside");
+        write_file(
+            &dest_root.join("project").join("link").join("a.txt"),
+            b"existing",
+        );
+        fs::create_dir_all(&source_folder).unwrap();
+
+        if !try_symlink_dir(&outside, &source_folder.join("link")) {
+            return;
+        }
+
+        let conflicts = check_conflicts_sync(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+        );
+
+        assert_eq!(conflicts.len(), 1);
+        assert_eq!(conflicts[0].relative_path, "project/link");
+        assert!(conflicts[0].destination_is_dir);
+        assert!(!conflicts[0].source_is_dir);
     }
 
     fn os(value: &str) -> OsString {
