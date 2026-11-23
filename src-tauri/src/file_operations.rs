@@ -146,6 +146,159 @@ fn symlink_create_failed_use_file_copy_instead(error: &std::io::Error) -> bool {
     }
 }
 
+const CANCELLED_MESSAGE: &str = "Operation cancelled";
+
+thread_local! {
+    static ACTIVE_CANCEL_FLAG: std::cell::RefCell<Option<Arc<AtomicBool>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+struct CancelScope;
+
+impl CancelScope {
+    fn enter(cancel: Option<&Arc<AtomicBool>>) -> Self {
+        ACTIVE_CANCEL_FLAG.with(|flag| *flag.borrow_mut() = cancel.cloned());
+        CancelScope
+    }
+}
+
+impl Drop for CancelScope {
+    fn drop(&mut self) {
+        ACTIVE_CANCEL_FLAG.with(|flag| *flag.borrow_mut() = None);
+    }
+}
+
+fn active_cancel_flag() -> Option<Arc<AtomicBool>> {
+    ACTIVE_CANCEL_FLAG.with(|flag| flag.borrow().clone())
+}
+
+fn is_cancel_requested() -> bool {
+    active_cancel_flag().is_some_and(|flag| flag.load(Ordering::Relaxed))
+}
+
+fn cancelled_io_error() -> std::io::Error {
+    std::io::Error::new(std::io::ErrorKind::Interrupted, CANCELLED_MESSAGE)
+}
+
+fn is_cancelled_io_error(error: &std::io::Error) -> bool {
+    error.kind() == std::io::ErrorKind::Interrupted && error.to_string() == CANCELLED_MESSAGE
+}
+
+fn copy_error_message(dest: &Path, error: &std::io::Error) -> String {
+    if is_cancelled_io_error(error) {
+        CANCELLED_MESSAGE.to_string()
+    } else {
+        format!("{}: {}", dest.display(), error)
+    }
+}
+
+#[cfg(windows)]
+fn copy_file_cancellable(
+    source: &Path,
+    dest: &Path,
+    cancel: &Arc<AtomicBool>,
+) -> std::io::Result<u64> {
+    const PROGRESS_CONTINUE: u32 = 0;
+    const PROGRESS_CANCEL: u32 = 1;
+    const ERROR_REQUEST_ABORTED: i32 = 1235;
+
+    unsafe extern "system" fn progress_routine(
+        _total_file_size: i64,
+        _total_bytes_transferred: i64,
+        _stream_size: i64,
+        _stream_bytes_transferred: i64,
+        _stream_number: u32,
+        _callback_reason: u32,
+        _source_file: *mut std::ffi::c_void,
+        _destination_file: *mut std::ffi::c_void,
+        data: *const std::ffi::c_void,
+    ) -> u32 {
+        let cancel = unsafe { &*(data as *const AtomicBool) };
+        if cancel.load(Ordering::Relaxed) {
+            PROGRESS_CANCEL
+        } else {
+            PROGRESS_CONTINUE
+        }
+    }
+
+    let source_wide = wide_path(source);
+    let dest_wide = wide_path(dest);
+    let cancel_pointer: *const AtomicBool = Arc::as_ptr(cancel);
+    let copied = unsafe {
+        CopyFileExW(
+            source_wide.as_ptr(),
+            dest_wide.as_ptr(),
+            Some(progress_routine),
+            cancel_pointer.cast(),
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+
+    if copied != 0 {
+        return fs::metadata(dest).map(|metadata| metadata.len());
+    }
+
+    let error = std::io::Error::last_os_error();
+    if error.raw_os_error() == Some(ERROR_REQUEST_ABORTED) {
+        let _ = fs::remove_file(dest);
+        return Err(cancelled_io_error());
+    }
+    Err(error)
+}
+
+#[cfg(target_os = "linux")]
+fn copy_file_cancellable(
+    source: &Path,
+    dest: &Path,
+    cancel: &Arc<AtomicBool>,
+) -> std::io::Result<u64> {
+    use std::io::Read;
+
+    const CHUNK_BYTES: u64 = 64 * 1024 * 1024;
+
+    let mut source_file = fs::File::open(source)?;
+    let permissions = source_file.metadata()?.permissions();
+    let mut dest_file = fs::File::create(dest)?;
+    let mut copied_bytes = 0u64;
+
+    loop {
+        if cancel.load(Ordering::Relaxed) {
+            drop(dest_file);
+            let _ = fs::remove_file(dest);
+            return Err(cancelled_io_error());
+        }
+
+        let chunk_bytes = std::io::copy(&mut (&mut source_file).take(CHUNK_BYTES), &mut dest_file)?;
+        if chunk_bytes == 0 {
+            break;
+        }
+        copied_bytes += chunk_bytes;
+    }
+
+    dest_file.set_permissions(permissions)?;
+    Ok(copied_bytes)
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
+fn copy_file_cancellable(
+    source: &Path,
+    dest: &Path,
+    cancel: &Arc<AtomicBool>,
+) -> std::io::Result<u64> {
+    if cancel.load(Ordering::Relaxed) {
+        return Err(cancelled_io_error());
+    }
+    fs::copy(source, dest)
+}
+
+fn copy_file_once(source: &Path, dest: &Path) -> std::io::Result<u64> {
+    match active_cancel_flag() {
+        Some(cancel) => copy_file_cancellable(source, dest, &cancel),
+        None => fs::copy(source, dest),
+    }
+}
+
 fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
     #[cfg(windows)]
     {
@@ -153,7 +306,7 @@ fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
             if attempt > 0 {
                 std::thread::sleep(std::time::Duration::from_millis(20 * attempt as u64));
             }
-            match fs::copy(source, dest) {
+            match copy_file_once(source, dest) {
                 Ok(bytes) => return Ok(bytes),
                 Err(err) => {
                     let transient = matches!(err.raw_os_error(), Some(32) | Some(33) | Some(5),);
@@ -167,7 +320,7 @@ fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
     }
     #[cfg(not(windows))]
     {
-        fs::copy(source, dest)
+        copy_file_once(source, dest)
     }
 }
 
@@ -181,7 +334,7 @@ fn count_copy_units_with_progress(
 ) -> Result<u64, String> {
     if let Some(cancel_flag) = cancel {
         if cancel_flag.load(Ordering::Relaxed) {
-            return Err("Operation cancelled".to_string());
+            return Err(CANCELLED_MESSAGE.to_string());
         }
     }
     let meta =
@@ -292,7 +445,7 @@ fn copy_leaf(source: &Path, dest: &Path) -> Result<(), String> {
     if !metadata.file_type().is_symlink() {
         return copy_file_resilient(source, dest)
             .map(|_| ())
-            .map_err(|error| format!("{}: {}", dest.display(), error));
+            .map_err(|error| copy_error_message(dest, &error));
     }
 
     match copy_symlink(source, dest) {
@@ -303,7 +456,7 @@ fn copy_leaf(source: &Path, dest: &Path) -> Result<(), String> {
             } else {
                 copy_file_resilient(source, dest)
                     .map(|_| ())
-                    .map_err(|copy_error| format!("{}: {}", dest.display(), copy_error))
+                    .map_err(|copy_error| copy_error_message(dest, &copy_error))
             }
         }
         Err(error) => Err(format!("{}: {}", dest.display(), error)),
@@ -317,7 +470,7 @@ fn copy_top_level_leaf(source: &Path, dest: &Path) -> Result<(), String> {
 
     copy_file_resilient(source, dest)
         .map(|_| ())
-        .map_err(|error| format!("{}: {}", dest.display(), error))
+        .map_err(|error| copy_error_message(dest, &error))
 }
 
 fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
@@ -367,7 +520,7 @@ fn copy_dir_recursive_with_progress(
 ) -> Result<(), String> {
     if let Some(cancel_flag) = cancel {
         if cancel_flag.load(Ordering::Relaxed) {
-            return Err("Operation cancelled".to_string());
+            return Err(CANCELLED_MESSAGE.to_string());
         }
     }
 
@@ -405,7 +558,7 @@ fn copy_dir_recursive_with_progress(
     for entry in entries {
         if let Some(cancel_flag) = cancel {
             if cancel_flag.load(Ordering::Relaxed) {
-                return Err("Operation cancelled".to_string());
+                return Err(CANCELLED_MESSAGE.to_string());
             }
         }
 
@@ -903,6 +1056,9 @@ fn copy_merge_children(
     skipped_count: &mut u32,
 ) -> Result<(), String> {
     for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        if is_cancel_requested() {
+            return Err(CANCELLED_MESSAGE.to_string());
+        }
         let entry = entry.map_err(|error| error.to_string())?;
         let source_path = entry.path();
         let file_name = source_path.file_name().ok_or("Invalid file name")?;
@@ -1019,6 +1175,9 @@ fn move_merge_children(
     skipped_count: &mut u32,
 ) -> Result<(), String> {
     for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        if is_cancel_requested() {
+            return Err(CANCELLED_MESSAGE.to_string());
+        }
         let entry = entry.map_err(|error| error.to_string())?;
         let source_path = entry.path();
         let file_name = source_path.file_name().ok_or("Invalid file name")?;
@@ -1139,6 +1298,7 @@ pub(crate) fn copy_items_impl(
         );
     }
 
+    let _cancel_scope = CancelScope::enter(cancel);
     let mut copied_count: u32 = 0;
     let mut failed_count: u32 = 0;
     let mut skipped_count: u32 = 0;
@@ -1189,6 +1349,9 @@ pub(crate) fn copy_items_impl(
                 Ok(()) => {
                     copied_count += 1;
                     skipped_count += merge_skipped;
+                }
+                Err(error) if error == CANCELLED_MESSAGE => {
+                    cancelled = true;
                 }
                 Err(error) => {
                     failed_count += 1;
@@ -1250,7 +1413,7 @@ pub(crate) fn copy_items_impl(
             ) {
                 Ok(total) => weighted_local_total = total,
                 Err(error) => {
-                    if error == "Operation cancelled" {
+                    if error == CANCELLED_MESSAGE {
                         cancelled = true;
                     } else {
                         failed_count += 1;
@@ -1369,7 +1532,7 @@ pub(crate) fn copy_items_impl(
                 }
             }
             Err(error) => {
-                if error == "Operation cancelled" {
+                if error == CANCELLED_MESSAGE {
                     cancelled = true;
                 } else {
                     failed_count += 1 + inner_failed;
@@ -1472,6 +1635,7 @@ pub(crate) fn move_items_impl(
 
     let mut moved_count: u32 = 0;
     let mut failed_count: u32 = 0;
+    let _cancel_scope = CancelScope::enter(cancel);
     let mut skipped_count: u32 = 0;
     let mut moved_paths: Vec<MovedPathPair> = Vec::new();
     let mut last_error: Option<String> = None;
@@ -1527,6 +1691,9 @@ pub(crate) fn move_items_impl(
                     moved_count += 1;
                     skipped_count += merge_skipped;
                     moved_paths.push(moved_path_pair(source, &dest_path));
+                }
+                Err(error) if error == CANCELLED_MESSAGE => {
+                    cancelled = true;
                 }
                 Err(error) => {
                     failed_count += 1;
@@ -1596,7 +1763,7 @@ pub(crate) fn move_items_impl(
                         ) {
                             Ok(total) => weighted_local_total = total,
                             Err(copy_error) => {
-                                if copy_error == "Operation cancelled" {
+                                if copy_error == CANCELLED_MESSAGE {
                                     cancelled = true;
                                 } else {
                                     failed_count += 1;
@@ -1726,7 +1893,7 @@ pub(crate) fn move_items_impl(
                             }
                         }
                         Err(copy_error) => {
-                            if copy_error == "Operation cancelled" {
+                            if copy_error == CANCELLED_MESSAGE {
                                 cancelled = true;
                             } else {
                                 failed_count += 1 + inner_failed;
@@ -2205,6 +2372,28 @@ extern "system" {
     fn CloseHandle(handle: *mut std::ffi::c_void) -> i32;
 
     fn MoveFileExW(existing_name: *const u16, new_name: *const u16, flags: u32) -> i32;
+
+    #[allow(clippy::type_complexity)]
+    fn CopyFileExW(
+        existing_file_name: *const u16,
+        new_file_name: *const u16,
+        progress_routine: Option<
+            unsafe extern "system" fn(
+                i64,
+                i64,
+                i64,
+                i64,
+                u32,
+                u32,
+                *mut std::ffi::c_void,
+                *mut std::ffi::c_void,
+                *const std::ffi::c_void,
+            ) -> u32,
+        >,
+        data: *const std::ffi::c_void,
+        cancel: *mut i32,
+        copy_flags: u32,
+    ) -> i32;
 
     fn SetFileInformationByHandle(
         file: *mut std::ffi::c_void,
@@ -3153,6 +3342,89 @@ mod tests {
 
         assert!(!result.success);
         assert_eq!(read_file(&source), b"a");
+    }
+
+    #[test]
+    fn cancelled_file_copy_leaves_no_partial_file() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("big.bin");
+        let dest = temp.path().join("copy.bin");
+        write_file(&source, &vec![7u8; 4 * 1024 * 1024]);
+        let cancel = Arc::new(AtomicBool::new(true));
+
+        let error = copy_file_cancellable(&source, &dest, &cancel).unwrap_err();
+
+        assert!(is_cancelled_io_error(&error));
+        assert!(!path_entry_exists(&dest));
+    }
+
+    #[test]
+    fn uncancelled_file_copy_copies_the_whole_file() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("big.bin");
+        let dest = temp.path().join("copy.bin");
+        let contents: Vec<u8> = (0..3 * 1024 * 1024)
+            .map(|index| (index % 251) as u8)
+            .collect();
+        write_file(&source, &contents);
+        let cancel = Arc::new(AtomicBool::new(false));
+
+        let copied_bytes = copy_file_cancellable(&source, &dest, &cancel).unwrap();
+
+        assert_eq!(copied_bytes, contents.len() as u64);
+        assert_eq!(read_file(&dest), contents);
+    }
+
+    #[test]
+    fn cancelled_merge_reports_cancel_and_copies_nothing() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        for index in 0..20 {
+            write_file(&source_folder.join(format!("{index}.txt")), b"source");
+        }
+        write_file(&dest_root.join("project").join("existing.txt"), b"existing");
+        let cancel = Arc::new(AtomicBool::new(true));
+        let mut progress_none: Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)> = None;
+
+        let (result, cancelled) = copy_items_impl(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            empty_merge(),
+            Some(&cancel),
+            &mut progress_none,
+        );
+
+        assert!(cancelled);
+        assert!(!result.success);
+        assert!(!dest_root.join("project").join("0.txt").exists());
+    }
+
+    #[test]
+    fn merge_cancelled_partway_stops_copying() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        for index in 0..20 {
+            write_file(&source_folder.join(format!("{index}.txt")), b"source");
+        }
+        write_file(&dest_root.join("project").join("existing.txt"), b"existing");
+        let cancel = Arc::new(AtomicBool::new(false));
+        let _cancel_scope = CancelScope::enter(Some(&cancel));
+        let mut skipped_count = 0;
+        let resolutions = HashMap::new();
+        cancel.store(true, Ordering::Relaxed);
+
+        let result = copy_merge_children(
+            &source_folder,
+            &dest_root.join("project"),
+            &resolutions,
+            &mut skipped_count,
+        );
+
+        assert_eq!(result, Err(CANCELLED_MESSAGE.to_string()));
+        assert_eq!(fs::read_dir(dest_root.join("project")).unwrap().count(), 1);
     }
 
     fn broken_folder_link(temp: &Path) -> Option<PathBuf> {
