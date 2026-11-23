@@ -166,8 +166,20 @@ export const useUserStatsStore = defineStore('userStats', () => {
     }
   }
 
+  const favoritePathsSet = computed(() => new Set(userStats.value.favorites.map(item => item.path)));
+
+  const taggedItemsByPath = computed(() => {
+    const map = new Map<string, TaggedItem>();
+
+    for (const item of userStats.value.taggedItems) {
+      map.set(item.path, item);
+    }
+
+    return map;
+  });
+
   function isFavorite(path: string): boolean {
-    return userStats.value.favorites.some(item => item.path === path);
+    return favoritePathsSet.value.has(path);
   }
 
   async function addToFavorites(path: string) {
@@ -203,7 +215,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
   }
 
   function getItemTags(path: string): ItemTag[] {
-    const taggedItem = userStats.value.taggedItems.find(item => item.path === path);
+    const taggedItem = taggedItemsByPath.value.get(path);
 
     if (!taggedItem) return [];
 
