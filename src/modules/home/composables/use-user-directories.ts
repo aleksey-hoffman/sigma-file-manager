@@ -166,12 +166,16 @@ export function useUserDirectories() {
       return;
     }
 
-    for (const definition of directoryDefinitions) {
-      try {
-        defaultPaths.value[definition.name] = normalizePath(await definition.pathFn());
-      }
-      catch {
-        continue;
+    const resolvedPaths = await Promise.allSettled(
+      directoryDefinitions.map(async definition => ({
+        name: definition.name,
+        path: normalizePath(await definition.pathFn()),
+      })),
+    );
+
+    for (const result of resolvedPaths) {
+      if (result.status === 'fulfilled') {
+        defaultPaths.value[result.value.name] = result.value.path;
       }
     }
 
