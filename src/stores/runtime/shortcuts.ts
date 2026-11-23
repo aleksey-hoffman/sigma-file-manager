@@ -1191,14 +1191,25 @@ export function matchesShortcut(
 
   if (!shiftMatches && !extraShiftAllowed) return false;
 
+  if (eventKey === expectedKey) return true;
+
   if (expectedKey === ' ' && event.code === 'Space') return true;
 
-  if (/^[0-9]$/.test(expectedKey) && event.code === `Digit${expectedKey}`) {
-    return true;
+  if (expectedKey.length === 1) {
+    const charCode = expectedKey.charCodeAt(0);
+
+    if (charCode >= 48 && charCode <= 57) {
+      return event.code === `Digit${expectedKey}`;
+    }
+
+    if (charCode >= 97 && charCode <= 122) {
+      return event.code.length === 4
+        && event.code.startsWith('Key')
+        && event.code.charCodeAt(3) === charCode - 32;
+    }
   }
 
-  const codeLower = event.code.toLowerCase();
-  return eventKey === expectedKey || codeLower === `key${expectedKey}`;
+  return event.code.toLowerCase() === `key${expectedKey}`;
 }
 
 function matchesMouseShortcut(event: MouseEvent, keys: ShortcutKeys): boolean {
