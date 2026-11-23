@@ -39,6 +39,23 @@ export function getImageSrc(entry: DirEntry): string {
   return convertFileSrc(entry.path);
 }
 
+const DEFAULT_FILE_ICON_BY_EXTENSION = new Map<string, Component>();
+
+for (const [extensions, icon] of [
+  [FILE_EXTENSIONS.IMAGE, FileImageIcon],
+  [FILE_EXTENSIONS.VIDEO, FileVideoIcon],
+  [FILE_EXTENSIONS.AUDIO, FileAudioIcon],
+  [FILE_EXTENSIONS.CODE, FileCodeIcon],
+  [FILE_EXTENSIONS.ARCHIVE, FileArchiveIcon],
+  [FILE_EXTENSIONS.TEXT, FileTextIcon],
+] as const) {
+  for (const extension of extensions) {
+    if (!DEFAULT_FILE_ICON_BY_EXTENSION.has(extension)) {
+      DEFAULT_FILE_ICON_BY_EXTENSION.set(extension, icon);
+    }
+  }
+}
+
 export function getDefaultFileIconComponent(options: {
   isDirectory: boolean;
   extension?: string | null;
@@ -48,14 +65,7 @@ export function getDefaultFileIconComponent(options: {
   const extension = options.extension?.toLowerCase();
   if (!extension) return FileIcon;
 
-  if (FILE_EXTENSIONS.IMAGE.includes(extension)) return FileImageIcon;
-  if (FILE_EXTENSIONS.VIDEO.includes(extension)) return FileVideoIcon;
-  if (FILE_EXTENSIONS.AUDIO.includes(extension)) return FileAudioIcon;
-  if (FILE_EXTENSIONS.CODE.includes(extension)) return FileCodeIcon;
-  if (FILE_EXTENSIONS.ARCHIVE.includes(extension)) return FileArchiveIcon;
-  if (FILE_EXTENSIONS.TEXT.includes(extension)) return FileTextIcon;
-
-  return FileIcon;
+  return DEFAULT_FILE_ICON_BY_EXTENSION.get(extension) ?? FileIcon;
 }
 
 export function getFileIcon(entry: DirEntry): Component {
