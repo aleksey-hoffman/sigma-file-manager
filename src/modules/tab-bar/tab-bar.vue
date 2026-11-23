@@ -18,6 +18,7 @@ import {
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useUserDirectories } from '@/modules/home/composables/use-user-directories';
 import { useHorizontalScrollFade } from '@/composables/use-horizontal-scroll-fade';
 import { getScrollLeftToRevealInFadedContainer } from '@/composables/get-scroll-left-to-reveal-in-faded-container';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
@@ -35,6 +36,7 @@ const props = withDefaults(defineProps<{
 
 const workspacesStore = useWorkspacesStore();
 const shortcutsStore = useShortcutsStore();
+const { userDirectories } = useUserDirectories();
 
 const tabGroupCount = computed(() => workspacesStore.currentWorkspace?.tabGroups?.length ?? 0);
 const teleportDisabled = computed(() => !props.teleportTarget);
@@ -182,6 +184,7 @@ onBeforeUnmount(() => {
               <Tab
                 :tab-group="(item as TabType[])"
                 :preview-enabled="previewEnabled"
+                :user-directories="userDirectories"
                 @close-tab="closeTabGroup($event)"
               />
             </template>

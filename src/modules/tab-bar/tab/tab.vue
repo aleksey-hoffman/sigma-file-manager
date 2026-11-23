@@ -10,8 +10,24 @@ import { useTimeoutFn, useEventListener } from '@vueuse/core';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { Tab } from '@/types/workspaces';
-import { CopyPlusIcon, Layers, XIcon, XLineTopIcon } from '@lucide/vue';
-import { getPathDisplayName, getPathDisplayValue } from '@/utils/normalize-path';
+import type { Component } from 'vue';
+import {
+  CopyPlusIcon,
+  FolderIcon,
+  HardDriveIcon,
+  Layers,
+  SearchIcon,
+  XIcon,
+  XLineTopIcon,
+} from '@lucide/vue';
+import {
+  canonicalizePath,
+  getPathDisplayName,
+  getPathDisplayValue,
+  isUnixFilesystemRoot,
+  isWindowsDriveRootPath,
+} from '@/utils/normalize-path';
+import { getIconComponent, type UserDirectory } from '@/modules/home/composables/use-user-directories';
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +46,7 @@ import { useFileBrowserDragSession } from '@/modules/navigator/components/file-b
 interface Props {
   tabGroup: Tab[];
   previewEnabled: boolean;
+  userDirectories: UserDirectory[];
 }
 
 interface Emits {
@@ -50,7 +67,7 @@ const dragSession = useFileBrowserDragSession();
 const activeFileBrowserDragState = dragSession.dragState;
 
 const showTabPreview = true;
-const NAVIGATOR_TAB_WIDTH = 100;
+const NAVIGATOR_TAB_WIDTH = 124;
 const LONG_PRESS_DELAY = 500;
 const LONG_PRESS_MOVE_THRESHOLD = 10;
 const TAB_DRAG_HOVER_OPEN_DELAY = 500;
@@ -131,16 +148,22 @@ function getTabDisplayName(tab: Tab | undefined): string {
   return getPathDisplayName(tab.path, t) || getPathDisplayName(tab.name, t) || tab.name || tab.path;
 }
 
-const tabName = computed(() => {
-  const firstTab = props.tabGroup?.[0];
-  const secondTab = props.tabGroup?.[1];
-
-  if (props.tabGroup?.length === 2 && secondTab) {
-    return `${getTabDisplayName(firstTab)} | ${getTabDisplayName(secondTab)}`;
+function getTabIcon(tab: Tab): Component {
+  if (tab.type === 'search') {
+    return SearchIcon;
   }
 
-  return getTabDisplayName(firstTab);
-});
+  if (isWindowsDriveRootPath(tab.path) || isUnixFilesystemRoot(tab.path)) {
+    return HardDriveIcon;
+  }
+
+  const tabPath = canonicalizePath(tab.path);
+  const userDirectory = props.userDirectories.find(directory => canonicalizePath(directory.path) === tabPath);
+
+  return userDirectory ? getIconComponent(userDirectory.iconName) : FolderIcon;
+}
+
+const tabIcons = computed(() => props.tabGroup.map(getTabIcon));
 
 function tabOnClick(tabGroup: Tab[]) {
   if (isLongPressing.value) {
@@ -257,11 +280,25 @@ onBeforeUnmount(() => {
             @mouseenter="handleTabMouseEnter"
             @mouseleave="handleTabMouseLeave"
           >
-            <div class="tab__title">
-              <span>
-                {{ tabName }}
-              </span>
-            </div>
+            <template
+              v-for="(tab, index) in props.tabGroup"
+              :key="tab.id"
+            >
+              <span
+                v-if="index > 0"
+                class="tab__divider"
+              />
+              <div class="tab__segment">
+                <component
+                  :is="tabIcons[index]"
+                  :size="14"
+                  class="tab__icon"
+                />
+                <span class="tab__title">
+                  {{ getTabDisplayName(tab) }}
+                </span>
+              </div>
+            </template>
 
             <button
               class="tab__close-button"
@@ -343,51 +380,52 @@ onBeforeUnmount(() => {
   position: relative;
   display: flex;
   overflow: hidden;
-  width: var(--tab-width, 100px);
+  width: var(--tab-width);
   min-width: 0;
-  height: var(--tab-height);
+  height: var(--tab-segment-height);
   align-items: center;
-  padding: 0 10px;
-  padding-right: 4px;
+  padding: 0 28px 0 10px;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   -webkit-app-region: no-drag;
   background-color: transparent;
   color: hsl(var(--muted-foreground));
   cursor: pointer;
-  opacity: 0.9;
+  gap: 8px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
   user-select: none;
+
+  --tab-accent: color-mix(in oklch, hsl(var(--primary)), white 35%);
+}
+
+.tab:hover {
+  background-color: hsl(var(--foreground) / 5%);
 }
 
 .tab[is-active="true"] {
-  background-color: hsl(var(--background-2));
-  color: hsl(var(--foreground) / 80%);
-  opacity: 1;
+  border-color: hsl(var(--primary) / 55%);
+  background-color: hsl(var(--primary) / 16%);
+  color: hsl(var(--foreground) / 90%);
+}
+
+.tab[is-active="true"]::after {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  margin-top: -5px;
+  background-color: var(--tab-accent);
+  content: "";
+}
+
+.tab[is-active="true"] .tab__icon {
+  color: var(--tab-accent);
 }
 
 .tab[is-active="true"].tab--active-title-bold .tab__title {
   font-weight: 700;
-}
-
-.tab::after {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 92%;
-  height: 1px;
-  background-color: hsl(var(--background-2) / 0%);
-  box-shadow: 0 0 6px hsl(var(--background-2) / 0%);
-  content: "";
-  transform: translateX(-50%);
-}
-
-.tab[is-active="true"]::after {
-  background-color: hsl(var(--primary) / 40%);
-  box-shadow: 0 0 8px hsl(var(--primary) / 90%);
-}
-
-.tab:hover {
-  background-color: hsl(var(--background-2) / 70%)
 }
 
 .tab[data-drag-over] {
@@ -396,11 +434,72 @@ onBeforeUnmount(() => {
   outline-offset: var(--drop-target-outline-offset);
 }
 
+.tab__segment {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab__icon {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.tab__divider {
+  --tab-divider-color: hsl(var(--foreground) / 38%);
+
+  position: relative;
+  width: 11px;
+  flex-shrink: 0;
+  align-self: stretch;
+  margin: 1px 0;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent,
+      var(--tab-divider-color) 15%,
+      var(--tab-divider-color) 32%,
+      transparent 32%,
+      transparent 68%,
+      var(--tab-divider-color) 68%,
+      var(--tab-divider-color) 85%,
+      transparent
+    )
+    center / 1px 100% no-repeat;
+}
+
+.tab__divider::before,
+.tab__divider::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  content: "";
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.tab__divider::before {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--tab-divider-color);
+}
+
+.tab__divider::after {
+  width: 3px;
+  height: 3px;
+  background-color: var(--tab-divider-color);
+}
+
+.tab[is-active="true"] .tab__divider {
+  --tab-divider-color: var(--tab-accent);
+}
+
 .tab__title {
   overflow: hidden;
-  width: calc(100% - 24px);
+  min-width: 0;
   font-size: 12px;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -408,16 +507,24 @@ onBeforeUnmount(() => {
   position: absolute;
   right: 3px;
   display: flex;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   align-items: center;
   justify-content: center;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
+  color: inherit;
+  opacity: 0.5;
+}
+
+.tab:hover .tab__close-button,
+.tab[is-active="true"] .tab__close-button {
+  opacity: 0.9;
 }
 
 .tab__close-button:focus-visible {
+  opacity: 1;
   outline: 2px solid hsl(var(--ring) / 50%);
   outline-offset: var(--ring-outline-offset);
 }

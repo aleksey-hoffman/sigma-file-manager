@@ -70,10 +70,14 @@ function onDrop(dropResult: DropResult) {
 <style scoped>
 .tab-draggable {
   height: var(--tab-height);
+  padding: var(--tab-rail-padding);
+  border: 1px solid hsl(var(--foreground) / 10%);
+  border-radius: var(--radius-lg);
 }
 
 .item-drag-handle {
-  height: var(--tab-height);
+  position: relative;
+  height: var(--tab-segment-height);
 }
 </style>
 
@@ -99,7 +103,18 @@ function onDrop(dropResult: DropResult) {
   transition: border 0.5s ease;
 }
 
-.draggable-list__item {
-  padding-right: 4px;
+.draggable-list__item + .draggable-list__item .item-drag-handle::before {
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 0;
+  width: 1px;
+  background-color: hsl(var(--foreground) / 12%);
+  content: "";
+}
+
+.draggable-list__item:is(:hover, :has(.tab[is-active="true"])) + .draggable-list__item .item-drag-handle::before,
+.draggable-list__item + .draggable-list__item:is(:hover, :has(.tab[is-active="true"])) .item-drag-handle::before {
+  display: none;
 }
 </style>
