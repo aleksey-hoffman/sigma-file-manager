@@ -10,8 +10,26 @@ export function getEntriesInInclusiveRange(
   fromEntry: DirEntry,
   toEntry: DirEntry,
 ): DirEntry[] {
-  let startIndex = entries.findIndex(item => item.path === fromEntry.path);
-  let endIndex = entries.findIndex(item => item.path === toEntry.path);
+  const fromPath = fromEntry.path;
+  const toPath = toEntry.path;
+  let startIndex = -1;
+  let endIndex = -1;
+
+  for (let index = 0; index < entries.length; index++) {
+    const entryPath = entries[index].path;
+
+    if (startIndex === -1 && entryPath === fromPath) {
+      startIndex = index;
+    }
+
+    if (endIndex === -1 && entryPath === toPath) {
+      endIndex = index;
+    }
+
+    if (startIndex !== -1 && endIndex !== -1) {
+      break;
+    }
+  }
 
   if (startIndex === -1 || endIndex === -1) {
     return [];
