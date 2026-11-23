@@ -7,4 +7,6 @@ pub mod encoding;
 pub mod extract;
 pub mod jobs;
 
+#[cfg(unix)]
+pub use extract::safe_unix_mode;
 pub use extract::{extract_zip_to_directory, is_safe_archive_relative_path};

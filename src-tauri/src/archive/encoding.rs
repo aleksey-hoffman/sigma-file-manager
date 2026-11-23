@@ -255,6 +255,22 @@ mod tests {
     }
 
     #[test]
+    fn check_archive_detects_aes_encrypted_zip() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("aes.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options().with_aes_encryption(zip::AesMode::Aes256, "password");
+        zip_writer.start_file("secret.txt", options).unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+
+        let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
+        assert!(result.encrypted);
+        assert!(!result.encoding_undetermined);
+        assert!(result.detected_encoding.is_none());
+    }
+
+    #[test]
     fn detect_zip_entry_encoding_detects_shift_jis() {
         let raw = [0x82, 0xa0, b'.', b't', b'x', b't'];
         let samples = vec![raw.to_vec()];
