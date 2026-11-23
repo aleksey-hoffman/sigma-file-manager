@@ -80,19 +80,16 @@ function monthToIntlOption(month: DateTime['month']): Intl.DateTimeFormatOptions
   return 'short';
 }
 
+const TWO_DAYS_MS = 48 * 60 * 60 * 1000;
+
 function getDateTimeFormatOptionsKey(options: DateTime): string {
-  return [
-    options.month,
-    options.hour12,
-    options.properties.showSeconds,
-    options.properties.showMilliseconds,
-  ].join('|');
+  return `${options.month}|${options.hour12}|${options.properties.showSeconds}|${options.properties.showMilliseconds}`;
 }
 
 function getDateTimeFormatter(
   locale: string | undefined,
-  options: Intl.DateTimeFormatOptions,
   key: string,
+  createOptions: () => Intl.DateTimeFormatOptions,
 ): Intl.DateTimeFormat {
   const cacheKey = `${locale ?? 'auto'}|${key}`;
   const existingFormatter = dateTimeFormatters.get(cacheKey);
@@ -101,7 +98,7 @@ function getDateTimeFormatter(
     return existingFormatter;
   }
 
-  const formatter = new Intl.DateTimeFormat(locale, options);
+  const formatter = new Intl.DateTimeFormat(locale, createOptions());
   dateTimeFormatters.set(cacheKey, formatter);
   return formatter;
 }
@@ -115,6 +112,12 @@ export function isSameLocalCalendarDay(left: Date, right: Date): boolean {
 }
 
 export function isPreviousLocalCalendarDay(candidate: Date, reference: Date): boolean {
+  const diffMs = reference.getTime() - candidate.getTime();
+
+  if (diffMs <= 0 || diffMs > TWO_DAYS_MS) {
+    return false;
+  }
+
   const yesterday = new Date(reference);
   yesterday.setDate(yesterday.getDate() - 1);
   return isSameLocalCalendarDay(candidate, yesterday);
@@ -128,24 +131,26 @@ export function formatTimeOnly(
   try {
     const localeTag = resolveFormattingLocale(options, appLocale);
 
-    const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: number } = {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: options.hour12,
-    };
-
-    if (options.properties.showSeconds || options.properties.showMilliseconds) {
-      formatOptions.second = 'numeric';
-    }
-
-    if (options.properties.showMilliseconds) {
-      formatOptions.fractionalSecondDigits = 3;
-    }
-
     return getDateTimeFormatter(
       localeTag,
-      formatOptions,
       `time|${getDateTimeFormatOptionsKey(options)}`,
+      () => {
+        const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: number } = {
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: options.hour12,
+        };
+
+        if (options.properties.showSeconds || options.properties.showMilliseconds) {
+          formatOptions.second = 'numeric';
+        }
+
+        if (options.properties.showMilliseconds) {
+          formatOptions.fractionalSecondDigits = 3;
+        }
+
+        return formatOptions;
+      },
     ).format(date);
   }
   catch {
@@ -163,40 +168,40 @@ export function formatDateTimeDisplay(
     const localeTag = resolveFormattingLocale(options, appLocale);
 
     if (!includeTimePart) {
-      const formatOptions: Intl.DateTimeFormatOptions = {
-        year: 'numeric',
-        month: monthToIntlOption(options.month),
-        day: 'numeric',
-      };
-
       return getDateTimeFormatter(
         localeTag,
-        formatOptions,
         `date|${getDateTimeFormatOptionsKey(options)}`,
+        () => ({
+          year: 'numeric',
+          month: monthToIntlOption(options.month),
+          day: 'numeric',
+        }),
       ).format(date);
-    }
-
-    const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: 1 | 2 | 3 } = {
-      year: 'numeric',
-      month: monthToIntlOption(options.month),
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: options.hour12,
-    };
-
-    if (options.properties.showSeconds || options.properties.showMilliseconds) {
-      formatOptions.second = 'numeric';
-    }
-
-    if (options.properties.showMilliseconds) {
-      formatOptions.fractionalSecondDigits = 3;
     }
 
     return getDateTimeFormatter(
       localeTag,
-      formatOptions,
       `date-time|${getDateTimeFormatOptionsKey(options)}`,
+      () => {
+        const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: 1 | 2 | 3 } = {
+          year: 'numeric',
+          month: monthToIntlOption(options.month),
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: options.hour12,
+        };
+
+        if (options.properties.showSeconds || options.properties.showMilliseconds) {
+          formatOptions.second = 'numeric';
+        }
+
+        if (options.properties.showMilliseconds) {
+          formatOptions.fractionalSecondDigits = 3;
+        }
+
+        return formatOptions;
+      },
     ).format(date);
   }
   catch {
