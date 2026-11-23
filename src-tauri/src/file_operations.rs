@@ -3126,7 +3126,7 @@ mod tests {
         assert!(result.success, "{:?}", result.error);
         let dest = temp.path().join("An Example Name.txt");
         assert_eq!(read_file(&dest), b"hello");
-        assert!(!source.exists());
+        assert_eq!(listed_names(temp.path()), vec![os("An Example Name.txt")]);
         assert_no_temporary_rename_files(temp.path());
     }
 
@@ -3143,7 +3143,7 @@ mod tests {
             read_file(&temp.path().join("Notes").join("inside.txt")),
             b"inside"
         );
-        assert!(!source.exists());
+        assert_eq!(listed_names(temp.path()), vec![os("Notes")]);
         assert_no_temporary_rename_files(temp.path());
     }
 
@@ -3188,7 +3188,7 @@ mod tests {
         assert_eq!(read_file(&source), b"same");
     }
 
-    #[cfg(unix)]
+    #[cfg(target_os = "linux")]
     #[test]
     fn rename_item_rejects_a_different_case_entry_on_a_case_sensitive_volume() {
         let temp = tempdir().unwrap();
@@ -3217,7 +3217,7 @@ mod tests {
 
         rename_through_temporary(&source, &dest, &source).unwrap();
 
-        assert!(!source.exists());
+        assert_eq!(listed_names(temp.path()), vec![os("File.txt")]);
         assert_eq!(read_file(&dest), b"data");
         assert_no_temporary_rename_files(temp.path());
     }
