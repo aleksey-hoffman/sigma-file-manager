@@ -20,14 +20,51 @@ import {
 
 export type QuickViewFileType = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'unsupported';
 
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif', 'avif'];
-const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg', 'ogv', 'mov', 'avi', 'mkv', 'm4v', 'wmv', 'flv'];
-const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'oga', 'flac', 'aac', 'm4a', 'wma', 'opus'];
-const PDF_EXTENSIONS = ['pdf'];
-const TEXT_EXTENSIONS = ['txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts', 'vue', 'jsx', 'tsx', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'log', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'py', 'rb', 'rs', 'go', 'java', 'c', 'cpp', 'h', 'hpp', 'cs', 'swift', 'kt', 'php', 'sql', 'graphql', 'env', 'gitignore', 'dockerignore', 'editorconfig', 'prettierrc', 'eslintrc'];
+const QUICK_VIEW_EXTENSION_GROUPS: ReadonlyArray<readonly [QuickViewFileType, readonly string[]]> = [
+  ['image', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif', 'avif']],
+  ['video', ['mp4', 'webm', 'ogg', 'ogv', 'mov', 'avi', 'mkv', 'm4v', 'wmv', 'flv']],
+  ['audio', ['mp3', 'wav', 'ogg', 'oga', 'flac', 'aac', 'm4a', 'wma', 'opus']],
+  ['pdf', ['pdf']],
+  ['text', ['txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts', 'vue', 'jsx', 'tsx', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'log', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'py', 'rb', 'rs', 'go', 'java', 'c', 'cpp', 'h', 'hpp', 'cs', 'swift', 'kt', 'php', 'sql', 'graphql', 'env', 'gitignore', 'dockerignore', 'editorconfig', 'prettierrc', 'eslintrc']],
+];
+
+const QUICK_VIEW_FILE_TYPE_BY_EXTENSION = new Map<string, QuickViewFileType>();
+
+for (const [fileType, extensions] of QUICK_VIEW_EXTENSION_GROUPS) {
+  for (const extension of extensions) {
+    if (!QUICK_VIEW_FILE_TYPE_BY_EXTENSION.has(extension)) {
+      QUICK_VIEW_FILE_TYPE_BY_EXTENSION.set(extension, fileType);
+    }
+  }
+}
 
 export function isHttpOrHttpsUrl(value: string): boolean {
+  const firstChar = value.charCodeAt(0);
+
+  if (firstChar !== 104 && firstChar !== 72) {
+    return false;
+  }
+
   return /^https?:\/\//i.test(value);
+}
+
+function stripQueryAndHash(value: string): string {
+  const queryIndex = value.indexOf('?');
+  const hashIndex = value.indexOf('#');
+
+  if (queryIndex === -1 && hashIndex === -1) {
+    return value;
+  }
+
+  if (queryIndex === -1) {
+    return value.slice(0, hashIndex);
+  }
+
+  if (hashIndex === -1) {
+    return value.slice(0, queryIndex);
+  }
+
+  return value.slice(0, Math.min(queryIndex, hashIndex));
 }
 
 export function getFileExtension(path: string): string {
@@ -38,15 +75,15 @@ export function getFileExtension(path: string): string {
       candidate = new URL(path).pathname;
     }
     catch {
-      candidate = path.split('?')[0]?.split('#')[0] ?? path;
+      candidate = stripQueryAndHash(path);
     }
   }
   else {
-    candidate = path.split('?')[0]?.split('#')[0] ?? path;
+    candidate = stripQueryAndHash(path);
   }
 
-  const parts = candidate.split('.');
-  return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
+  const lastDotIndex = candidate.lastIndexOf('.');
+  return lastDotIndex > 0 ? candidate.slice(lastDotIndex + 1).toLowerCase() : (lastDotIndex === 0 ? candidate.slice(1).toLowerCase() : '');
 }
 
 export function getFileName(path: string): string {
@@ -60,21 +97,18 @@ export function getFileName(path: string): string {
     }
   }
 
-  const normalized = path.replace(/\\/g, '/');
-  const parts = normalized.split('/');
-  return parts[parts.length - 1] || '';
+  const lastSlashIndex = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+  return lastSlashIndex === -1 ? path : path.slice(lastSlashIndex + 1);
 }
 
 export function determineFileType(path: string): QuickViewFileType {
   const extension = getFileExtension(path);
 
-  if (IMAGE_EXTENSIONS.includes(extension)) return 'image';
-  if (VIDEO_EXTENSIONS.includes(extension)) return 'video';
-  if (AUDIO_EXTENSIONS.includes(extension)) return 'audio';
-  if (PDF_EXTENSIONS.includes(extension)) return 'pdf';
-  if (TEXT_EXTENSIONS.includes(extension)) return 'text';
+  if (!extension) {
+    return 'unsupported';
+  }
 
-  return 'unsupported';
+  return QUICK_VIEW_FILE_TYPE_BY_EXTENSION.get(extension) ?? 'unsupported';
 }
 
 export function isQuickViewSupported(path: string): boolean {
