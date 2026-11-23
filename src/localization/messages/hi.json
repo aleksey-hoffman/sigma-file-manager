@@ -932,6 +932,7 @@
     "applyToAll": "सभी पर लागू करें",
     "continue": "जारी रखें",
     "typeMismatch": "इस पथ पर फ़ोल्डर और फ़ाइल मेल नहीं खाते",
+    "replaceBlockedContainsSource": "बदला नहीं जा सकता: इसमें स्रोत आइटम है",
     "actionForItem": "इस संघर्ष के लिए कार्रवाई",
     "replaceOverview": "{total} में से {replaced} आइटम गंतव्य पर बदल दिए जाएंगे",
     "checkingConflicts": "संघर्षों की जाँच हो रही है…",

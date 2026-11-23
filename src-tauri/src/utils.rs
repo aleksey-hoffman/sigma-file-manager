@@ -126,6 +126,39 @@ pub fn source_and_destination_same_directory(source: &Path, destination: &Path) 
         .unwrap_or(false)
 }
 
+pub fn path_entry_exists(path: &Path) -> bool {
+    std::fs::symlink_metadata(path).is_ok()
+}
+
+fn remove_symlink(path: &Path, metadata: &Metadata) -> std::io::Result<()> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::FileTypeExt;
+
+        if metadata.file_type().is_symlink_dir() {
+            return std::fs::remove_dir(path);
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = metadata;
+    }
+
+    std::fs::remove_file(path)
+}
+
+pub fn remove_dir_or_file(path: &Path) -> Result<(), String> {
+    let metadata = std::fs::symlink_metadata(path).map_err(|error| error.to_string())?;
+    let result = if metadata.file_type().is_symlink() {
+        remove_symlink(path, &metadata)
+    } else if metadata.is_dir() {
+        std::fs::remove_dir_all(path)
+    } else {
+        std::fs::remove_file(path)
+    };
+    result.map_err(|error| error.to_string())
+}
+
 pub fn unique_path_with_index(
     path: &Path,
     start_index: u32,
@@ -133,7 +166,7 @@ pub fn unique_path_with_index(
     default_extension: Option<&str>,
     max_index_exclusive: Option<u32>,
 ) -> std::path::PathBuf {
-    if !path.exists() {
+    if !path_entry_exists(path) {
         return path.to_path_buf();
     }
 
@@ -151,7 +184,7 @@ pub fn unique_path_with_index(
     if let Some(max_index) = max_index_exclusive {
         for index in start_index..max_index {
             let candidate = parent.join(format!("{} ({}){}", stem, index, extension));
-            if !candidate.exists() {
+            if !path_entry_exists(&candidate) {
                 return candidate;
             }
         }
@@ -161,7 +194,7 @@ pub fn unique_path_with_index(
     let mut index = start_index;
     loop {
         let candidate = parent.join(format!("{} ({}){}", stem, index, extension));
-        if !candidate.exists() {
+        if !path_entry_exists(&candidate) {
             return candidate;
         }
         index += 1;

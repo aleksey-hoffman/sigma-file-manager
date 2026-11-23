@@ -932,6 +932,7 @@
     "applyToAll": "Դնել բոլորին",
     "continue": "Շարունակել",
     "typeMismatch": "Այս ուղու վրա պանակն ու ֆայլը տարբերվում են",
+    "replaceBlockedContainsSource": "Հնարավոր չէ փոխարինել. պարունակում է աղբյուր տարրը",
     "actionForItem": "Այս կոնֆլիկտի համար գործողություններ",
     "replaceOverview": "{total}-ից {replaced}-ը կփոխարինվի ընտրված տեղում",
     "checkingConflicts": "Կոնֆլիկտների ստուգում․․․",

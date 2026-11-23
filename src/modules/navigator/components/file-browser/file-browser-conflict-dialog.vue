@@ -106,6 +106,15 @@ const defaultRowResolution = computed((): ConflictResolution => {
 
 const rowResolutions = ref<Record<string, ConflictResolution>>({});
 
+function isResolutionAllowed(conflict: ConflictItem, resolution: ConflictResolution): boolean {
+  return resolution !== 'replace' || !conflict.replace_removes_source;
+}
+
+function getRowResolution(conflict: ConflictItem): ConflictResolution {
+  const resolution = rowResolutions.value[conflict.destination_path] ?? defaultRowResolution.value;
+  return isResolutionAllowed(conflict, resolution) ? resolution : defaultRowResolution.value;
+}
+
 watch(
   () => [props.conflicts, props.operationType] as const,
   () => {
@@ -126,13 +135,10 @@ watch(
 );
 
 const replaceCount = computed(() => {
-  const fallback = defaultRowResolution.value;
   let count = 0;
 
   for (const conflict of visibleConflicts.value) {
-    const resolution = rowResolutions.value[conflict.destination_path] ?? fallback;
-
-    if (resolution === 'replace') {
+    if (getRowResolution(conflict) === 'replace') {
       count += 1;
     }
   }
@@ -167,7 +173,9 @@ function applyAllTo(resolution: ConflictResolution) {
   const next: Record<string, ConflictResolution> = {};
 
   for (const conflict of visibleConflicts.value) {
-    next[conflict.destination_path] = resolution;
+    if (isResolutionAllowed(conflict, resolution)) {
+      next[conflict.destination_path] = resolution;
+    }
   }
 
   rowResolutions.value = {
@@ -191,7 +199,7 @@ function handleConfirm() {
 
     return {
       destination_path: conflict.destination_path,
-      resolution: rowResolutions.value[conflict.destination_path] ?? defaultRowResolution.value,
+      resolution: getRowResolution(conflict),
     };
   });
 
@@ -324,7 +332,13 @@ const resolutionSelectOptions = computed(() => {
             <div class="conflict-dialog__row-main">
               <span class="conflict-dialog__row-path">{{ conflict.relative_path || conflict.source_name }}</span>
               <span
-                v-if="conflict.source_is_dir !== conflict.destination_is_dir"
+                v-if="conflict.replace_removes_source"
+                class="conflict-dialog__row-hint"
+              >
+                {{ t('conflictDialog.replaceBlockedContainsSource') }}
+              </span>
+              <span
+                v-else-if="conflict.source_is_dir !== conflict.destination_is_dir"
                 class="conflict-dialog__row-hint"
               >
                 {{ t('conflictDialog.typeMismatch') }}
@@ -352,7 +366,7 @@ const resolutionSelectOptions = computed(() => {
             </div>
             <Select
               class="conflict-dialog__row-select"
-              :model-value="rowResolutions[conflict.destination_path] ?? defaultRowResolution"
+              :model-value="getRowResolution(conflict)"
               @update:model-value="setRowResolution(conflict.destination_path, $event)"
             >
               <SelectTrigger
@@ -366,6 +380,7 @@ const resolutionSelectOptions = computed(() => {
                   v-for="option in resolutionSelectOptions"
                   :key="option.value"
                   :value="option.value"
+                  :disabled="!isResolutionAllowed(conflict, option.value)"
                 >
                   {{ option.label }}
                 </SelectItem>

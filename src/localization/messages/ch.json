@@ -902,6 +902,7 @@
     "applyToAll": "全部应用",
     "continue": "继续",
     "typeMismatch": "此路径上文件夹与文件类型不一致",
+    "replaceBlockedContainsSource": "无法替换：其中包含源项目",
     "actionForItem": "此冲突的操作",
     "replaceOverview": "{total} 项中的 {replaced} 项将在目标位置被替换",
     "checkingConflicts": "正在检查冲突…",

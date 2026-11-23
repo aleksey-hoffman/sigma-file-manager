@@ -440,10 +440,23 @@ where
     Ok(downloaded)
 }
 
+const MAX_RELEASE_REDIRECTS: usize = 10;
+
+fn should_follow_release_redirect(url: &str, previous_hops: usize) -> bool {
+    previous_hops < MAX_RELEASE_REDIRECTS && validate_github_release_download_url(url).is_ok()
+}
+
 fn build_http_client(timeout_secs: u64) -> Result<reqwest::Client, reqwest::Error> {
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(CONNECT_TIMEOUT_SECS))
         .timeout(Duration::from_secs(timeout_secs))
+        .redirect(reqwest::redirect::Policy::custom(|attempt| {
+            if should_follow_release_redirect(attempt.url().as_str(), attempt.previous().len()) {
+                attempt.follow()
+            } else {
+                attempt.error("Redirect target is not an allowed GitHub release URL")
+            }
+        }))
         .build()
 }
 
@@ -682,6 +695,26 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Write;
+
+    #[test]
+    fn release_redirects_follow_github_hosts_only() {
+        assert!(should_follow_release_redirect(
+            "https://release-assets.githubusercontent.com/github-production-release-asset/1/setup.exe",
+            1
+        ));
+        assert!(!should_follow_release_redirect(
+            "https://example.com/setup.exe",
+            1
+        ));
+        assert!(!should_follow_release_redirect(
+            "http://objects.githubusercontent.com/setup.exe",
+            1
+        ));
+        assert!(!should_follow_release_redirect(
+            "https://objects.githubusercontent.com/setup.exe",
+            MAX_RELEASE_REDIRECTS
+        ));
+    }
 
     #[test]
     fn semver_filter_rejects_non_app_tags() {

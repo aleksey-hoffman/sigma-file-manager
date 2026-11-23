@@ -4,12 +4,14 @@
 
 use std::path::{Path, PathBuf};
 
-use axum::body::Body;
+use axum::body::{Body, Bytes};
 use axum::extract::{DefaultBodyLimit, Multipart, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::Router;
+use futures_util::{Stream, StreamExt};
+use tokio::io::AsyncWriteExt;
 
 use crate::utils::unique_path_with_index;
 
@@ -267,14 +269,10 @@ async fn ftp_upload_handler(
             None => continue,
         };
 
-        let dest_path = get_unique_path(&target_dir.join(&safe_name));
-
-        let bytes = match field.bytes().await {
-            Ok(bytes) => bytes,
-            Err(_) => continue,
-        };
-
-        if tokio::fs::write(&dest_path, &bytes).await.is_ok() {
+        if save_upload_stream(&target_dir.join(&safe_name), field)
+            .await
+            .is_ok()
+        {
             uploaded_count += 1;
         }
     }
@@ -288,4 +286,119 @@ async fn ftp_upload_handler(
 
 fn get_unique_path(path: &Path) -> PathBuf {
     unique_path_with_index(path, 1, "file", None, None)
+}
+
+async fn create_unique_upload_file(target: &Path) -> std::io::Result<(PathBuf, tokio::fs::File)> {
+    let mut last_error = None;
+
+    for _ in 0..16 {
+        let candidate = get_unique_path(target);
+        match tokio::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&candidate)
+            .await
+        {
+            Ok(file) => return Ok((candidate, file)),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                last_error = Some(error);
+            }
+            Err(error) => return Err(error),
+        }
+    }
+
+    Err(last_error.unwrap_or_else(|| std::io::Error::other("No free upload file name")))
+}
+
+async fn save_upload_stream<ChunkStream, ChunkError>(
+    target: &Path,
+    chunks: ChunkStream,
+) -> std::io::Result<PathBuf>
+where
+    ChunkStream: Stream<Item = Result<Bytes, ChunkError>>,
+    ChunkError: std::fmt::Display,
+{
+    let mut chunks = std::pin::pin!(chunks);
+    let (path, mut file) = create_unique_upload_file(target).await?;
+
+    let written = async {
+        while let Some(chunk) = chunks.next().await {
+            let bytes = chunk.map_err(|error| std::io::Error::other(error.to_string()))?;
+            file.write_all(&bytes).await?;
+        }
+        file.flush().await
+    }
+    .await;
+
+    if let Err(error) = written {
+        drop(file);
+        let _ = tokio::fs::remove_file(&path).await;
+        return Err(error);
+    }
+
+    Ok(path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use futures_util::stream;
+
+    fn chunk(text: &str) -> Result<Bytes, String> {
+        Ok(Bytes::from(text.to_string()))
+    }
+
+    #[tokio::test]
+    async fn upload_is_written_chunk_by_chunk() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("photo.jpg");
+
+        let saved = save_upload_stream(&target, stream::iter(vec![chunk("ab"), chunk("cd")]))
+            .await
+            .unwrap();
+
+        assert_eq!(saved, target);
+        assert_eq!(std::fs::read(&target).unwrap(), b"abcd");
+    }
+
+    #[tokio::test]
+    async fn upload_never_overwrites_an_existing_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("photo.jpg");
+        std::fs::write(&target, b"existing").unwrap();
+
+        let saved = save_upload_stream(&target, stream::iter(vec![chunk("new")]))
+            .await
+            .unwrap();
+
+        assert_eq!(std::fs::read(&target).unwrap(), b"existing");
+        assert_eq!(saved, temp.path().join("photo (1).jpg"));
+        assert_eq!(std::fs::read(&saved).unwrap(), b"new");
+    }
+
+    #[tokio::test]
+    async fn failed_upload_removes_the_partial_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("photo.jpg");
+        let chunks = stream::iter(vec![chunk("ab"), Err("connection lost".to_string())]);
+
+        assert!(save_upload_stream(&target, chunks).await.is_err());
+        assert!(!target.exists());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn upload_does_not_write_through_a_dangling_symlink() {
+        let temp = tempfile::tempdir().unwrap();
+        let outside = temp.path().join("outside.txt");
+        let share = temp.path().join("share");
+        std::fs::create_dir_all(&share).unwrap();
+        std::os::unix::fs::symlink(&outside, share.join("photo.jpg")).unwrap();
+
+        save_upload_stream(&share.join("photo.jpg"), stream::iter(vec![chunk("new")]))
+            .await
+            .unwrap();
+
+        assert!(!outside.exists());
+    }
 }

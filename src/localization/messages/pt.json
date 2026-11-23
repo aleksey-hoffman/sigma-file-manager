@@ -901,6 +901,7 @@
     "applyToAll": "Aplicar a todos",
     "continue": "Continuar",
     "typeMismatch": "Pasta e ficheiro diferem neste caminho",
+    "replaceBlockedContainsSource": "Não é possível substituir: contém o item de origem",
     "actionForItem": "Ação para este conflito",
     "replaceOverview": "{replaced} de {total} itens serão substituídos no destino",
     "checkingConflicts": "A verificar conflitos…",

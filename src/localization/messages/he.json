@@ -932,6 +932,7 @@
     "applyToAll": "החל על הכול",
     "continue": "המשך",
     "typeMismatch": "תיקייה וקובץ נבדלים בנתיב זה",
+    "replaceBlockedContainsSource": "לא ניתן להחליף: מכיל את פריט המקור",
     "actionForItem": "פעולה עבור התנגשות זו",
     "replaceOverview": "{replaced} מתוך {total} פריטים יוחלפו ביעד",
     "checkingConflicts": "בודק התנגשויות…",

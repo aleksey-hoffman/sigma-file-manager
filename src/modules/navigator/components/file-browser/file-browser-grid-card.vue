@@ -600,8 +600,10 @@ watch(imagePreviewPlaceholderSrc, () => {
 }
 
 .file-browser-grid-card--folder-meter-large .file-browser-grid-card__name {
+  height: 20px;
   font-size: 14px;
   font-weight: 600;
+  line-height: 20px;
 }
 
 .file-browser-grid-card--folder-meter .file-browser-grid-card__overlay-container {
@@ -711,8 +713,11 @@ watch(imagePreviewPlaceholderSrc, () => {
 
 .file-browser-grid-card__name {
   overflow: hidden;
+  height: 18px;
+  flex-shrink: 0;
   font-size: 13px;
   font-weight: 500;
+  line-height: 18px;
   overflow-wrap: break-word;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -720,9 +725,12 @@ watch(imagePreviewPlaceholderSrc, () => {
 
 .file-browser-grid-card__meta {
   display: flex;
+  height: 16px;
+  flex-shrink: 0;
   align-items: center;
   font-size: 11px;
   gap: 6px;
+  line-height: 16px;
   opacity: 0.8;
 }
 

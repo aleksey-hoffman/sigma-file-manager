@@ -932,6 +932,7 @@
     "applyToAll": "Uporabi za vse",
     "continue": "Nadaljuj",
     "typeMismatch": "Mapa in datoteka se na tej poti razlikujeta",
+    "replaceBlockedContainsSource": "Ni mogoče zamenjati: vsebuje izvorni element",
     "actionForItem": "Dejanje za ta spor",
     "replaceOverview": "{replaced} od {total} predmetov bo zamenjanih na cilju",
     "checkingConflicts": "Preverjanje sporov …",

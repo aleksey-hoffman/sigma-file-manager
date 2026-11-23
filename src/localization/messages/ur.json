@@ -932,6 +932,7 @@
     "applyToAll": "سب پر لاگو کریں",
     "continue": "جاری رکھیں",
     "typeMismatch": "اس راستے پر فولڈر اور فائل مختلف ہیں",
+    "replaceBlockedContainsSource": "تبدیل نہیں کیا جا سکتا: اس میں ماخذ آئٹم موجود ہے",
     "actionForItem": "اس تنازع کے لیے عمل",
     "replaceOverview": "{total} میں سے {replaced} اشیاء منزل پر تبدیل کی جائیں گی",
     "checkingConflicts": "تصادمات کی جانچ ہو رہی ہے…",

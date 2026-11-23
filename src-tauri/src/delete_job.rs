@@ -2,10 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use crate::utils::{delete_path_to_trash, minimize_delete_paths, normalize_path};
+use crate::utils::{
+    delete_path_to_trash, minimize_delete_paths, normalize_path, path_entry_exists,
+    remove_dir_or_file,
+};
 use serde::Serialize;
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
@@ -83,7 +85,7 @@ fn run_delete_blocking(
             Some(total_paths),
         ));
 
-        if !path.exists() {
+        if !path_entry_exists(path) {
             failed_count += 1;
             last_error = Some(format!("Path does not exist: {}", normalized));
             let pct_after = (((index + 1) as u32) * 100 / total).min(100);
@@ -98,10 +100,8 @@ fn run_delete_blocking(
 
         let result = if use_trash {
             delete_path_to_trash(path, &normalized)
-        } else if path.is_dir() {
-            fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {
-            fs::remove_file(path).map_err(|error| error.to_string())
+            remove_dir_or_file(path)
         };
 
         match result {

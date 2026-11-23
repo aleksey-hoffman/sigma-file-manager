@@ -3,8 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    delete_path_to_trash, minimize_delete_paths, normalize_path,
-    source_and_destination_same_directory, unique_path_with_index,
+    delete_path_to_trash, minimize_delete_paths, normalize_path, path_entry_exists,
+    remove_dir_or_file, source_and_destination_same_directory, unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -45,6 +45,7 @@ pub struct ConflictItem {
     pub destination_size: Option<u64>,
     pub destination_modified_ms: Option<u64>,
     pub relative_path: String,
+    pub replace_removes_source: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,11 +98,23 @@ fn copy_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
     }
     #[cfg(windows)]
     {
+        use std::os::windows::fs::FileTypeExt;
+
         let meta = fs::symlink_metadata(source)?;
-        if meta.is_dir() {
-            std::os::windows::fs::symlink_dir(&target, dest)
-        } else {
-            std::os::windows::fs::symlink_file(&target, dest)
+        if !meta.file_type().is_symlink_dir() {
+            return std::os::windows::fs::symlink_file(&target, dest);
+        }
+
+        match std::os::windows::fs::symlink_dir(&target, dest) {
+            Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
+                let absolute_target = match source.parent() {
+                    Some(parent) if target.is_relative() => parent.join(&target),
+                    _ => target.clone(),
+                };
+                crate::link_operations::create_junction(&absolute_target, dest, true)
+                    .map_err(|_| error)
+            }
+            result => result,
         }
     }
     #[cfg(not(any(unix, windows)))]
@@ -133,6 +146,159 @@ fn symlink_create_failed_use_file_copy_instead(error: &std::io::Error) -> bool {
     }
 }
 
+const CANCELLED_MESSAGE: &str = "Operation cancelled";
+
+thread_local! {
+    static ACTIVE_CANCEL_FLAG: std::cell::RefCell<Option<Arc<AtomicBool>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+struct CancelScope;
+
+impl CancelScope {
+    fn enter(cancel: Option<&Arc<AtomicBool>>) -> Self {
+        ACTIVE_CANCEL_FLAG.with(|flag| *flag.borrow_mut() = cancel.cloned());
+        CancelScope
+    }
+}
+
+impl Drop for CancelScope {
+    fn drop(&mut self) {
+        ACTIVE_CANCEL_FLAG.with(|flag| *flag.borrow_mut() = None);
+    }
+}
+
+fn active_cancel_flag() -> Option<Arc<AtomicBool>> {
+    ACTIVE_CANCEL_FLAG.with(|flag| flag.borrow().clone())
+}
+
+fn is_cancel_requested() -> bool {
+    active_cancel_flag().is_some_and(|flag| flag.load(Ordering::Relaxed))
+}
+
+fn cancelled_io_error() -> std::io::Error {
+    std::io::Error::new(std::io::ErrorKind::Interrupted, CANCELLED_MESSAGE)
+}
+
+fn is_cancelled_io_error(error: &std::io::Error) -> bool {
+    error.kind() == std::io::ErrorKind::Interrupted && error.to_string() == CANCELLED_MESSAGE
+}
+
+fn copy_error_message(dest: &Path, error: &std::io::Error) -> String {
+    if is_cancelled_io_error(error) {
+        CANCELLED_MESSAGE.to_string()
+    } else {
+        format!("{}: {}", dest.display(), error)
+    }
+}
+
+#[cfg(windows)]
+fn copy_file_cancellable(
+    source: &Path,
+    dest: &Path,
+    cancel: &Arc<AtomicBool>,
+) -> std::io::Result<u64> {
+    const PROGRESS_CONTINUE: u32 = 0;
+    const PROGRESS_CANCEL: u32 = 1;
+    const ERROR_REQUEST_ABORTED: i32 = 1235;
+
+    unsafe extern "system" fn progress_routine(
+        _total_file_size: i64,
+        _total_bytes_transferred: i64,
+        _stream_size: i64,
+        _stream_bytes_transferred: i64,
+        _stream_number: u32,
+        _callback_reason: u32,
+        _source_file: *mut std::ffi::c_void,
+        _destination_file: *mut std::ffi::c_void,
+        data: *const std::ffi::c_void,
+    ) -> u32 {
+        let cancel = unsafe { &*(data as *const AtomicBool) };
+        if cancel.load(Ordering::Relaxed) {
+            PROGRESS_CANCEL
+        } else {
+            PROGRESS_CONTINUE
+        }
+    }
+
+    let source_wide = wide_path(source);
+    let dest_wide = wide_path(dest);
+    let cancel_pointer: *const AtomicBool = Arc::as_ptr(cancel);
+    let copied = unsafe {
+        CopyFileExW(
+            source_wide.as_ptr(),
+            dest_wide.as_ptr(),
+            Some(progress_routine),
+            cancel_pointer.cast(),
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+
+    if copied != 0 {
+        return fs::metadata(dest).map(|metadata| metadata.len());
+    }
+
+    let error = std::io::Error::last_os_error();
+    if error.raw_os_error() == Some(ERROR_REQUEST_ABORTED) {
+        let _ = fs::remove_file(dest);
+        return Err(cancelled_io_error());
+    }
+    Err(error)
+}
+
+#[cfg(target_os = "linux")]
+fn copy_file_cancellable(
+    source: &Path,
+    dest: &Path,
+    cancel: &Arc<AtomicBool>,
+) -> std::io::Result<u64> {
+    use std::io::Read;
+
+    const CHUNK_BYTES: u64 = 64 * 1024 * 1024;
+
+    let mut source_file = fs::File::open(source)?;
+    let permissions = source_file.metadata()?.permissions();
+    let mut dest_file = fs::File::create(dest)?;
+    let mut copied_bytes = 0u64;
+
+    loop {
+        if cancel.load(Ordering::Relaxed) {
+            drop(dest_file);
+            let _ = fs::remove_file(dest);
+            return Err(cancelled_io_error());
+        }
+
+        let chunk_bytes = std::io::copy(&mut (&mut source_file).take(CHUNK_BYTES), &mut dest_file)?;
+        if chunk_bytes == 0 {
+            break;
+        }
+        copied_bytes += chunk_bytes;
+    }
+
+    dest_file.set_permissions(permissions)?;
+    Ok(copied_bytes)
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
+fn copy_file_cancellable(
+    source: &Path,
+    dest: &Path,
+    cancel: &Arc<AtomicBool>,
+) -> std::io::Result<u64> {
+    if cancel.load(Ordering::Relaxed) {
+        return Err(cancelled_io_error());
+    }
+    fs::copy(source, dest)
+}
+
+fn copy_file_once(source: &Path, dest: &Path) -> std::io::Result<u64> {
+    match active_cancel_flag() {
+        Some(cancel) => copy_file_cancellable(source, dest, &cancel),
+        None => fs::copy(source, dest),
+    }
+}
+
 fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
     #[cfg(windows)]
     {
@@ -140,7 +306,7 @@ fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
             if attempt > 0 {
                 std::thread::sleep(std::time::Duration::from_millis(20 * attempt as u64));
             }
-            match fs::copy(source, dest) {
+            match copy_file_once(source, dest) {
                 Ok(bytes) => return Ok(bytes),
                 Err(err) => {
                     let transient = matches!(err.raw_os_error(), Some(32) | Some(33) | Some(5),);
@@ -154,7 +320,7 @@ fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
     }
     #[cfg(not(windows))]
     {
-        fs::copy(source, dest)
+        copy_file_once(source, dest)
     }
 }
 
@@ -168,7 +334,7 @@ fn count_copy_units_with_progress(
 ) -> Result<u64, String> {
     if let Some(cancel_flag) = cancel {
         if cancel_flag.load(Ordering::Relaxed) {
-            return Err("Operation cancelled".to_string());
+            return Err(CANCELLED_MESSAGE.to_string());
         }
     }
     let meta =
@@ -251,6 +417,62 @@ fn emit_item_progress(
     progress_fn(pct, detail, Some(local_done), Some(local_total));
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EntryKind {
+    Missing,
+    Dir,
+    Leaf,
+}
+
+fn entry_kind(path: &Path) -> EntryKind {
+    match fs::symlink_metadata(path) {
+        Err(_) => EntryKind::Missing,
+        Ok(metadata) if metadata.is_dir() => EntryKind::Dir,
+        Ok(_) => EntryKind::Leaf,
+    }
+}
+
+fn is_regular_file(path: &Path) -> bool {
+    fs::symlink_metadata(path)
+        .map(|metadata| metadata.is_file())
+        .unwrap_or(false)
+}
+
+fn copy_leaf(source: &Path, dest: &Path) -> Result<(), String> {
+    let metadata =
+        fs::symlink_metadata(source).map_err(|error| format!("{}: {}", source.display(), error))?;
+
+    if !metadata.file_type().is_symlink() {
+        return copy_file_resilient(source, dest)
+            .map(|_| ())
+            .map_err(|error| copy_error_message(dest, &error));
+    }
+
+    match copy_symlink(source, dest) {
+        Ok(()) => Ok(()),
+        Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
+            if source.is_dir() {
+                copy_dir_recursive(source, dest)
+            } else {
+                copy_file_resilient(source, dest)
+                    .map(|_| ())
+                    .map_err(|copy_error| copy_error_message(dest, &copy_error))
+            }
+        }
+        Err(error) => Err(format!("{}: {}", dest.display(), error)),
+    }
+}
+
+fn copy_top_level_leaf(source: &Path, dest: &Path) -> Result<(), String> {
+    if !source.exists() {
+        return copy_leaf(source, dest);
+    }
+
+    copy_file_resilient(source, dest)
+        .map(|_| ())
+        .map_err(|error| copy_error_message(dest, &error))
+}
+
 fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
     if !destination.exists() {
         fs::create_dir_all(destination)
@@ -268,32 +490,13 @@ fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
 
     for entry in entries {
         let source_path = entry.path();
-        let meta = fs::symlink_metadata(&source_path)
-            .map_err(|error| format!("{}: {}", source_path.display(), error))?;
         let file_name = source_path.file_name().ok_or("Invalid file name")?;
         let dest_path = destination.join(file_name);
 
-        if meta.file_type().is_symlink() {
-            match copy_symlink(&source_path, &dest_path) {
-                Ok(()) => {}
-                Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
-                    if meta.is_dir() {
-                        copy_dir_recursive(&source_path, &dest_path)?;
-                    } else {
-                        copy_file_resilient(&source_path, &dest_path).map_err(|copy_error| {
-                            format!("{}: {}", dest_path.display(), copy_error)
-                        })?;
-                    }
-                }
-                Err(error) => {
-                    return Err(format!("{}: {}", dest_path.display(), error));
-                }
-            }
-        } else if meta.is_dir() {
+        if entry_kind(&source_path) == EntryKind::Dir {
             copy_dir_recursive(&source_path, &dest_path)?;
         } else {
-            copy_file_resilient(&source_path, &dest_path)
-                .map_err(|error| format!("{}: {}", dest_path.display(), error))?;
+            copy_leaf(&source_path, &dest_path)?;
         }
     }
 
@@ -317,7 +520,7 @@ fn copy_dir_recursive_with_progress(
 ) -> Result<(), String> {
     if let Some(cancel_flag) = cancel {
         if cancel_flag.load(Ordering::Relaxed) {
-            return Err("Operation cancelled".to_string());
+            return Err(CANCELLED_MESSAGE.to_string());
         }
     }
 
@@ -355,7 +558,7 @@ fn copy_dir_recursive_with_progress(
     for entry in entries {
         if let Some(cancel_flag) = cancel {
             if cancel_flag.load(Ordering::Relaxed) {
-                return Err("Operation cancelled".to_string());
+                return Err(CANCELLED_MESSAGE.to_string());
             }
         }
 
@@ -389,7 +592,7 @@ fn copy_dir_recursive_with_progress(
                     );
                 }
                 Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
-                    if meta.is_dir() {
+                    if source_path.is_dir() {
                         copy_dir_recursive_with_progress(
                             &source_path,
                             &dest_path,
@@ -588,6 +791,7 @@ fn push_file_conflict(
         destination_size,
         destination_modified_ms,
         relative_path: relative_path.to_string(),
+        replace_removes_source: replace_would_remove_source(source_path, dest_path),
     });
 }
 
@@ -615,15 +819,32 @@ fn push_type_mismatch_conflict(
             .file_name()
             .map(|name| name.to_string_lossy().to_string())
             .unwrap_or_default(),
-        source_is_dir: source_path.is_dir(),
+        source_is_dir: entry_kind(source_path) == EntryKind::Dir,
         source_size,
         source_modified_ms: None,
         destination_path: dest_path.to_string_lossy().to_string(),
-        destination_is_dir: dest_path.is_dir(),
+        destination_is_dir: entry_kind(dest_path) == EntryKind::Dir,
         destination_size,
         destination_modified_ms: None,
         relative_path: relative_path.to_string(),
+        replace_removes_source: replace_would_remove_source(source_path, dest_path),
     });
+}
+
+fn push_conflict_for_kinds(
+    source: &Path,
+    dest: &Path,
+    relative_path: &str,
+    out: &mut Vec<ConflictItem>,
+) {
+    match (entry_kind(source), entry_kind(dest)) {
+        (EntryKind::Missing, _) | (_, EntryKind::Missing) => {}
+        (EntryKind::Dir, EntryKind::Dir) => {
+            collect_merge_conflicts(source, dest, relative_path, out)
+        }
+        (EntryKind::Leaf, EntryKind::Leaf) => push_file_conflict(source, dest, relative_path, out),
+        _ => push_type_mismatch_conflict(source, dest, relative_path, out),
+    }
 }
 
 fn collect_merge_conflicts(
@@ -638,28 +859,12 @@ fn collect_merge_conflicts(
 
     for entry in entries.flatten() {
         let child_source = entry.path();
-        let child_name = match child_source.file_name() {
-            Some(name) => name,
-            None => continue,
+        let Some(child_name) = child_source.file_name() else {
+            continue;
         };
         let child_dest = dest.join(child_name);
         let rel = join_relative(relative_prefix, &child_name.to_string_lossy());
-
-        if child_source.is_file() {
-            if child_dest.exists() {
-                if child_dest.is_file() {
-                    push_file_conflict(&child_source, &child_dest, &rel, out);
-                } else if child_dest.is_dir() {
-                    push_type_mismatch_conflict(&child_source, &child_dest, &rel, out);
-                }
-            }
-        } else if child_source.is_dir() && child_dest.exists() {
-            if child_dest.is_dir() {
-                collect_merge_conflicts(&child_source, &child_dest, &rel, out);
-            } else {
-                push_type_mismatch_conflict(&child_source, &child_dest, &rel, out);
-            }
-        }
+        push_conflict_for_kinds(&child_source, &child_dest, &rel, out);
     }
 }
 
@@ -667,46 +872,22 @@ fn check_conflicts_sync(source_paths: Vec<String>, destination_path: String) -> 
     let destination = Path::new(&destination_path);
     let mut conflicts = Vec::new();
 
-    if !destination.exists() || !destination.is_dir() {
+    if !destination.is_dir() {
         return conflicts;
     }
 
     for source_path_str in &source_paths {
         let source = Path::new(source_path_str);
-
-        if !source.exists() {
+        let Some(file_name) = source.file_name() else {
             continue;
-        }
-
-        let file_name = match source.file_name() {
-            Some(name) => name.to_string_lossy().to_string(),
-            None => continue,
         };
-
-        let dest_item_path = destination.join(&file_name);
-
-        if !dest_item_path.exists() {
-            continue;
-        }
-
-        let relative_top = file_name.replace('\\', "/");
-
-        if source.is_file() {
-            if dest_item_path.is_file() {
-                push_file_conflict(source, &dest_item_path, &relative_top, &mut conflicts);
-            } else {
-                push_type_mismatch_conflict(source, &dest_item_path, &relative_top, &mut conflicts);
-            }
-            continue;
-        }
-
-        if source.is_dir() {
-            if dest_item_path.is_file() {
-                push_type_mismatch_conflict(source, &dest_item_path, &relative_top, &mut conflicts);
-            } else if dest_item_path.is_dir() {
-                collect_merge_conflicts(source, &dest_item_path, &relative_top, &mut conflicts);
-            }
-        }
+        let relative_top = file_name.to_string_lossy().replace('\\', "/");
+        push_conflict_for_kinds(
+            source,
+            &destination.join(file_name),
+            &relative_top,
+            &mut conflicts,
+        );
     }
 
     conflicts
@@ -722,12 +903,48 @@ pub async fn check_conflicts(
         .map_err(|_| "Conflict check task failed".to_string())
 }
 
-fn remove_dir_or_file(path: &Path) -> Result<(), String> {
-    if path.is_dir() {
-        fs::remove_dir_all(path).map_err(|error| error.to_string())
-    } else {
-        fs::remove_file(path).map_err(|error| error.to_string())
+fn resolved_entry_path(path: &Path) -> Option<PathBuf> {
+    let is_symlink = fs::symlink_metadata(path)
+        .map(|metadata| metadata.file_type().is_symlink())
+        .unwrap_or(false);
+
+    if !is_symlink {
+        if let Ok(canonical_path) = path.canonicalize() {
+            return Some(canonical_path);
+        }
     }
+
+    let parent = path.parent()?;
+    let name = path.file_name()?;
+    Some(parent.canonicalize().ok()?.join(name))
+}
+
+fn replace_would_remove_source(source: &Path, dest: &Path) -> bool {
+    let (Some(source_entry), Some(dest_entry)) =
+        (resolved_entry_path(source), resolved_entry_path(dest))
+    else {
+        return false;
+    };
+
+    if source_entry.starts_with(&dest_entry) {
+        return true;
+    }
+
+    matches!(
+        (source.canonicalize(), dest.canonicalize()),
+        (Ok(source_target), Ok(dest_target)) if source_target == dest_target
+    )
+}
+
+fn ensure_replace_keeps_source(source: &Path, dest: &Path) -> Result<(), String> {
+    if replace_would_remove_source(source, dest) {
+        return Err(format!(
+            "Cannot replace {}: it is or contains the item being transferred",
+            dest.display()
+        ));
+    }
+
+    Ok(())
 }
 
 fn is_dir_empty(path: &Path) -> bool {
@@ -792,14 +1009,12 @@ fn should_fallback_to_copy_delete(error: &std::io::Error, source: &Path, dest: &
 fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
     if let Err(rename_error) = fs::rename(source, dest) {
         if should_fallback_to_copy_delete(&rename_error, source, dest) {
-            if source.is_dir() {
+            if entry_kind(source) == EntryKind::Dir {
                 copy_dir_recursive(source, dest)?;
-                remove_dir_or_file(source)?;
             } else {
-                copy_file_resilient(source, dest).map_err(|copy_error| copy_error.to_string())?;
-                fs::remove_file(source).map_err(|remove_error| remove_error.to_string())?;
+                copy_leaf(source, dest)?;
             }
-            Ok(())
+            remove_dir_or_file(source)
         } else {
             Err(rename_error.to_string())
         }
@@ -834,33 +1049,59 @@ fn record_completed_move_after_copy_delete(
     }
 }
 
+fn copy_merge_children(
+    source: &Path,
+    dest: &Path,
+    resolutions: &HashMap<String, ConflictResolution>,
+    skipped_count: &mut u32,
+) -> Result<(), String> {
+    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        if is_cancel_requested() {
+            return Err(CANCELLED_MESSAGE.to_string());
+        }
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let file_name = source_path.file_name().ok_or("Invalid file name")?;
+        copy_merge(
+            &source_path,
+            &dest.join(file_name),
+            resolutions,
+            skipped_count,
+        )?;
+    }
+    Ok(())
+}
+
+fn unique_sibling_path(dest: &Path) -> Result<PathBuf, String> {
+    let parent = dest.parent().ok_or("No parent directory")?;
+    let name = dest.file_name().ok_or("Invalid destination file name")?;
+    Ok(get_unique_destination_path(
+        parent,
+        name.to_string_lossy().as_ref(),
+    ))
+}
+
 fn copy_merge(
     source: &Path,
     dest: &Path,
     resolutions: &HashMap<String, ConflictResolution>,
     skipped_count: &mut u32,
 ) -> Result<(), String> {
-    if !source.exists() {
+    let source_kind = entry_kind(source);
+
+    if source_kind == EntryKind::Missing {
         return Err(format!("Source path does not exist: {}", source.display()));
     }
 
     if normalize_path(&source.to_string_lossy()) == normalize_path(&dest.to_string_lossy()) {
-        if source.is_file() {
+        if source_kind == EntryKind::Leaf {
             return match get_path_resolution(resolutions, dest) {
                 ConflictResolution::Skip => {
                     *skipped_count += 1;
                     Ok(())
                 }
                 ConflictResolution::Replace => Ok(()),
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    copy_file_resilient(source, &unique_dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
+                ConflictResolution::AutoRename => copy_leaf(source, &unique_sibling_path(dest)?),
             };
         }
 
@@ -877,128 +1118,80 @@ fn copy_merge(
         return Ok(());
     }
 
-    if source.is_file() {
-        if !dest.exists() {
+    match (source_kind, entry_kind(dest)) {
+        (EntryKind::Leaf, EntryKind::Missing) => {
             if let Some(parent) = dest.parent() {
                 fs::create_dir_all(parent).map_err(|error| error.to_string())?;
             }
-            return copy_file_resilient(source, dest)
-                .map(|_| ())
-                .map_err(|error| error.to_string());
+            copy_leaf(source, dest)
         }
-
-        if dest.is_file() {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => copy_file_resilient(source, dest)
-                    .map(|_| ())
-                    .map_err(|error| error.to_string()),
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    copy_file_resilient(source, &unique_dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-            }
-        } else {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
-                    copy_file_resilient(source, dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    copy_file_resilient(source, &unique_dest)
-                        .map(|_| ())
-                        .map_err(|error| error.to_string())
-                }
-            }
+        (_, EntryKind::Missing) => {
+            fs::create_dir_all(dest).map_err(|error| error.to_string())?;
+            copy_merge_children(source, dest, resolutions, skipped_count)
         }
-    } else if !dest.exists() {
-        fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-        for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
-            let source_path = entry.path();
-            let file_name = source_path.file_name().ok_or("Invalid file name")?;
-            copy_merge(
-                &source_path,
-                &dest.join(file_name),
-                resolutions,
-                skipped_count,
-            )?;
-        }
-        Ok(())
-    } else if dest.is_file() {
-        match get_path_resolution(resolutions, dest) {
+        (EntryKind::Leaf, _) => match get_path_resolution(resolutions, dest) {
             ConflictResolution::Skip => {
                 *skipped_count += 1;
                 Ok(())
             }
             ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
+                if is_regular_file(source) && is_regular_file(dest) {
+                    copy_file_resilient(source, dest)
+                        .map(|_| ())
+                        .map_err(|error| error.to_string())
+                } else {
+                    remove_dir_or_file(dest)?;
+                    copy_leaf(source, dest)
+                }
+            }
+            ConflictResolution::AutoRename => copy_leaf(source, &unique_sibling_path(dest)?),
+        },
+        (_, EntryKind::Leaf) => match get_path_resolution(resolutions, dest) {
+            ConflictResolution::Skip => {
+                *skipped_count += 1;
+                Ok(())
+            }
+            ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
                 remove_dir_or_file(dest)?;
                 fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    copy_merge(
-                        &source_path,
-                        &dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                Ok(())
+                copy_merge_children(source, dest, resolutions, skipped_count)
             }
             ConflictResolution::AutoRename => {
-                let parent = dest.parent().ok_or("No parent directory")?;
-                let name = dest.file_name().ok_or("Invalid destination file name")?;
-                let unique_dest =
-                    get_unique_destination_path(parent, name.to_string_lossy().as_ref());
+                let unique_dest = unique_sibling_path(dest)?;
                 fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    copy_merge(
-                        &source_path,
-                        &unique_dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                Ok(())
+                copy_merge_children(source, &unique_dest, resolutions, skipped_count)
             }
-        }
-    } else {
-        for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
-            let source_path = entry.path();
-            let file_name = source_path.file_name().ok_or("Invalid file name")?;
-            copy_merge(
-                &source_path,
-                &dest.join(file_name),
-                resolutions,
-                skipped_count,
-            )?;
-        }
-        Ok(())
+        },
+        _ => copy_merge_children(source, dest, resolutions, skipped_count),
     }
+}
+
+fn move_merge_children(
+    source: &Path,
+    dest: &Path,
+    resolutions: &HashMap<String, ConflictResolution>,
+    skipped_count: &mut u32,
+) -> Result<(), String> {
+    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        if is_cancel_requested() {
+            return Err(CANCELLED_MESSAGE.to_string());
+        }
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let file_name = source_path.file_name().ok_or("Invalid file name")?;
+        move_merge(
+            &source_path,
+            &dest.join(file_name),
+            resolutions,
+            skipped_count,
+        )?;
+    }
+    if is_dir_empty(source) {
+        fs::remove_dir(source).map_err(|error| error.to_string())?;
+    }
+    Ok(())
 }
 
 fn move_merge(
@@ -1007,124 +1200,51 @@ fn move_merge(
     resolutions: &HashMap<String, ConflictResolution>,
     skipped_count: &mut u32,
 ) -> Result<(), String> {
-    if !source.exists() {
+    let source_kind = entry_kind(source);
+
+    if source_kind == EntryKind::Missing {
         return Err(format!("Source path does not exist: {}", source.display()));
     }
 
-    if source.is_file() {
-        if !dest.exists() {
+    match (source_kind, entry_kind(dest)) {
+        (_, EntryKind::Missing) => {
             if let Some(parent) = dest.parent() {
                 fs::create_dir_all(parent).map_err(|error| error.to_string())?;
             }
-            return try_rename_or_copy_delete(source, dest);
+            try_rename_or_copy_delete(source, dest)
         }
-
-        if dest.is_file() {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    remove_dir_or_file(dest)?;
-                    try_rename_or_copy_delete(source, dest)
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    try_rename_or_copy_delete(source, &unique_dest)
-                }
-            }
-        } else {
-            match get_path_resolution(resolutions, dest) {
-                ConflictResolution::Skip => {
-                    *skipped_count += 1;
-                    Ok(())
-                }
-                ConflictResolution::Replace => {
-                    fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
-                    try_rename_or_copy_delete(source, dest)
-                }
-                ConflictResolution::AutoRename => {
-                    let parent = dest.parent().ok_or("No parent directory")?;
-                    let name = dest.file_name().ok_or("Invalid destination file name")?;
-                    let unique_dest =
-                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    try_rename_or_copy_delete(source, &unique_dest)
-                }
-            }
-        }
-    } else if !dest.exists() {
-        if let Some(parent) = dest.parent() {
-            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-        }
-        try_rename_or_copy_delete(source, dest)
-    } else if dest.is_file() {
-        match get_path_resolution(resolutions, dest) {
+        (EntryKind::Leaf, _) => match get_path_resolution(resolutions, dest) {
             ConflictResolution::Skip => {
                 *skipped_count += 1;
                 Ok(())
             }
             ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
                 remove_dir_or_file(dest)?;
-                fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    move_merge(
-                        &source_path,
-                        &dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                if is_dir_empty(source) {
-                    fs::remove_dir(source).map_err(|error| error.to_string())?;
-                }
-                Ok(())
+                try_rename_or_copy_delete(source, dest)
             }
             ConflictResolution::AutoRename => {
-                let parent = dest.parent().ok_or("No parent directory")?;
-                let name = dest.file_name().ok_or("Invalid destination file name")?;
-                let unique_dest =
-                    get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
-                for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-                    let entry = entry.map_err(|error| error.to_string())?;
-                    let source_path = entry.path();
-                    let file_name = source_path.file_name().ok_or("Invalid file name")?;
-                    move_merge(
-                        &source_path,
-                        &unique_dest.join(file_name),
-                        resolutions,
-                        skipped_count,
-                    )?;
-                }
-                if is_dir_empty(source) {
-                    fs::remove_dir(source).map_err(|error| error.to_string())?;
-                }
+                try_rename_or_copy_delete(source, &unique_sibling_path(dest)?)
+            }
+        },
+        (_, EntryKind::Leaf) => match get_path_resolution(resolutions, dest) {
+            ConflictResolution::Skip => {
+                *skipped_count += 1;
                 Ok(())
             }
-        }
-    } else {
-        for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
-            let source_path = entry.path();
-            let file_name = source_path.file_name().ok_or("Invalid file name")?;
-            move_merge(
-                &source_path,
-                &dest.join(file_name),
-                resolutions,
-                skipped_count,
-            )?;
-        }
-        if is_dir_empty(source) {
-            fs::remove_dir(source).map_err(|error| error.to_string())?;
-        }
-        Ok(())
+            ConflictResolution::Replace => {
+                ensure_replace_keeps_source(source, dest)?;
+                remove_dir_or_file(dest)?;
+                fs::create_dir_all(dest).map_err(|error| error.to_string())?;
+                move_merge_children(source, dest, resolutions, skipped_count)
+            }
+            ConflictResolution::AutoRename => {
+                let unique_dest = unique_sibling_path(dest)?;
+                fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
+                move_merge_children(source, &unique_dest, resolutions, skipped_count)
+            }
+        },
+        _ => move_merge_children(source, dest, resolutions, skipped_count),
     }
 }
 
@@ -1178,6 +1298,7 @@ pub(crate) fn copy_items_impl(
         );
     }
 
+    let _cancel_scope = CancelScope::enter(cancel);
     let mut copied_count: u32 = 0;
     let mut failed_count: u32 = 0;
     let mut skipped_count: u32 = 0;
@@ -1202,7 +1323,7 @@ pub(crate) fn copy_items_impl(
             report_progress_for_item(progress, index, total, &detail, true);
         }
 
-        if !source.exists() {
+        if !path_entry_exists(source) {
             failed_count += 1;
             last_error = Some(format!("Source path does not exist: {}", source_path_str));
             report_progress_for_item(progress, index, total, &detail, false);
@@ -1229,6 +1350,9 @@ pub(crate) fn copy_items_impl(
                     copied_count += 1;
                     skipped_count += merge_skipped;
                 }
+                Err(error) if error == CANCELLED_MESSAGE => {
+                    cancelled = true;
+                }
                 Err(error) => {
                     failed_count += 1;
                     last_error = Some(error);
@@ -1242,7 +1366,7 @@ pub(crate) fn copy_items_impl(
             get_unique_destination_path(destination, &file_name)
         } else {
             let initial_dest = destination.join(&file_name);
-            if initial_dest.exists() {
+            if path_entry_exists(&initial_dest) {
                 let resolution = legacy_resolution.unwrap_or(ConflictResolution::AutoRename);
                 match resolution {
                     ConflictResolution::Skip => {
@@ -1251,7 +1375,9 @@ pub(crate) fn copy_items_impl(
                         continue;
                     }
                     ConflictResolution::Replace => {
-                        if let Err(error) = remove_dir_or_file(&initial_dest) {
+                        if let Err(error) = ensure_replace_keeps_source(source, &initial_dest)
+                            .and_then(|()| remove_dir_or_file(&initial_dest))
+                        {
                             failed_count += 1;
                             last_error = Some(error);
                             report_progress_for_item(progress, index, total, &detail, false);
@@ -1287,7 +1413,7 @@ pub(crate) fn copy_items_impl(
             ) {
                 Ok(total) => weighted_local_total = total,
                 Err(error) => {
-                    if error == "Operation cancelled" {
+                    if error == CANCELLED_MESSAGE {
                         cancelled = true;
                     } else {
                         failed_count += 1;
@@ -1338,8 +1464,8 @@ pub(crate) fn copy_items_impl(
                     .file_name()
                     .map(|name| name.to_string_lossy().to_string())
                     .unwrap_or_default();
-                match copy_file_resilient(source, &dest_path) {
-                    Ok(_) => {
+                match copy_top_level_leaf(source, &dest_path) {
+                    Ok(()) => {
                         local_done += 1;
                         emit_item_progress(
                             progress,
@@ -1354,7 +1480,7 @@ pub(crate) fn copy_items_impl(
                         );
                         Ok(())
                     }
-                    Err(error) => Err(format!("{}: {}", dest_path.display(), error)),
+                    Err(error) => Err(error),
                 }
             };
             if result.is_ok() {
@@ -1392,9 +1518,7 @@ pub(crate) fn copy_items_impl(
                 &mut inner_last_error,
             )
         } else {
-            copy_file_resilient(source, &dest_path)
-                .map(|_| ())
-                .map_err(|error| format!("{}: {}", dest_path.display(), error))
+            copy_top_level_leaf(source, &dest_path)
         };
 
         let copy_failed = copy_result.is_err();
@@ -1408,7 +1532,7 @@ pub(crate) fn copy_items_impl(
                 }
             }
             Err(error) => {
-                if error == "Operation cancelled" {
+                if error == CANCELLED_MESSAGE {
                     cancelled = true;
                 } else {
                     failed_count += 1 + inner_failed;
@@ -1511,6 +1635,7 @@ pub(crate) fn move_items_impl(
 
     let mut moved_count: u32 = 0;
     let mut failed_count: u32 = 0;
+    let _cancel_scope = CancelScope::enter(cancel);
     let mut skipped_count: u32 = 0;
     let mut moved_paths: Vec<MovedPathPair> = Vec::new();
     let mut last_error: Option<String> = None;
@@ -1534,7 +1659,7 @@ pub(crate) fn move_items_impl(
             report_progress_for_item(progress, index, total, &detail, true);
         }
 
-        if !source.exists() {
+        if !path_entry_exists(source) {
             failed_count += 1;
             last_error = Some(format!("Source path does not exist: {}", source_path_str));
             report_progress_for_item(progress, index, total, &detail, false);
@@ -1567,6 +1692,9 @@ pub(crate) fn move_items_impl(
                     skipped_count += merge_skipped;
                     moved_paths.push(moved_path_pair(source, &dest_path));
                 }
+                Err(error) if error == CANCELLED_MESSAGE => {
+                    cancelled = true;
+                }
                 Err(error) => {
                     failed_count += 1;
                     last_error = Some(error);
@@ -1578,7 +1706,7 @@ pub(crate) fn move_items_impl(
 
         let dest_path = destination.join(&file_name);
 
-        let final_dest_path = if dest_path.exists() {
+        let final_dest_path = if path_entry_exists(&dest_path) {
             let resolution = legacy_resolution.unwrap_or(ConflictResolution::Skip);
             match resolution {
                 ConflictResolution::Skip => {
@@ -1587,7 +1715,9 @@ pub(crate) fn move_items_impl(
                     continue;
                 }
                 ConflictResolution::Replace => {
-                    if let Err(error) = remove_dir_or_file(&dest_path) {
+                    if let Err(error) = ensure_replace_keeps_source(source, &dest_path)
+                        .and_then(|()| remove_dir_or_file(&dest_path))
+                    {
                         failed_count += 1;
                         last_error = Some(error);
                         report_progress_for_item(progress, index, total, &detail, false);
@@ -1614,9 +1744,10 @@ pub(crate) fn move_items_impl(
             }
             Err(error) => {
                 if should_fallback_to_copy_delete(&error, source, &final_dest_path) {
+                    let source_is_dir = entry_kind(source) == EntryKind::Dir;
                     let mut weighted_local_total = 1u64;
                     let mut count_failed = false;
-                    if progress.is_some() && source.is_dir() {
+                    if progress.is_some() && source_is_dir {
                         if let Some(pfn) = progress.as_mut() {
                             pfn(0, format!("{} · Preparing", detail), Some(0), None);
                         }
@@ -1632,7 +1763,7 @@ pub(crate) fn move_items_impl(
                         ) {
                             Ok(total) => weighted_local_total = total,
                             Err(copy_error) => {
-                                if copy_error == "Operation cancelled" {
+                                if copy_error == CANCELLED_MESSAGE {
                                     cancelled = true;
                                 } else {
                                     failed_count += 1;
@@ -1663,7 +1794,7 @@ pub(crate) fn move_items_impl(
                             &mut last_emitted_pct,
                             true,
                         );
-                        let inner = if source.is_dir() {
+                        let inner = if source_is_dir {
                             copy_dir_recursive_with_progress(
                                 source,
                                 &final_dest_path,
@@ -1684,8 +1815,8 @@ pub(crate) fn move_items_impl(
                                 .file_name()
                                 .map(|name| name.to_string_lossy().to_string())
                                 .unwrap_or_default();
-                            match copy_file_resilient(source, &final_dest_path) {
-                                Ok(_) => {
+                            match copy_leaf(source, &final_dest_path) {
+                                Ok(()) => {
                                     local_done += 1;
                                     emit_item_progress(
                                         progress,
@@ -1700,9 +1831,7 @@ pub(crate) fn move_items_impl(
                                     );
                                     Ok(())
                                 }
-                                Err(copy_error) => {
-                                    Err(format!("{}: {}", final_dest_path.display(), copy_error))
-                                }
+                                Err(copy_error) => Err(copy_error),
                             }
                         };
                         if inner.is_ok() {
@@ -1720,7 +1849,7 @@ pub(crate) fn move_items_impl(
                             skip_end_progress_report = true;
                         }
                         inner
-                    } else if source.is_dir() {
+                    } else if source_is_dir {
                         let mut progress_none: Option<
                             &mut dyn FnMut(u32, String, Option<u64>, Option<u64>),
                         > = None;
@@ -1742,11 +1871,7 @@ pub(crate) fn move_items_impl(
                             &mut inner_last_error,
                         )
                     } else {
-                        copy_file_resilient(source, &final_dest_path)
-                            .map(|_| ())
-                            .map_err(|copy_error| {
-                                format!("{}: {}", final_dest_path.display(), copy_error)
-                            })
+                        copy_leaf(source, &final_dest_path)
                     };
 
                     match copy_result {
@@ -1768,7 +1893,7 @@ pub(crate) fn move_items_impl(
                             }
                         }
                         Err(copy_error) => {
-                            if copy_error == "Operation cancelled" {
+                            if copy_error == CANCELLED_MESSAGE {
                                 cancelled = true;
                             } else {
                                 failed_count += 1 + inner_failed;
@@ -2248,6 +2373,28 @@ extern "system" {
 
     fn MoveFileExW(existing_name: *const u16, new_name: *const u16, flags: u32) -> i32;
 
+    #[allow(clippy::type_complexity)]
+    fn CopyFileExW(
+        existing_file_name: *const u16,
+        new_file_name: *const u16,
+        progress_routine: Option<
+            unsafe extern "system" fn(
+                i64,
+                i64,
+                i64,
+                i64,
+                u32,
+                u32,
+                *mut std::ffi::c_void,
+                *mut std::ffi::c_void,
+                *const std::ffi::c_void,
+            ) -> u32,
+        >,
+        data: *const std::ffi::c_void,
+        cancel: *mut i32,
+        copy_flags: u32,
+    ) -> i32;
+
     fn SetFileInformationByHandle(
         file: *mut std::ffi::c_void,
         file_information_class: i32,
@@ -2402,7 +2549,7 @@ fn case_only_destination_is_same_file(source: &Path, dest: &Path) -> bool {
 }
 
 fn destination_blocks_rename(source: &Path, dest: &Path) -> bool {
-    dest.exists() && !case_only_destination_is_same_file(source, dest)
+    path_entry_exists(dest) && !case_only_destination_is_same_file(source, dest)
 }
 
 fn finish_case_only_rename(
@@ -2470,11 +2617,31 @@ fn rename_without_conflict(source: &Path, dest: &Path) -> FileOperationResult {
     }
 }
 
+fn validate_item_name(name: &str) -> Result<(), String> {
+    if name.is_empty() {
+        return Err("Name cannot be empty".to_string());
+    }
+
+    if name.contains('/') || name.contains('\\') {
+        return Err("Name contains invalid path separators".to_string());
+    }
+
+    let mut components = Path::new(name).components();
+    match (components.next(), components.next()) {
+        (Some(std::path::Component::Normal(_)), None) => Ok(()),
+        _ => Err(format!("Invalid name: {name}")),
+    }
+}
+
 #[tauri::command]
 pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult {
     let source = Path::new(&source_path);
 
-    if !source.exists() {
+    if let Err(error) = validate_item_name(&new_name) {
+        return rename_rejected(error);
+    }
+
+    if !path_entry_exists(source) {
         return rename_rejected(format!("Source path does not exist: {source_path}"));
     }
 
@@ -2502,9 +2669,11 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
         RenameConflict::OtherEntry => rename_name_already_exists(&new_name),
         RenameConflict::CaseOnlySource => rename_case_only(source, &dest_path, &new_name),
         RenameConflict::None => {
-            if dest_path.exists() && case_only_destination_is_same_file(source, &dest_path) {
+            if path_entry_exists(&dest_path)
+                && case_only_destination_is_same_file(source, &dest_path)
+            {
                 rename_case_only(source, &dest_path, &new_name)
-            } else if dest_path.exists() {
+            } else if path_entry_exists(&dest_path) {
                 rename_name_already_exists(&new_name)
             } else {
                 rename_without_conflict(source, &dest_path)
@@ -2534,7 +2703,7 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
     for path_str in &paths {
         let path = Path::new(path_str);
 
-        if !path.exists() {
+        if !path_entry_exists(path) {
             failed_count += 1;
             last_error = Some(format!("Path does not exist: {}", path_str));
             continue;
@@ -2542,10 +2711,8 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
 
         let result = if use_trash {
             delete_path_to_trash(path, path_str)
-        } else if path.is_dir() {
-            fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {
-            fs::remove_file(path).map_err(|error| error.to_string())
+            remove_dir_or_file(path)
         };
 
         match result {
@@ -2608,21 +2775,10 @@ pub fn create_item(
 ) -> FileOperationResult {
     let trimmed_name = name.trim();
 
-    if trimmed_name.is_empty() {
+    if let Err(error) = validate_item_name(trimmed_name) {
         return FileOperationResult {
             success: false,
-            error: Some("Name cannot be empty".to_string()),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-            moved_paths: Vec::new(),
-        };
-    }
-
-    if trimmed_name.contains('/') || trimmed_name.contains('\\') {
-        return FileOperationResult {
-            success: false,
-            error: Some("Name contains invalid path separators".to_string()),
+            error: Some(error),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -2656,7 +2812,7 @@ pub fn create_item(
 
     let dest_path = directory.join(trimmed_name);
 
-    if dest_path.exists() {
+    if path_entry_exists(&dest_path) {
         return FileOperationResult {
             success: false,
             error: Some(format!("Path already exists: {}", dest_path.display())),
@@ -2931,6 +3087,449 @@ mod tests {
         );
         assert_eq!(read_file(&source_folder.join("common.txt")), b"source");
         assert!(!source_folder.join("only-source.txt").exists());
+    }
+
+    fn nested_same_name_file(temp: &Path) -> (PathBuf, PathBuf, PathBuf) {
+        let parent = temp.join("A");
+        let containing_folder = parent.join("x");
+        let source_file = containing_folder.join("x");
+        write_file(&source_file, b"source");
+        (parent, containing_folder, source_file)
+    }
+
+    #[test]
+    fn check_conflicts_flags_replace_that_would_remove_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, containing_folder, source_file) = nested_same_name_file(temp.path());
+
+        let conflicts = check_conflicts_sync(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+        );
+
+        assert_eq!(conflicts.len(), 1);
+        assert!(conflicts[0].replace_removes_source);
+        assert_eq!(
+            normalize_path(&conflicts[0].destination_path),
+            normalize_path(&containing_folder.to_string_lossy())
+        );
+    }
+
+    #[test]
+    fn check_conflicts_allows_replace_of_an_unrelated_item() {
+        let temp = tempdir().unwrap();
+        let source_file = temp.path().join("source").join("a.txt");
+        let destination = temp.path().join("destination");
+        write_file(&source_file, b"source");
+        write_file(&destination.join("a.txt"), b"destination");
+
+        let conflicts = check_conflicts_sync(
+            vec![source_file.to_string_lossy().to_string()],
+            destination.to_string_lossy().to_string(),
+        );
+
+        assert_eq!(conflicts.len(), 1);
+        assert!(!conflicts[0].replace_removes_source);
+    }
+
+    #[test]
+    fn move_merge_replace_refuses_to_delete_the_folder_holding_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, containing_folder, source_file) = nested_same_name_file(temp.path());
+
+        let result = move_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            None,
+            Some(vec![PathResolution {
+                destination_path: containing_folder.to_string_lossy().to_string(),
+                resolution: "replace".to_string(),
+            }]),
+        );
+
+        assert!(!result.success);
+        assert_eq!(read_file(&source_file), b"source");
+    }
+
+    #[test]
+    fn copy_merge_replace_refuses_to_delete_the_folder_holding_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, containing_folder, source_file) = nested_same_name_file(temp.path());
+
+        let result = copy_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            None,
+            Some(vec![PathResolution {
+                destination_path: containing_folder.to_string_lossy().to_string(),
+                resolution: "replace".to_string(),
+            }]),
+        );
+
+        assert!(!result.success);
+        assert_eq!(read_file(&source_file), b"source");
+    }
+
+    #[test]
+    fn legacy_replace_refuses_to_delete_the_folder_holding_the_source() {
+        let temp = tempdir().unwrap();
+        let (parent, _, source_file) = nested_same_name_file(temp.path());
+
+        let move_result = move_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            Some("replace".to_string()),
+            None,
+        );
+        let copy_result = copy_items(
+            vec![source_file.to_string_lossy().to_string()],
+            parent.to_string_lossy().to_string(),
+            Some("replace".to_string()),
+            None,
+        );
+
+        assert!(!move_result.success);
+        assert!(!copy_result.success);
+        assert_eq!(read_file(&source_file), b"source");
+    }
+
+    fn try_symlink_dir(target: &Path, link: &Path) -> bool {
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink(target, link).is_ok()
+        }
+        #[cfg(windows)]
+        {
+            std::os::windows::fs::symlink_dir(target, link).is_ok()
+                || std::process::Command::new("cmd")
+                    .arg("/C")
+                    .arg("mklink")
+                    .arg("/J")
+                    .arg(link)
+                    .arg(target)
+                    .output()
+                    .map(|output| output.status.success())
+                    .unwrap_or(false)
+        }
+    }
+
+    fn empty_merge() -> Option<Vec<PathResolution>> {
+        Some(Vec::new())
+    }
+
+    #[test]
+    fn move_merge_moves_a_linked_folder_as_a_link() {
+        let temp = tempdir().unwrap();
+        let outside = temp.path().join("outside");
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&outside.join("secret.txt"), b"outside");
+        write_file(&source_folder.join("own.txt"), b"own");
+        write_file(
+            &dest_root.join("project").join("link").join("existing.txt"),
+            b"existing",
+        );
+
+        if !try_symlink_dir(&outside, &source_folder.join("link")) {
+            return;
+        }
+
+        let result = move_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            empty_merge(),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        assert_eq!(read_file(&outside.join("secret.txt")), b"outside");
+        assert!(!dest_root
+            .join("project")
+            .join("link")
+            .join("secret.txt")
+            .exists());
+        assert_eq!(
+            read_file(&dest_root.join("project").join("own.txt")),
+            b"own"
+        );
+    }
+
+    #[test]
+    fn copy_merge_copies_a_looping_link_as_a_link() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&source_folder.join("own.txt"), b"own");
+        write_file(&dest_root.join("project").join("existing.txt"), b"existing");
+
+        if !try_symlink_dir(&source_folder, &source_folder.join("loop")) {
+            return;
+        }
+
+        let result = copy_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            empty_merge(),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        let copied_link = dest_root.join("project").join("loop");
+        assert!(fs::symlink_metadata(&copied_link)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(
+            read_file(&dest_root.join("project").join("own.txt")),
+            b"own"
+        );
+    }
+
+    #[test]
+    fn copy_items_keeps_a_linked_folder_as_a_link() {
+        let temp = tempdir().unwrap();
+        let outside = temp.path().join("outside");
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&outside.join("a.txt"), b"outside");
+        fs::create_dir_all(&source_folder).unwrap();
+        fs::create_dir_all(&dest_root).unwrap();
+
+        if !try_symlink_dir(&outside, &source_folder.join("link")) {
+            return;
+        }
+
+        let result = copy_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            None,
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        let copied_link = dest_root.join("project").join("link");
+        assert!(fs::symlink_metadata(&copied_link)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(read_file(&copied_link.join("a.txt")), b"outside");
+    }
+
+    #[test]
+    fn rename_item_rejects_names_that_leave_the_folder() {
+        let temp = tempdir().unwrap();
+        let folder = temp.path().join("folder");
+        let source = folder.join("a.txt");
+        write_file(&source, b"a");
+        fs::create_dir_all(folder.join("sub")).unwrap();
+
+        for new_name in ["../a.txt", "sub/a.txt", "sub\\a.txt", "..", "."] {
+            let result = rename_item(source.to_string_lossy().to_string(), new_name.to_string());
+            assert!(!result.success, "{new_name} should be rejected");
+        }
+
+        assert_eq!(read_file(&source), b"a");
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn rename_item_rejects_a_drive_relative_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("a.txt");
+        write_file(&source, b"a");
+
+        let result = rename_item(source.to_string_lossy().to_string(), "C:a.txt".to_string());
+
+        assert!(!result.success);
+        assert_eq!(read_file(&source), b"a");
+    }
+
+    #[test]
+    fn cancelled_file_copy_leaves_no_partial_file() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("big.bin");
+        let dest = temp.path().join("copy.bin");
+        write_file(&source, &vec![7u8; 4 * 1024 * 1024]);
+        let cancel = Arc::new(AtomicBool::new(true));
+
+        let error = copy_file_cancellable(&source, &dest, &cancel).unwrap_err();
+
+        assert!(is_cancelled_io_error(&error));
+        assert!(!path_entry_exists(&dest));
+    }
+
+    #[test]
+    fn uncancelled_file_copy_copies_the_whole_file() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("big.bin");
+        let dest = temp.path().join("copy.bin");
+        let contents: Vec<u8> = (0..3 * 1024 * 1024)
+            .map(|index| (index % 251) as u8)
+            .collect();
+        write_file(&source, &contents);
+        let cancel = Arc::new(AtomicBool::new(false));
+
+        let copied_bytes = copy_file_cancellable(&source, &dest, &cancel).unwrap();
+
+        assert_eq!(copied_bytes, contents.len() as u64);
+        assert_eq!(read_file(&dest), contents);
+    }
+
+    #[test]
+    fn cancelled_merge_reports_cancel_and_copies_nothing() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        for index in 0..20 {
+            write_file(&source_folder.join(format!("{index}.txt")), b"source");
+        }
+        write_file(&dest_root.join("project").join("existing.txt"), b"existing");
+        let cancel = Arc::new(AtomicBool::new(true));
+        let mut progress_none: Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)> = None;
+
+        let (result, cancelled) = copy_items_impl(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            empty_merge(),
+            Some(&cancel),
+            &mut progress_none,
+        );
+
+        assert!(cancelled);
+        assert!(!result.success);
+        assert!(!dest_root.join("project").join("0.txt").exists());
+    }
+
+    #[test]
+    fn merge_cancelled_partway_stops_copying() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        for index in 0..20 {
+            write_file(&source_folder.join(format!("{index}.txt")), b"source");
+        }
+        write_file(&dest_root.join("project").join("existing.txt"), b"existing");
+        let cancel = Arc::new(AtomicBool::new(false));
+        let _cancel_scope = CancelScope::enter(Some(&cancel));
+        let mut skipped_count = 0;
+        let resolutions = HashMap::new();
+        cancel.store(true, Ordering::Relaxed);
+
+        let result = copy_merge_children(
+            &source_folder,
+            &dest_root.join("project"),
+            &resolutions,
+            &mut skipped_count,
+        );
+
+        assert_eq!(result, Err(CANCELLED_MESSAGE.to_string()));
+        assert_eq!(fs::read_dir(dest_root.join("project")).unwrap().count(), 1);
+    }
+
+    fn broken_folder_link(temp: &Path) -> Option<PathBuf> {
+        let target = temp.join("gone");
+        let link = temp.join("source").join("broken");
+        fs::create_dir_all(&target).unwrap();
+        fs::create_dir_all(link.parent().unwrap()).unwrap();
+
+        if !try_symlink_dir(&target, &link) {
+            return None;
+        }
+
+        fs::remove_dir(&target).unwrap();
+        Some(link)
+    }
+
+    fn is_symlink(path: &Path) -> bool {
+        fs::symlink_metadata(path)
+            .map(|metadata| metadata.file_type().is_symlink())
+            .unwrap_or(false)
+    }
+
+    #[test]
+    fn delete_items_removes_a_broken_link() {
+        let temp = tempdir().unwrap();
+        let Some(link) = broken_folder_link(temp.path()) else {
+            return;
+        };
+
+        let result = delete_items(vec![link.to_string_lossy().to_string()], false);
+
+        assert!(result.success, "{:?}", result.error);
+        assert!(!path_entry_exists(&link));
+    }
+
+    #[test]
+    fn copy_and_move_items_transfer_a_broken_link() {
+        let temp = tempdir().unwrap();
+        let Some(link) = broken_folder_link(temp.path()) else {
+            return;
+        };
+        let copy_destination = temp.path().join("copied");
+        let move_destination = temp.path().join("moved");
+        fs::create_dir_all(&copy_destination).unwrap();
+        fs::create_dir_all(&move_destination).unwrap();
+
+        let copy_result = copy_items(
+            vec![link.to_string_lossy().to_string()],
+            copy_destination.to_string_lossy().to_string(),
+            None,
+            None,
+        );
+        let move_result = move_items(
+            vec![link.to_string_lossy().to_string()],
+            move_destination.to_string_lossy().to_string(),
+            None,
+            None,
+        );
+
+        assert!(copy_result.success, "{:?}", copy_result.error);
+        assert!(move_result.success, "{:?}", move_result.error);
+        assert!(is_symlink(&copy_destination.join("broken")));
+        assert!(is_symlink(&move_destination.join("broken")));
+        assert!(!path_entry_exists(&link));
+    }
+
+    #[test]
+    fn rename_item_renames_a_broken_link() {
+        let temp = tempdir().unwrap();
+        let Some(link) = broken_folder_link(temp.path()) else {
+            return;
+        };
+
+        let result = rename_item(link.to_string_lossy().to_string(), "renamed".to_string());
+
+        assert!(result.success, "{:?}", result.error);
+        assert!(is_symlink(&link.parent().unwrap().join("renamed")));
+    }
+
+    #[test]
+    fn check_conflicts_does_not_descend_into_a_linked_folder() {
+        let temp = tempdir().unwrap();
+        let outside = temp.path().join("outside");
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&outside.join("a.txt"), b"outside");
+        write_file(
+            &dest_root.join("project").join("link").join("a.txt"),
+            b"existing",
+        );
+        fs::create_dir_all(&source_folder).unwrap();
+
+        if !try_symlink_dir(&outside, &source_folder.join("link")) {
+            return;
+        }
+
+        let conflicts = check_conflicts_sync(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+        );
+
+        assert_eq!(conflicts.len(), 1);
+        assert_eq!(conflicts[0].relative_path, "project/link");
+        assert!(conflicts[0].destination_is_dir);
+        assert!(!conflicts[0].source_is_dir);
     }
 
     fn os(value: &str) -> OsString {
