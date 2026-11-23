@@ -38,7 +38,7 @@ import { formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { getBinaryDisplayVersion } from '@/modules/extensions/utils/binary-metadata';
 import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { getLucideIcon } from '@/utils/lucide-icons';
-import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
+import { renderMarkdownToSafeHtml } from '@/utils/safe-markdown';
 import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { formatKeybindingKeys } from '@/modules/extensions/api';

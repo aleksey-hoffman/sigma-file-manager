@@ -42,7 +42,7 @@ import {
   type TextFileSourceEncoding,
 } from '@/utils/decode-text-file-bytes';
 import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
-import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
+import { renderMarkdownToSafeHtml } from '@/utils/safe-markdown';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import { getParentDirectory } from '@/utils/normalize-path';
 import {
