@@ -98,11 +98,23 @@ fn copy_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
     }
     #[cfg(windows)]
     {
+        use std::os::windows::fs::FileTypeExt;
+
         let meta = fs::symlink_metadata(source)?;
-        if meta.is_dir() {
-            std::os::windows::fs::symlink_dir(&target, dest)
-        } else {
-            std::os::windows::fs::symlink_file(&target, dest)
+        if !meta.file_type().is_symlink_dir() {
+            return std::os::windows::fs::symlink_file(&target, dest);
+        }
+
+        match std::os::windows::fs::symlink_dir(&target, dest) {
+            Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
+                let absolute_target = match source.parent() {
+                    Some(parent) if target.is_relative() => parent.join(&target),
+                    _ => target.clone(),
+                };
+                crate::link_operations::create_junction(&absolute_target, dest, true)
+                    .map_err(|_| error)
+            }
+            result => result,
         }
     }
     #[cfg(not(any(unix, windows)))]
@@ -417,7 +429,7 @@ fn copy_dir_recursive_with_progress(
                     );
                 }
                 Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
-                    if meta.is_dir() {
+                    if source_path.is_dir() {
                         copy_dir_recursive_with_progress(
                             &source_path,
                             &dest_path,
@@ -3047,6 +3059,67 @@ mod tests {
             read_file(&dest_root.join("project").join("own.txt")),
             b"own"
         );
+    }
+
+    #[test]
+    fn copy_merge_copies_a_looping_link_as_a_link() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&source_folder.join("own.txt"), b"own");
+        write_file(&dest_root.join("project").join("existing.txt"), b"existing");
+
+        if !try_symlink_dir(&source_folder, &source_folder.join("loop")) {
+            return;
+        }
+
+        let result = copy_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            empty_merge(),
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        let copied_link = dest_root.join("project").join("loop");
+        assert!(fs::symlink_metadata(&copied_link)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(
+            read_file(&dest_root.join("project").join("own.txt")),
+            b"own"
+        );
+    }
+
+    #[test]
+    fn copy_items_keeps_a_linked_folder_as_a_link() {
+        let temp = tempdir().unwrap();
+        let outside = temp.path().join("outside");
+        let source_folder = temp.path().join("source").join("project");
+        let dest_root = temp.path().join("destination");
+        write_file(&outside.join("a.txt"), b"outside");
+        fs::create_dir_all(&source_folder).unwrap();
+        fs::create_dir_all(&dest_root).unwrap();
+
+        if !try_symlink_dir(&outside, &source_folder.join("link")) {
+            return;
+        }
+
+        let result = copy_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            None,
+        );
+
+        assert!(result.success, "{:?}", result.error);
+        let copied_link = dest_root.join("project").join("link");
+        assert!(fs::symlink_metadata(&copied_link)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(read_file(&copied_link.join("a.txt")), b"outside");
     }
 
     #[test]

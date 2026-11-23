@@ -331,7 +331,7 @@ fn create_elevated_symlink(
 }
 
 #[cfg(windows)]
-fn create_junction(
+pub(crate) fn create_junction(
     source_path: &Path,
     link_path: &Path,
     source_is_directory: bool,
@@ -374,7 +374,7 @@ fn create_junction(
 }
 
 #[cfg(not(windows))]
-fn create_junction(
+pub(crate) fn create_junction(
     source_path: &Path,
     link_path: &Path,
     source_is_directory: bool,
