@@ -33,6 +33,9 @@ export interface FileBrowserEntrySection {
   gridLeadingPaddingTop: number;
 }
 
+const IMAGE_EXTENSIONS = new Set<string>(FILE_EXTENSIONS.IMAGE);
+const VIDEO_EXTENSIONS = new Set<string>(FILE_EXTENSIONS.VIDEO);
+
 const MODIFIED_SECTION_ORDER: readonly FileBrowserModifiedSectionId[] = [
   'today',
   'yesterday',
@@ -51,16 +54,23 @@ const MODIFIED_SECTION_LABEL_KEYS: Record<FileBrowserModifiedSectionId, string> 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+interface ModifiedSectionThresholds {
+  todayStart: number;
+  yesterdayStart: number;
+  weekStart: number;
+  monthStart: number;
+}
+
 export function isFileBrowserImageEntry(entry: DirEntry): boolean {
   if (entry.is_dir) return false;
   const extension = entry.ext?.toLowerCase();
-  return extension ? FILE_EXTENSIONS.IMAGE.includes(extension) : false;
+  return extension ? IMAGE_EXTENSIONS.has(extension) : false;
 }
 
 export function isFileBrowserVideoEntry(entry: DirEntry): boolean {
   if (entry.is_dir) return false;
   const extension = entry.ext?.toLowerCase();
-  return extension ? FILE_EXTENSIONS.VIDEO.includes(extension) : false;
+  return extension ? VIDEO_EXTENSIONS.has(extension) : false;
 }
 
 export function getFileBrowserGridEntryVariant(entry: DirEntry): 'dir' | 'image' | 'video' | 'other' {
@@ -68,11 +78,17 @@ export function getFileBrowserGridEntryVariant(entry: DirEntry): 'dir' | 'image'
     return 'dir';
   }
 
-  if (isFileBrowserImageEntry(entry)) {
+  const extension = entry.ext?.toLowerCase();
+
+  if (!extension) {
+    return 'other';
+  }
+
+  if (IMAGE_EXTENSIONS.has(extension)) {
     return 'image';
   }
 
-  if (isFileBrowserVideoEntry(entry)) {
+  if (VIDEO_EXTENSIONS.has(extension)) {
     return 'video';
   }
 
@@ -117,50 +133,58 @@ export function groupFileBrowserEntries(entries: readonly DirEntry[]): GroupedEn
   };
 }
 
-function startOfLocalDay(time: number): number {
-  const date = new Date(time);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+function getModifiedSectionThresholds(now: number): ModifiedSectionThresholds {
+  const nowDate = new Date(now);
+  const year = nowDate.getFullYear();
+  const month = nowDate.getMonth();
+  const day = nowDate.getDate();
+  const todayStart = new Date(year, month, day).getTime();
+  const yesterdayStart = new Date(year, month, day - 1).getTime();
+  const weekday = nowDate.getDay();
+  const daysSinceMonday = weekday === 0 ? 6 : weekday - 1;
+  const weekStart = todayStart - (daysSinceMonday * DAY_MS);
+  const monthStart = new Date(year, month, 1).getTime();
+
+  return {
+    todayStart,
+    yesterdayStart,
+    weekStart,
+    monthStart,
+  };
 }
 
-function startOfLocalWeek(dayStart: number): number {
-  const date = new Date(dayStart);
-  const weekday = date.getDay();
-  const daysSinceMonday = weekday === 0 ? 6 : weekday - 1;
-  return dayStart - (daysSinceMonday * DAY_MS);
+function classifyModifiedTime(
+  modifiedTime: number,
+  thresholds: ModifiedSectionThresholds,
+): FileBrowserModifiedSectionId {
+  if (!Number.isFinite(modifiedTime) || modifiedTime <= 0) {
+    return 'older';
+  }
+
+  if (modifiedTime >= thresholds.todayStart) {
+    return 'today';
+  }
+
+  if (modifiedTime >= thresholds.yesterdayStart) {
+    return 'yesterday';
+  }
+
+  if (modifiedTime >= thresholds.weekStart) {
+    return 'thisWeek';
+  }
+
+  if (modifiedTime >= thresholds.monthStart) {
+    return 'thisMonth';
+  }
+
+  return 'older';
 }
 
 export function getFileBrowserModifiedSectionId(
   modifiedTime: number,
   now: number,
 ): FileBrowserModifiedSectionId {
-  if (!Number.isFinite(modifiedTime) || modifiedTime <= 0) {
-    return 'older';
-  }
-
-  const todayStart = startOfLocalDay(now);
-  const entryDayStart = startOfLocalDay(modifiedTime);
-  const dayDelta = Math.round((todayStart - entryDayStart) / DAY_MS);
-
-  if (dayDelta <= 0) {
-    return 'today';
-  }
-
-  if (dayDelta === 1) {
-    return 'yesterday';
-  }
-
-  if (entryDayStart >= startOfLocalWeek(todayStart)) {
-    return 'thisWeek';
-  }
-
-  const today = new Date(todayStart);
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).getTime();
-
-  if (entryDayStart >= monthStart) {
-    return 'thisMonth';
-  }
-
-  return 'older';
+  return classifyModifiedTime(modifiedTime, getModifiedSectionThresholds(now));
 }
 
 function putDirectoriesFirst(entries: readonly DirEntry[]): DirEntry[] {
@@ -211,10 +235,11 @@ function createKindSections(entries: readonly DirEntry[]): FileBrowserEntrySecti
 }
 
 function createModifiedSections(entries: readonly DirEntry[], now: number): FileBrowserEntrySection[] {
+  const thresholds = getModifiedSectionThresholds(now);
   const entriesBySection = new Map<FileBrowserModifiedSectionId, DirEntry[]>();
 
   for (const entry of entries) {
-    const sectionId = getFileBrowserModifiedSectionId(Number(entry.modified_time), now);
+    const sectionId = classifyModifiedTime(Number(entry.modified_time), thresholds);
     const sectionEntries = entriesBySection.get(sectionId) ?? [];
     sectionEntries.push(entry);
     entriesBySection.set(sectionId, sectionEntries);
