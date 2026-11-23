@@ -113,10 +113,12 @@ export async function fetchQuickViewSiblingPathsFromDisk(filePath: string): Prom
     const contents = await invoke<DirContents>('read_dir', { path: parentDir });
     const paths = contents.entries
       .filter(entry => entry.is_file && isQuickViewSupported(entry.path))
-      .map(entry => entry.path)
-      .sort((pathA, pathB) =>
-        getFileName(pathA).localeCompare(getFileName(pathB), undefined, { sensitivity: 'base' }),
-      );
+      .map(entry => ({
+        path: entry.path,
+        fileName: getFileName(entry.path),
+      }))
+      .sort((itemA, itemB) => quickViewFileNameCollator.compare(itemA.fileName, itemB.fileName))
+      .map(item => item.path);
 
     if (paths.length === 0) {
       return [filePath];
@@ -170,6 +172,8 @@ async function runAuxiliaryWindowSteps(
 
   return isCurrent();
 }
+
+const quickViewFileNameCollator = new Intl.Collator(undefined, { sensitivity: 'base' });
 
 export const useQuickViewStore = defineStore('quickView', () => {
   const currentFilePath = ref<string | null>(null);

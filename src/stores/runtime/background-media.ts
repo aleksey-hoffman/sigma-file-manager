@@ -18,6 +18,8 @@ export type CustomBackgroundEntry = {
   fileName: string;
 };
 
+const fileNameCollator = new Intl.Collator(undefined, { sensitivity: 'base' });
+
 const mediaExtensions = new Set([
   'jpg', 'jpeg', 'png', 'gif', 'webp',
   'mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv',
@@ -59,12 +61,12 @@ async function readCustomBackgroundEntries(
       path: entry.path,
       fileName: entry.name,
     }))
-    .sort((firstEntry, secondEntry) => firstEntry.fileName.localeCompare(secondEntry.fileName, undefined, { sensitivity: 'base' }));
+    .sort((firstEntry, secondEntry) => fileNameCollator.compare(firstEntry.fileName, secondEntry.fileName));
 }
 
 function sortEntries(entries: CustomBackgroundEntry[]): CustomBackgroundEntry[] {
   return [...entries].sort((firstEntry, secondEntry) => {
-    return firstEntry.fileName.localeCompare(secondEntry.fileName, undefined, { sensitivity: 'base' });
+    return fileNameCollator.compare(firstEntry.fileName, secondEntry.fileName);
   });
 }
 
