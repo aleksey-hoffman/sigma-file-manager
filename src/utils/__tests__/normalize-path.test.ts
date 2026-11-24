@@ -2,7 +2,17 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import {
+  afterEach, beforeEach, describe, expect, it, vi,
+} from 'vitest';
+
+const platformState = vi.hoisted(() => ({ isWindows: true }));
+
+vi.mock('@/utils/platform-info', () => ({
+  isPlatformInfoInitialized: () => true,
+  getPlatformInfo: () => ({ isWindows: platformState.isWindows }),
+}));
+
 import normalizePath, {
   canonicalizePath,
   getAddressBarSegments,
@@ -21,6 +31,24 @@ import normalizePath, {
   joinPath,
   stripTrailingSlashesPreservingRoot,
 } from '@/utils/normalize-path';
+
+describe('normalizePath on Linux and macOS', () => {
+  beforeEach(() => {
+    platformState.isWindows = false;
+  });
+
+  afterEach(() => {
+    platformState.isWindows = true;
+  });
+
+  it('keeps a backslash in a file name', () => {
+    const filePath = '/home/user/back\\slash.txt';
+
+    expect(normalizePath(filePath)).toBe(filePath);
+    expect(getPathLeafName(filePath)).toBe('back\\slash.txt');
+    expect(getParentPath(filePath)).toBe('/home/user');
+  });
+});
 
 describe('normalizePath', () => {
   it('normalizes Windows separators', () => {
