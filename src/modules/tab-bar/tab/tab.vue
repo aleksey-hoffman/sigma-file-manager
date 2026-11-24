@@ -450,45 +450,11 @@ onBeforeUnmount(() => {
 .tab__divider {
   --tab-divider-color: hsl(var(--foreground) / 38%);
 
-  position: relative;
   width: 11px;
+  height: 24px;
   flex-shrink: 0;
-  align-self: stretch;
-  margin: 1px 0;
-  background:
-    linear-gradient(
-      to bottom,
-      transparent,
-      var(--tab-divider-color) 15%,
-      var(--tab-divider-color) 32%,
-      transparent 32%,
-      transparent 68%,
-      var(--tab-divider-color) 68%,
-      var(--tab-divider-color) 85%,
-      transparent
-    )
-    center / 1px 100% no-repeat;
-}
-
-.tab__divider::before,
-.tab__divider::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  content: "";
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.tab__divider::before {
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--tab-divider-color);
-}
-
-.tab__divider::after {
-  width: 3px;
-  height: 3px;
   background-color: var(--tab-divider-color);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 24'%3E%3Cdefs%3E%3ClinearGradient id='top' x2='0' y2='1'%3E%3Cstop offset='0' stop-opacity='0'/%3E%3Cstop offset='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='bottom' x2='0' y2='1'%3E%3Cstop offset='0'/%3E%3Cstop offset='1' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='5' y='0' width='1' height='7' fill='url(%23top)'/%3E%3Crect x='5' y='17' width='1' height='7' fill='url(%23bottom)'/%3E%3Cpath d='M5.5 7.5 10 12 5.5 16.5 1 12Z' fill='none' stroke='%23000'/%3E%3Cpath d='M5.5 10.5 7 12 5.5 13.5 4 12Z'/%3E%3C/svg%3E") center / 11px 24px no-repeat;
 }
 
 .tab[is-active="true"] .tab__divider {
