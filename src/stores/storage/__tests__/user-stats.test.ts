@@ -317,6 +317,36 @@ describe('user stats tagged item removal', () => {
   });
 });
 
+describe('user stats moved paths', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    storedValues.clear();
+  });
+
+  it('follows moved items and drops an entry the move replaced', async () => {
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      favorites: [createFavorite('/target/a.txt'), createFavorite('/source/a.txt')],
+      taggedItems: [createTaggedItem('/source/folder/child.txt', ['tag'])],
+    }));
+
+    await store.handlePathsMoved([
+      {
+        from: '/source/a.txt',
+        to: '/target/a.txt',
+      },
+      {
+        from: '/source/folder',
+        to: '/target/folder',
+      },
+    ]);
+
+    expect(store.favorites.map(item => item.path)).toEqual(['/target/a.txt']);
+    expect(store.taggedItems.map(item => item.path)).toEqual(['/target/folder/child.txt']);
+  });
+});
+
 describe('user stats path rename', () => {
   beforeEach(() => {
     setActivePinia(createPinia());

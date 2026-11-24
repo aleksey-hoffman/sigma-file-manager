@@ -25,6 +25,7 @@ import { normalizeThemeSelection } from '@/modules/themes/registry';
 import { useTheme } from './composables/use-theme';
 import type { ThemeTransitionOrigin } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
+import type { MovedPathPair } from '@/stores/runtime/clipboard';
 import { useExtensionsStorageStore } from './extensions';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { i18n } from '@/localization';
@@ -678,6 +679,12 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     });
   }
 
+  async function handlePathsMoved(movedPaths: MovedPathPair[]) {
+    for (const movedPath of movedPaths) {
+      await handlePathRenamed(movedPath.from, movedPath.to);
+    }
+  }
+
   async function handlePathsDeleted(deletedPaths: string[]) {
     await updateFolderSettings(currentMap => (
       removeNavigatorFolderSettingsPaths(currentMap, deletedPaths)
@@ -737,6 +744,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     setThemeTransitionOrigin,
     toggleInfoPanel,
     handlePathRenamed,
+    handlePathsMoved,
     handlePathsDeleted,
   };
 });

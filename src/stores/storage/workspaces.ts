@@ -16,7 +16,11 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
-import { remapDirEntry, replacePathPrefix } from '@/utils/file-operation-paths';
+import {
+  createMovedPathResolver,
+  remapDirEntry,
+  replacePathPrefix,
+} from '@/utils/file-operation-paths';
 import normalizePath, { canonicalizePath, getPathDisplayName } from '@/utils/normalize-path';
 import {
   isVirtualLocationPath,
@@ -30,6 +34,7 @@ import {
   resolveDefaultDirectoryPath,
 } from '@/utils/resolve-default-directory';
 import uniqueId from '@/utils/unique-id';
+import type { MovedPathPair } from '@/stores/runtime/clipboard';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
 import type { ComputedRef } from 'vue';
@@ -213,6 +218,26 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
       tab.dirEntries = tab.dirEntries.map(entry => remapDirEntry(entry, oldPath, newPath));
       tab.selectedDirEntries = tab.selectedDirEntries.map(entry => remapDirEntry(entry, oldPath, newPath));
+    }
+  }
+
+  function updateTabGroupPathsAfterMove(
+    tabGroup: TabGroup,
+    resolveMovedPath: (path: string) => string | null,
+  ) {
+    for (const tab of tabGroup) {
+      const previousPath = tab.path;
+      const updatedPath = resolveMovedPath(previousPath);
+
+      if (updatedPath === null) {
+        continue;
+      }
+
+      updateTabPath(tab, updatedPath);
+      tab.dirEntries = tab.dirEntries.map(entry => remapDirEntry(entry, previousPath, updatedPath));
+      tab.selectedDirEntries = tab.selectedDirEntries.map(
+        entry => remapDirEntry(entry, previousPath, updatedPath),
+      );
     }
   }
 
@@ -789,6 +814,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     newPath: string;
   } | null>(null);
   const pathRenameEpoch = ref(0);
+  const lastMovedPaths = ref<MovedPathPair[] | null>(null);
   const lastDeletedPaths = ref<string[] | null>(null);
   const lastModifiedDirectoryPaths = ref<string[] | null>(null);
 
@@ -812,6 +838,23 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       oldPath,
       newPath,
     };
+  }
+
+  function handlePathsMoved(movedPaths: MovedPathPair[]) {
+    const resolveMovedPath = createMovedPathResolver(movedPaths);
+
+    for (const workspace of workspaces.value) {
+      for (const tabGroup of workspace.tabGroups) {
+        updateTabGroupPathsAfterMove(tabGroup, resolveMovedPath);
+      }
+    }
+
+    for (const historyEntry of closedTabGroupHistory.value) {
+      updateTabGroupPathsAfterMove(historyEntry.tabGroup, resolveMovedPath);
+    }
+
+    pathRenameEpoch.value += 1;
+    lastMovedPaths.value = movedPaths;
   }
 
   function handlePathsDeleted(paths: string[]) {
@@ -1020,6 +1063,8 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     pathRenameEpoch,
     handlePathRenamed,
     lastDeletedPaths,
+    handlePathsMoved,
+    lastMovedPaths,
     handlePathsDeleted,
     lastModifiedDirectoryPaths,
     handleDirectoryContentsChanged,

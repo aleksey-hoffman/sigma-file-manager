@@ -3,9 +3,11 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import type { DirEntry } from '@/types/dir-entry';
+import type { MovedPathPair } from '@/stores/runtime/clipboard';
 import {
   canonicalizePath,
   getParentDirectory,
+  getParentPath as getNullableParentPath,
   getPathLeafName,
   isSameOrDescendantPath,
 } from '@/utils/normalize-path';
@@ -57,6 +59,30 @@ export function replacePathPrefix(path: string, oldPrefix: string, newPrefix: st
   }
 
   return `${canonicalNewPrefix}${canonicalPath.slice(canonicalOldPrefix.length)}`;
+}
+
+export function createMovedPathResolver(
+  movedPaths: MovedPathPair[],
+): (path: string) => string | null {
+  const movedPathsByKey = new Map(
+    movedPaths.map(movedPath => [normalizePathForComparison(movedPath.from), movedPath]),
+  );
+
+  return (path) => {
+    let ancestorPath: string | null = path;
+
+    while (ancestorPath) {
+      const movedPath = movedPathsByKey.get(normalizePathForComparison(ancestorPath));
+
+      if (movedPath) {
+        return replacePathPrefix(path, movedPath.from, movedPath.to);
+      }
+
+      ancestorPath = getNullableParentPath(ancestorPath);
+    }
+
+    return null;
+  };
 }
 
 export function remapDirEntry(entry: DirEntry, oldPath: string, newPath: string): DirEntry {

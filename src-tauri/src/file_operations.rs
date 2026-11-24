@@ -1173,6 +1173,7 @@ fn move_merge_children(
     dest: &Path,
     resolutions: &HashMap<String, ConflictResolution>,
     skipped_count: &mut u32,
+    renamed_paths: &mut Vec<MovedPathPair>,
 ) -> Result<(), String> {
     for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
         if is_cancel_requested() {
@@ -1186,6 +1187,7 @@ fn move_merge_children(
             &dest.join(file_name),
             resolutions,
             skipped_count,
+            renamed_paths,
         )?;
     }
     if is_dir_empty(source) {
@@ -1199,6 +1201,7 @@ fn move_merge(
     dest: &Path,
     resolutions: &HashMap<String, ConflictResolution>,
     skipped_count: &mut u32,
+    renamed_paths: &mut Vec<MovedPathPair>,
 ) -> Result<(), String> {
     let source_kind = entry_kind(source);
 
@@ -1224,7 +1227,10 @@ fn move_merge(
                 try_rename_or_copy_delete(source, dest)
             }
             ConflictResolution::AutoRename => {
-                try_rename_or_copy_delete(source, &unique_sibling_path(dest)?)
+                let unique_dest = unique_sibling_path(dest)?;
+                try_rename_or_copy_delete(source, &unique_dest)?;
+                renamed_paths.push(moved_path_pair(source, &unique_dest));
+                Ok(())
             }
         },
         (_, EntryKind::Leaf) => match get_path_resolution(resolutions, dest) {
@@ -1236,15 +1242,25 @@ fn move_merge(
                 ensure_replace_keeps_source(source, dest)?;
                 remove_dir_or_file(dest)?;
                 fs::create_dir_all(dest).map_err(|error| error.to_string())?;
-                move_merge_children(source, dest, resolutions, skipped_count)
+                move_merge_children(source, dest, resolutions, skipped_count, renamed_paths)
             }
             ConflictResolution::AutoRename => {
                 let unique_dest = unique_sibling_path(dest)?;
                 fs::create_dir_all(&unique_dest).map_err(|error| error.to_string())?;
-                move_merge_children(source, &unique_dest, resolutions, skipped_count)
+                move_merge_children(
+                    source,
+                    &unique_dest,
+                    resolutions,
+                    skipped_count,
+                    renamed_paths,
+                )?;
+                if !path_entry_exists(source) {
+                    renamed_paths.push(moved_path_pair(source, &unique_dest));
+                }
+                Ok(())
             }
         },
-        _ => move_merge_children(source, dest, resolutions, skipped_count),
+        _ => move_merge_children(source, dest, resolutions, skipped_count, renamed_paths),
     }
 }
 
@@ -1686,11 +1702,26 @@ pub(crate) fn move_items_impl(
         if let Some(ref map) = merge_map {
             let dest_path = destination.join(&file_name);
             let mut merge_skipped: u32 = 0;
-            match move_merge(source, &dest_path, map, &mut merge_skipped) {
+            let mut renamed_paths = Vec::new();
+            let merge_result = move_merge(
+                source,
+                &dest_path,
+                map,
+                &mut merge_skipped,
+                &mut renamed_paths,
+            );
+            let source_pair = moved_path_pair(source, &dest_path);
+            let source_was_renamed = renamed_paths
+                .iter()
+                .any(|pair| pair.from == source_pair.from);
+            moved_paths.append(&mut renamed_paths);
+            match merge_result {
                 Ok(()) => {
                     moved_count += 1;
                     skipped_count += merge_skipped;
-                    moved_paths.push(moved_path_pair(source, &dest_path));
+                    if !source_was_renamed && !path_entry_exists(source) {
+                        moved_paths.push(source_pair);
+                    }
                 }
                 Err(error) if error == CANCELLED_MESSAGE => {
                     cancelled = true;
@@ -3130,6 +3161,61 @@ mod tests {
 
         assert_eq!(conflicts.len(), 1);
         assert!(!conflicts[0].replace_removes_source);
+    }
+
+    #[test]
+    fn move_merge_reports_where_each_item_really_went() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("source");
+        let target = temp.path().join("target");
+        for folder in ["keep", "skip"] {
+            fs::create_dir_all(source.join(folder)).unwrap();
+            fs::create_dir_all(target.join(folder)).unwrap();
+            fs::write(source.join(folder).join("a.txt"), b"new").unwrap();
+            fs::write(target.join(folder).join("a.txt"), b"old").unwrap();
+        }
+        let resolution = |folder: &str, value: &str| PathResolution {
+            destination_path: target
+                .join(folder)
+                .join("a.txt")
+                .to_string_lossy()
+                .to_string(),
+            resolution: value.to_string(),
+        };
+
+        let result = move_items(
+            vec![
+                source.join("keep").to_string_lossy().to_string(),
+                source.join("skip").to_string_lossy().to_string(),
+            ],
+            target.to_string_lossy().to_string(),
+            None,
+            Some(vec![
+                resolution("keep", "auto-rename"),
+                resolution("skip", "skip"),
+            ]),
+        );
+
+        let moved: Vec<(String, String)> = result
+            .moved_paths
+            .into_iter()
+            .map(|pair| (pair.from, pair.to))
+            .collect();
+        let path_text = |path: PathBuf| normalize_path(&path.to_string_lossy());
+        assert_eq!(
+            moved,
+            vec![
+                (
+                    path_text(source.join("keep").join("a.txt")),
+                    path_text(target.join("keep").join("a (1).txt"))
+                ),
+                (
+                    path_text(source.join("keep")),
+                    path_text(target.join("keep"))
+                ),
+            ]
+        );
+        assert!(source.join("skip").join("a.txt").exists());
     }
 
     #[test]

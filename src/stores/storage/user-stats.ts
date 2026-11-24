@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { ref, computed } from 'vue';
 import { useUserPathsStore } from './user-paths';
+import type { MovedPathPair } from '@/stores/runtime/clipboard';
 import type {
   UserStats,
   FavoriteItem,
@@ -23,7 +24,11 @@ import {
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
 import { i18n } from '@/localization';
-import { replacePathPrefix } from '@/utils/file-operation-paths';
+import {
+  createMovedPathResolver,
+  normalizePathForComparison,
+  replacePathPrefix,
+} from '@/utils/file-operation-paths';
 import { getTagsByIdsInListOrder } from '@/utils/item-tag-order';
 import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
 import { haveSameKeyOrder, haveSameKeys } from '@/utils/reorder-matching-items';
@@ -463,47 +468,54 @@ export const useUserStatsStore = defineStore('userStats', () => {
   }
 
   async function handlePathRenamed(oldPath: string, newPath: string) {
-    let hasChanges = false;
+    await remapStoredPaths(path => replacePathPrefix(path, oldPath, newPath));
+  }
 
-    for (const item of userStats.value.favorites) {
-      const updated = replacePathPrefix(item.path, oldPath, newPath);
+  async function handlePathsMoved(movedPaths: MovedPathPair[]) {
+    await remapStoredPaths(createMovedPathResolver(movedPaths));
+  }
 
-      if (updated !== null) {
-        item.path = updated;
-        hasChanges = true;
-      }
-    }
+  async function remapStoredPaths(resolvePath: (path: string) => string | null) {
+    const { favorites, taggedItems, history, frequentItems } = userStats.value;
+    const results = [favorites, taggedItems, history, frequentItems].map(
+      items => remapItemPaths(items, resolvePath),
+    );
 
-    for (const item of userStats.value.taggedItems) {
-      const updated = replacePathPrefix(item.path, oldPath, newPath);
-
-      if (updated !== null) {
-        item.path = updated;
-        hasChanges = true;
-      }
-    }
-
-    for (const item of userStats.value.history) {
-      const updated = replacePathPrefix(item.path, oldPath, newPath);
-
-      if (updated !== null) {
-        item.path = updated;
-        hasChanges = true;
-      }
-    }
-
-    for (const item of userStats.value.frequentItems) {
-      const updated = replacePathPrefix(item.path, oldPath, newPath);
-
-      if (updated !== null) {
-        item.path = updated;
-        hasChanges = true;
-      }
-    }
-
-    if (hasChanges) {
+    if (results.includes(true)) {
       await saveStats();
     }
+  }
+
+  function remapItemPaths(
+    items: { path: string }[],
+    resolvePath: (path: string) => string | null,
+  ): boolean {
+    const remappedItems = new Set<{ path: string }>();
+
+    for (const item of items) {
+      const updatedPath = resolvePath(item.path);
+
+      if (updatedPath !== null) {
+        item.path = updatedPath;
+        remappedItems.add(item);
+      }
+    }
+
+    if (remappedItems.size === 0) {
+      return false;
+    }
+
+    const remappedPaths = new Set([...remappedItems].map(item => normalizePathForComparison(item.path)));
+
+    for (let itemIndex = items.length - 1; itemIndex >= 0; itemIndex--) {
+      const item = items[itemIndex];
+
+      if (!remappedItems.has(item) && remappedPaths.has(normalizePathForComparison(item.path))) {
+        items.splice(itemIndex, 1);
+      }
+    }
+
+    return true;
   }
 
   function isPathAffectedByDeletion(path: string | null, deletedPaths: string[]): boolean {
@@ -676,6 +688,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
     clearAllTagged,
     clearAllFrequent,
     handlePathRenamed,
+    handlePathsMoved,
     handlePathsDeleted,
   };
 });
