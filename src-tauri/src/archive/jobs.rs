@@ -14,7 +14,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::utils::normalize_path;
 
 use super::compress::{create_zip_from_sources_with_sink, unique_zip_destination};
-use super::extract::extract_zip_to_directory_with_sink;
+use super::extract::{extract_zip_to_directory_with_options, ExtractOptions, RootFolder};
 
 pub const ARCHIVE_JOB_CANCELLED: &str = "__ARCHIVE_JOB_CANCELLED__";
 pub const ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER: &str =
@@ -115,12 +115,15 @@ fn run_archive_job_blocking(
             let encoding_label = encoding.as_deref();
             std::fs::create_dir_all(&destination)
                 .map_err(|error| format!("Failed to create destination: {}", error))?;
-            extract_zip_to_directory_with_sink(
+            extract_zip_to_directory_with_options(
                 &archive,
                 &destination,
-                password_bytes,
-                encoding_label,
-                Some(sink),
+                ExtractOptions {
+                    password: password_bytes,
+                    encoding: encoding_label,
+                    root_folder: RootFolder::Keep,
+                    sink: Some(sink),
+                },
             )?;
             Ok(None)
         }
@@ -147,12 +150,15 @@ fn run_archive_job_blocking(
             }
             std::fs::create_dir_all(&destination)
                 .map_err(|error| format!("Failed to create folder: {}", error))?;
-            extract_zip_to_directory_with_sink(
+            extract_zip_to_directory_with_options(
                 &archive,
                 &destination,
-                password_bytes,
-                encoding_label,
-                Some(sink),
+                ExtractOptions {
+                    password: password_bytes,
+                    encoding: encoding_label,
+                    root_folder: RootFolder::Strip,
+                    sink: Some(sink),
+                },
             )?;
             Ok(None)
         }

@@ -152,16 +152,42 @@ pub fn extract_zip_to_directory(
     password: Option<&[u8]>,
     encoding: Option<&str>,
 ) -> Result<(), String> {
-    extract_zip_to_directory_with_sink(zip_path, dest_dir, password, encoding, None)
+    extract_zip_to_directory_with_options(
+        zip_path,
+        dest_dir,
+        ExtractOptions {
+            password,
+            encoding,
+            root_folder: RootFolder::Strip,
+            sink: None,
+        },
+    )
 }
 
-pub fn extract_zip_to_directory_with_sink(
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum RootFolder {
+    Keep,
+    Strip,
+}
+
+pub struct ExtractOptions<'a> {
+    pub password: Option<&'a [u8]>,
+    pub encoding: Option<&'a str>,
+    pub root_folder: RootFolder,
+    pub sink: Option<&'a ProgressSink>,
+}
+
+pub fn extract_zip_to_directory_with_options(
     zip_path: &Path,
     dest_dir: &Path,
-    password: Option<&[u8]>,
-    encoding: Option<&str>,
-    sink: Option<&ProgressSink>,
+    options: ExtractOptions<'_>,
 ) -> Result<(), String> {
+    let ExtractOptions {
+        password,
+        encoding,
+        root_folder,
+        sink,
+    } = options;
     fs::create_dir_all(dest_dir)
         .map_err(|error| format!("Failed to create destination: {}", error))?;
     let canonical_dest_dir = dest_dir
@@ -185,7 +211,10 @@ pub fn extract_zip_to_directory_with_sink(
         entry_paths.push((get_entry_path(&file, encoding)?, file.is_dir()));
     }
 
-    let root_dir = shared_root_directory(entry_paths);
+    let root_dir = match root_folder {
+        RootFolder::Keep => None,
+        RootFolder::Strip => shared_root_directory(entry_paths),
+    };
 
     for archive_index in 0..archive.len() {
         if let Some(progress_sink) = sink {
@@ -390,6 +419,29 @@ mod tests {
 
         assert!(extract_dir.join("src").join("main.rs").is_file());
         assert!(extract_dir.join("lib").join("util.rs").is_file());
+    }
+
+    #[test]
+    fn extraction_can_keep_single_shared_root_folder() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("project.zip");
+        write_zip_with_files(&zip_path, &["project/README.md", "project/src/main.rs"]);
+
+        let extract_dir = temp.path().join("extract");
+        extract_zip_to_directory_with_options(
+            &zip_path,
+            &extract_dir,
+            ExtractOptions {
+                password: None,
+                encoding: None,
+                root_folder: RootFolder::Keep,
+                sink: None,
+            },
+        )
+        .unwrap();
+
+        assert!(extract_dir.join("project").join("README.md").is_file());
+        assert!(!extract_dir.join("README.md").exists());
     }
 
     #[test]
