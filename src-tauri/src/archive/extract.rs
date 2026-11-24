@@ -21,6 +21,38 @@ pub fn is_safe_archive_relative_path(path: &Path) -> bool {
         .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
 }
 
+/// Returns the one top-level folder that holds every entry, or `None` if there is no such folder.
+pub fn shared_root_directory<I>(entries: I) -> Option<PathBuf>
+where
+    I: IntoIterator<Item = (PathBuf, bool)>,
+{
+    let mut root_dir: Option<PathBuf> = None;
+    let mut has_nested_entry = false;
+
+    for (entry_path, entry_is_dir) in entries {
+        let mut components = entry_path.components();
+        let Some(first_component) = components.next() else {
+            continue;
+        };
+        let entry_is_nested = components.next().is_some();
+
+        if !entry_is_nested && !entry_is_dir {
+            return None;
+        }
+
+        let first_component_path = Path::new(first_component.as_os_str());
+        match &root_dir {
+            Some(existing_root) if existing_root.as_path() != first_component_path => return None,
+            Some(_) => {}
+            None => root_dir = Some(first_component_path.to_path_buf()),
+        }
+
+        has_nested_entry |= entry_is_nested;
+    }
+
+    root_dir.filter(|_| has_nested_entry)
+}
+
 /// Keeps only the rwx permission bits of an archive entry, so setuid, setgid and sticky bits
 /// from an archive are never applied to extracted files.
 #[cfg(unix)]
@@ -142,7 +174,7 @@ pub fn extract_zip_to_directory_with_sink(
         ZipArchive::new(file).map_err(|error| format!("Failed to read zip archive: {}", error))?;
 
     let total_entries = archive.len().max(1) as u32;
-    let mut root_dir: Option<PathBuf> = None;
+    let mut entry_paths = Vec::with_capacity(archive.len());
 
     for archive_index in 0..archive.len() {
         if let Some(progress_sink) = sink {
@@ -150,17 +182,10 @@ pub fn extract_zip_to_directory_with_sink(
         }
 
         let file = read_entry(&mut archive, archive_index, password)?;
-        let enclosed_path = get_entry_path(&file, encoding)?;
-
-        if root_dir.is_none() {
-            let mut components = enclosed_path.components();
-            if let Some(first_component) = components.next() {
-                if components.next().is_some() {
-                    root_dir = Some(PathBuf::from(first_component.as_os_str()));
-                }
-            }
-        }
+        entry_paths.push((get_entry_path(&file, encoding)?, file.is_dir()));
     }
+
+    let root_dir = shared_root_directory(entry_paths);
 
     for archive_index in 0..archive.len() {
         if let Some(progress_sink) = sink {
@@ -326,6 +351,59 @@ mod tests {
 
         let extracted = extract_dir.join("hello.txt");
         assert_eq!(fs::read(&extracted).unwrap(), b"content");
+    }
+
+    fn write_zip_with_files(zip_path: &Path, entry_names: &[&str]) {
+        let mut zip_writer = ZipWriter::new(fs::File::create(zip_path).unwrap());
+        for entry_name in entry_names {
+            zip_writer
+                .start_file(*entry_name, zip_file_options())
+                .unwrap();
+            zip_writer.write_all(entry_name.as_bytes()).unwrap();
+        }
+        zip_writer.finish().unwrap();
+    }
+
+    #[test]
+    fn extraction_keeps_folders_when_archive_has_several_top_level_items() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("project.zip");
+        write_zip_with_files(&zip_path, &["README.md", "src/main.rs", "docs/guide.md"]);
+
+        let extract_dir = temp.path().join("extract");
+        extract_zip_to_directory(&zip_path, &extract_dir, None, None).unwrap();
+
+        assert!(extract_dir.join("README.md").is_file());
+        assert!(extract_dir.join("src").join("main.rs").is_file());
+        assert!(extract_dir.join("docs").join("guide.md").is_file());
+        assert!(!extract_dir.join("main.rs").exists());
+    }
+
+    #[test]
+    fn extraction_keeps_folders_when_top_level_folders_differ() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("project.zip");
+        write_zip_with_files(&zip_path, &["src/main.rs", "lib/util.rs"]);
+
+        let extract_dir = temp.path().join("extract");
+        extract_zip_to_directory(&zip_path, &extract_dir, None, None).unwrap();
+
+        assert!(extract_dir.join("src").join("main.rs").is_file());
+        assert!(extract_dir.join("lib").join("util.rs").is_file());
+    }
+
+    #[test]
+    fn extraction_strips_single_shared_root_folder() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("project.zip");
+        write_zip_with_files(&zip_path, &["project/README.md", "project/src/main.rs"]);
+
+        let extract_dir = temp.path().join("extract");
+        extract_zip_to_directory(&zip_path, &extract_dir, None, None).unwrap();
+
+        assert!(extract_dir.join("README.md").is_file());
+        assert!(extract_dir.join("src").join("main.rs").is_file());
+        assert!(!extract_dir.join("project").exists());
     }
 
     #[test]

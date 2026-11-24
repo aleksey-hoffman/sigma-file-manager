@@ -5,7 +5,6 @@
 use std::fs;
 use std::io::{self, Read};
 use std::path::Path;
-use std::path::PathBuf;
 
 enum ArchiveFormat {
     Zip,
@@ -33,7 +32,7 @@ fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), St
         .read_to_end(&mut archive_bytes)
         .map_err(|error| format!("Failed to read tar stream: {}", error))?;
 
-    let mut root_dir: Option<PathBuf> = None;
+    let mut entry_paths = Vec::new();
     {
         let cursor = io::Cursor::new(&archive_bytes);
         let mut archive = tar::Archive::new(cursor);
@@ -50,15 +49,13 @@ fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), St
             if !crate::archive::is_safe_archive_relative_path(&path) {
                 return Err("Tar contains unsafe path entry".to_string());
             }
-            let mut components = path.components();
-            if let Some(first) = components.next() {
-                if components.next().is_some() {
-                    root_dir = Some(PathBuf::from(first.as_os_str()));
-                    break;
-                }
+            let entry_type = entry.header().entry_type();
+            if entry_type.is_dir() || entry_type.is_file() {
+                entry_paths.push((path, entry_type.is_dir()));
             }
         }
     }
+    let root_dir = crate::archive::shared_root_directory(entry_paths);
 
     let cursor = io::Cursor::new(&archive_bytes);
     let mut archive = tar::Archive::new(cursor);
