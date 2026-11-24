@@ -35,6 +35,7 @@ mod terminal;
 mod url_drop;
 mod user_storage_files_config;
 pub mod utils;
+mod webview_compositing;
 mod windows_installation;
 #[cfg(windows)]
 mod windows_print_view_webview;
@@ -322,6 +323,7 @@ pub fn run() {
             app_updater::check_for_updates,
             app_updater::download_release_installer,
             app_updater::app_updates_managed_externally,
+            webview_compositing::webview_compositing_disabled,
             system_tray::reload_webview,
             system_tray::update_tray_shortcut,
             dir_reader::read_dir,
