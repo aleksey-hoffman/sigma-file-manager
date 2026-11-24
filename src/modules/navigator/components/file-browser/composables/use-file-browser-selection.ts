@@ -78,6 +78,7 @@ export function useFileBrowserSelection(
   const {
     performCopyMoveWithConflicts,
     conflictDialogState,
+    showConflictDialog,
     handleConflictResolution,
     handleConflictCancel,
     topLevelNameConflictDialogState,
@@ -1212,6 +1213,7 @@ export function useFileBrowserSelection(
     requestFocusEntryAfterRefresh,
     armFocusRevealStaleRestoreGuard,
     conflictDialogState,
+    showConflictDialog,
     handleConflictResolution,
     handleConflictCancel,
     topLevelNameConflictDialogState,

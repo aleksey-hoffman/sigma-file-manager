@@ -201,6 +201,7 @@ provideFileBrowserContext({
   requestFocusEntryAfterRefresh: fb.requestFocusEntryAfterRefresh,
   entryDescription: props.entryDescription,
   requestArchiveOptions,
+  requestConflictResolution: loadConflicts => fb.showConflictDialog('copy', loadConflicts),
 });
 
 defineExpose({

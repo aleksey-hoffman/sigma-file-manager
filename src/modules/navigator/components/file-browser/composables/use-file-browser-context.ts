@@ -5,6 +5,7 @@
 import {
   provide, inject, type InjectionKey, type Ref, type ComputedRef, type ComponentPublicInstance,
 } from 'vue';
+import type { ConflictItem, ConflictResolutionPayload } from '@/stores/runtime/clipboard';
 import type { DirEntry } from '@/types/dir-entry';
 import type { NavigatorGrouping } from '@/types/user-settings';
 import type { ContextMenuAction, ContextMenuState } from '@/modules/navigator/components/file-browser/types';
@@ -66,6 +67,9 @@ export interface FileBrowserContext {
   requestFocusEntryAfterRefresh: (parentDirectoryPath: string, entryPath: string) => void;
 
   entryDescription?: (entry: DirEntry) => string | undefined;
+  requestConflictResolution: (
+    loadConflicts: () => Promise<ConflictItem[]>,
+  ) => Promise<ConflictResolutionPayload | null | undefined>;
   requestArchiveOptions: (
     needsPassword?: boolean,
     needsEncoding?: boolean,

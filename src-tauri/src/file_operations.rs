@@ -720,7 +720,7 @@ fn path_resolution_key(path: &Path) -> String {
     normalize_path(&path.to_string_lossy())
 }
 
-fn path_resolution_from_entries(
+pub(crate) fn path_resolution_from_entries(
     entries: Vec<PathResolution>,
 ) -> HashMap<String, ConflictResolution> {
     entries
@@ -734,7 +734,7 @@ fn path_resolution_from_entries(
         .collect()
 }
 
-fn get_path_resolution(
+pub(crate) fn get_path_resolution(
     resolutions: &HashMap<String, ConflictResolution>,
     destination: &Path,
 ) -> ConflictResolution {
@@ -793,6 +793,44 @@ fn push_file_conflict(
         relative_path: relative_path.to_string(),
         replace_removes_source: replace_would_remove_source(source_path, dest_path),
     });
+}
+
+impl ConflictItem {
+    pub(crate) fn for_archive_entry(
+        archive_path: &Path,
+        relative_path: &Path,
+        source_is_dir: bool,
+        source_size: Option<u64>,
+        destination_path: &Path,
+    ) -> Self {
+        let destination_metadata = fs::metadata(destination_path).ok();
+        let destination_is_dir = entry_kind(destination_path) == EntryKind::Dir;
+
+        ConflictItem {
+            source_path: archive_path
+                .join(relative_path)
+                .to_string_lossy()
+                .to_string(),
+            source_name: relative_path
+                .file_name()
+                .map(|name| name.to_string_lossy().to_string())
+                .unwrap_or_default(),
+            source_is_dir,
+            source_size,
+            source_modified_ms: None,
+            destination_path: destination_path.to_string_lossy().to_string(),
+            destination_is_dir,
+            destination_size: destination_metadata
+                .as_ref()
+                .filter(|_| !destination_is_dir)
+                .map(|metadata| metadata.len()),
+            destination_modified_ms: destination_metadata
+                .and_then(|metadata| metadata.modified().ok())
+                .and_then(system_time_to_unix_ms),
+            relative_path: normalize_path(&relative_path.to_string_lossy()),
+            replace_removes_source: replace_would_remove_source(archive_path, destination_path),
+        }
+    }
 }
 
 fn push_type_mismatch_conflict(
@@ -936,7 +974,7 @@ fn replace_would_remove_source(source: &Path, dest: &Path) -> bool {
     )
 }
 
-fn ensure_replace_keeps_source(source: &Path, dest: &Path) -> Result<(), String> {
+pub(crate) fn ensure_replace_keeps_source(source: &Path, dest: &Path) -> Result<(), String> {
     if replace_would_remove_source(source, dest) {
         return Err(format!(
             "Cannot replace {}: it is or contains the item being transferred",
@@ -1072,7 +1110,7 @@ fn copy_merge_children(
     Ok(())
 }
 
-fn unique_sibling_path(dest: &Path) -> Result<PathBuf, String> {
+pub(crate) fn unique_sibling_path(dest: &Path) -> Result<PathBuf, String> {
     let parent = dest.parent().ok_or("No parent directory")?;
     let name = dest.file_name().ok_or("Invalid destination file name")?;
     Ok(get_unique_destination_path(

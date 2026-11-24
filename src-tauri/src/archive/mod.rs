@@ -5,6 +5,7 @@
 pub mod compress;
 pub mod encoding;
 pub mod extract;
+mod extract_output;
 pub mod jobs;
 
 #[cfg(unix)]

@@ -365,6 +365,7 @@ pub fn run() {
             link_operations::create_links,
             archive::jobs::start_archive_job,
             archive::jobs::cancel_archive_job,
+            archive::jobs::check_extract_conflicts,
             archive::encoding::check_archive,
             copy_move_job::start_copy_move_job,
             copy_move_job::cancel_copy_move_job,
