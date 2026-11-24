@@ -63,6 +63,7 @@ import {
   provideExternalClipboardContext,
   type ExternalClipboardPasteTarget,
 } from '@/modules/navigator/components/clipboard-toolbar';
+import { isFileBrowserFilterTypingInProgress } from '@/modules/navigator/components/file-browser/composables/use-file-browser-filter';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
@@ -979,7 +980,15 @@ function hasSelectedItems(): boolean {
   return getActivePaneSelectedEntries().length > 0;
 }
 
-async function handleQuickViewShortcut() {
+async function handleQuickViewShortcut(event?: KeyboardEvent | MouseEvent) {
+  if (
+    event instanceof KeyboardEvent
+    && event.key === ' '
+    && isFileBrowserFilterTypingInProgress()
+  ) {
+    return false;
+  }
+
   const pane = getActivePaneRef();
   const activePaneSelection = getActivePaneSelectedEntries();
 

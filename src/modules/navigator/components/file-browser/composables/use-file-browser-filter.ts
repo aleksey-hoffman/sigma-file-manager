@@ -17,10 +17,24 @@ type GlobalSearchStore = {
   isOpen: boolean;
 };
 
-const FILTER_TYPING_KEY_PATTERN = /^[\p{L}\p{N}]$/u;
+const FILTER_OPENING_KEY_PATTERN = /^[\p{L}\p{N}._-]$/u;
+const FILTER_TYPING_KEY_PATTERN = /^[\p{L}\p{M}\p{N}\p{P}\p{S}]$/u;
+const FILTER_TYPING_PAUSE_MS = 1000;
+
+let lastFilterTypingTime = 0;
+
+export function isFileBrowserFilterOpeningKey(key: string): boolean {
+  return FILTER_OPENING_KEY_PATTERN.test(key);
+}
+
+// Space also opens quick view for the selected item, and the filter always selects its first
+// match, so a space belongs to the filter only while the user is still typing.
+export function isFileBrowserFilterTypingInProgress(): boolean {
+  return Date.now() - lastFilterTypingTime < FILTER_TYPING_PAUSE_MS;
+}
 
 export function isFileBrowserFilterTypingKey(key: string): boolean {
-  return FILTER_TYPING_KEY_PATTERN.test(key);
+  return FILTER_TYPING_KEY_PATTERN.test(key) || (key === ' ' && isFileBrowserFilterTypingInProgress());
 }
 
 export function useFileBrowserFilter(options: {
@@ -40,6 +54,7 @@ export function useFileBrowserFilter(options: {
     isFilterOpen.value = false;
     shouldFocusFilterInput.value = false;
     filterQuery.value = '';
+    lastFilterTypingTime = 0;
   }
 
   function toggleFilter() {
@@ -141,7 +156,15 @@ export function useFileBrowserFilter(options: {
       return isFilterOpen.value;
     }
 
-    return isFileBrowserFilterTypingKey(event.key);
+    return isFilterOpen.value
+      ? isFileBrowserFilterTypingKey(event.key)
+      : isFileBrowserFilterOpeningKey(event.key);
+  }
+
+  function appendToFilterQuery(event: KeyboardEvent) {
+    filterQuery.value += event.key;
+    lastFilterTypingTime = Date.now();
+    event.preventDefault();
   }
 
   function applyKeyToFilterQuery(event: KeyboardEvent) {
@@ -151,10 +174,7 @@ export function useFileBrowserFilter(options: {
       return;
     }
 
-    if (isFileBrowserFilterTypingKey(event.key)) {
-      filterQuery.value += event.key;
-      event.preventDefault();
-    }
+    appendToFilterQuery(event);
   }
 
   function handleKeydownForFilter(event: KeyboardEvent) {
@@ -195,8 +215,7 @@ export function useFileBrowserFilter(options: {
       }
 
       openFilter();
-      filterQuery.value += event.key;
-      event.preventDefault();
+      appendToFilterQuery(event);
     }
   }
 
