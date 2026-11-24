@@ -160,8 +160,8 @@ async fn ftp_list_handler(
     let relative_path = canonical_target
         .strip_prefix(&canonical_base)
         .unwrap_or(Path::new(""))
-        .to_string_lossy()
-        .replace('\\', "/");
+        .to_string_lossy();
+    let relative_path = crate::utils::normalize_path(&relative_path);
 
     let mut entries: Vec<DirEntryInfo> = Vec::new();
     for entry in read_dir.flatten() {
