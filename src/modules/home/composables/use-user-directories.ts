@@ -14,7 +14,66 @@ import {
 } from '@tauri-apps/api/path';
 import type { Component } from 'vue';
 import normalizePath from '@/utils/normalize-path';
-import * as LucideIcons from '@lucide/vue';
+import {
+  HomeIcon,
+  MonitorIcon,
+  DownloadIcon,
+  FileTextIcon,
+  ImageIcon,
+  VideoIcon,
+  MusicIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  FileIcon,
+  ArchiveIcon,
+  BookIcon,
+  BookmarkIcon,
+  BoxIcon,
+  BriefcaseIcon,
+  CameraIcon,
+  CloudIcon,
+  CodeIcon,
+  CoffeeIcon,
+  CompassIcon,
+  CpuIcon,
+  DatabaseIcon,
+  FilmIcon,
+  GamepadIcon,
+  GiftIcon,
+  GlobeIcon,
+  HeartIcon,
+  InboxIcon,
+  LayersIcon,
+  LibraryIcon,
+  MailIcon,
+  MapIcon,
+  MicIcon,
+  PackageIcon,
+  PaletteIcon,
+  PenToolIcon,
+  PhoneIcon,
+  PieChartIcon,
+  PrinterIcon,
+  RadioIcon,
+  RocketIcon,
+  SaveIcon,
+  ScissorsIcon,
+  ServerIcon,
+  SettingsIcon,
+  ShieldIcon,
+  ShoppingBagIcon,
+  StarIcon,
+  SunIcon,
+  TerminalIcon,
+  TruckIcon,
+  TvIcon,
+  UmbrellaIcon,
+  UserIcon,
+  WalletIcon,
+  WifiIcon,
+  ZapIcon,
+} from '@lucide/vue';
+import { getLucideIcon } from '@/utils/lucide-icons';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { UserDirectoryCustomization, UserDirectoriesCustomizations } from '@/types/user-settings';
 import uniqueId from '@/utils/unique-id';
@@ -97,9 +156,72 @@ export const userDirectoryIconNames = [
 
 export type UserDirectoryIconName = typeof userDirectoryIconNames[number];
 
+const userDirectoryIconComponents: Record<UserDirectoryIconName, Component> = {
+  HomeIcon,
+  MonitorIcon,
+  DownloadIcon,
+  FileTextIcon,
+  ImageIcon,
+  VideoIcon,
+  MusicIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  FileIcon,
+  ArchiveIcon,
+  BookIcon,
+  BookmarkIcon,
+  BoxIcon,
+  BriefcaseIcon,
+  CameraIcon,
+  CloudIcon,
+  CodeIcon,
+  CoffeeIcon,
+  CompassIcon,
+  CpuIcon,
+  DatabaseIcon,
+  FilmIcon,
+  GamepadIcon,
+  GiftIcon,
+  GlobeIcon,
+  HeartIcon,
+  InboxIcon,
+  LayersIcon,
+  LibraryIcon,
+  MailIcon,
+  MapIcon,
+  MicIcon,
+  PackageIcon,
+  PaletteIcon,
+  PenToolIcon,
+  PhoneIcon,
+  PieChartIcon,
+  PrinterIcon,
+  RadioIcon,
+  RocketIcon,
+  SaveIcon,
+  ScissorsIcon,
+  ServerIcon,
+  SettingsIcon,
+  ShieldIcon,
+  ShoppingBagIcon,
+  StarIcon,
+  SunIcon,
+  TerminalIcon,
+  TruckIcon,
+  TvIcon,
+  UmbrellaIcon,
+  UserIcon,
+  WalletIcon,
+  WifiIcon,
+  ZapIcon,
+};
+
 export function getIconComponent(iconName: string): Component {
-  const icons = LucideIcons as unknown as Record<string, Component>;
-  return icons[iconName] || LucideIcons.FolderIcon;
+  if (iconName in userDirectoryIconComponents) {
+    return userDirectoryIconComponents[iconName as UserDirectoryIconName];
+  }
+
+  return getLucideIcon(iconName) || FolderIcon;
 }
 
 function isBuiltInDirectoryId(directoryId: string): boolean {
