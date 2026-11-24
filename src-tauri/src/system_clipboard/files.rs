@@ -4,6 +4,11 @@
 
 use std::path::PathBuf;
 
+#[cfg(not(target_os = "windows"))]
+use std::collections::HashSet;
+#[cfg(not(target_os = "windows"))]
+use std::sync::Mutex;
+
 #[cfg(target_os = "windows")]
 use std::iter::once;
 #[cfg(target_os = "windows")]
@@ -16,7 +21,7 @@ use super::windows::{set_windows_clipboard_bytes, windows_open_clipboard, with_w
 
 pub(crate) fn set_system_clipboard_files_sync(
     paths: &[String],
-    #[cfg_attr(not(target_os = "windows"), allow(unused_variables))] operation: &str,
+    operation: &str,
 ) -> Result<(), String> {
     if paths.is_empty() {
         return Ok(());
@@ -29,7 +34,7 @@ pub(crate) fn set_system_clipboard_files_sync(
 
     #[cfg(not(target_os = "windows"))]
     {
-        unix_set_file_clipboard(paths)?;
+        unix_set_file_clipboard(paths, operation)?;
     }
 
     Ok(())
@@ -61,8 +66,34 @@ pub(crate) fn read_system_clipboard_files_sync() -> Result<SystemClipboardFiles,
     }
 }
 
+// The system file list carries no cut/copy flag here, and it holds resolved paths instead of the
+// links that were selected, so remember what the app itself put there.
+#[cfg(not(target_os = "windows"))]
+static LAST_SET_FILES: Mutex<Option<SystemClipboardFiles>> = Mutex::new(None);
+
+#[cfg(not(target_os = "windows"))]
+fn remember_set_files(files: Option<SystemClipboardFiles>) {
+    if let Ok(mut last_set_files) = LAST_SET_FILES.lock() {
+        *last_set_files = files;
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn files_match_clipboard(files: &SystemClipboardFiles, clipboard_paths: &[PathBuf]) -> bool {
+    let resolved = |path: &PathBuf| path.canonicalize().unwrap_or_else(|_| path.clone());
+    let set_paths: HashSet<PathBuf> = files
+        .paths
+        .iter()
+        .map(|path| resolved(&PathBuf::from(path)))
+        .collect();
+    let read_paths: HashSet<PathBuf> = clipboard_paths.iter().map(resolved).collect();
+
+    !set_paths.is_empty() && set_paths == read_paths
+}
+
 #[cfg(not(target_os = "windows"))]
 fn unix_clear_file_clipboard() -> Result<(), String> {
+    remember_set_files(None);
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
         .set_text(String::new())
@@ -71,13 +102,18 @@ fn unix_clear_file_clipboard() -> Result<(), String> {
 }
 
 #[cfg(not(target_os = "windows"))]
-fn unix_set_file_clipboard(paths: &[String]) -> Result<(), String> {
+fn unix_set_file_clipboard(paths: &[String], operation: &str) -> Result<(), String> {
+    remember_set_files(None);
     let path_bufs: Vec<PathBuf> = paths.iter().map(PathBuf::from).collect();
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
         .set()
         .file_list(&path_bufs)
         .map_err(|error| error.to_string())?;
+    remember_set_files(Some(SystemClipboardFiles {
+        paths: paths.to_vec(),
+        operation: operation.to_string(),
+    }));
     Ok(())
 }
 
@@ -89,6 +125,16 @@ fn unix_read_file_clipboard() -> Result<SystemClipboardFiles, String> {
         Err(arboard::Error::ContentNotAvailable) => Vec::new(),
         Err(error) => return Err(error.to_string()),
     };
+
+    if let Ok(last_set_files) = LAST_SET_FILES.lock() {
+        if let Some(files) = last_set_files
+            .as_ref()
+            .filter(|files| files_match_clipboard(files, &file_paths))
+        {
+            return Ok(files.clone());
+        }
+    }
+
     let paths = file_paths
         .into_iter()
         .map(|path| path.to_string_lossy().into_owned())
@@ -290,4 +336,32 @@ fn windows_read_file_clipboard() -> Result<SystemClipboardFiles, String> {
         let _ = CloseClipboard();
         clipboard_result
     })
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn set_files_match_the_resolved_paths_the_clipboard_returns() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("target.txt");
+        let link = temp.path().join("link.txt");
+        std::fs::write(&target, b"x").unwrap();
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+        let files = SystemClipboardFiles {
+            paths: vec![link.to_string_lossy().into_owned()],
+            operation: "move".to_string(),
+        };
+
+        assert!(files_match_clipboard(
+            &files,
+            &[target.canonicalize().unwrap()]
+        ));
+        assert!(!files_match_clipboard(
+            &files,
+            &[temp.path().join("other.txt")]
+        ));
+        assert!(!files_match_clipboard(&files, &[]));
+    }
 }

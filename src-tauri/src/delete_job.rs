@@ -136,6 +136,96 @@ pub fn recycle_bin_unavailable_paths(paths: Vec<String>) -> Vec<String> {
     crate::utils::recycle_bin_unavailable_paths(paths)
 }
 
+#[cfg(not(target_os = "macos"))]
+fn trashed_item_order(item: &trash::TrashItem) -> i64 {
+    // On Linux the trash crate may not know the deletion time, so use the .trashinfo file's time.
+    #[cfg(unix)]
+    {
+        std::fs::metadata(&item.id)
+            .and_then(|metadata| metadata.modified())
+            .ok()
+            .and_then(|modified| modified.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|elapsed| elapsed.as_nanos() as i64)
+            .unwrap_or(0)
+    }
+
+    #[cfg(not(unix))]
+    {
+        item.time_deleted
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn original_path_key(path: &Path) -> String {
+    let normalized = normalize_path(&path.to_string_lossy());
+
+    if cfg!(windows) {
+        normalized.to_lowercase()
+    } else {
+        normalized
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn select_trashed_items(
+    trashed_items: Vec<trash::TrashItem>,
+    paths: &[String],
+) -> Result<Vec<trash::TrashItem>, String> {
+    let wanted_keys: std::collections::HashSet<String> = paths
+        .iter()
+        .map(|path| original_path_key(Path::new(path)))
+        .collect();
+    let mut newest_items: HashMap<String, trash::TrashItem> = HashMap::new();
+
+    for item in trashed_items {
+        let key = original_path_key(&item.original_path());
+
+        if !wanted_keys.contains(&key) {
+            continue;
+        }
+
+        let is_newest = newest_items
+            .get(&key)
+            .is_none_or(|current| trashed_item_order(&item) > trashed_item_order(current));
+
+        if is_newest {
+            newest_items.insert(key, item);
+        }
+    }
+
+    paths
+        .iter()
+        .map(|path| {
+            newest_items
+                .remove(&original_path_key(Path::new(path)))
+                .ok_or_else(|| format!("Not found in the trash: {}", path))
+        })
+        .collect()
+}
+
+#[cfg(not(target_os = "macos"))]
+fn restore_trashed_items_blocking(paths: Vec<String>) -> Result<(), String> {
+    if let Some(existing_path) = paths.iter().find(|path| path_entry_exists(Path::new(path))) {
+        return Err(format!("Path already exists: {}", existing_path));
+    }
+
+    let trashed_items = trash::os_limited::list().map_err(crate::utils::format_trash_error)?;
+    let items = select_trashed_items(trashed_items, &paths)?;
+    trash::os_limited::restore_all(items).map_err(crate::utils::format_trash_error)
+}
+
+#[cfg(target_os = "macos")]
+fn restore_trashed_items_blocking(_paths: Vec<String>) -> Result<(), String> {
+    Err("Restoring from the trash is not supported on macOS".to_string())
+}
+
+#[tauri::command]
+pub async fn restore_trashed_items(paths: Vec<String>) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || restore_trashed_items_blocking(paths))
+        .await
+        .map_err(|error| format!("Restore task failed: {}", error))?
+}
+
 #[tauri::command]
 pub async fn start_delete_job(
     app: AppHandle,
@@ -264,6 +354,49 @@ mod tests {
     use std::sync::atomic::AtomicBool;
     use std::sync::Arc;
     use tokio::sync::mpsc::unbounded_channel;
+
+    #[cfg(not(target_os = "macos"))]
+    #[test]
+    fn restore_selects_the_newest_trashed_item_for_each_path() {
+        use std::path::PathBuf;
+
+        let temp = tempfile::tempdir().unwrap();
+        let original_parent = temp.path().to_path_buf();
+        let trashed_item = |id: &str, name: &str, time_deleted: i64| {
+            let info_path: PathBuf = temp.path().join(id);
+            fs::write(&info_path, b"info").unwrap();
+            fs::File::options()
+                .write(true)
+                .open(&info_path)
+                .unwrap()
+                .set_modified(
+                    std::time::UNIX_EPOCH + std::time::Duration::from_secs(time_deleted as u64),
+                )
+                .unwrap();
+            trash::TrashItem {
+                id: info_path.into_os_string(),
+                name: name.into(),
+                original_parent: original_parent.clone(),
+                time_deleted,
+            }
+        };
+        let items = vec![
+            trashed_item("old", "a.txt", 100),
+            trashed_item("new", "a.txt", 200),
+            trashed_item("other", "b.txt", 300),
+        ];
+        let wanted = original_parent
+            .join("a.txt")
+            .to_string_lossy()
+            .replace('\\', "/");
+
+        let selected = super::select_trashed_items(items, &[wanted]).unwrap();
+        assert_eq!(selected.len(), 1);
+        assert_eq!(selected[0].time_deleted, 200);
+
+        let missing = original_parent.join("c.txt").to_string_lossy().to_string();
+        assert!(super::select_trashed_items(Vec::new(), &[missing]).is_err());
+    }
 
     #[test]
     fn permanent_delete_removes_a_local_file() {

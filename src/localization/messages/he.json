@@ -263,7 +263,7 @@
     "navigation": "ניווט"
   },
   "settings": {
-    "searchSettings": "הגדרות חיפוש",
+    "searchSettings": "חפש בהגדרות",
     "general": {
       "windowScaling": "קנה מידה של החלון",
       "currentUiZoomLevel": "רמת הזום הנוכחית של הממשק: ",
@@ -779,7 +779,9 @@
     "storageRestoredFromBackup": "הנתונים השמורים שוחזרו מגיבוי",
     "storageRestoredFromBackupDescription": "חלק מהנתונים השמורים נפגמו. הם שוחזרו מהגיבוי שנוצר בהפעלה האחרונה של האפליקציה, ולכן ייתכן ששינויים אחרונים חסרים.",
     "storageResetToDefaults": "הנתונים השמורים אופסו",
-    "storageResetToDefaultsDescription": "חלק מהנתונים השמורים נפגמו ולא היה גיבוי זמין, ולכן הם אופסו לברירות המחדל."
+    "storageResetToDefaultsDescription": "חלק מהנתונים השמורים נפגמו ולא היה גיבוי זמין, ולכן הם אופסו לברירות המחדל.",
+    "undo": "ביטול פעולה",
+    "undoFailed": "לא ניתן לבטל את הפעולה"
   },
   "contextMenus": {
     "dirItem": {
@@ -1016,7 +1018,7 @@
     "preparedForCopying": "הוכן להעתקה",
     "preparedForMoving": "הוכן להעברה",
     "itemsPrepared": "0 פריטים | פריט אחד | {count} פריטים | {count} פריטים",
-    "discardClipboard": "בטל",
+    "discardClipboard": "נקה",
     "copiedInAnotherApp": "הועתק באפליקציה אחרת",
     "cutInAnotherApp": "נגזר באפליקציה אחרת",
     "copiedInApp": "הועתק ב-{app}",
@@ -1101,7 +1103,7 @@
           "middleEast": "Middle East",
           "european": "European"
         },
-        "extract": "Extract"
+        "extract": "חלץ"
       }
     },
     "kind": "סוג",

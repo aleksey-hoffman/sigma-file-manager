@@ -9,6 +9,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import { translateArchiveErrorMessage } from '@/utils/translate-archive-error-message';
+import type { PathResolutionEntry } from '@/stores/runtime/clipboard';
 import uniqueId from '@/utils/unique-id';
 import { useStatusCenterStore } from './status-center';
 
@@ -19,12 +20,14 @@ export type StartArchiveJobRequest
     destinationDir: string;
     password?: string;
     encoding?: string;
+    perPathResolutions?: PathResolutionEntry[];
   }
   | {
     kind: 'extractToNamedFolder';
     archivePath: string;
     password?: string;
     encoding?: string;
+    perPathResolutions?: PathResolutionEntry[];
   }
   | {
     kind: 'compress';

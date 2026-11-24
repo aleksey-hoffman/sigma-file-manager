@@ -632,6 +632,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     deleteItems: selection.deleteItems,
     startRename: selection.startRename,
     conflictDialogState: selection.conflictDialogState,
+    showConflictDialog: selection.showConflictDialog,
     handleConflictResolution: selection.handleConflictResolution,
     handleConflictCancel: selection.handleConflictCancel,
     topLevelNameConflictDialogState: selection.topLevelNameConflictDialogState,

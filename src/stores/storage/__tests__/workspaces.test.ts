@@ -791,6 +791,31 @@ describe('workspaces storage duplicate tabs', () => {
   });
 });
 
+describe('workspaces moved paths', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('follows a moved folder and leaves the listing of the source folder alone', () => {
+    const movedTab = createTab('moved', '/source/folder');
+    movedTab.dirEntries = [createDirEntry('inside.txt', '/source/folder/inside.txt')];
+    const sourceTab = createTab('source', '/source');
+    sourceTab.dirEntries = [createDirEntry('folder', '/source/folder')];
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [createWorkspace([[movedTab], [sourceTab]])];
+
+    workspacesStore.handlePathsMoved([{
+      from: '/source/folder',
+      to: '/target/folder',
+    }]);
+
+    expect(movedTab.path).toBe('/target/folder');
+    expect(movedTab.dirEntries[0]?.path).toBe('/target/folder/inside.txt');
+    expect(sourceTab.path).toBe('/source');
+    expect(sourceTab.dirEntries[0]?.path).toBe('/source/folder');
+  });
+});
+
 describe('workspaces path rename', () => {
   beforeEach(() => {
     setActivePinia(createPinia());

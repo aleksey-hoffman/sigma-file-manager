@@ -20,6 +20,7 @@ import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { recordRenamedPath, recordStrandedRename } from '@/composables/record-renamed-path';
+import { createTrashUndo, showRenamedToast } from '@/composables/file-operation-undo';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
 import { getParentDirectory, joinPath } from '@/utils/normalize-path';
@@ -217,6 +218,7 @@ export function useDirEntryActions() {
         const result = await deleteJobsStore.startJob(job.paths, job.useTrash, {
           label: job.useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
           displayPath,
+          getUndo: createTrashUndo,
         });
 
         if (result.deletedPaths.length > 0) {
@@ -293,16 +295,10 @@ export function useDirEntryActions() {
       });
 
       if (result.success) {
-        toast.custom(markRaw(ToastStatic), {
-          componentProps: {
-            data: {
-              title: t('notifications.renamed'),
-              description: '',
-            },
-          },
-        });
+        const newPath = joinPath(parentDir, trimmedName);
 
-        await recordRenamedPath(entry.path, joinPath(parentDir, trimmedName));
+        showRenamedToast(entry.path, newPath);
+        await recordRenamedPath(entry.path, newPath);
 
         return true;
       }

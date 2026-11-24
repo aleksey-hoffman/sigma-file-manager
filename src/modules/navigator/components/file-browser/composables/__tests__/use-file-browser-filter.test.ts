@@ -12,7 +12,8 @@ import {
   vi,
 } from 'vitest';
 import {
-  isFileBrowserFilterTypingKey,
+  isFileBrowserFilterOpeningKey,
+  isFileBrowserFilterTypingInProgress,
   useFileBrowserFilter,
 } from '../use-file-browser-filter';
 
@@ -51,20 +52,36 @@ function createFilterHarness() {
   };
 }
 
-describe('isFileBrowserFilterTypingKey', () => {
+function pressKey(key: string): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', {
+    key,
+    bubbles: true,
+    cancelable: true,
+  });
+  window.dispatchEvent(event);
+  return event;
+}
+
+describe('isFileBrowserFilterOpeningKey', () => {
   it('accepts letters and numbers from non-English keyboard layouts', () => {
-    expect(isFileBrowserFilterTypingKey('ф')).toBe(true);
-    expect(isFileBrowserFilterTypingKey('Ж')).toBe(true);
-    expect(isFileBrowserFilterTypingKey('中')).toBe(true);
-    expect(isFileBrowserFilterTypingKey('文')).toBe(true);
-    expect(isFileBrowserFilterTypingKey('٥')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('ф')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('Ж')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('中')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('文')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('٥')).toBe(true);
   });
 
-  it('rejects non-text keys and punctuation', () => {
-    expect(isFileBrowserFilterTypingKey('ArrowDown')).toBe(false);
-    expect(isFileBrowserFilterTypingKey('Backspace')).toBe(false);
-    expect(isFileBrowserFilterTypingKey(' ')).toBe(false);
-    expect(isFileBrowserFilterTypingKey('-')).toBe(false);
+  it('accepts characters that file names often start with', () => {
+    expect(isFileBrowserFilterOpeningKey('.')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('_')).toBe(true);
+    expect(isFileBrowserFilterOpeningKey('-')).toBe(true);
+  });
+
+  it('rejects non-text keys, spaces and other punctuation', () => {
+    expect(isFileBrowserFilterOpeningKey('ArrowDown')).toBe(false);
+    expect(isFileBrowserFilterOpeningKey('Backspace')).toBe(false);
+    expect(isFileBrowserFilterOpeningKey(' ')).toBe(false);
+    expect(isFileBrowserFilterOpeningKey('/')).toBe(false);
   });
 });
 
@@ -75,17 +92,48 @@ describe('useFileBrowserFilter', () => {
     mountedWrapper?.unmount();
     mountedWrapper = null;
     document.body.replaceChildren();
+    vi.useRealTimers();
+  });
+
+  it('keeps punctuation and spaces while typing a file name', async () => {
+    const { wrapper, filter } = createFilterHarness();
+    mountedWrapper = wrapper;
+
+    for (const key of 'my report_v1-final (2).pdf') {
+      pressKey(key);
+    }
+
+    expect(filter.filterQuery.value).toBe('my report_v1-final (2).pdf');
+  });
+
+  it('leaves space to quick view after a pause in typing', async () => {
+    vi.useFakeTimers();
+    const { wrapper, filter } = createFilterHarness();
+    mountedWrapper = wrapper;
+    pressKey('a');
+    expect(isFileBrowserFilterTypingInProgress()).toBe(true);
+
+    vi.advanceTimersByTime(1500);
+
+    expect(isFileBrowserFilterTypingInProgress()).toBe(false);
+    expect(pressKey(' ').defaultPrevented).toBe(false);
+    expect(filter.filterQuery.value).toBe('a');
+  });
+
+  it('does not open quick search on space', async () => {
+    const { wrapper, filter } = createFilterHarness();
+    mountedWrapper = wrapper;
+
+    pressKey(' ');
+
+    expect(filter.isFilterOpen.value).toBe(false);
   });
 
   it('opens quick search when typing a Russian letter outside text fields', async () => {
     const { wrapper, filter } = createFilterHarness();
     mountedWrapper = wrapper;
 
-    window.dispatchEvent(new KeyboardEvent('keydown', {
-      key: 'ф',
-      bubbles: true,
-      cancelable: true,
-    }));
+    pressKey('ф');
     await nextTick();
 
     expect(filter.isFilterOpen.value).toBe(true);

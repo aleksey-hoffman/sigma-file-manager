@@ -10,6 +10,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirEntry } from '@/types/dir-entry';
+import type { ConflictItem } from '@/stores/runtime/clipboard';
 import { ContextMenuSub } from 'reka-ui';
 import {
   ContextMenuItem,
@@ -233,6 +234,50 @@ async function resolveArchiveOptions(archivePath: string): Promise<{
   }
 }
 
+async function extractArchive(
+  archiveEntry: DirEntry,
+  destinationDir: string | null,
+  operationLabel: string,
+  archiveOptions: {
+    password?: string;
+    encoding?: string;
+  },
+) {
+  const archivePath = archiveEntry.path;
+  const resolution = await fileBrowserContext?.requestConflictResolution(() =>
+    invoke<ConflictItem[]>('check_extract_conflicts', {
+      archivePath,
+      destinationDir,
+      encoding: archiveOptions.encoding,
+    }),
+  );
+
+  if (resolution === null) {
+    return;
+  }
+
+  const requestOptions = {
+    archivePath,
+    ...archiveOptions,
+    perPathResolutions: resolution?.perPathResolutions,
+  };
+
+  await startArchiveJob(
+    destinationDir === null
+      ? {
+          kind: 'extractToNamedFolder',
+          ...requestOptions,
+        }
+      : {
+          kind: 'extractHere',
+          destinationDir,
+          ...requestOptions,
+        },
+    operationLabel,
+    archiveEntry.name,
+  );
+}
+
 async function handleExtractHere() {
   const archiveEntry = zipArchiveEntry.value;
   const destination = extractHereDestination.value;
@@ -247,17 +292,7 @@ async function handleExtractHere() {
     return;
   }
 
-  await startArchiveJob(
-    {
-      kind: 'extractHere',
-      archivePath: archiveEntry.path,
-      destinationDir: destination,
-      password: opts.password,
-      encoding: opts.encoding,
-    },
-    t('fileBrowser.archive.extractHere'),
-    archiveEntry.name,
-  );
+  await extractArchive(archiveEntry, destination, t('fileBrowser.archive.extractHere'), opts);
 }
 
 async function handleExtractToNamedFolder() {
@@ -267,24 +302,16 @@ async function handleExtractToNamedFolder() {
     return;
   }
 
+  const operationLabel = t('fileBrowser.archive.extractToNamedFolder', {
+    folderName: `${archiveStemForExtractLabel.value}/`,
+  });
   const opts = await resolveArchiveOptions(archiveEntry.path);
 
   if (opts === null) {
     return;
   }
 
-  await startArchiveJob(
-    {
-      kind: 'extractToNamedFolder',
-      archivePath: archiveEntry.path,
-      password: opts.password,
-      encoding: opts.encoding,
-    },
-    t('fileBrowser.archive.extractToNamedFolder', {
-      folderName: `${archiveStemForExtractLabel.value}/`,
-    }),
-    archiveEntry.name,
-  );
+  await extractArchive(archiveEntry, null, operationLabel, opts);
 }
 
 async function handleExtractToPicker() {
@@ -316,16 +343,11 @@ async function handleExtractToPicker() {
     return;
   }
 
-  await startArchiveJob(
-    {
-      kind: 'extractHere',
-      archivePath: archiveEntry.path,
-      destinationDir,
-      password: opts.password,
-      encoding: opts.encoding,
-    },
+  await extractArchive(
+    archiveEntry,
+    destinationDir,
     t('fileBrowser.archive.extractToPicker'),
-    archiveEntry.name,
+    opts,
   );
 }
 

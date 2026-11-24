@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use std::cell::Cell;
 use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -13,9 +14,7 @@ use zip::ZipWriter;
 use crate::utils::{normalize_path, unique_path_with_index};
 
 use super::extract::copy_with_periodic_cancel;
-use super::jobs::{
-    ProgressSink, ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER, ARCHIVE_JOB_CANCELLED,
-};
+use super::jobs::{ProgressSink, ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER};
 
 fn path_to_zip_entry_path(path: &Path) -> String {
     normalize_path(&path.to_string_lossy())
@@ -23,6 +22,10 @@ fn path_to_zip_entry_path(path: &Path) -> String {
 
 fn zip_file_options() -> SimpleFileOptions {
     SimpleFileOptions::default().compression_method(CompressionMethod::Deflated)
+}
+
+fn is_stored_as_link(path: &Path) -> bool {
+    path.is_symlink() && !path.is_file()
 }
 
 fn build_zip_entries(sources: &[PathBuf]) -> Result<Vec<(PathBuf, String)>, String> {
@@ -120,8 +123,10 @@ pub fn create_zip_from_sources_with_sink(
     let zip_entries = build_zip_entries(&canonical_sources)?;
     let total_entries = zip_entries.len().max(1) as u32;
 
+    let destination_created = Cell::new(false);
     let zip_result = (|| -> Result<(), String> {
         let outfile = fs::File::create(&dest_path).map_err(|error| error.to_string())?;
+        destination_created.set(true);
         let mut zip_writer = ZipWriter::new(outfile);
         let options = zip_file_options();
 
@@ -132,7 +137,13 @@ pub fn create_zip_from_sources_with_sink(
                 progress_sink.report(percent, zip_path.clone());
             }
 
-            if zip_path.ends_with('/') {
+            if is_stored_as_link(&disk_path) {
+                let target = fs::read_link(&disk_path)
+                    .map_err(|error| format!("Failed to read link: {}", error))?;
+                zip_writer
+                    .add_symlink(zip_path, path_to_zip_entry_path(&target), options)
+                    .map_err(|error| format!("Failed to add link to zip: {}", error))?;
+            } else if zip_path.ends_with('/') {
                 zip_writer
                     .add_directory(zip_path.clone(), options)
                     .map_err(|error| format!("Failed to add directory to zip: {}", error))?;
@@ -153,10 +164,7 @@ pub fn create_zip_from_sources_with_sink(
         Ok(())
     })();
 
-    if matches!(
-        zip_result.as_ref(),
-        Err(message) if message.as_str() == ARCHIVE_JOB_CANCELLED
-    ) {
+    if zip_result.is_err() && destination_created.get() {
         let _ = fs::remove_file(&dest_path);
     }
 
@@ -165,4 +173,76 @@ pub fn create_zip_from_sources_with_sink(
 
 pub fn unique_zip_destination(base: &Path) -> PathBuf {
     unique_path_with_index(base, 1, "archive", Some("zip"), None)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Read;
+
+    #[cfg(unix)]
+    fn create_link(target: &Path, link: &Path, _is_dir: bool) -> std::io::Result<()> {
+        std::os::unix::fs::symlink(target, link)
+    }
+
+    #[cfg(windows)]
+    fn create_link(target: &Path, link: &Path, is_dir: bool) -> std::io::Result<()> {
+        if is_dir {
+            std::os::windows::fs::symlink_dir(target, link)
+        } else {
+            std::os::windows::fs::symlink_file(target, link)
+        }
+    }
+
+    #[test]
+    fn folder_with_broken_and_directory_links_is_compressed() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = temp.path().join("project");
+        fs::create_dir_all(source.join("real")).unwrap();
+        fs::write(source.join("real").join("notes.txt"), b"notes").unwrap();
+
+        let links_created = create_link(Path::new("missing.txt"), &source.join("broken"), false)
+            .is_ok()
+            && create_link(Path::new("real"), &source.join("linked"), true).is_ok()
+            && create_link(
+                &source.join("real").join("notes.txt"),
+                &source.join("file-link"),
+                false,
+            )
+            .is_ok();
+        if !links_created {
+            return;
+        }
+
+        let zip_path = temp.path().join("project.zip");
+        create_zip_from_sources_with_sink(std::slice::from_ref(&source), &zip_path, None).unwrap();
+
+        let mut archive = zip::ZipArchive::new(fs::File::open(&zip_path).unwrap()).unwrap();
+        for (name, expected_link, expected_content) in [
+            ("project/broken", true, "missing.txt"),
+            ("project/linked", true, "real"),
+            ("project/file-link", false, "notes"),
+            ("project/real/notes.txt", false, "notes"),
+        ] {
+            let mut entry = archive.by_name(name).unwrap();
+            let mut content = String::new();
+            entry.read_to_string(&mut content).unwrap();
+            assert_eq!(entry.is_symlink(), expected_link, "{name}");
+            assert_eq!(content, expected_content, "{name}");
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn failed_compression_leaves_no_archive() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = temp.path().join("project");
+        fs::create_dir_all(&source).unwrap();
+        fs::write(source.join("a.txt"), b"a").unwrap();
+        let _socket = std::os::unix::net::UnixListener::bind(source.join("socket")).unwrap();
+
+        let zip_path = temp.path().join("project.zip");
+        assert!(create_zip_from_sources_with_sink(&[source], &zip_path, None).is_err());
+        assert!(!zip_path.exists());
+    }
 }

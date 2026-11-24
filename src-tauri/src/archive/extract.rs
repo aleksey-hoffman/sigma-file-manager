@@ -8,7 +8,12 @@ use std::path::{Component, Path, PathBuf};
 use zip::result::ZipError;
 use zip::ZipArchive;
 
+use crate::file_operations::ConflictItem;
+
 use super::encoding::decode_zip_entry_path_str;
+use super::extract_output::{
+    find_output_conflicts, ConflictResolutions, ExtractionRollback, OutputResolver, PlannedEntry,
+};
 use super::jobs::{
     ProgressSink, ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS, ARCHIVE_ERROR_WRONG_PASSWORD,
     ARCHIVE_JOB_CANCELLED,
@@ -113,18 +118,6 @@ pub fn get_entry_path<R: Read + ?Sized>(
     }
 }
 
-fn extract_entry_name<R: Read + ?Sized>(
-    file: &zip::read::ZipFile<'_, R>,
-    encoding: Option<&str>,
-) -> String {
-    get_entry_path(file, encoding)
-        .map(|path| path.display().to_string())
-        .unwrap_or_else(|_| match file.name() {
-            Ok(name) => name.into_owned(),
-            Err(_) => String::from_utf8_lossy(file.name_raw()).into_owned(),
-        })
-}
-
 fn read_entry<'a, R: Read + Seek>(
     archive: &'a mut ZipArchive<R>,
     index: usize,
@@ -152,157 +145,203 @@ pub fn extract_zip_to_directory(
     password: Option<&[u8]>,
     encoding: Option<&str>,
 ) -> Result<(), String> {
-    extract_zip_to_directory_with_sink(zip_path, dest_dir, password, encoding, None)
+    extract_zip_to_directory_with_options(
+        zip_path,
+        dest_dir,
+        ExtractOptions {
+            password,
+            encoding,
+            root_folder: RootFolder::Strip,
+            conflict_resolutions: None,
+            sink: None,
+        },
+    )
 }
 
-pub fn extract_zip_to_directory_with_sink(
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum RootFolder {
+    Keep,
+    Strip,
+}
+
+pub struct ExtractOptions<'a> {
+    pub password: Option<&'a [u8]>,
+    pub encoding: Option<&'a str>,
+    pub root_folder: RootFolder,
+    pub conflict_resolutions: Option<&'a ConflictResolutions>,
+    pub sink: Option<&'a ProgressSink>,
+}
+
+fn open_archive(zip_path: &Path) -> Result<ZipArchive<fs::File>, String> {
+    let file =
+        fs::File::open(zip_path).map_err(|error| format!("Failed to open zip file: {}", error))?;
+    ZipArchive::new(file).map_err(|error| format!("Failed to read zip archive: {}", error))
+}
+
+fn plan_entries<R: Read + Seek>(
+    archive: &mut ZipArchive<R>,
+    encoding: Option<&str>,
+    root_folder: RootFolder,
+) -> Result<Vec<PlannedEntry>, String> {
+    let mut entries = Vec::with_capacity(archive.len());
+
+    for archive_index in 0..archive.len() {
+        let file = archive
+            .by_index_raw(archive_index)
+            .map_err(|error| format!("Failed to read zip entry: {}", error))?;
+        let relative_path = get_entry_path(&file, encoding)?
+            .components()
+            .filter(|component| matches!(component, Component::Normal(_)))
+            .collect();
+        entries.push(PlannedEntry {
+            relative_path,
+            is_dir: file.is_dir(),
+            size: file.size(),
+            archive_index,
+        });
+    }
+
+    if root_folder == RootFolder::Strip {
+        let entry_paths: Vec<_> = entries
+            .iter()
+            .map(|entry| (entry.relative_path.clone(), entry.is_dir))
+            .collect();
+        if let Some(root) = shared_root_directory(entry_paths) {
+            for entry in &mut entries {
+                if let Ok(relative_path) = entry.relative_path.strip_prefix(&root) {
+                    entry.relative_path = relative_path.to_path_buf();
+                }
+            }
+        }
+    }
+
+    entries.retain(|entry| !entry.relative_path.as_os_str().is_empty());
+    Ok(entries)
+}
+
+pub fn list_extract_conflicts(
     zip_path: &Path,
     dest_dir: &Path,
-    password: Option<&[u8]>,
     encoding: Option<&str>,
-    sink: Option<&ProgressSink>,
+    root_folder: RootFolder,
+) -> Result<Vec<ConflictItem>, String> {
+    let entries = plan_entries(&mut open_archive(zip_path)?, encoding, root_folder)?;
+
+    Ok(find_output_conflicts(&entries, dest_dir)
+        .into_iter()
+        .map(|conflict| {
+            ConflictItem::for_archive_entry(
+                zip_path,
+                &conflict.relative_path,
+                conflict.source_is_dir,
+                conflict.source_size,
+                &dest_dir.join(&conflict.relative_path),
+            )
+        })
+        .collect())
+}
+
+pub fn extract_zip_to_directory_with_options(
+    zip_path: &Path,
+    dest_dir: &Path,
+    options: ExtractOptions<'_>,
 ) -> Result<(), String> {
-    fs::create_dir_all(dest_dir)
-        .map_err(|error| format!("Failed to create destination: {}", error))?;
+    let ExtractOptions {
+        password,
+        encoding,
+        root_folder,
+        conflict_resolutions,
+        sink,
+    } = options;
+    let mut archive = open_archive(zip_path)?;
+    let entries = plan_entries(&mut archive, encoding, root_folder)?;
+
+    if conflict_resolutions.is_none() && !find_output_conflicts(&entries, dest_dir).is_empty() {
+        return Err(ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string());
+    }
+
+    let mut rollback = ExtractionRollback::default();
+    rollback.create_directory(dest_dir)?;
     let canonical_dest_dir = dest_dir
         .canonicalize()
         .map_err(|error| format!("Failed to resolve destination: {}", error))?;
-    let file =
-        fs::File::open(zip_path).map_err(|error| format!("Failed to open zip file: {}", error))?;
+    let mut resolver = OutputResolver::new(
+        zip_path,
+        dest_dir,
+        &canonical_dest_dir,
+        conflict_resolutions,
+    );
+    let total_entries = entries.len().max(1) as u32;
 
-    let mut archive =
-        ZipArchive::new(file).map_err(|error| format!("Failed to read zip archive: {}", error))?;
-
-    let total_entries = archive.len().max(1) as u32;
-    let mut entry_paths = Vec::with_capacity(archive.len());
-
-    for archive_index in 0..archive.len() {
+    for (entry_position, entry) in entries.iter().enumerate() {
         if let Some(progress_sink) = sink {
             progress_sink.check_cancelled()?;
+            let percent = ((entry_position as u32 + 1) * 100 / total_entries).min(100);
+            progress_sink.report(percent, entry.relative_path.display().to_string());
         }
 
-        let file = read_entry(&mut archive, archive_index, password)?;
-        entry_paths.push((get_entry_path(&file, encoding)?, file.is_dir()));
-    }
-
-    let root_dir = shared_root_directory(entry_paths);
-
-    for archive_index in 0..archive.len() {
-        if let Some(progress_sink) = sink {
-            progress_sink.check_cancelled()?;
-        }
-
-        let mut file = read_entry(&mut archive, archive_index, password)?;
-
-        if let Some(progress_sink) = sink {
-            let percent = ((archive_index as u32 + 1) * 100 / total_entries).min(100);
-            let detail = extract_entry_name(&file, encoding);
-            progress_sink.report(percent, detail);
-        }
-
-        let enclosed_path = get_entry_path(&file, encoding)?;
-
-        let relative_path = if let Some(root) = &root_dir {
-            enclosed_path
-                .strip_prefix(root)
-                .unwrap_or(&enclosed_path)
-                .to_path_buf()
-        } else {
-            enclosed_path.to_path_buf()
-        };
-
-        if relative_path.as_os_str().is_empty() {
+        if entry.is_dir {
+            resolver.resolve_directory(&entry.relative_path, &mut rollback)?;
             continue;
         }
 
-        let outpath = dest_dir.join(&relative_path);
+        let Some(outpath) = resolver.resolve_file(&entry.relative_path, &mut rollback)? else {
+            continue;
+        };
+        let mut file = read_entry(&mut archive, entry.archive_index, password)?;
+        write_entry(&mut file, &outpath, password, sink, &mut rollback)?;
+    }
 
-        if !outpath.starts_with(dest_dir) {
-            return Err("Zip extraction blocked due to unsafe output path".to_string());
-        }
+    rollback.commit();
+    Ok(())
+}
 
-        if file.is_dir() {
-            if outpath.exists() {
-                let metadata = fs::symlink_metadata(&outpath)
-                    .map_err(|error| format!("Failed to inspect output path: {}", error))?;
-                if !metadata.is_dir() {
-                    return Err(ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string());
-                }
+fn write_entry<R: Read + ?Sized>(
+    file: &mut zip::read::ZipFile<'_, R>,
+    outpath: &Path,
+    password: Option<&[u8]>,
+    sink: Option<&ProgressSink>,
+    rollback: &mut ExtractionRollback,
+) -> Result<(), String> {
+    // Symlink entries are written as regular files holding the link target, so an
+    // archive can never place a link that points outside the destination.
+    let entry_unix_mode = if file.is_symlink() {
+        None
+    } else {
+        file.unix_mode()
+    };
+    let entry_is_encrypted = file.encrypted();
+    let mut outfile = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(outpath)
+        .map_err(|error| {
+            if error.kind() == std::io::ErrorKind::AlreadyExists {
+                ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string()
             } else {
-                fs::create_dir_all(&outpath)
-                    .map_err(|error| format!("Failed to create directory: {}", error))?;
+                format!("Failed to create file: {}", error)
             }
+        })?;
+    rollback.track_file(outpath);
 
-            let resolved_output = outpath
-                .canonicalize()
-                .map_err(|error| format!("Failed to resolve output path: {}", error))?;
-            if !resolved_output.starts_with(&canonical_dest_dir) {
-                return Err("Zip extraction blocked due to unsafe output path".to_string());
-            }
+    copy_with_periodic_cancel(file, &mut outfile, sink).map_err(|message| {
+        if message != ARCHIVE_JOB_CANCELLED && password.is_some() && entry_is_encrypted {
+            ARCHIVE_ERROR_WRONG_PASSWORD.to_string()
         } else {
-            if let Some(parent) = outpath.parent() {
-                if !parent.exists() {
-                    fs::create_dir_all(parent)
-                        .map_err(|error| format!("Failed to create parent directory: {}", error))?;
-                }
+            message
+        }
+    })?;
 
-                let resolved_parent = parent
-                    .canonicalize()
-                    .map_err(|error| format!("Failed to resolve output directory: {}", error))?;
-                if !resolved_parent.starts_with(&canonical_dest_dir) {
-                    return Err("Zip extraction blocked due to unsafe output path".to_string());
-                }
-            }
-
-            if fs::symlink_metadata(&outpath).is_ok() {
-                return Err(ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string());
-            }
-
-            // Symlink entries are written as regular files holding the link target, so an
-            // archive can never place a link that points outside the destination.
-            let entry_unix_mode = if file.is_symlink() {
-                None
-            } else {
-                file.unix_mode()
-            };
-            let entry_is_encrypted = file.encrypted();
-            let mut outfile = fs::OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(&outpath)
-                .map_err(|error| {
-                    if error.kind() == std::io::ErrorKind::AlreadyExists {
-                        ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string()
-                    } else {
-                        format!("Failed to create file: {}", error)
-                    }
-                })?;
-
-            match copy_with_periodic_cancel(&mut file, &mut outfile, sink) {
-                Ok(()) => {}
-                Err(message) => {
-                    if message == ARCHIVE_JOB_CANCELLED {
-                        let _ = fs::remove_file(&outpath);
-                    } else if password.is_some() && entry_is_encrypted {
-                        let _ = fs::remove_file(&outpath);
-                        return Err(ARCHIVE_ERROR_WRONG_PASSWORD.to_string());
-                    }
-                    return Err(message);
-                }
-            }
-
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                if let Some(mode) = entry_unix_mode {
-                    fs::set_permissions(&outpath, fs::Permissions::from_mode(safe_unix_mode(mode)))
-                        .map_err(|error| format!("Failed to set file permissions: {}", error))?;
-                }
-            }
-            #[cfg(not(unix))]
-            let _ = entry_unix_mode;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if let Some(mode) = entry_unix_mode {
+            fs::set_permissions(outpath, fs::Permissions::from_mode(safe_unix_mode(mode)))
+                .map_err(|error| format!("Failed to set file permissions: {}", error))?;
         }
     }
+    #[cfg(not(unix))]
+    let _ = entry_unix_mode;
 
     Ok(())
 }
@@ -393,6 +432,30 @@ mod tests {
     }
 
     #[test]
+    fn extraction_can_keep_single_shared_root_folder() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("project.zip");
+        write_zip_with_files(&zip_path, &["project/README.md", "project/src/main.rs"]);
+
+        let extract_dir = temp.path().join("extract");
+        extract_zip_to_directory_with_options(
+            &zip_path,
+            &extract_dir,
+            ExtractOptions {
+                password: None,
+                encoding: None,
+                root_folder: RootFolder::Keep,
+                conflict_resolutions: None,
+                sink: None,
+            },
+        )
+        .unwrap();
+
+        assert!(extract_dir.join("project").join("README.md").is_file());
+        assert!(!extract_dir.join("README.md").exists());
+    }
+
+    #[test]
     fn extraction_strips_single_shared_root_folder() {
         let temp = tempfile::tempdir().unwrap();
         let zip_path = temp.path().join("project.zip");
@@ -438,6 +501,198 @@ mod tests {
 
         let result = extract_zip_to_directory(&zip_path, &extract_dir, None, None);
         assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS);
+    }
+
+    fn list_files(directory: &Path) -> Vec<(String, String)> {
+        let mut files: Vec<(String, String)> = walkdir::WalkDir::new(directory)
+            .into_iter()
+            .flatten()
+            .filter(|entry| entry.path() != directory)
+            .map(|entry| {
+                let relative_path = entry.path().strip_prefix(directory).unwrap();
+                (
+                    relative_path.to_string_lossy().replace('\\', "/"),
+                    fs::read_to_string(entry.path()).unwrap_or_else(|_| "<folder>".to_string()),
+                )
+            })
+            .collect();
+        files.sort();
+        files
+    }
+
+    fn owned(files: &[(&str, &str)]) -> Vec<(String, String)> {
+        files
+            .iter()
+            .map(|(name, content)| (name.to_string(), content.to_string()))
+            .collect()
+    }
+
+    fn extract_with_resolutions(
+        zip_path: &Path,
+        extract_dir: &Path,
+        resolutions: &[(&str, &str)],
+    ) -> Result<(), String> {
+        let resolutions = resolutions
+            .iter()
+            .map(
+                |(relative_path, resolution)| crate::file_operations::PathResolution {
+                    destination_path: extract_dir
+                        .join(relative_path)
+                        .to_string_lossy()
+                        .to_string(),
+                    resolution: resolution.to_string(),
+                },
+            )
+            .collect();
+        extract_zip_to_directory_with_options(
+            zip_path,
+            extract_dir,
+            ExtractOptions {
+                password: None,
+                encoding: None,
+                root_folder: RootFolder::Keep,
+                conflict_resolutions: Some(&crate::file_operations::path_resolution_from_entries(
+                    resolutions,
+                )),
+                sink: None,
+            },
+        )
+    }
+
+    #[test]
+    fn extraction_with_conflicts_touches_nothing_without_a_decision() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("archive.zip");
+        write_zip_with_files(&zip_path, &["a.txt", "b/c.txt", "d.txt"]);
+        let extract_dir = temp.path().join("extract");
+        fs::create_dir_all(&extract_dir).unwrap();
+        fs::write(extract_dir.join("d.txt"), b"existing").unwrap();
+
+        let result = extract_zip_to_directory(&zip_path, &extract_dir, None, None);
+
+        assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS);
+        assert_eq!(list_files(&extract_dir), owned(&[("d.txt", "existing")]));
+    }
+
+    #[test]
+    fn extraction_applies_conflict_decisions() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("archive.zip");
+        write_zip_with_files(
+            &zip_path,
+            &[
+                "keep.txt",
+                "replace.txt",
+                "skip.txt",
+                "folder/x.txt",
+                "skipped/y.txt",
+                "taken/z.txt",
+            ],
+        );
+        let extract_dir = temp.path().join("extract");
+        fs::create_dir_all(extract_dir.join("folder")).unwrap();
+        for name in [
+            "keep.txt",
+            "replace.txt",
+            "skip.txt",
+            "skipped",
+            "taken",
+            "folder/other.txt",
+        ] {
+            fs::write(extract_dir.join(name), b"old").unwrap();
+        }
+
+        let conflicts =
+            list_extract_conflicts(&zip_path, &extract_dir, None, RootFolder::Keep).unwrap();
+        let conflict_names: Vec<&str> = conflicts
+            .iter()
+            .map(|conflict| conflict.relative_path.as_str())
+            .collect();
+        assert_eq!(
+            conflict_names,
+            ["keep.txt", "replace.txt", "skip.txt", "skipped", "taken"]
+        );
+
+        extract_with_resolutions(
+            &zip_path,
+            &extract_dir,
+            &[
+                ("keep.txt", "auto-rename"),
+                ("replace.txt", "replace"),
+                ("skip.txt", "skip"),
+                ("skipped", "skip"),
+                ("taken", "replace"),
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(
+            list_files(&extract_dir),
+            owned(&[
+                ("folder", "<folder>"),
+                ("folder/other.txt", "old"),
+                ("folder/x.txt", "folder/x.txt"),
+                ("keep (1).txt", "keep.txt"),
+                ("keep.txt", "old"),
+                ("replace.txt", "replace.txt"),
+                ("skip.txt", "old"),
+                ("skipped", "old"),
+                ("taken", "<folder>"),
+                ("taken/z.txt", "taken/z.txt"),
+            ])
+        );
+    }
+
+    #[test]
+    fn failed_extraction_restores_the_destination() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("archive.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        zip_writer
+            .start_file("new/a.txt", zip_file_options())
+            .unwrap();
+        zip_writer.write_all(b"new").unwrap();
+        zip_writer
+            .start_file("replace.txt", zip_file_options())
+            .unwrap();
+        zip_writer.write_all(b"new").unwrap();
+        zip_writer
+            .start_file(
+                "secret.txt",
+                zip_file_options()
+                    .with_deprecated_encryption(b"aaaaaa")
+                    .unwrap(),
+            )
+            .unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+        let extract_dir = temp.path().join("extract");
+        fs::create_dir_all(&extract_dir).unwrap();
+        fs::write(extract_dir.join("replace.txt"), b"old").unwrap();
+
+        let result =
+            extract_with_resolutions(&zip_path, &extract_dir, &[("replace.txt", "replace")]);
+
+        assert!(result.is_err());
+        assert_eq!(list_files(&extract_dir), owned(&[("replace.txt", "old")]));
+
+        let new_dir = temp.path().join("not").join("there").join("yet");
+        assert!(extract_with_resolutions(&zip_path, &new_dir, &[]).is_err());
+        assert!(!temp.path().join("not").exists());
+    }
+
+    #[test]
+    fn extraction_never_replaces_its_own_archive() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("archive.zip");
+        write_zip_with_files(&zip_path, &["archive.zip", "a.txt"]);
+
+        let result =
+            extract_with_resolutions(&zip_path, temp.path(), &[("archive.zip", "replace")]);
+
+        assert!(result.is_err());
+        assert!(open_archive(&zip_path).is_ok());
+        assert!(!temp.path().join("a.txt").exists());
     }
 
     #[test]

@@ -8,6 +8,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
+import { showOperationToast, type UndoAction } from '@/utils/operation-toast';
 import uniqueId from '@/utils/unique-id';
 import { sourceDisplayNameFromPaths } from '@/utils/source-display-name';
 import { useStatusCenterStore } from './status-center';
@@ -39,22 +40,22 @@ export interface DeleteJobResult {
 export interface StartDeleteJobOptions {
   label: string;
   displayPath: string;
+  getUndo?: (trashedPaths: string[]) => UndoAction | null;
 }
 
-function toastDeleteSuccess(payload: DeleteJobFinishedPayload) {
+function toastDeleteSuccess(
+  payload: DeleteJobFinishedPayload,
+  getUndo: StartDeleteJobOptions['getUndo'],
+) {
   const deletedCount = payload.deletedPaths.length;
   const titleKey = payload.useTrash
     ? 'notifications.trashedNItems'
     : 'notifications.deletedNItems';
 
-  toast.custom(markRaw(ToastStatic), {
-    componentProps: {
-      data: {
-        title: i18n.global.t(titleKey, { totalAmount: deletedCount }),
-        description: '',
-      },
-    },
+  showOperationToast({
+    title: i18n.global.t(titleKey, { totalAmount: deletedCount }),
     duration: 2500,
+    undo: payload.useTrash ? getUndo?.(payload.deletedPaths) : null,
   });
 }
 
@@ -62,7 +63,10 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
   const eventUnlisteners = shallowRef<UnlistenFn[]>([]);
   const completionHandlers = new Map<
     string,
-    { resolve: (result: DeleteJobResult) => void }
+    {
+      resolve: (result: DeleteJobResult) => void;
+      getUndo: StartDeleteJobOptions['getUndo'];
+    }
   >();
 
   async function ensureEventListeners() {
@@ -126,7 +130,7 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
         }
         else if (payload.success) {
           statusCenterStore.completeOperation(payload.jobId, 'completed');
-          toastDeleteSuccess(payload);
+          toastDeleteSuccess(payload, handlers.getUndo);
           handlers.resolve({
             success: true,
             cancelled: false,
@@ -176,7 +180,10 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
     const jobId = uniqueId();
 
     return new Promise((resolve, reject) => {
-      completionHandlers.set(jobId, { resolve });
+      completionHandlers.set(jobId, {
+        resolve,
+        getUndo: options.getUndo,
+      });
       statusCenterStore.addOperation({
         id: jobId,
         type: useTrash ? 'deleteTrash' : 'deletePermanent',

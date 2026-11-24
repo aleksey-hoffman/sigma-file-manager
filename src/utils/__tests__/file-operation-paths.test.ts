@@ -8,6 +8,7 @@ import {
 import type { DirEntry } from '@/types/dir-entry';
 import {
   arePathsEquivalent,
+  createMovedPathResolver,
   isDestinationInsideAnySourceDirectory,
   normalizePathForComparison,
   remapDirEntry,
@@ -34,6 +35,27 @@ function createEntry(path: string, name: string): DirEntry {
 }
 
 describe('file-operation-paths', () => {
+  describe('createMovedPathResolver', () => {
+    it('resolves moved items, their children, and prefers the closest moved ancestor', () => {
+      const resolveMovedPath = createMovedPathResolver([
+        {
+          from: '/home/Docs',
+          to: '/mnt/Docs',
+        },
+        {
+          from: '/home/Docs/notes.txt',
+          to: '/mnt/Docs/notes (1).txt',
+        },
+      ]);
+
+      expect(resolveMovedPath('/home/Docs')).toBe('/mnt/Docs');
+      expect(resolveMovedPath('/home/Docs/sub/a.txt')).toBe('/mnt/Docs/sub/a.txt');
+      expect(resolveMovedPath('/home/Docs/notes.txt')).toBe('/mnt/Docs/notes (1).txt');
+      expect(resolveMovedPath('/home/Docs2/a.txt')).toBeNull();
+      expect(resolveMovedPath('/')).toBeNull();
+    });
+  });
+
   describe('normalizePathForComparison', () => {
     afterEach(() => {
       vi.restoreAllMocks();

@@ -25,6 +25,7 @@ import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import {
   arePathsEquivalent,
+  createMovedPathResolver,
   remapDirEntry,
   replacePathPrefix,
 } from '@/utils/file-operation-paths';
@@ -869,6 +870,19 @@ export function useFileBrowserNavigation(
     }
     finally {
       preserveSelectionForPath = null;
+    }
+  });
+
+  watch(() => workspacesStore.lastMovedPaths, async (movedPaths) => {
+    if (!movedPaths || !currentPath.value) return;
+
+    const resolveMovedPath = createMovedPathResolver(movedPaths);
+    history.value = history.value.map(historyPath => resolveMovedPath(historyPath) ?? historyPath);
+
+    const updatedPath = resolveMovedPath(currentPath.value);
+
+    if (updatedPath) {
+      await readDir(updatedPath, false);
     }
   });
 

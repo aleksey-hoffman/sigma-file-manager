@@ -109,7 +109,7 @@
     "globalSearch": "Ricerca globale",
     "driveScanInProgress": "Indicizzazione dell'unità in corso",
     "searchDataIncomplete": "I dati di ricerca sono incompleti",
-    "clearSearchField": "Cancella il campo di ricerca",
+    "clearSearchField": "Svuota il campo di ricerca",
     "scanDepth": "Profondità della scansione",
     "searchResults": "Risultati della ricerca",
     "selectDrives": "Seleziona unità da indicizzare",
@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Dati salvati ripristinati da un backup",
     "storageRestoredFromBackupDescription": "Alcuni dati salvati erano danneggiati. Sono stati ripristinati dal backup creato all'ultimo avvio dell'app, quindi le modifiche recenti potrebbero mancare.",
     "storageResetToDefaults": "I dati salvati sono stati reimpostati",
-    "storageResetToDefaultsDescription": "Alcuni dati salvati erano danneggiati e non era disponibile alcun backup, quindi sono stati reimpostati ai valori predefiniti."
+    "storageResetToDefaultsDescription": "Alcuni dati salvati erano danneggiati e non era disponibile alcun backup, quindi sono stati reimpostati ai valori predefiniti.",
+    "undo": "Annulla operazione",
+    "undoFailed": "Impossibile annullare l'operazione"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,7 +808,7 @@
   "edit": "Modifica",
   "enabled": "Abilitato",
   "disabled": "Disabilitato",
-  "enable": "Abilitato",
+  "enable": "Abilita",
   "search": "Cerca",
   "results": "Risultati",
   "tab": "Scheda",
@@ -849,7 +851,7 @@
   "create": "Crea",
   "new": "Nuovo",
   "name": "Nome",
-  "download": "Download",
+  "download": "Scarica",
   "url": "URL",
   "stream": "stream",
   "left": "Sinistra",
@@ -1312,7 +1314,7 @@
   },
   "statusCenter": {
     "title": "Centro stato",
-    "clearCompleted": "Cancella completate",
+    "clearCompleted": "Rimuovi completate",
     "noOperations": "Nessuna operazione",
     "activeOperations": "Operazioni in corso",
     "completedOperations": "Operazioni completate",

@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   formatDateTimeDisplay,
   formatTimeOnly,
@@ -89,6 +89,24 @@ describe('formatDateTimeDisplay', () => {
 
       expect(result).not.toBe('');
       expect(result).toMatch(/2026/);
+    });
+
+    it('falls back to the app language when the system language is not a valid tag', () => {
+      const languageSpy = vi.spyOn(navigator, 'language', 'get').mockReturnValue('C');
+      const options = createDateTimeOptions({ autoDetectRegionalFormat: true });
+
+      const dateTime = formatDateTimeDisplay(SAMPLE_DATE, options, 'de');
+      const time = formatTimeOnly(SAMPLE_DATE, options, 'de');
+      languageSpy.mockRestore();
+
+      const germanOptions = createDateTimeOptions({
+        regionalFormat: {
+          code: 'de',
+          name: 'Deutsch',
+        },
+      });
+      expect(dateTime).toBe(formatDateTimeDisplay(SAMPLE_DATE, germanOptions, 'en'));
+      expect(time).toBe(formatTimeOnly(SAMPLE_DATE, germanOptions, 'en'));
     });
 
     it('uses navigator.language when autoDetectRegionalFormat is true', () => {

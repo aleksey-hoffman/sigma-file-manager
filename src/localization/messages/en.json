@@ -779,7 +779,9 @@
     "storageRestoredFromBackup": "Saved data restored from a backup",
     "storageRestoredFromBackupDescription": "Some saved data was damaged. It was restored from the backup made when the app last started, so recent changes may be missing.",
     "storageResetToDefaults": "Saved data was reset",
-    "storageResetToDefaultsDescription": "Some saved data was damaged and no backup was available, so it was reset to defaults."
+    "storageResetToDefaultsDescription": "Some saved data was damaged and no backup was available, so it was reset to defaults.",
+    "undo": "Undo",
+    "undoFailed": "Could not undo"
   },
   "contextMenus": {
     "dirItem": {

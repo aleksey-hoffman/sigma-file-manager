@@ -25,6 +25,7 @@ import { normalizeThemeSelection } from '@/modules/themes/registry';
 import { useTheme } from './composables/use-theme';
 import type { ThemeTransitionOrigin } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
+import type { MovedPathPair } from '@/stores/runtime/clipboard';
 import { useExtensionsStorageStore } from './extensions';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { i18n } from '@/localization';
@@ -678,6 +679,32 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     });
   }
 
+  async function handlePathsMoved(movedPaths: MovedPathPair[]) {
+    for (const movedPath of movedPaths) {
+      await handlePathRenamed(movedPath.from, movedPath.to);
+    }
+  }
+
+  function getFolderSettingsUnderPaths(paths: string[]): StoredNavigatorFolderSettingsMap {
+    const currentMap = getStoredNavigatorFolderSettingsMap(userSettings.value.navigator);
+    const remainingMap = removeNavigatorFolderSettingsPaths(currentMap, paths) ?? currentMap;
+
+    return Object.fromEntries(
+      Object.entries(currentMap).filter(([path]) => !(path in remainingMap)),
+    );
+  }
+
+  async function restoreFolderSettings(folderSettings: StoredNavigatorFolderSettingsMap) {
+    if (Object.keys(folderSettings).length === 0) {
+      return;
+    }
+
+    await updateFolderSettings(currentMap => ({
+      ...folderSettings,
+      ...currentMap,
+    }));
+  }
+
   async function handlePathsDeleted(deletedPaths: string[]) {
     await updateFolderSettings(currentMap => (
       removeNavigatorFolderSettingsPaths(currentMap, deletedPaths)
@@ -737,6 +764,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     setThemeTransitionOrigin,
     toggleInfoPanel,
     handlePathRenamed,
+    handlePathsMoved,
+    getFolderSettingsUnderPaths,
+    restoreFolderSettings,
     handlePathsDeleted,
   };
 });

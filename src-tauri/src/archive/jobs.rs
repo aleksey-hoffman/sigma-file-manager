@@ -4,17 +4,20 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter};
 use tokio::sync::mpsc::UnboundedSender;
 
+use crate::file_operations::{path_resolution_from_entries, ConflictItem, PathResolution};
 use crate::utils::normalize_path;
 
 use super::compress::{create_zip_from_sources_with_sink, unique_zip_destination};
-use super::extract::extract_zip_to_directory_with_sink;
+use super::extract::{
+    extract_zip_to_directory_with_options, list_extract_conflicts, ExtractOptions, RootFolder,
+};
 
 pub const ARCHIVE_JOB_CANCELLED: &str = "__ARCHIVE_JOB_CANCELLED__";
 pub const ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER: &str =
@@ -34,11 +37,13 @@ pub enum ArchiveJobRequest {
         destination_dir: String,
         password: Option<String>,
         encoding: Option<String>,
+        per_path_resolutions: Option<Vec<PathResolution>>,
     },
     ExtractToNamedFolder {
         archive_path: String,
         password: Option<String>,
         encoding: Option<String>,
+        per_path_resolutions: Option<Vec<PathResolution>>,
     },
     Compress {
         source_paths: Vec<String>,
@@ -98,6 +103,31 @@ fn new_archive_job_id() -> String {
     format!("archive-{}-{}", millis, sequence)
 }
 
+fn named_folder_destination(archive: &Path) -> Result<PathBuf, String> {
+    let parent = archive.parent().ok_or("Invalid archive path")?;
+    let stem = archive.file_stem().ok_or("Invalid archive name")?;
+    Ok(parent.join(stem))
+}
+
+/// Without `destination_dir` the archive goes to the folder named after it.
+#[tauri::command]
+pub async fn check_extract_conflicts(
+    archive_path: String,
+    destination_dir: Option<String>,
+    encoding: Option<String>,
+) -> Result<Vec<ConflictItem>, String> {
+    tokio::task::spawn_blocking(move || {
+        let archive = PathBuf::from(normalize_path(&archive_path));
+        let (destination, root_folder) = match destination_dir {
+            Some(path) => (PathBuf::from(normalize_path(&path)), RootFolder::Keep),
+            None => (named_folder_destination(&archive)?, RootFolder::Strip),
+        };
+        list_extract_conflicts(&archive, &destination, encoding.as_deref(), root_folder)
+    })
+    .await
+    .map_err(|error| format!("Conflict check failed: {}", error))?
+}
+
 fn run_archive_job_blocking(
     request: ArchiveJobRequest,
     sink: &ProgressSink,
@@ -108,19 +138,23 @@ fn run_archive_job_blocking(
             destination_dir,
             password,
             encoding,
+            per_path_resolutions,
         } => {
             let archive = PathBuf::from(normalize_path(&archive_path));
             let destination = PathBuf::from(normalize_path(&destination_dir));
             let password_bytes = password.as_deref().map(str::as_bytes);
             let encoding_label = encoding.as_deref();
-            std::fs::create_dir_all(&destination)
-                .map_err(|error| format!("Failed to create destination: {}", error))?;
-            extract_zip_to_directory_with_sink(
+            let conflict_resolutions = per_path_resolutions.map(path_resolution_from_entries);
+            extract_zip_to_directory_with_options(
                 &archive,
                 &destination,
-                password_bytes,
-                encoding_label,
-                Some(sink),
+                ExtractOptions {
+                    password: password_bytes,
+                    encoding: encoding_label,
+                    root_folder: RootFolder::Keep,
+                    conflict_resolutions: conflict_resolutions.as_ref(),
+                    sink: Some(sink),
+                },
             )?;
             Ok(None)
         }
@@ -128,31 +162,29 @@ fn run_archive_job_blocking(
             archive_path,
             password,
             encoding,
+            per_path_resolutions,
         } => {
             let archive = PathBuf::from(normalize_path(&archive_path));
             let password_bytes = password.as_deref().map(str::as_bytes);
             let encoding_label = encoding.as_deref();
-            let Some(parent) = archive.parent() else {
-                return Err("Invalid archive path".to_string());
-            };
-            let Some(stem) = archive.file_stem() else {
-                return Err("Invalid archive name".to_string());
-            };
-            let destination = parent.join(stem);
+            let conflict_resolutions = per_path_resolutions.map(path_resolution_from_entries);
+            let destination = named_folder_destination(&archive)?;
             if destination.exists() && !destination.is_dir() {
                 return Err(format!(
                     "Cannot create folder: {} already exists as a file",
                     destination.display()
                 ));
             }
-            std::fs::create_dir_all(&destination)
-                .map_err(|error| format!("Failed to create folder: {}", error))?;
-            extract_zip_to_directory_with_sink(
+            extract_zip_to_directory_with_options(
                 &archive,
                 &destination,
-                password_bytes,
-                encoding_label,
-                Some(sink),
+                ExtractOptions {
+                    password: password_bytes,
+                    encoding: encoding_label,
+                    root_folder: RootFolder::Strip,
+                    conflict_resolutions: conflict_resolutions.as_ref(),
+                    sink: Some(sink),
+                },
             )?;
             Ok(None)
         }

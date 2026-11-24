@@ -4,7 +4,7 @@
 
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SystemClipboardFiles {
     pub(crate) paths: Vec<String>,

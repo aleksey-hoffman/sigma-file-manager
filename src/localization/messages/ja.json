@@ -201,10 +201,10 @@
     "openedCount": "{n}回開いた | {n}回開いた | {n}回開いた | {n}回開いた",
     "actions": {
       "openContainingFolder": "保存先フォルダーを開く",
-      "clearAll": "このリストからすべて削除",
+      "clearAll": "このリストからすべて外す",
       "clearAllConfirmTitle": "このリストからすべて削除しますか？",
       "clearAllConfirmDescription": "この操作は元に戻せません。",
-      "confirmRemove": "削除",
+      "confirmRemove": "外す",
       "removeAllTags": "すべてのタグを外す",
       "removeAllTagsConfirmTitle": "すべての項目からタグを外しますか？",
       "removeAllTagsConfirmDescription": "すべての項目のタグが外れます。タグ名は残ります。",
@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "保存データをバックアップから復元しました",
     "storageRestoredFromBackupDescription": "一部の保存データが破損していたため、前回のアプリ起動時に作成されたバックアップから復元しました。最近の変更が失われている可能性があります。",
     "storageResetToDefaults": "保存データをリセットしました",
-    "storageResetToDefaultsDescription": "一部の保存データが破損しており、利用できるバックアップがなかったため、既定値にリセットしました。"
+    "storageResetToDefaultsDescription": "一部の保存データが破損しており、利用できるバックアップがなかったため、既定値にリセットしました。",
+    "undo": "元に戻す",
+    "undoFailed": "元に戻せませんでした"
   },
   "contextMenus": {
     "dirItem": {
@@ -759,7 +761,7 @@
   },
   "version": "バージョン",
   "active": "アクティブ",
-  "close": "近い",
+  "close": "閉じる",
   "type": "タイプ",
   "image": "画像",
   "video": "ビデオ",
@@ -806,7 +808,7 @@
   "edit": "編集",
   "enabled": "有効",
   "disabled": "無効",
-  "enable": "有効",
+  "enable": "有効にする",
   "search": "探す",
   "results": "結果",
   "tab": "タブ",
@@ -979,8 +981,8 @@
     "directoryIsEmpty": "このディレクトリは空です",
     "directoryIsEmptyDescription": "このディレクトリにはファイルやフォルダがありません",
     "directoryAccessErrorTitle": "このフォルダを開けません",
-    "removeFromSelection": "選択から削除",
-    "removeFromClipboard": "クリップボードから削除",
+    "removeFromSelection": "選択から外す",
+    "removeFromClipboard": "クリップボードから外す",
     "preparedForCopying": "コピー準備完了",
     "preparedForMoving": "移動準備完了",
     "itemsPrepared": "0 項目 | 1 項目 | {count} 項目 | {count} 項目",
@@ -1021,7 +1023,7 @@
       "share": "LAN で共有",
       "openInNewTab": "新しいタブで開く",
       "addToFavorites": "お気に入りに追加",
-      "removeFromFavorites": "お気に入りから削除",
+      "removeFromFavorites": "お気に入りから外す",
       "createLink": "リンクを作成"
     },
     "linkTypes": {

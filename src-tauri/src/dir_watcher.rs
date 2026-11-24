@@ -6,7 +6,7 @@ use crate::utils::normalize_path;
 use notify::{event::ModifyKind, Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
@@ -18,6 +18,8 @@ static ACTIVE_WATCHERS: Lazy<Mutex<HashMap<String, WatcherHandle>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
 static NEXT_WATCHER_ID: AtomicU64 = AtomicU64::new(1);
+
+const VOLUME_CHECK_INTERVAL: Duration = Duration::from_secs(2);
 
 struct WatcherHandle {
     id: u64,
@@ -74,6 +76,55 @@ fn remove_finished_watcher(watchers: &mut HashMap<String, WatcherHandle>, path: 
     }
 }
 
+#[cfg(unix)]
+fn directory_volume_id(path: &Path) -> Option<u64> {
+    use std::os::unix::fs::MetadataExt;
+
+    std::fs::metadata(path)
+        .ok()
+        .filter(|metadata| metadata.is_dir())
+        .map(|metadata| metadata.dev())
+}
+
+#[cfg(not(unix))]
+fn directory_volume_id(path: &Path) -> Option<u64> {
+    path.is_dir().then_some(0)
+}
+
+/// The watcher backends send no event when a drive is unmounted or ejected, so this notices that
+/// the folder is gone or belongs to another volume.
+struct VolumeMonitor {
+    path: PathBuf,
+    volume_id: Option<u64>,
+    last_check: Instant,
+}
+
+impl VolumeMonitor {
+    fn new(path: PathBuf) -> Self {
+        Self {
+            volume_id: directory_volume_id(&path),
+            path,
+            last_check: Instant::now(),
+        }
+    }
+
+    fn is_check_due(&self) -> bool {
+        self.last_check.elapsed() >= VOLUME_CHECK_INTERVAL
+    }
+
+    fn check_changed(&mut self) -> bool {
+        let volume_id = directory_volume_id(&self.path);
+        let changed = volume_id != self.volume_id;
+        self.volume_id = volume_id;
+        self.last_check = Instant::now();
+        changed
+    }
+
+    fn is_available(&self) -> bool {
+        self.volume_id.is_some()
+    }
+}
+
 fn is_relevant_event(kind: &EventKind) -> bool {
     matches!(
         kind,
@@ -121,7 +172,8 @@ fn run_watcher_loop(
     app_handle: AppHandle,
     watched_path: String,
     watcher_id: u64,
-    watcher: RecommendedWatcher,
+    mut watcher: RecommendedWatcher,
+    mut volume_monitor: VolumeMonitor,
     events: Receiver<notify::Event>,
     stop_signal: Arc<AtomicBool>,
 ) {
@@ -130,6 +182,21 @@ fn run_watcher_loop(
     let mut pending_emit = false;
 
     while !stop_signal.load(Ordering::Relaxed) {
+        if volume_monitor.is_check_due() && volume_monitor.check_changed() {
+            let _ = watcher.unwatch(&volume_monitor.path);
+
+            if volume_monitor.is_available() {
+                if let Err(error) = watcher.watch(&volume_monitor.path, RecursiveMode::NonRecursive)
+                {
+                    log::warn!("Failed to watch {} again: {}", watched_path, error);
+                }
+            }
+
+            emit_dir_change(&app_handle, &watched_path, String::new(), "change");
+            last_emit_time = Some(Instant::now());
+            pending_emit = false;
+        }
+
         match events.recv_timeout(Duration::from_millis(100)) {
             Ok(event) => {
                 if !is_relevant_event(&event.kind) {
@@ -230,6 +297,7 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
 
     let (watcher_id, stop_signal) = insert_watcher(&mut watchers, &normalized_path);
     drop(watchers);
+    let volume_monitor = VolumeMonitor::new(watch_path);
 
     dir_watcher_diag!(
         "[dir-watcher-diag] watch_directory started path={} id={}",
@@ -243,6 +311,7 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
             normalized_path,
             watcher_id,
             watcher,
+            volume_monitor,
             event_receiver,
             stop_signal,
         );
@@ -304,6 +373,24 @@ mod tests {
             watchers.get("/folder").map(|handle| handle.id),
             Some(new_id)
         );
+    }
+
+    #[test]
+    fn volume_monitor_notices_a_folder_that_disappears_and_returns() {
+        let temp = tempfile::tempdir().unwrap();
+        let folder = temp.path().join("drive");
+        std::fs::create_dir(&folder).unwrap();
+        let mut monitor = VolumeMonitor::new(folder.clone());
+        assert!(!monitor.check_changed());
+
+        std::fs::remove_dir(&folder).unwrap();
+        assert!(monitor.check_changed());
+        assert!(!monitor.is_available());
+        assert!(!monitor.check_changed());
+
+        std::fs::create_dir(&folder).unwrap();
+        assert!(monitor.check_changed());
+        assert!(monitor.is_available());
     }
 
     #[test]

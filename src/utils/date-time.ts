@@ -31,6 +31,7 @@ dayjs.extend(dayjsCustomParseFormat);
 dayjs.extend(dayjsDuration);
 
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+const localeValidity = new Map<string, boolean>();
 
 export function formatDateTime(date: Date, format: string, locale: AppLocale = 'en'): string {
   if (!date) {
@@ -50,13 +51,34 @@ function toIntlLocale(appLocale: string): string {
   return intlLocaleMapping[appLocale as AppLocale] ?? appLocale;
 }
 
+// WebKitGTK reports "C" as the language under LANG=C and C.UTF-8, and Intl throws on it.
+function isValidLocale(locale: string): boolean {
+  const knownValidity = localeValidity.get(locale);
+
+  if (knownValidity !== undefined) {
+    return knownValidity;
+  }
+
+  let isValid = true;
+
+  try {
+    Intl.getCanonicalLocales(locale);
+  }
+  catch {
+    isValid = false;
+  }
+
+  localeValidity.set(locale, isValid);
+  return isValid;
+}
+
 function resolveFormattingLocale(options: DateTime, appLocale: string): string | undefined {
   if (options.autoDetectRegionalFormat) {
-    if (typeof navigator !== 'undefined' && navigator.language) {
-      return navigator.language;
+    if (typeof navigator === 'undefined' || !navigator.language) {
+      return undefined;
     }
 
-    return undefined;
+    return isValidLocale(navigator.language) ? navigator.language : toIntlLocale(appLocale);
   }
 
   const code = options.regionalFormat?.code;
