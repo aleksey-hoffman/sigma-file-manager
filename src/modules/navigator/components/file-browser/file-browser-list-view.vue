@@ -498,7 +498,7 @@ const visibleRows = computed<FileBrowserListVisibleRow[]>(() => {
         <div
           v-for="row in visibleRows"
           :key="row.key"
-          v-memo="[row.kind === 'section' ? row.key : row.memoKey]"
+          v-memo="row.kind === 'section' ? [row.key, row.label, row.count] : [row.memoKey]"
           class="file-browser-list-view__virtual-row"
         >
           <div
