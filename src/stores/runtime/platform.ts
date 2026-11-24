@@ -21,6 +21,7 @@ export const usePlatformStore = defineStore('platform', () => {
   const appUpdatesManagedExternally = ref(false);
   const supportsDefaultFileManager = ref(false);
   const isPortable = ref(false);
+  const webviewCompositingDisabled = ref(false);
 
   const isWindows = computed(() => currentPlatform.value === 'windows');
   const isMacOS = computed(() => currentPlatform.value === 'macos');
@@ -49,6 +50,13 @@ export const usePlatformStore = defineStore('platform', () => {
     }
 
     try {
+      webviewCompositingDisabled.value = await invoke<boolean>('webview_compositing_disabled');
+    }
+    catch {
+      webviewCompositingDisabled.value = false;
+    }
+
+    try {
       const defaultFileManagerAvailable = await invoke<boolean>('default_file_manager_available');
       supportsDefaultFileManager.value = canUseDefaultFileManager(
         currentPlatform.value,
@@ -70,6 +78,7 @@ export const usePlatformStore = defineStore('platform', () => {
     isMicrosoftStoreInstallation,
     supportsDefaultFileManager,
     isPortable,
+    webviewCompositingDisabled,
     init,
   };
 });

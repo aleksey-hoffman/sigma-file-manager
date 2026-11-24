@@ -26,6 +26,7 @@ import { useTheme } from './composables/use-theme';
 import type { ThemeTransitionOrigin } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { useExtensionsStorageStore } from './extensions';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { i18n } from '@/localization';
 import { getLanguage } from '@/localization/data';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
@@ -716,7 +717,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
 
     initTheme();
-    themeTransitionsEnabled.value = true;
+    themeTransitionsEnabled.value = !usePlatformStore().webviewCompositingDisabled;
     await ensureThemeChangeListener();
     await ensureInfoPanelShowChangeListener();
     initLanguage();

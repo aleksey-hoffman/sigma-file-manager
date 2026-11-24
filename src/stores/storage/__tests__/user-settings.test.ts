@@ -4,7 +4,7 @@
 
 import { nextTick } from 'vue';
 import {
-  beforeEach, describe, expect, it, vi,
+  afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { USER_SETTINGS_SCHEMA_VERSION } from '@/stores/schemas/user-settings';
@@ -17,6 +17,7 @@ import {
 import type { StartupStorageFileBootstrap } from '@/stores/storage/utils/startup-storage-bootstrap';
 import type { NavigatorFolderSettingsMap, Theme } from '@/types/user-settings';
 import { normalizePathForComparison } from '@/utils/file-operation-paths';
+import { usePlatformStore } from '@/stores/runtime/platform';
 
 type SettingsEventCallback = (event: {
   payload: {
@@ -124,6 +125,60 @@ describe('user settings theme sync', () => {
         matches: false,
         addEventListener: vi.fn(),
       })),
+    });
+  });
+
+  describe('theme transition', () => {
+    const startViewTransitionMock = vi.fn((applyThemeChange: () => void) => {
+      applyThemeChange();
+      return {
+        ready: Promise.resolve(),
+        skipTransition: vi.fn(),
+      };
+    });
+
+    beforeEach(() => {
+      startViewTransitionMock.mockClear();
+      Object.defineProperty(document, 'startViewTransition', {
+        configurable: true,
+        writable: true,
+        value: startViewTransitionMock,
+      });
+      Object.defineProperty(document.documentElement, 'animate', {
+        configurable: true,
+        writable: true,
+        value: vi.fn(() => ({
+          finished: Promise.resolve(),
+          cancel: vi.fn(),
+        })),
+      });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(document, 'startViewTransition');
+      Reflect.deleteProperty(document.documentElement, 'animate');
+    });
+
+    it('animates theme changes after startup', async () => {
+      const userSettingsStore = useUserSettingsStore();
+
+      await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+      await userSettingsStore.set('theme', 'light');
+      await nextTick();
+
+      expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('changes the theme without a view transition when webview compositing is off', async () => {
+      usePlatformStore().webviewCompositingDisabled = true;
+      const userSettingsStore = useUserSettingsStore();
+
+      await userSettingsStore.init(createUserSettingsBootstrap('dark'));
+      await userSettingsStore.set('theme', 'light');
+      await nextTick();
+
+      expect(startViewTransitionMock).not.toHaveBeenCalled();
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
     });
   });
 
