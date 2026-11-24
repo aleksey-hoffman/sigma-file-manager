@@ -230,10 +230,10 @@
     "openedCount": "Բացված {n} անգամ | Բացված {n} անգամ | Բացված {n} անգամ | Բացված {n} անգամ",
     "actions": {
       "openContainingFolder": "Բացել պարունակող թղթապանակը",
-      "clearAll": "Ջնջել բոլոր այս ցուցակից",
+      "clearAll": "Հեռացնել բոլորը այս ցուցակից",
       "clearAllConfirmTitle": "Ջնջե՞լ բոլորը այս ցուցակից",
       "clearAllConfirmDescription": "Սա հնարավոր չէ հետարկել.",
-      "confirmRemove": "Ջնջել",
+      "confirmRemove": "Հեռացնել",
       "removeAllTags": "Հեռացնել բոլոր թեգերը",
       "removeAllTagsConfirmTitle": "Հեռացնե՞լ բոլոր թեգերը տարրերից",
       "removeAllTagsConfirmDescription": "Բոլոր տարրերը կմնան առանց թեգերի. թեգերի անունները կպահպանվեն.",
@@ -263,7 +263,7 @@
     "navigation": "Նավիգացիա"
   },
   "settings": {
-    "searchSettings": "Որոնման կարգավորումներ",
+    "searchSettings": "Որոնել կարգավորումներում",
     "general": {
       "windowScaling": "Պատուհանի մասշտաբավորում",
       "currentUiZoomLevel": "UI-ի ներկայիս զումի մակարդակը՝ ",
@@ -1013,12 +1013,12 @@
     "directoryIsEmpty": "Այս պանակը դատարկ է",
     "directoryIsEmptyDescription": "Այստեղ որևէ պանակ կամ ֆայլ չկա",
     "directoryAccessErrorTitle": "Չհաջողվեց բացել այս պանակը",
-    "removeFromSelection": "Ջնջել ընտրությունից",
-    "removeFromClipboard": "Ջնջել փոխանակման բուֆերից",
+    "removeFromSelection": "Հեռացնել ընտրությունից",
+    "removeFromClipboard": "Հեռացնել փոխանակման բուֆերից",
     "preparedForCopying": "Պատրաստ է պատճենելու համար",
     "preparedForMoving": "Պատրաստ է տեղափոխելու համար",
     "itemsPrepared": "0 իր | 1 իր | {count} իր | {count} իր",
-    "discardClipboard": "Չեղարկել",
+    "discardClipboard": "Հեռացնել",
     "copiedInAnotherApp": "Պատճենված է այլ ծրագրում",
     "cutInAnotherApp": "Կտրված է այլ ծրագրում",
     "copiedInApp": "Պատճենված է {app}-ում",
@@ -1056,7 +1056,7 @@
       "share": "Կիսվել LAN-ի միջոցով",
       "openInNewTab": "Բացել նոր թաբում",
       "addToFavorites": "Ավելացնել սիրվածներին",
-      "removeFromFavorites": "Ջնջել սիրվածներից"
+      "removeFromFavorites": "Հեռացնել սիրվածներից"
     },
     "linkTypes": {
       "symlink": "Սիմվոլիկ հղում",

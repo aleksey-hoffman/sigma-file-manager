@@ -230,10 +230,10 @@
     "openedCount": "Открыто {n} раз | Открыто {n} раз | Открыто {n} раз | Открыто {n} раз",
     "actions": {
       "openContainingFolder": "Открыть расположение",
-      "clearAll": "Удалить всё из этого списка",
+      "clearAll": "Убрать все из этого списка",
       "clearAllConfirmTitle": "Удалить всё из этого списка?",
       "clearAllConfirmDescription": "Это действие нельзя отменить.",
-      "confirmRemove": "Удалить",
+      "confirmRemove": "Убрать",
       "removeAllTags": "Снять все метки",
       "removeAllTagsConfirmTitle": "Снять все метки с элементов?",
       "removeAllTagsConfirmDescription": "Все элементы будут без меток. Названия меток сохранятся.",
@@ -378,7 +378,7 @@
       "selectedFont": "Выбранный шрифт",
       "defaultFont": "шрифт по умолчанию",
       "reFetchSystemFonts": "Повторно загрузить системные шрифты",
-      "resetFontToDefault": "Сбросить шрифт по умолчанию"
+      "resetFontToDefault": "Вернуть шрифт по умолчанию"
     },
     "dateTime": {
       "dateTime": "Дата/время",
@@ -790,14 +790,14 @@
   },
   "version": "Версия",
   "active": "Активный",
-  "close": "Закрывать",
+  "close": "Закрыть",
   "type": "Тип",
   "image": "Изображение",
   "video": "Видео",
   "drive": "Диск",
   "drives": "Диски",
   "locations": "Места",
-  "reset": "Сброс настроек",
+  "reset": "Сбросить",
   "resetAll": "Сбросить все",
   "loading": "Загрузка",
   "loadingDots": "Загружается...",
@@ -1016,7 +1016,7 @@
     "preparedForCopying": "Подготовлено для копирования",
     "preparedForMoving": "Подготовлено для перемещения",
     "itemsPrepared": "0 элементов | 1 элемент | {count} элемента | {count} элементов",
-    "discardClipboard": "Отменить",
+    "discardClipboard": "Убрать",
     "copiedInAnotherApp": "Скопировано в другом приложении",
     "cutInAnotherApp": "Вырезано в другом приложении",
     "copiedInApp": "Скопировано в {app}",
@@ -1053,7 +1053,7 @@
       "share": "Поделиться по сети",
       "openInNewTab": "Открыть в новой вкладке",
       "addToFavorites": "Добавить в избранное",
-      "removeFromFavorites": "Удалить из избранного",
+      "removeFromFavorites": "Убрать из избранного",
       "createLink": "Создать ссылку"
     },
     "linkTypes": {
