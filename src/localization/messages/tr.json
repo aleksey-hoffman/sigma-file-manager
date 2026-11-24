@@ -746,7 +746,11 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "0 bağlantı oluşturuldu | 1 bağlantı oluşturuldu | {n} bağlantı oluşturuldu | {n} bağlantı oluşturuldu",
     "createdNOfNLinks": "{total} bağlantıdan {created} tanesi oluşturuldu",
-    "linkCreationPartialFailureDescription": "{count} bağlantı başarısız oldu. İlk hata: {error}"
+    "linkCreationPartialFailureDescription": "{count} bağlantı başarısız oldu. İlk hata: {error}",
+    "storageRestoredFromBackup": "Kaydedilen veriler yedekten geri yüklendi",
+    "storageRestoredFromBackupDescription": "Kaydedilen verilerin bir kısmı bozulmuştu. Uygulamanın son başlatılışında oluşturulan yedekten geri yüklendi, bu yüzden son değişiklikler eksik olabilir.",
+    "storageResetToDefaults": "Kaydedilen veriler sıfırlandı",
+    "storageResetToDefaultsDescription": "Kaydedilen verilerin bir kısmı bozulmuştu ve kullanılabilir bir yedek yoktu, bu yüzden varsayılan değerlere sıfırlandı."
   },
   "contextMenus": {
     "dirItem": {

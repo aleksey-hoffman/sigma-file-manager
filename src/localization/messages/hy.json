@@ -775,7 +775,11 @@
     "printViewFileIsNotSupported": "Տպել. ֆայլը չի աջակցվում",
     "createdNLinks": "Ստեղծվել է 0 հղում | Ստեղծվել է 1 հղում | Ստեղծվել է {n} հղում | Ստեղծվել է {n} հղում",
     "createdNOfNLinks": "Ստեղծվել է {created}/{total} հղում",
-    "linkCreationPartialFailureDescription": "{count} հղում չհաջողվեց։ Առաջին սխալը՝ {error}"
+    "linkCreationPartialFailureDescription": "{count} հղում չհաջողվեց։ Առաջին սխալը՝ {error}",
+    "storageRestoredFromBackup": "Պահված տվյալները վերականգնվել են պահուստային պատճենից",
+    "storageRestoredFromBackupDescription": "Պահված տվյալների մի մասը վնասված էր։ Դրանք վերականգնվել են հավելվածի վերջին գործարկման ժամանակ ստեղծված պահուստային պատճենից, ուստի վերջին փոփոխությունները կարող են բացակայել։",
+    "storageResetToDefaults": "Պահված տվյալները վերակայվել են",
+    "storageResetToDefaultsDescription": "Պահված տվյալների մի մասը վնասված էր, և պահուստային պատճեն չկար, ուստի դրանք վերակայվել են լռելյայն արժեքներին։"
   },
   "contextMenus": {
     "dirItem": {

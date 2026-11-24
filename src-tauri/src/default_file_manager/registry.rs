@@ -104,7 +104,7 @@ pub fn write_snapshot(snapshot: &DefaultFileManagerRegistrySnapshot) -> Result<(
     let data = serde_json::to_string_pretty(snapshot)
         .map_err(|error| format!("Failed to serialize registry snapshot: {error}"))?;
 
-    windows_installation::write_file_atomically(&path, data.as_bytes())
+    crate::utils::write_file_atomically(&path, data.as_bytes())
         .map_err(|error| format!("Failed to write registry snapshot: {error}"))
 }
 

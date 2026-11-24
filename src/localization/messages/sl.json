@@ -775,7 +775,11 @@
     "printViewFileIsNotSupported": "Tiskanje: datoteka ni podprta",
     "createdNLinks": "Ustvarjenih 0 povezav | Ustvarjena 1 povezava | Ustvarjene {n} povezave | Ustvarjenih {n} povezav",
     "createdNOfNLinks": "Ustvarjenih {created} od {total} povezav",
-    "linkCreationPartialFailureDescription": "{count} povezav ni uspelo. Prva napaka: {error}"
+    "linkCreationPartialFailureDescription": "{count} povezav ni uspelo. Prva napaka: {error}",
+    "storageRestoredFromBackup": "Shranjeni podatki so bili obnovljeni iz varnostne kopije",
+    "storageRestoredFromBackupDescription": "Nekateri shranjeni podatki so bili poškodovani. Obnovljeni so bili iz varnostne kopije, ustvarjene ob zadnjem zagonu aplikacije, zato nedavne spremembe morda manjkajo.",
+    "storageResetToDefaults": "Shranjeni podatki so bili ponastavljeni",
+    "storageResetToDefaultsDescription": "Nekateri shranjeni podatki so bili poškodovani in varnostna kopija ni bila na voljo, zato so bili ponastavljeni na privzete vrednosti."
   },
   "contextMenus": {
     "dirItem": {

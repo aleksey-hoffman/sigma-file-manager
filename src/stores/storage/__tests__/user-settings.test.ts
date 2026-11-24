@@ -94,6 +94,7 @@ function createUserSettingsBootstrap(theme: Theme): StartupStorageFileBootstrap 
     },
     schemaVersion: USER_SETTINGS_SCHEMA_VERSION,
     error: null,
+    recovery: null,
   };
 }
 
@@ -295,6 +296,7 @@ describe('user settings infusion blend settings', () => {
       },
       schemaVersion: USER_SETTINGS_SCHEMA_VERSION,
       error: null,
+      recovery: null,
     };
   }
 
@@ -495,6 +497,7 @@ describe('default terminal setting', () => {
       },
       schemaVersion: USER_SETTINGS_SCHEMA_VERSION,
       error: null,
+      recovery: null,
     });
 
     expect(userSettingsStore.userSettings.terminal).toEqual({

@@ -616,6 +616,11 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
 
     system_tray::setup_system_tray(app.handle())?;
     startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
+    startup_storage_bootstrap::recover_user_storage_files(
+        app.handle(),
+        app.state::<startup_storage_bootstrap::StartupStorageBootstrapState>()
+            .inner(),
+    );
     // The migration can rewrite the user's real default-file-manager registry
     // integration, which lives outside the app folders, so isolated e2e runs skip it.
     #[cfg(windows)]

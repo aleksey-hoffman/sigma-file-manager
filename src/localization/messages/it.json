@@ -746,7 +746,11 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "Creati 0 collegamenti | Creato 1 collegamento | Creati {n} collegamenti | Creati {n} collegamenti",
     "createdNOfNLinks": "Creati {created} link su {total}",
-    "linkCreationPartialFailureDescription": "{count} link non riusciti. Primo errore: {error}"
+    "linkCreationPartialFailureDescription": "{count} link non riusciti. Primo errore: {error}",
+    "storageRestoredFromBackup": "Dati salvati ripristinati da un backup",
+    "storageRestoredFromBackupDescription": "Alcuni dati salvati erano danneggiati. Sono stati ripristinati dal backup creato all'ultimo avvio dell'app, quindi le modifiche recenti potrebbero mancare.",
+    "storageResetToDefaults": "I dati salvati sono stati reimpostati",
+    "storageResetToDefaultsDescription": "Alcuni dati salvati erano danneggiati e non era disponibile alcun backup, quindi sono stati reimpostati ai valori predefiniti."
   },
   "contextMenus": {
     "dirItem": {

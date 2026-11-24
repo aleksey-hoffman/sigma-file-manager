@@ -341,6 +341,10 @@ vi.mock('@/utils/app-splash', () => ({
   removeAppSplash: removeAppSplashMock,
 }));
 
+vi.mock('@/stores/storage/utils/startup-storage-recovery-notice', () => ({
+  showStartupStorageRecoveryNotice: vi.fn(async () => undefined),
+}));
+
 vi.mock('@/utils/open-navigator-directory', () => ({
   preloadNavigatorRoute: vi.fn(),
 }));

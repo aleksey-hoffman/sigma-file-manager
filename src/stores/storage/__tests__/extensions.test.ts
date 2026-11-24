@@ -89,6 +89,7 @@ describe('extensions storage shared binaries', () => {
       data: null,
       schemaVersion: null,
       error: null,
+      recovery: null,
     };
 
     await Promise.all([
@@ -135,6 +136,7 @@ describe('extensions storage shared binaries', () => {
       },
       schemaVersion: null,
       error: null,
+      recovery: null,
     });
 
     expect(lazyStoreGetMock).not.toHaveBeenCalled();

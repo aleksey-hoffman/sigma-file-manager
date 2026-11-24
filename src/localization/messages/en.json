@@ -775,7 +775,11 @@
     "printViewFileIsNotSupported": "Print: file is not supported",
     "createdNLinks": "Created 0 links | Created 1 link | Created {n} links | Created {n} links",
     "createdNOfNLinks": "Created {created} of {total} links",
-    "linkCreationPartialFailureDescription": "{count} links failed. First error: {error}"
+    "linkCreationPartialFailureDescription": "{count} links failed. First error: {error}",
+    "storageRestoredFromBackup": "Saved data restored from a backup",
+    "storageRestoredFromBackupDescription": "Some saved data was damaged. It was restored from the backup made when the app last started, so recent changes may be missing.",
+    "storageResetToDefaults": "Saved data was reset",
+    "storageResetToDefaultsDescription": "Some saved data was damaged and no backup was available, so it was reset to defaults."
   },
   "contextMenus": {
     "dirItem": {

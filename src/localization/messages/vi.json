@@ -746,7 +746,11 @@
     "addedToFavorites": "Đã thêm 0 mục vào mục yêu thích | Đã thêm 1 mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích",
     "createdNLinks": "Đã tạo 0 liên kết | Đã tạo 1 liên kết | Đã tạo {n} liên kết | Đã tạo {n} liên kết",
     "createdNOfNLinks": "Đã tạo {created} trên {total} liên kết",
-    "linkCreationPartialFailureDescription": "{count} liên kết thất bại. Lỗi đầu tiên: {error}"
+    "linkCreationPartialFailureDescription": "{count} liên kết thất bại. Lỗi đầu tiên: {error}",
+    "storageRestoredFromBackup": "Đã khôi phục dữ liệu đã lưu từ bản sao lưu",
+    "storageRestoredFromBackupDescription": "Một số dữ liệu đã lưu bị hỏng. Dữ liệu đã được khôi phục từ bản sao lưu tạo ở lần khởi động ứng dụng gần nhất, nên các thay đổi gần đây có thể bị thiếu.",
+    "storageResetToDefaults": "Đã đặt lại dữ liệu đã lưu",
+    "storageResetToDefaultsDescription": "Một số dữ liệu đã lưu bị hỏng và không có bản sao lưu nào, nên dữ liệu đã được đặt lại về mặc định."
   },
   "contextMenus": {
     "dirItem": {

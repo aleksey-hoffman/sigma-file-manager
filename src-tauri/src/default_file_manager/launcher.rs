@@ -39,14 +39,11 @@ pub fn deploy(application_launch_target: &str) -> Result<(), String> {
 
     let launch_target_path =
         data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCH_TARGET_FILE_NAME);
-    windows_installation::write_file_atomically(
-        &launch_target_path,
-        application_launch_target.as_bytes(),
-    )?;
+    crate::utils::write_file_atomically(&launch_target_path, application_launch_target.as_bytes())?;
 
     let launcher_path =
         data_dir.join(windows_installation::DEFAULT_FILE_MANAGER_LAUNCHER_FILE_NAME);
-    windows_installation::write_file_atomically(&launcher_path, LAUNCHER_EXECUTABLE_BYTES)?;
+    crate::utils::write_file_atomically(&launcher_path, LAUNCHER_EXECUTABLE_BYTES)?;
 
     Ok(())
 }

@@ -746,7 +746,11 @@
     "addedToFavorites": "お気に入りに 0 個のアイテムを追加しました | お気に入りに 1 個のアイテムを追加しました | 気に入りに {n} 個のアイテムをお追加しました | お気に入りに {n} 個のアイテムを追加しました",
     "createdNLinks": "0 個のリンクを作成しました | 1 個のリンクを作成しました | {n} 個のリンクを作成しました | {n} 個のリンクを作成しました",
     "createdNOfNLinks": "{total} 件中 {created} 件のリンクを作成しました",
-    "linkCreationPartialFailureDescription": "{count} 件のリンクに失敗しました。最初のエラー: {error}"
+    "linkCreationPartialFailureDescription": "{count} 件のリンクに失敗しました。最初のエラー: {error}",
+    "storageRestoredFromBackup": "保存データをバックアップから復元しました",
+    "storageRestoredFromBackupDescription": "一部の保存データが破損していたため、前回のアプリ起動時に作成されたバックアップから復元しました。最近の変更が失われている可能性があります。",
+    "storageResetToDefaults": "保存データをリセットしました",
+    "storageResetToDefaultsDescription": "一部の保存データが破損しており、利用できるバックアップがなかったため、既定値にリセットしました。"
   },
   "contextMenus": {
     "dirItem": {
