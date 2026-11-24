@@ -6,6 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { Container, Draggable, type DropResult } from 'vue3-smooth-dnd';
 import { applyDropResult } from '@/utils/reorder-matching-items';
+import { removeSmoothDndCursorStyleOnRelease } from '@/utils/smooth-dnd-cursor';
 
 interface Props<T> {
   items: T[];
@@ -30,6 +31,11 @@ function getItemGhostParent() {
 function onDrop(dropResult: DropResult) {
   emit('set', applyDropResult(props.items, dropResult));
 }
+
+function onDragStart() {
+  removeSmoothDndCursorStyleOnRelease();
+  emit('drag-start');
+}
 </script>
 
 <template>
@@ -44,7 +50,7 @@ function onDrop(dropResult: DropResult) {
       lock-axis="x"
       orientation="horizontal"
       @drop="onDrop"
-      @drag-start="emit('drag-start')"
+      @drag-start="onDragStart"
       @drag-end="emit('drag-end')"
     >
       <Draggable

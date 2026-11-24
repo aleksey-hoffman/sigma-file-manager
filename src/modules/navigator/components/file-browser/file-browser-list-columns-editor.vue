@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useTextDirection } from '@/composables/use-text-direction';
 import { applyDropResult } from '@/utils/reorder-matching-items';
+import { removeSmoothDndCursorStyleOnRelease } from '@/utils/smooth-dnd-cursor';
 import { useFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { buildCompactListColumnWidths, normalizeListColumnOrder } from './utils/file-browser-list-columns';
 import { getFileBrowserListColumnLabel } from './utils/file-browser-sort-columns';
@@ -113,6 +114,7 @@ async function compactColumnWidths() {
       lock-axis="y"
       orientation="vertical"
       @drop="handleColumnOrderDrop"
+      @drag-start="removeSmoothDndCursorStyleOnRelease"
     >
       <Draggable
         v-for="columnId in reorderableColumnIds"
