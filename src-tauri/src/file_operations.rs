@@ -3460,6 +3460,24 @@ mod tests {
         assert!(!path_entry_exists(&link));
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn delete_items_keeps_backslash_in_unix_file_name() {
+        let temp = tempdir().unwrap();
+        let backslash_file = temp.path().join("back\\slash.txt");
+        let nested_folder = temp.path().join("back");
+        let nested_file = nested_folder.join("slash.txt");
+        fs::write(&backslash_file, b"target").unwrap();
+        fs::create_dir_all(&nested_folder).unwrap();
+        fs::write(&nested_file, b"keep").unwrap();
+
+        let result = delete_items(vec![backslash_file.to_string_lossy().to_string()], false);
+
+        assert!(result.success, "{:?}", result.error);
+        assert!(!path_entry_exists(&backslash_file));
+        assert_eq!(fs::read(&nested_file).unwrap(), b"keep");
+    }
+
     #[test]
     fn copy_and_move_items_transfer_a_broken_link() {
         let temp = tempdir().unwrap();

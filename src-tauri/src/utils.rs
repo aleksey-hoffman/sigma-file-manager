@@ -15,8 +15,14 @@ use windows::Win32::Storage::FileSystem::GetDriveTypeW;
 #[cfg(windows)]
 const DRIVE_REMOTE: u32 = 4;
 
+#[cfg(windows)]
 pub fn normalize_path(path: &str) -> String {
     path.replace('\\', "/")
+}
+
+#[cfg(not(windows))]
+pub fn normalize_path(path: &str) -> String {
+    path.to_string()
 }
 
 pub fn path_is_descendant_of(child: &str, ancestor: &str) -> bool {

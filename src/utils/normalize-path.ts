@@ -2,10 +2,15 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import { getPlatformInfo, isPlatformInfoInitialized } from '@/utils/platform-info';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 
+function backslashIsPathSeparator(): boolean {
+  return !isPlatformInfoInitialized() || getPlatformInfo().isWindows;
+}
+
 export default function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/');
+  return backslashIsPathSeparator() ? path.replace(/\\/g, '/') : path;
 }
 
 export function canonicalizePath(path: string): string {
