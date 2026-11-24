@@ -38,6 +38,8 @@ export const HISTORY_MAX_ITEMS = 100;
 export const FREQUENT_ITEMS_MAX = 100;
 const PATH_EXISTS_BATCH_SIZE = 4;
 
+type StoredPathItems = Pick<UserStats, 'favorites' | 'taggedItems' | 'history' | 'frequentItems'>;
+
 export const useUserStatsStore = defineStore('userStats', () => {
   const userPathsStore = useUserPathsStore();
   const userStatsStorage = ref<LazyStore | null>(null);
@@ -525,6 +527,33 @@ export const useUserStatsStore = defineStore('userStats', () => {
     );
   }
 
+  function getItemsUnderPaths(paths: string[]): StoredPathItems {
+    function isAffected(item: { path: string }) {
+      return isPathAffectedByDeletion(item.path, paths);
+    }
+
+    return {
+      favorites: userStats.value.favorites.filter(isAffected),
+      taggedItems: userStats.value.taggedItems.filter(isAffected),
+      history: userStats.value.history.filter(isAffected),
+      frequentItems: userStats.value.frequentItems.filter(isAffected),
+    };
+  }
+
+  function restoreMissingItems<Item extends { path: string }>(currentItems: Item[], items: Item[]): Item[] {
+    const currentPaths = new Set(currentItems.map(item => item.path));
+    return [...currentItems, ...items.filter(item => !currentPaths.has(item.path))];
+  }
+
+  async function restoreItems(items: StoredPathItems) {
+    const stats = userStats.value;
+    stats.favorites = restoreMissingItems(stats.favorites, items.favorites);
+    stats.taggedItems = restoreMissingItems(stats.taggedItems, items.taggedItems);
+    stats.history = restoreMissingItems(stats.history, items.history);
+    stats.frequentItems = restoreMissingItems(stats.frequentItems, items.frequentItems);
+    await saveStats();
+  }
+
   async function handlePathsDeleted(paths: string[]) {
     const originalCounts = {
       favorites: userStats.value.favorites.length,
@@ -689,6 +718,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
     clearAllFrequent,
     handlePathRenamed,
     handlePathsMoved,
+    getItemsUnderPaths,
+    restoreItems,
     handlePathsDeleted,
   };
 });

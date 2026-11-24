@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Dati salvati ripristinati da un backup",
     "storageRestoredFromBackupDescription": "Alcuni dati salvati erano danneggiati. Sono stati ripristinati dal backup creato all'ultimo avvio dell'app, quindi le modifiche recenti potrebbero mancare.",
     "storageResetToDefaults": "I dati salvati sono stati reimpostati",
-    "storageResetToDefaultsDescription": "Alcuni dati salvati erano danneggiati e non era disponibile alcun backup, quindi sono stati reimpostati ai valori predefiniti."
+    "storageResetToDefaultsDescription": "Alcuni dati salvati erano danneggiati e non era disponibile alcun backup, quindi sono stati reimpostati ai valori predefiniti.",
+    "undo": "Annulla operazione",
+    "undoFailed": "Impossibile annullare l'operazione"
   },
   "contextMenus": {
     "dirItem": {

@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "保存データをバックアップから復元しました",
     "storageRestoredFromBackupDescription": "一部の保存データが破損していたため、前回のアプリ起動時に作成されたバックアップから復元しました。最近の変更が失われている可能性があります。",
     "storageResetToDefaults": "保存データをリセットしました",
-    "storageResetToDefaultsDescription": "一部の保存データが破損しており、利用できるバックアップがなかったため、既定値にリセットしました。"
+    "storageResetToDefaultsDescription": "一部の保存データが破損しており、利用できるバックアップがなかったため、既定値にリセットしました。",
+    "undo": "元に戻す",
+    "undoFailed": "元に戻せませんでした"
   },
   "contextMenus": {
     "dirItem": {

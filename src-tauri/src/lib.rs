@@ -369,6 +369,7 @@ pub fn run() {
             copy_move_job::start_copy_move_job,
             copy_move_job::cancel_copy_move_job,
             delete_job::recycle_bin_unavailable_paths,
+            delete_job::restore_trashed_items,
             delete_job::start_delete_job,
             delete_job::cancel_delete_job,
             global_search::global_search_init,

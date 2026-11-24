@@ -10,7 +10,13 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import uniqueId from '@/utils/unique-id';
 import { sourceDisplayNameFromPaths } from '@/utils/source-display-name';
-import type { ConflictResolution, FileOperationResult, PathResolutionEntry } from '@/stores/runtime/clipboard';
+import { showOperationToast, type UndoAction } from '@/utils/operation-toast';
+import type {
+  ConflictResolution,
+  FileOperationResult,
+  MovedPathPair,
+  PathResolutionEntry,
+} from '@/stores/runtime/clipboard';
 import { useStatusCenterStore } from './status-center';
 
 interface CopyMoveJobProgressPayload {
@@ -46,6 +52,7 @@ function localizeCopyMoveProgressDetail(detail: string): string {
 export interface StartCopyMoveJobOptions {
   label: string;
   displayPath: string;
+  getUndo?: (movedPaths: MovedPathPair[]) => UndoAction | null;
 }
 
 function finishedPayloadToResult(payload: CopyMoveJobFinishedPayload): FileOperationResult {
@@ -64,6 +71,7 @@ function finishedPayloadToResult(payload: CopyMoveJobFinishedPayload): FileOpera
 function toastCopyMoveSuccess(
   payload: CopyMoveJobFinishedPayload,
   operationType: 'copy' | 'move' | undefined,
+  getUndo: StartCopyMoveJobOptions['getUndo'],
 ) {
   const copied = payload.copiedCount ?? 0;
   const skipped = payload.skippedCount ?? 0;
@@ -89,14 +97,11 @@ function toastCopyMoveSuccess(
       ? i18n.global.t('notifications.skippedCount', { n: skipped }, skipped)
       : '';
 
-  toast.custom(markRaw(ToastStatic), {
-    componentProps: {
-      data: {
-        title,
-        description,
-      },
-    },
+  showOperationToast({
+    title,
+    description,
     duration: 2500,
+    undo: isMove ? getUndo?.(payload.movedPaths ?? []) : null,
   });
 }
 
@@ -104,7 +109,10 @@ export const useCopyMoveJobsStore = defineStore('copy-move-jobs', () => {
   const eventUnlisteners = shallowRef<UnlistenFn[]>([]);
   const completionHandlers = new Map<
     string,
-    { resolve: (result: FileOperationResult) => void }
+    {
+      resolve: (result: FileOperationResult) => void;
+      getUndo: StartCopyMoveJobOptions['getUndo'];
+    }
   >();
 
   async function ensureEventListeners() {
@@ -167,7 +175,7 @@ export const useCopyMoveJobsStore = defineStore('copy-move-jobs', () => {
             = existingOp?.type === 'copy' || existingOp?.type === 'move'
               ? existingOp.type
               : undefined;
-          toastCopyMoveSuccess(payload, copyMoveKind);
+          toastCopyMoveSuccess(payload, copyMoveKind, handlers.getUndo);
           handlers.resolve(finishedPayloadToResult(payload));
         }
         else {
@@ -210,7 +218,10 @@ export const useCopyMoveJobsStore = defineStore('copy-move-jobs', () => {
     const jobId = uniqueId();
 
     return new Promise((resolve, reject) => {
-      completionHandlers.set(jobId, { resolve });
+      completionHandlers.set(jobId, {
+        resolve,
+        getUndo: options.getUndo,
+      });
       statusCenterStore.addOperation({
         id: jobId,
         type: kind,

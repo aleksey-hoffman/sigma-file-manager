@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Kaydedilen veriler yedekten geri yüklendi",
     "storageRestoredFromBackupDescription": "Kaydedilen verilerin bir kısmı bozulmuştu. Uygulamanın son başlatılışında oluşturulan yedekten geri yüklendi, bu yüzden son değişiklikler eksik olabilir.",
     "storageResetToDefaults": "Kaydedilen veriler sıfırlandı",
-    "storageResetToDefaultsDescription": "Kaydedilen verilerin bir kısmı bozulmuştu ve kullanılabilir bir yedek yoktu, bu yüzden varsayılan değerlere sıfırlandı."
+    "storageResetToDefaultsDescription": "Kaydedilen verilerin bir kısmı bozulmuştu ve kullanılabilir bir yedek yoktu, bu yüzden varsayılan değerlere sıfırlandı.",
+    "undo": "Geri al",
+    "undoFailed": "Geri alınamadı"
   },
   "contextMenus": {
     "dirItem": {

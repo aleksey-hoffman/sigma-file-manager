@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Gespeicherte Daten aus einer Sicherung wiederhergestellt",
     "storageRestoredFromBackupDescription": "Einige gespeicherte Daten waren beschädigt. Sie wurden aus der Sicherung vom letzten App-Start wiederhergestellt, daher fehlen möglicherweise die letzten Änderungen.",
     "storageResetToDefaults": "Gespeicherte Daten wurden zurückgesetzt",
-    "storageResetToDefaultsDescription": "Einige gespeicherte Daten waren beschädigt und es war keine Sicherung vorhanden, daher wurden sie auf die Standardwerte zurückgesetzt."
+    "storageResetToDefaultsDescription": "Einige gespeicherte Daten waren beschädigt und es war keine Sicherung vorhanden, daher wurden sie auf die Standardwerte zurückgesetzt.",
+    "undo": "Rückgängig",
+    "undoFailed": "Rückgängigmachen fehlgeschlagen"
   },
   "contextMenus": {
     "dirItem": {

@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Données enregistrées restaurées depuis une sauvegarde",
     "storageRestoredFromBackupDescription": "Certaines données enregistrées étaient endommagées. Elles ont été restaurées depuis la sauvegarde du dernier démarrage de l'app, les modifications récentes peuvent donc manquer.",
     "storageResetToDefaults": "Les données enregistrées ont été réinitialisées",
-    "storageResetToDefaultsDescription": "Certaines données enregistrées étaient endommagées et aucune sauvegarde n'était disponible, elles ont donc été réinitialisées aux valeurs par défaut."
+    "storageResetToDefaultsDescription": "Certaines données enregistrées étaient endommagées et aucune sauvegarde n'était disponible, elles ont donc été réinitialisées aux valeurs par défaut.",
+    "undo": "Annuler l'opération",
+    "undoFailed": "Impossible d'annuler l'opération"
   },
   "contextMenus": {
     "dirItem": {

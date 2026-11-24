@@ -21,6 +21,7 @@ import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { recordRenamedPath, recordStrandedRename } from '@/composables/record-renamed-path';
+import { createTrashUndo, showRenamedToast } from '@/composables/file-operation-undo';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
 import normalizePath, { getParentDirectory, joinPath } from '@/utils/normalize-path';
@@ -838,18 +839,10 @@ export function useFileBrowserSelection(
       });
 
       if (result.success) {
-        toast.custom(markRaw(ToastStatic), {
-          componentProps: {
-            data: {
-              title: t('notifications.renamed'),
-              description: '',
-            },
-          },
-        });
-
         const oldPath = entry.path;
         const newPath = joinPath(getParentDirectory(oldPath), trimmedName);
 
+        showRenamedToast(oldPath, newPath);
         await recordRenamedPath(oldPath, newPath);
         cancelRename();
         return true;
@@ -1131,6 +1124,7 @@ export function useFileBrowserSelection(
         const result = await deleteJobsStore.startJob(job.paths, job.useTrash, {
           label: job.useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
           displayPath,
+          getUndo: createTrashUndo,
         });
 
         if (result.deletedPaths.length > 0) {

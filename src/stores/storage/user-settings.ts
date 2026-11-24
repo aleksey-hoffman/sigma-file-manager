@@ -685,6 +685,26 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
+  function getFolderSettingsUnderPaths(paths: string[]): StoredNavigatorFolderSettingsMap {
+    const currentMap = getStoredNavigatorFolderSettingsMap(userSettings.value.navigator);
+    const remainingMap = removeNavigatorFolderSettingsPaths(currentMap, paths) ?? currentMap;
+
+    return Object.fromEntries(
+      Object.entries(currentMap).filter(([path]) => !(path in remainingMap)),
+    );
+  }
+
+  async function restoreFolderSettings(folderSettings: StoredNavigatorFolderSettingsMap) {
+    if (Object.keys(folderSettings).length === 0) {
+      return;
+    }
+
+    await updateFolderSettings(currentMap => ({
+      ...folderSettings,
+      ...currentMap,
+    }));
+  }
+
   async function handlePathsDeleted(deletedPaths: string[]) {
     await updateFolderSettings(currentMap => (
       removeNavigatorFolderSettingsPaths(currentMap, deletedPaths)
@@ -745,6 +765,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     toggleInfoPanel,
     handlePathRenamed,
     handlePathsMoved,
+    getFolderSettingsUnderPaths,
+    restoreFolderSettings,
     handlePathsDeleted,
   };
 });

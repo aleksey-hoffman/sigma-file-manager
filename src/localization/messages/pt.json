@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Dados salvos restaurados de um backup",
     "storageRestoredFromBackupDescription": "Alguns dados salvos estavam danificados. Eles foram restaurados do backup criado na última inicialização do app, então alterações recentes podem estar faltando.",
     "storageResetToDefaults": "Os dados salvos foram redefinidos",
-    "storageResetToDefaultsDescription": "Alguns dados salvos estavam danificados e não havia backup disponível, então eles foram redefinidos para os valores padrão."
+    "storageResetToDefaultsDescription": "Alguns dados salvos estavam danificados e não havia backup disponível, então eles foram redefinidos para os valores padrão.",
+    "undo": "Desfazer",
+    "undoFailed": "Não foi possível desfazer"
   },
   "contextMenus": {
     "dirItem": {

@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "Datos guardados restaurados desde una copia de seguridad",
     "storageRestoredFromBackupDescription": "Algunos datos guardados estaban dañados. Se restauraron desde la copia de seguridad del último inicio de la app, por lo que pueden faltar los cambios recientes.",
     "storageResetToDefaults": "Los datos guardados se restablecieron",
-    "storageResetToDefaultsDescription": "Algunos datos guardados estaban dañados y no había copia de seguridad, así que se restablecieron a los valores predeterminados."
+    "storageResetToDefaultsDescription": "Algunos datos guardados estaban dañados y no había copia de seguridad, así que se restablecieron a los valores predeterminados.",
+    "undo": "Deshacer",
+    "undoFailed": "No se pudo deshacer"
   },
   "contextMenus": {
     "dirItem": {

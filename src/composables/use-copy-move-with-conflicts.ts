@@ -12,6 +12,7 @@ import type {
   PathResolutionEntry,
 } from '@/stores/runtime/clipboard';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
+import { createMoveUndo } from '@/composables/file-operation-undo';
 import { recordMovedPaths } from '@/composables/record-moved-paths';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { useTopLevelNameConflictDialog } from '@/composables/use-top-level-name-conflict-dialog';
@@ -152,6 +153,7 @@ export function useCopyMoveWithConflicts() {
             {
               label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
               displayPath,
+              getUndo: perPathResolutions ? undefined : createMoveUndo,
             },
           )
         : null;

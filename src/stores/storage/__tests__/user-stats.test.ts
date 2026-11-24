@@ -317,6 +317,29 @@ describe('user stats tagged item removal', () => {
   });
 });
 
+describe('user stats restored paths', () => {
+  it('brings back deleted items without touching the ones added since', async () => {
+    setActivePinia(createPinia());
+    storedValues.clear();
+    const store = useUserStatsStore();
+    await store.init(createStatsBootstrap({
+      ...DEFAULT_USER_STATS,
+      favorites: [createFavorite('/docs/a.txt'), createFavorite('/keep.txt')],
+      taggedItems: [createTaggedItem('/docs/sub/b.txt', ['tag'])],
+    }));
+
+    const storedItems = store.getItemsUnderPaths(['/docs']);
+    await store.handlePathsDeleted(['/docs']);
+    expect(store.favorites.map(item => item.path)).toEqual(['/keep.txt']);
+
+    await store.restoreItems(storedItems);
+    await store.restoreItems(storedItems);
+
+    expect(store.favorites.map(item => item.path)).toEqual(['/keep.txt', '/docs/a.txt']);
+    expect(store.taggedItems.map(item => item.path)).toEqual(['/docs/sub/b.txt']);
+  });
+});
+
 describe('user stats moved paths', () => {
   beforeEach(() => {
     setActivePinia(createPinia());

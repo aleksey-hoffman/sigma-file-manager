@@ -750,7 +750,9 @@
     "storageRestoredFromBackup": "已从备份恢复保存的数据",
     "storageRestoredFromBackupDescription": "部分保存的数据已损坏，已从上次启动时创建的备份中恢复，最近的更改可能会丢失。",
     "storageResetToDefaults": "保存的数据已重置",
-    "storageResetToDefaultsDescription": "部分保存的数据已损坏且没有可用的备份，因此已重置为默认值。"
+    "storageResetToDefaultsDescription": "部分保存的数据已损坏且没有可用的备份，因此已重置为默认值。",
+    "undo": "撤销",
+    "undoFailed": "无法撤销"
   },
   "contextMenus": {
     "dirItem": {
