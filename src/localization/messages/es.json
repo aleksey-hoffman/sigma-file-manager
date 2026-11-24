@@ -746,7 +746,11 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "Creados 0 enlaces | Creado 1 enlace | Creados {n} enlaces | Creados {n} enlaces",
     "createdNOfNLinks": "Creados {created} de {total} enlaces",
-    "linkCreationPartialFailureDescription": "Fallaron {count} enlaces. Primer error: {error}"
+    "linkCreationPartialFailureDescription": "Fallaron {count} enlaces. Primer error: {error}",
+    "storageRestoredFromBackup": "Datos guardados restaurados desde una copia de seguridad",
+    "storageRestoredFromBackupDescription": "Algunos datos guardados estaban dañados. Se restauraron desde la copia de seguridad del último inicio de la app, por lo que pueden faltar los cambios recientes.",
+    "storageResetToDefaults": "Los datos guardados se restablecieron",
+    "storageResetToDefaultsDescription": "Algunos datos guardados estaban dañados y no había copia de seguridad, así que se restablecieron a los valores predeterminados."
   },
   "contextMenus": {
     "dirItem": {

@@ -3,14 +3,18 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use std::collections::HashSet;
-use std::fs::Metadata;
-use std::path::Path;
+use std::fs::{self, File, Metadata, OpenOptions};
+use std::io::{ErrorKind, Write};
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[cfg(windows)]
 use windows::core::PCWSTR;
 #[cfg(windows)]
-use windows::Win32::Storage::FileSystem::GetDriveTypeW;
+use windows::Win32::Storage::FileSystem::{
+    GetDriveTypeW, MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH,
+};
 
 #[cfg(windows)]
 const DRIVE_REMOTE: u32 = 4;
@@ -157,6 +161,112 @@ pub fn remove_dir_or_file(path: &Path) -> Result<(), String> {
         std::fs::remove_file(path)
     };
     result.map_err(|error| error.to_string())
+}
+
+static ATOMIC_WRITE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+fn create_atomic_write_file(parent: &Path, file_name: &str) -> Result<(File, PathBuf), String> {
+    loop {
+        let sequence = ATOMIC_WRITE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let temporary_path = parent.join(format!(
+            ".{file_name}.{}.{}.tmp",
+            std::process::id(),
+            sequence
+        ));
+
+        match OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temporary_path)
+        {
+            Ok(file) => return Ok((file, temporary_path)),
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => {}
+            Err(error) => {
+                return Err(format!(
+                    "Failed to create temporary file \"{}\": {error}",
+                    temporary_path.display()
+                ));
+            }
+        }
+    }
+}
+
+#[cfg(windows)]
+fn replace_file_with_temporary_file(temporary_path: &Path, path: &Path) -> Result<(), String> {
+    use std::os::windows::ffi::OsStrExt;
+
+    let temporary_path_wide = temporary_path
+        .as_os_str()
+        .encode_wide()
+        .chain([0])
+        .collect::<Vec<_>>();
+    let destination_path_wide = path
+        .as_os_str()
+        .encode_wide()
+        .chain([0])
+        .collect::<Vec<_>>();
+
+    unsafe {
+        MoveFileExW(
+            PCWSTR(temporary_path_wide.as_ptr()),
+            PCWSTR(destination_path_wide.as_ptr()),
+            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
+        )
+    }
+    .map_err(|error| error.to_string())
+}
+
+#[cfg(not(windows))]
+fn replace_file_with_temporary_file(temporary_path: &Path, path: &Path) -> Result<(), String> {
+    fs::rename(temporary_path, path).map_err(|error| error.to_string())
+}
+
+pub fn write_file_atomically(path: &Path, contents: &[u8]) -> Result<(), String> {
+    let parent = path
+        .parent()
+        .ok_or_else(|| format!("Path \"{}\" has no parent directory", path.display()))?;
+    fs::create_dir_all(parent).map_err(|error| {
+        format!(
+            "Failed to create parent directory \"{}\": {error}",
+            parent.display()
+        )
+    })?;
+
+    let file_name = path
+        .file_name()
+        .and_then(|file_name| file_name.to_str())
+        .ok_or_else(|| format!("Path \"{}\" has no valid file name", path.display()))?;
+    let (mut temporary_file, temporary_path) = create_atomic_write_file(parent, file_name)?;
+
+    let write_result = (|| {
+        temporary_file.write_all(contents).map_err(|error| {
+            format!(
+                "Failed to write temporary file \"{}\": {error}",
+                temporary_path.display()
+            )
+        })?;
+        temporary_file.sync_all().map_err(|error| {
+            format!(
+                "Failed to flush temporary file \"{}\": {error}",
+                temporary_path.display()
+            )
+        })?;
+        drop(temporary_file);
+
+        replace_file_with_temporary_file(&temporary_path, path).map_err(|error| {
+            format!(
+                "Failed to atomically replace \"{}\" with \"{}\": {error}",
+                path.display(),
+                temporary_path.display()
+            )
+        })
+    })();
+
+    if write_result.is_err() {
+        let _ = fs::remove_file(&temporary_path);
+    }
+
+    write_result
 }
 
 pub fn unique_path_with_index(
@@ -316,6 +426,28 @@ pub fn format_trash_error(error: trash::Error) -> String {
                 path.display()
             )
         }
+    }
+}
+
+#[cfg(test)]
+mod atomic_write_tests {
+    use super::write_file_atomically;
+
+    #[test]
+    fn atomic_file_write_replaces_existing_content() {
+        let temporary_directory = tempfile::tempdir().expect("temporary directory");
+        let path = temporary_directory.path().join("state.txt");
+        std::fs::write(&path, b"old").expect("initial file");
+
+        write_file_atomically(&path, b"new").expect("atomic replacement");
+
+        assert_eq!(std::fs::read(&path).expect("replaced file"), b"new");
+        assert_eq!(
+            std::fs::read_dir(temporary_directory.path())
+                .expect("directory listing")
+                .count(),
+            1
+        );
     }
 }
 

@@ -6,12 +6,15 @@ import { invoke } from '@tauri-apps/api/core';
 
 export type StartupStorageFileStatus = 'ready' | 'missing' | 'invalid' | 'error';
 
+export type StartupStorageFileRecovery = 'restoredFromBackup' | 'resetToDefaults';
+
 export interface StartupStorageFileBootstrap {
   path: string;
   status: StartupStorageFileStatus;
   data: Record<string, unknown> | null;
   schemaVersion: number | null;
   error: string | null;
+  recovery: StartupStorageFileRecovery | null;
 }
 
 export interface StartupStorageBootstrap {
@@ -42,6 +45,21 @@ export async function getStartupStorageFile(
 ): Promise<StartupStorageFileBootstrap | undefined> {
   const startupStorageBootstrap = await getStartupStorageBootstrap();
   return startupStorageBootstrap[fileName];
+}
+
+export async function getStartupStorageRecovery(): Promise<StartupStorageFileRecovery | null> {
+  const startupStorageBootstrap = await getStartupStorageBootstrap();
+  const recoveries = Object.values(startupStorageBootstrap).map(bootstrapFile => bootstrapFile?.recovery);
+
+  if (recoveries.includes('resetToDefaults')) {
+    return 'resetToDefaults';
+  }
+
+  if (recoveries.includes('restoredFromBackup')) {
+    return 'restoredFromBackup';
+  }
+
+  return null;
 }
 
 export function getStartupStorageRecord(

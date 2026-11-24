@@ -741,7 +741,11 @@
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "createdNLinks": "۰ پیوند ایجاد شد | ۱ پیوند ایجاد شد | {n} پیوند ایجاد شد | {n} پیوند ایجاد شد",
     "createdNOfNLinks": "{created} از {total} لینک ایجاد شد",
-    "linkCreationPartialFailureDescription": "{count} لینک ناموفق بود. اولین خطا: {error}"
+    "linkCreationPartialFailureDescription": "{count} لینک ناموفق بود. اولین خطا: {error}",
+    "storageRestoredFromBackup": "داده‌های ذخیره‌شده از نسخه پشتیبان بازیابی شد",
+    "storageRestoredFromBackupDescription": "برخی از داده‌های ذخیره‌شده آسیب دیده بودند. آن‌ها از نسخه پشتیبانی که در آخرین اجرای برنامه ساخته شد بازیابی شدند، بنابراین ممکن است تغییرات اخیر وجود نداشته باشند.",
+    "storageResetToDefaults": "داده‌های ذخیره‌شده بازنشانی شد",
+    "storageResetToDefaultsDescription": "برخی از داده‌های ذخیره‌شده آسیب دیده بودند و نسخه پشتیبانی وجود نداشت، بنابراین به مقادیر پیش‌فرض بازنشانی شدند."
   },
   "contextMenus": {
     "dirItem": {

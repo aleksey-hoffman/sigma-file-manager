@@ -529,6 +529,7 @@ describe('workspaces storage duplicate tabs', () => {
       },
       schemaVersion: 1,
       error: null,
+      recovery: null,
     });
 
     expect(lazyStoreGetMock).not.toHaveBeenCalled();
@@ -586,6 +587,7 @@ describe('workspaces storage duplicate tabs', () => {
       },
       schemaVersion: 1,
       error: null,
+      recovery: null,
     });
 
     expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
@@ -631,6 +633,7 @@ describe('workspaces storage duplicate tabs', () => {
       },
       schemaVersion: 1,
       error: null,
+      recovery: null,
     });
 
     expect(consoleWarnSpy).toHaveBeenCalledWith(

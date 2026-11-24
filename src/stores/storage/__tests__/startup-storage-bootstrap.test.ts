@@ -2,12 +2,37 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   canUseStartupStorageFastPath,
   getStartupStorageRecord,
+  getStartupStorageRecovery,
   type StartupStorageFileBootstrap,
 } from '@/stores/storage/utils/startup-storage-bootstrap';
+
+const invokeMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: invokeMock,
+}));
+
+describe('startup storage recovery', () => {
+  it('reports a reset over a restore when files were recovered differently', async () => {
+    invokeMock.mockResolvedValueOnce({
+      userSettings: createBootstrapFile({ recovery: 'restoredFromBackup' }),
+      workspaces: createBootstrapFile({
+        status: 'missing',
+        data: null,
+        recovery: 'resetToDefaults',
+      }),
+      userStats: createBootstrapFile(),
+      extensions: createBootstrapFile(),
+    });
+
+    await expect(getStartupStorageRecovery()).resolves.toBe('resetToDefaults');
+    expect(invokeMock).toHaveBeenCalledWith('get_startup_storage_bootstrap');
+  });
+});
 
 describe('startup storage bootstrap helpers', () => {
   it('uses the fast path for missing files', () => {
@@ -66,6 +91,7 @@ function createBootstrapFile(
     data: {},
     schemaVersion: null,
     error: null,
+    recovery: null,
     ...overrides,
   };
 }

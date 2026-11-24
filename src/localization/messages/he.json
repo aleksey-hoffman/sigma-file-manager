@@ -775,7 +775,11 @@
     "printViewFileIsNotSupported": "הדפסה: הקובץ אינו נתמך",
     "createdNLinks": "נוצרו 0 קישורים | נוצר קישור אחד | נוצרו {n} קישורים | נוצרו {n} קישורים",
     "createdNOfNLinks": "נוצרו {created} מתוך {total} קישורים",
-    "linkCreationPartialFailureDescription": "{count} קישורים נכשלו. השגיאה הראשונה: {error}"
+    "linkCreationPartialFailureDescription": "{count} קישורים נכשלו. השגיאה הראשונה: {error}",
+    "storageRestoredFromBackup": "הנתונים השמורים שוחזרו מגיבוי",
+    "storageRestoredFromBackupDescription": "חלק מהנתונים השמורים נפגמו. הם שוחזרו מהגיבוי שנוצר בהפעלה האחרונה של האפליקציה, ולכן ייתכן ששינויים אחרונים חסרים.",
+    "storageResetToDefaults": "הנתונים השמורים אופסו",
+    "storageResetToDefaultsDescription": "חלק מהנתונים השמורים נפגמו ולא היה גיבוי זמין, ולכן הם אופסו לברירות המחדל."
   },
   "contextMenus": {
     "dirItem": {

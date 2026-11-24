@@ -91,6 +91,7 @@ function createStatsBootstrap(data: Record<string, unknown>): StartupStorageFile
     data,
     schemaVersion: 1,
     error: null,
+    recovery: null,
   };
 }
 

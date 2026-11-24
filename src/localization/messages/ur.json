@@ -775,7 +775,11 @@
     "printViewFileIsNotSupported": "پرنٹ: فائل معاون نہیں",
     "createdNLinks": "0 لنکس بنائے گئے | 1 لنک بنایا گیا | {n} لنکس بنائے گئے | {n} لنکس بنائے گئے",
     "createdNOfNLinks": "{total} میں سے {created} لنکس بنائے گئے",
-    "linkCreationPartialFailureDescription": "{count} لنکس ناکام ہوئے۔ پہلی خرابی: {error}"
+    "linkCreationPartialFailureDescription": "{count} لنکس ناکام ہوئے۔ پہلی خرابی: {error}",
+    "storageRestoredFromBackup": "محفوظ کردہ ڈیٹا بیک اپ سے بحال کر دیا گیا",
+    "storageRestoredFromBackupDescription": "کچھ محفوظ کردہ ڈیٹا خراب ہو گیا تھا۔ اسے ایپ کے پچھلی بار شروع ہونے پر بنائے گئے بیک اپ سے بحال کیا گیا، اس لیے حالیہ تبدیلیاں غائب ہو سکتی ہیں۔",
+    "storageResetToDefaults": "محفوظ کردہ ڈیٹا ری سیٹ کر دیا گیا",
+    "storageResetToDefaultsDescription": "کچھ محفوظ کردہ ڈیٹا خراب ہو گیا تھا اور کوئی بیک اپ دستیاب نہیں تھا، اس لیے اسے ڈیفالٹ پر ری سیٹ کر دیا گیا۔"
   },
   "contextMenus": {
     "dirItem": {

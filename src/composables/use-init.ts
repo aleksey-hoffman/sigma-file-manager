@@ -56,6 +56,7 @@ import {
   resolveStartupRouteLocation,
   startLastRoutePersistence,
 } from '@/utils/last-route';
+import { showStartupStorageRecoveryNotice } from '@/stores/storage/utils/startup-storage-recovery-notice';
 
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 const STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS = 1500;
@@ -390,6 +391,11 @@ export function useInit() {
     );
 
     if (isMainWindow) {
+      runInBackgroundWithTrace(
+        'background:showStartupStorageRecoveryNotice',
+        () => showStartupStorageRecoveryNotice(),
+        'Failed to show the storage recovery notice:',
+      );
       await traceInitStep('shortcutsStore.init', async () => {
         shortcutsStore.init();
       });

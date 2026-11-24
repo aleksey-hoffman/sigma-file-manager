@@ -775,7 +775,11 @@
     "printViewFileIsNotSupported": "Печать: файл не поддерживается",
     "createdNLinks": "Создано 0 ссылок | Создана 1 ссылка | Создано {n} ссылки | Создано {n} ссылок",
     "createdNOfNLinks": "Создано ссылок: {created} из {total}",
-    "linkCreationPartialFailureDescription": "Не удалось создать ссылок: {count}. Первая ошибка: {error}"
+    "linkCreationPartialFailureDescription": "Не удалось создать ссылок: {count}. Первая ошибка: {error}",
+    "storageRestoredFromBackup": "Сохраненные данные восстановлены из резервной копии",
+    "storageRestoredFromBackupDescription": "Часть сохраненных данных была повреждена. Они восстановлены из резервной копии, созданной при последнем запуске приложения, поэтому последние изменения могут отсутствовать.",
+    "storageResetToDefaults": "Сохраненные данные сброшены",
+    "storageResetToDefaultsDescription": "Часть сохраненных данных была повреждена, а резервной копии не было, поэтому они сброшены к значениям по умолчанию."
   },
   "contextMenus": {
     "dirItem": {
