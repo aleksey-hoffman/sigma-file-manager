@@ -46,6 +46,9 @@ import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
 import { useFileBrowserBoxSelection } from './use-file-browser-box-selection';
 import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
+import { getFileBrowserEntryOrder } from '../file-browser-entry-groups';
+import { findNearestRectIndex } from '../utils/nearest-rect';
+import { getVirtualRowEntries } from '../utils/file-browser-virtual-rows';
 import {
   getNavigatorSortSettingsForLayout,
   type NavigatorSortSource,
@@ -488,15 +491,66 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     entriesContainerRef,
   });
 
-  async function selectFirstEntry() {
-    if (visualEntries.value.length === 0) return;
+  function getFirstEntry(entries: DirEntry[]): DirEntry | undefined {
+    return getFileBrowserEntryOrder(entries, grouping.value)[0];
+  }
 
-    const firstEntry = visualEntries.value[0];
-    selection.selectEntryByPath(firstEntry.path);
-    await virtualLayout.scrollToPath(firstEntry.path);
+  function getFocusedEntryRect(): DOMRect | null {
+    const focusedEntry = keyboardNav.getFocusedEntry();
+    const element = focusedEntry ? virtualLayout.getEntryElement(focusedEntry.path) : null;
+    return element?.getBoundingClientRect() ?? null;
+  }
+
+  function getVisibleEntryRects() {
+    const viewport = virtualLayout.scrollViewportRef.value;
+
+    if (!viewport) {
+      return [];
+    }
+
+    const viewportRect = viewport.getBoundingClientRect();
+
+    return getVirtualRowEntries(virtualLayout.visibleRows.value).flatMap((entry) => {
+      const rect = virtualLayout.getEntryElement(entry.path)?.getBoundingClientRect();
+
+      if (!rect) {
+        return [];
+      }
+
+      const centerY = rect.top + rect.height / 2;
+
+      return centerY >= viewportRect.top && centerY <= viewportRect.bottom
+        ? [{
+            entry,
+            rect,
+          }]
+        : [];
+    });
+  }
+
+  function getEntryNearestTo(sourceRect: DOMRect | null): DirEntry | undefined {
+    if (sourceRect) {
+      const candidates = getVisibleEntryRects();
+      const nearestIndex = findNearestRectIndex(candidates.map(candidate => candidate.rect), sourceRect);
+
+      if (nearestIndex >= 0) {
+        return candidates[nearestIndex].entry;
+      }
+    }
+
+    return getFirstEntry(visualEntries.value);
+  }
+
+  async function selectEntryNearestTo(sourceRect: DOMRect | null) {
+    const entry = getEntryNearestTo(sourceRect);
+
+    if (!entry) return;
+
+    selection.selectEntryByPath(entry.path);
+    await virtualLayout.scrollToPath(entry.path);
     await nextTick();
 
-    const element = virtualLayout.getEntryElement(firstEntry.path);
+    const element = virtualLayout.getEntryElement(entry.path);
 
     if (element) {
       element.focus({ preventScroll: true });
@@ -518,12 +572,13 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       return;
     }
 
-    if (entries.length === 0) {
+    const firstEntry = getFirstEntry(entries);
+
+    if (!firstEntry) {
       selection.clearSelection();
       return;
     }
 
-    const firstEntry = entries[0];
     selection.selectEntryByPath(firstEntry.path);
     await virtualLayout.scrollToPath(firstEntry.path);
   }
@@ -696,7 +751,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     printEntry: actions.printEntry,
     openProperties: actions.openProperties,
     performSelectionAction: selection.performSelectionAction,
-    selectFirstEntry,
+    getFocusedEntryRect,
+    selectEntryNearestTo,
 
     navigateUp: keyboardNav.navigateUp,
     navigateDown: keyboardNav.navigateDown,

@@ -245,6 +245,7 @@ export function useFileBrowserKeyboardNavigation(options: {
   }
 
   return {
+    getFocusedEntry,
     navigateUp,
     navigateDown,
     navigateLeft,

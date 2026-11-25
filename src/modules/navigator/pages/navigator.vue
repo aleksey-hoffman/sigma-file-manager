@@ -96,7 +96,8 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   refresh?: () => void | Promise<void>;
   requestFocusEntryAfterRefresh?: (parentDirectoryPath: string, entryPath: string) => void;
   startRename?: (entry: DirEntry) => void;
-  selectFirstEntry?: () => Promise<void>;
+  getFocusedEntryRect?: () => DOMRect | null;
+  selectEntryNearestTo?: (sourceRect: DOMRect | null) => Promise<void>;
   navigateUp?: (extendSelection?: boolean) => void;
   navigateDown?: (extendSelection?: boolean) => void;
   navigateLeft?: (extendSelection?: boolean) => void;
@@ -1108,12 +1109,21 @@ function blurNavigationPanel() {
   }
 }
 
+function getFocusedItemRect(): DOMRect | null {
+  if (isNavigationPanelFocused()) {
+    return document.activeElement?.getBoundingClientRect() ?? null;
+  }
+
+  return getNavigatorPaneRef()?.getFocusedEntryRect?.() ?? null;
+}
+
 function switchToPane(paneIndex: number): boolean {
   const targetTab = workspacesStore.currentTabGroup?.[paneIndex];
   const targetPane = targetTab ? paneRefsMap.value.get(targetTab.id) : singlePaneRef.value;
 
   if (!targetPane) return false;
 
+  const sourceRect = getFocusedItemRect();
   blurNavigationPanel();
 
   if (targetTab && isSplitView.value) {
@@ -1126,7 +1136,7 @@ function switchToPane(paneIndex: number): boolean {
     });
   }
 
-  targetPane.selectFirstEntry?.();
+  targetPane.selectEntryNearestTo?.(sourceRect);
   return true;
 }
 
