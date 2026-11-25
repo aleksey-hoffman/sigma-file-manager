@@ -1,5 +1,236 @@
 # Nhật ký thay đổi
 
+## [2.3.0] - November 2026
+
+**Tóm tắt:** Bảng điều hướng với cây thư mục, tùy chọn hiển thị và nhóm riêng cho từng thư mục, hoàn tác thao tác tệp, bản di động và bản có chữ ký cho Windows, bản Chromium thử nghiệm cho Linux, thiết kế mới cho thẻ, thẻ thư mục và bảng điều khiển, tính dung lượng thư mục nhanh hơn, thao tác tệp an toàn hơn và bảo mật tiện ích chặt chẽ hơn.
+
+- [Tính năng mới](#tính-năng-mới)
+  - [Bảng điều hướng](#bảng-điều-hướng)
+  - [Tùy chọn thư mục và nhóm](#tùy-chọn-thư-mục-và-nhóm)
+  - [Hoàn tác thao tác tệp](#hoàn-tác-thao-tác-tệp)
+  - [Chọn nhiều dải và chọn bằng bàn phím](#chọn-nhiều-dải-và-chọn-bằng-bàn-phím)
+  - [Nhân bản thẻ](#nhân-bản-thẻ)
+  - [Tách thẻ chia đôi](#tách-thẻ-chia-đôi)
+  - [Bản di động và bản có chữ ký cho Windows](#bản-di-động-và-bản-có-chữ-ký-cho-windows)
+  - [Bản Chromium cho Linux](#bản-chromium-cho-linux)
+- [Tiện ích mở rộng](#tiện-ích-mở-rộng)
+  - [Bảo mật tiện ích](#bảo-mật-tiện-ích)
+- [Cài đặt mới](#cài-đặt-mới)
+- [Phím tắt mới](#phím-tắt-mới)
+- [Ngôn ngữ mới](#ngôn-ngữ-mới)
+- [Cải thiện trải nghiệm người dùng](#cải-thiện-trải-nghiệm-người-dùng)
+  - [Bảng điều khiển](#bảng-điều-khiển)
+  - [Bảng tạm](#bảng-tạm)
+  - [Dung lượng thư mục](#dung-lượng-thư-mục)
+  - [Truy cập nhanh và nhãn thẻ](#truy-cập-nhanh-và-nhãn-thẻ)
+  - [Tệp lưu trữ](#tệp-lưu-trữ)
+  - [Đường dẫn, terminal và cài đặt](#đường-dẫn-terminal-và-cài-đặt)
+- [Cải thiện giao diện](#cải-thiện-giao-diện)
+- [Sửa lỗi](#sửa-lỗi)
+
+### Tính năng mới
+
+#### Bảng điều hướng
+
+Một bảng có thể đổi chiều rộng ở bên trái trình điều hướng. Mở bằng nút `Bảng điều hướng` trên thanh công cụ của cửa sổ.
+
+- **Cây**: duyệt cây thư mục của mọi ổ đĩa và địa điểm, đồng bộ với ngăn đang hoạt động; các thư mục cha đã mở rộng luôn được ghim ở trên cùng khi cuộn;
+- **Truy cập nhanh**: xem và quản lý các mục yêu thích và đã gắn thẻ ngay cạnh danh sách tệp;
+- **Thao tác tệp**: thư mục trong cây hỗ trợ menu ngữ cảnh và kéo thả;
+- **Bàn phím**: `Ctrl+Left` / `Ctrl+Right` chuyển tiêu điểm giữa bảng điều hướng và các ngăn tệp; trong cây, phím mũi tên di chuyển qua các thư mục đang mở, `Space` mở rộng hoặc thu gọn thư mục, còn `Enter` đồng thời mở thư mục trong ngăn đang hoạt động;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Tùy chọn thư mục và nhóm
+
+Mỗi thư mục giờ ghi nhớ bố cục, cách sắp xếp, cách nhóm và việc hiển thị mục ẩn của riêng nó. Thay đổi trong menu mới `Tùy chọn thư mục này` cạnh ô tìm kiếm nhanh. Ở chế độ chia đôi, mỗi ngăn có menu riêng.
+
+- **Nhóm**: nhóm các mục theo `Loại` hoặc `Đã sửa đổi`, hoặc chọn `Không có`; tiêu đề nhóm hiển thị ở cả danh sách và lưới;
+- **Sắp xếp chung**: với `Không có`, thư mục không còn luôn nằm trên tệp, nên việc sắp xếp theo ngày hoặc dung lượng áp dụng cho tất cả các mục;
+- **Mặc định**: dùng `Đặt các tùy chọn hiện tại làm mặc định` để lấy tùy chọn của thư mục làm mặc định, hoặc `Đặt lại cài đặt mặc định` để xóa tùy chọn riêng của thư mục;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Hoàn tác thao tác tệp
+
+Sau khi đổi tên, di chuyển hoặc chuyển mục vào thùng rác, thông báo hiển thị nút `Hoàn tác`. Không thể hoàn tác việc chuyển vào thùng rác trên macOS. Thông báo cũng hiển thị đường dẫn của các mục liên quan, kèm đường dẫn cũ và mới của mục được đổi tên hoặc di chuyển.
+
+#### Chọn nhiều dải và chọn bằng bàn phím
+
+Chọn nhiều nhóm tệp mà không mất vùng chọn hiện tại.
+
+- **Nhiều dải**: giữ `Ctrl+Shift` và nhấp để thêm một dải khác vào vùng chọn;
+- **Chọn bằng bàn phím**: giữ `Shift` và nhấn phím mũi tên để mở rộng hoặc thu hẹp vùng chọn;
+
+#### Nhân bản thẻ
+
+Nhân bản thẻ từ menu ngữ cảnh của nó, hoặc nhấn `Ctrl+Alt+T` để nhân bản thẻ hiện tại.
+
+#### Tách thẻ chia đôi
+
+Nhấp chuột phải vào thẻ chia đôi và chọn `Tách thẻ` để mở mỗi ngăn trong thẻ riêng.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Bản di động và bản có chữ ký cho Windows
+
+- **Bản di động (thử nghiệm)**: chạy ứng dụng mà không cần cài đặt; dữ liệu nằm trong thư mục `sigma-file-manager-data` cạnh ứng dụng. Cần WebView2, đã có sẵn trong Windows 11;
+- **Cập nhật bản di động**: phiên bản mới được tải xuống thư mục ứng dụng và bạn tự thay thế bản cũ; thư mục dữ liệu được giữ lại;
+- **Bản có chữ ký**: trình cài đặt Windows và ứng dụng di động giờ có chữ ký số, với dịch vụ ký miễn phí của SignPath.io và chứng chỉ của SignPath Foundation;
+
+#### Bản Chromium cho Linux
+
+Một AppImage thử nghiệm tích hợp Chromium thay cho WebKitGTK, dành cho các hệ thống mà bản thường chạy chậm. Các bản Linux thường vẫn được cung cấp.
+
+- **Yêu cầu**: cần X11 hoặc XWayland; dung lượng tải xuống lớn hơn, khoảng 175 MB;
+- **Cập nhật riêng**: mỗi AppImage cập nhật theo phiên bản của chính nó;
+- **Dữ liệu di động**: tạo thư mục `sigma-file-manager-data` cạnh bất kỳ AppImage nào để lưu dữ liệu tại đó;
+
+### Tiện ích mở rộng
+
+#### Bảo mật tiện ích
+
+Tiện ích được cách ly chặt chẽ hơn với ứng dụng và mạng.
+
+- **Truy cập mạng**: mã của tiện ích không còn kết nối mạng trực tiếp được; yêu cầu đi qua API HTTP và danh sách máy chủ được phép. Nội dung nhúng vẫn có thể tải hình ảnh, phông chữ và kiểu từ xa;
+- **Trang thanh bên**: các trang HTML của tiện ích giờ chạy trong môi trường cách ly, không truy cập được ứng dụng và mạng;
+- **Quyền**: quyền chạy lệnh shell giờ được kiểm tra ở phần nền của ứng dụng theo tệp kê khai của tiện ích đã cài;
+- **Tải xuống**: việc tải xuống của tiện ích không còn truy cập được địa chỉ mạng riêng qua chuyển hướng hoặc thay đổi DNS;
+
+### Cài đặt mới
+
+- **Trang khởi động**: chọn trang hiển thị khi mở ứng dụng, hoặc mở lại trang gần nhất;
+  `Cài đặt > Chung > Trang khởi động`
+- **Terminal mặc định**: chọn terminal cho `Mở trong terminal` và `Alt+T`, hoặc nhập lệnh tùy chỉnh;
+  `Cài đặt > Chung > Terminal mặc định`
+- **Thư mục mặc định**: chọn thư mục cho thẻ mới: thư mục nhà, địa điểm hoặc thư mục tùy chỉnh;
+  `Cài đặt > Thẻ > Thư mục mặc định`
+- **Nhóm**: chọn cách nhóm mặc định cho mọi thư mục;
+  `Cài đặt > Giao diện > Nhóm`
+- **Xem trước tự động**: chọn loại tệp sẽ tải bản xem trước trong bảng thông tin khi được chọn; các loại khác hiển thị nút `Tải bản xem trước`;
+  `Cài đặt > Giao diện > Bảng thông tin > Xem trước tự động`
+- **Giới hạn tệp lớn**: không tự động tải PDF và hình ảnh kích thước đầy đủ vượt quá dung lượng này;
+  `Cài đặt > Giao diện > Bảng thông tin > Giới hạn tệp lớn`
+- **Hòa trộn với**: hòa trộn hiệu ứng nền với giao diện hoặc với màu nền tùy chọn; đã thêm chế độ `Làm sáng tuyến tính (cộng)`;
+  `Cài đặt > Giao diện > Hiệu ứng hình ảnh > Hòa trộn với`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Phím tắt mới
+
+- **Bảng điều hướng** (`Alt+Q`): hiện hoặc ẩn bảng điều hướng;
+- **Bảng thông tin** (`Alt+E`): hiện hoặc ẩn bảng thông tin;
+- **Chuyển giữa các ngăn** (`Ctrl+Left` / `Ctrl+Right`): chọn mục ở cùng hàng trong ngăn kia và giờ cũng chuyển tiêu điểm đến bảng điều hướng;
+- **Chuyển sang thẻ tiếp theo / trước đó** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): chuyển giữa các thẻ đang mở;
+- **Nhân bản thẻ hiện tại** (`Ctrl+Alt+T`): mở một bản sao của thẻ hiện tại;
+- **Mở thẻ mới** (`Ctrl+T`): giờ mở thư mục mặc định, giống nút dấu cộng trên thanh thẻ, thay vì thư mục hiện tại;
+
+### Ngôn ngữ mới
+
+- **Tiếng Armenia** (`Հայերեն`): bản dịch đầy đủ (`Cài đặt > Chung > Ngôn ngữ`);
+
+### Cải thiện trải nghiệm người dùng
+
+#### Bảng điều khiển
+
+Trang bảng điều khiển có thiết kế mới với phần tổng quan về các mục yêu thích, đã gắn thẻ, thường dùng và đã xem gần đây.
+
+- **Thanh bên nhãn thẻ**: tìm, tạo, đổi tên, đổi màu, xóa và sắp xếp lại nhãn thẻ;
+- **Mục đã gắn thẻ**: lọc theo loại, sắp xếp và chuyển giữa danh sách và lưới;
+- **Thẻ mục**: hiển thị bản xem trước, dung lượng và đường dẫn, có nút mở thư mục chứa;
+- **Xác nhận**: xóa toàn bộ danh sách hoặc xóa nhãn thẻ giờ cần xác nhận;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Bảng tạm
+
+- **Mục từ ứng dụng khác**: tệp và hình ảnh sao chép từ ứng dụng khác giờ có tiện ích nhỏ gọn riêng, hiển thị ứng dụng nguồn;
+- **Cách chuyển**: dán từng mục, dán tất cả hoặc kéo chúng đến bất kỳ đâu trong trình điều hướng;
+- **Danh sách bảng tạm**: danh sách các mục đã chuẩn bị có thiết kế mới với bản xem trước, đường dẫn đầy đủ và dung lượng tệp;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Dung lượng thư mục
+
+Dung lượng thư mục được tính nhanh hơn và không còn làm chậm việc điều hướng.
+
+- **Ưu tiên thư mục đang hiển thị**: thư mục trên màn hình được tính trước;
+- **Tính song song**: thư mục lớn được quét bằng nhiều luồng ưu tiên thấp, dung lượng của các thư mục con được lưu lại trong quá trình quét;
+- **Dung lượng một phần**: khi quá trình quét nhanh hết thời gian, dung lượng đã đếm được hiển thị dưới dạng mức tối thiểu, ví dụ `14.2 GB+`;
+- **Tiến trình trực tiếp**: `Nhận kích thước` hiển thị dung lượng tăng dần và có thể hủy bất cứ lúc nào;
+- **Thư mục không đọc được**: thư mục không thể đọc được đánh dấu thay vì hiển thị `0 B`;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Truy cập nhanh và nhãn thẻ
+
+- **Sắp xếp lại**: kéo để sắp xếp lại các phần và mục trong bảng truy cập nhanh;
+- **Thứ tự nhãn thẻ**: kéo nhãn thẻ trong trình chỉnh sửa để đổi thứ tự hiển thị;
+- **Cột nhãn thẻ**: hiển thị nhiều nhãn thẻ nhất có thể thay vì chỉ nhãn đầu tiên;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Tệp lưu trữ
+
+- **Xung đột**: khi giải nén, ứng dụng hỏi cách xử lý các tệp đã tồn tại;
+- **Thư mục gốc**: `Giải nén vào đây` giờ giữ lại thư mục gốc của tệp lưu trữ;
+- **Dọn dẹp**: các tệp còn lại sau khi giải nén thất bại sẽ bị xóa;
+
+#### Đường dẫn, terminal và cài đặt
+
+- **Đường dẫn thư mục nhà**: `~` được mở rộng thành thư mục nhà trong thanh địa chỉ, đường dẫn đã dán và cài đặt thư mục mặc định;
+- **Mở trong terminal**: terminal mặc định hiển thị đầu tiên trong menu `Mở trong terminal`, và gợi ý cho biết cách mở bất kỳ terminal nào với quyền quản trị (giữ `Shift`);
+- **Tìm kiếm cài đặt**: các phím tắt khớp giờ xuất hiện trong kết quả tìm kiếm;
+- **Bảng thông tin**: trình điều hướng ghi nhớ việc bảng thông tin có hiển thị hay không;
+- **Ổ đĩa mạng**: trên Windows, khi chuyển vào thùng rác các mục ở vị trí không có Thùng rác, ứng dụng hỏi trước khi xóa vĩnh viễn;
+- **Khôi phục dữ liệu**: cài đặt và không gian làm việc bị hỏng được khôi phục từ bản sao lưu khi khởi động, kèm thông báo;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Cải thiện giao diện
+
+- **Thanh thẻ**: các thẻ nằm trong một thanh có viền và hiển thị biểu tượng thư mục, ổ đĩa hoặc tìm kiếm; thẻ ở chế độ chia đôi hiển thị cả hai thư mục với dấu phân cách ở giữa;
+- **Thẻ thư mục**: trong lưới, thẻ có hình thư mục và thước chấm hiển thị dung lượng theo thang từ KB đến TB; hoạt động với biểu tượng tích hợp, của hệ thống và của tiện ích;
+- **Bố cục lưới**: gọn gàng hơn với khoảng cách đồng nhất;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Sửa lỗi
+
+- **Giải nén tệp lưu trữ**: sửa lỗi tệp bị đặt ra ngoài thư mục của chúng khi tệp lưu trữ có nhiều mục ở cấp cao nhất;
+- **Nén tệp lưu trữ**: sửa lỗi không nén được thư mục chứa liên kết hỏng hoặc liên kết tới thư mục;
+- **Thay thế**: sửa lỗi `Thay thế` xóa thư mục chứa chính mục đang được sao chép hoặc di chuyển;
+- **Liên kết**: sửa lỗi sao chép và hợp nhất đi theo liên kết thay vì giữ nguyên chúng, và lỗi không thể sao chép, di chuyển, đổi tên hoặc xóa liên kết hỏng;
+- **Hủy**: sửa lỗi việc hủy không dừng sao chép giữa một tệp lớn hoặc khi đang hợp nhất;
+- **Cắt và dán**: sửa lỗi mục đã cắt bị sao chép thay vì di chuyển trên Linux và macOS;
+- **Tên tệp**: sửa lỗi dấu gạch chéo ngược trong tên tệp bị hiểu là dấu phân cách đường dẫn trên Linux và macOS;
+- **Đổi tên**: sửa lỗi không thể chỉ đổi chữ hoa, chữ thường trong tên, và lỗi chấp nhận tên có dấu phân cách đường dẫn;
+- **Mục đã di chuyển**: sửa lỗi mục yêu thích, nhãn thẻ, lịch sử và thẻ giữ đường dẫn cũ;
+- **Chia sẻ SMB**: sửa lỗi không chuyển được vào thùng rác với thư mục mạng;
+- **Tìm kiếm nhanh**: sửa lỗi dấu chấm, gạch nối, khoảng trắng và dấu câu khác bị bỏ khỏi truy vấn;
+- **Làm mới thư mục**: sửa lỗi các ngăn cùng hiển thị một thư mục ngừng làm mới khi một ngăn chuyển sang nơi khác, và lỗi nhấp nháy số mục cùng trạng thái liên kết;
+- **Ổ đĩa đã ngắt**: sửa lỗi danh sách tệp cũ vẫn hiển thị sau khi ngắt gắn kết hoặc tháo ổ đĩa;
+- **Ngăn đang hoạt động**: sửa lỗi nhấp vào vùng trống không kích hoạt ngăn;
+- **Biểu tượng tùy chỉnh**: sửa lỗi biểu tượng nhấp nháy ở lần tải đầu tiên;
+- **Ổ đĩa ở thanh bên**: sửa lỗi ổ đĩa không mở trong thẻ mới khi nhấp chuột giữa;
+- **Con trỏ kéo**: sửa lỗi con trỏ bị kẹt sau khi kéo nhanh một thẻ hoặc cột;
+- **Trạng thái cửa sổ**: sửa lỗi kích thước cửa sổ sai sau khi toàn màn hình, phóng to và ghim cạnh, và lỗi nhấp đúp vào phần trên cửa sổ không phóng to;
+- **Chia sẻ LAN**: sửa lỗi các tệp tải lên lớn bị giữ trong bộ nhớ;
+- **Chủ đề (Linux)**: sửa lỗi ứng dụng bị sập khi đổi chủ đề lúc tắt tính năng kết hợp hình ảnh;
+- **Flatpak (Linux)**: sửa lỗi sập khi khởi động và cập nhật môi trường GNOME đã lỗi thời;
+- **Ngày tháng**: sửa lỗi ngày tháng trống khi ngôn ngữ hệ thống là `C`;
+- **Bản dịch**: sửa các nhãn ngắn không đúng trong nhiều ngôn ngữ;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Tóm tắt:** Tích hợp bảng tạm hệ thống với các ứng dụng khác, chọn bằng khung kéo, chế độ xem chia đôi liên kết, xử lý liên kết, tệp ZIP có mật khẩu, cửa sổ Thuộc tính gốc của Windows, mở rộng API tiện ích, hỗ trợ tiếng Do Thái và cải thiện trình điều hướng.

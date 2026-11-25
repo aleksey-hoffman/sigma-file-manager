@@ -1,5 +1,236 @@
 # Registro de cambios
 
+## [2.3.0] - November 2026
+
+**Resumen:** Panel de navegación con árbol de carpetas, opciones de vista y agrupación por carpeta, deshacer operaciones de archivos, versiones portátil y firmada para Windows, una versión experimental con Chromium para Linux, nuevo diseño de pestañas, tarjetas de carpetas y tablero, cálculo más rápido del tamaño de las carpetas, operaciones de archivos más seguras y mayor seguridad de las extensiones.
+
+- [Nuevas funciones](#nuevas-funciones)
+  - [Panel de navegación](#panel-de-navegación)
+  - [Opciones de carpeta y agrupación](#opciones-de-carpeta-y-agrupación)
+  - [Deshacer operaciones de archivos](#deshacer-operaciones-de-archivos)
+  - [Selección de varios rangos y con el teclado](#selección-de-varios-rangos-y-con-el-teclado)
+  - [Duplicar pestaña](#duplicar-pestaña)
+  - [Separar pestañas de la vista dividida](#separar-pestañas-de-la-vista-dividida)
+  - [Versiones portátil y firmada para Windows](#versiones-portátil-y-firmada-para-windows)
+  - [Versión con Chromium para Linux](#versión-con-chromium-para-linux)
+- [Extensiones](#extensiones)
+  - [Seguridad de las extensiones](#seguridad-de-las-extensiones)
+- [Nuevas configuraciones](#nuevas-configuraciones)
+- [Nuevos atajos de teclado](#nuevos-atajos-de-teclado)
+- [Nuevos idiomas](#nuevos-idiomas)
+- [Mejoras de UX](#mejoras-de-ux)
+  - [Tablero](#tablero)
+  - [Portapapeles](#portapapeles)
+  - [Tamaño de las carpetas](#tamaño-de-las-carpetas)
+  - [Acceso rápido y etiquetas](#acceso-rápido-y-etiquetas)
+  - [Archivos comprimidos](#archivos-comprimidos)
+  - [Rutas, terminal y configuración](#rutas-terminal-y-configuración)
+- [Mejoras de interfaz](#mejoras-de-interfaz)
+- [Corrección de errores](#corrección-de-errores)
+
+### Nuevas funciones
+
+#### Panel de navegación
+
+Un panel de ancho ajustable en el lado izquierdo del navegador. Se abre con el botón `Panel de navegación` de la barra de herramientas de la ventana.
+
+- **Árbol**: explora el árbol de carpetas de todas las unidades y ubicaciones, sincronizado con el panel activo; las carpetas superiores desplegadas quedan fijas en la parte superior al desplazarte;
+- **Acceso rápido**: consulta y gestiona tus elementos favoritos y etiquetados junto a la lista de archivos;
+- **Operaciones de archivos**: las carpetas del árbol admiten menús contextuales y arrastrar y soltar;
+- **Teclado**: `Ctrl+Left` / `Ctrl+Right` mueven el foco entre el panel de navegación y los paneles de archivos; en el árbol, las teclas de flecha recorren las carpetas desplegadas, `Space` despliega o contrae una carpeta y `Enter` además la abre en el panel activo;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Opciones de carpeta y agrupación
+
+Cada carpeta recuerda ahora su diseño, ordenación, agrupación y si muestra los elementos ocultos. Se cambian en el nuevo menú `Opciones de esta carpeta`, junto a la búsqueda rápida. En la vista dividida, cada panel tiene su propio menú.
+
+- **Agrupar**: agrupa los elementos por `Tipo` o `Modificado`, o elige `Ninguno`; los encabezados de grupo se muestran tanto en lista como en cuadrícula;
+- **Ordenación conjunta**: con `Ninguno`, las carpetas ya no se mantienen por encima de los archivos, así que la ordenación por fecha o tamaño se aplica a todos los elementos;
+- **Valores predeterminados**: usa `Establecer las opciones actuales como predeterminadas` para convertir las opciones de una carpeta en las predeterminadas, o `Restablecer ajustes predeterminados` para quitar las opciones propias de la carpeta;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Deshacer operaciones de archivos
+
+Después de renombrar, mover o enviar elementos a la papelera, la notificación muestra el botón `Deshacer`. En macOS no se puede deshacer el envío a la papelera. La notificación también muestra las rutas de los elementos afectados, con la ruta anterior y la nueva de los renombrados y movidos.
+
+#### Selección de varios rangos y con el teclado
+
+Selecciona varios grupos de archivos sin perder la selección actual.
+
+- **Varios rangos**: mantén `Ctrl+Shift` y haz clic para añadir otro rango a la selección;
+- **Selección con el teclado**: mantén `Shift` y pulsa las teclas de flecha para ampliar o reducir la selección;
+
+#### Duplicar pestaña
+
+Duplica una pestaña desde su menú contextual o pulsa `Ctrl+Alt+T` para duplicar la actual.
+
+#### Separar pestañas de la vista dividida
+
+Haz clic derecho en una pestaña de la vista dividida y elige `Separar pestañas` para abrir cada panel en su propia pestaña.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Versiones portátil y firmada para Windows
+
+- **Versión portátil (experimental)**: ejecuta la aplicación sin instalarla; los datos se guardan en la carpeta `sigma-file-manager-data` junto a la aplicación. Requiere WebView2, incluido en Windows 11;
+- **Actualizaciones de la versión portátil**: la nueva versión se descarga en la carpeta de la aplicación y tú sustituyes la anterior; la carpeta de datos se conserva;
+- **Versiones firmadas**: el instalador de Windows y la aplicación portátil ahora están firmados digitalmente, con firma gratuita proporcionada por SignPath.io y un certificado de SignPath Foundation;
+
+#### Versión con Chromium para Linux
+
+Un AppImage experimental que incluye Chromium en lugar de usar WebKitGTK, para sistemas en los que la versión normal va lenta. Las versiones normales para Linux siguen disponibles.
+
+- **Requisitos**: necesita X11 o XWayland; la descarga es mayor, de unos 175 MB;
+- **Actualizaciones separadas**: cada AppImage se actualiza a su propia versión;
+- **Datos portátiles**: crea una carpeta `sigma-file-manager-data` junto a cualquiera de los AppImage para guardar allí sus datos;
+
+### Extensiones
+
+#### Seguridad de las extensiones
+
+Las extensiones están más aisladas de la aplicación y de la red.
+
+- **Acceso a la red**: el código de las extensiones ya no puede conectarse directamente a la red; las solicitudes pasan por la API HTTP y su lista de hosts permitidos. Las vistas incrustadas aún pueden cargar imágenes, fuentes y estilos remotos;
+- **Páginas de la barra lateral**: las páginas HTML de las extensiones se ejecutan ahora en un entorno aislado sin acceso a la aplicación ni a la red;
+- **Permisos**: los permisos para comandos de shell se comprueban ahora en el backend de la aplicación con el manifiesto de la extensión instalada;
+- **Descargas**: las descargas de extensiones ya no pueden alcanzar direcciones de redes privadas mediante redirecciones o cambios de DNS;
+
+### Nuevas configuraciones
+
+- **Página de arranque**: elige la página que se muestra al iniciar la aplicación o vuelve a abrir la última;
+  `Configuración > General > Página de arranque`
+- **Terminal predeterminada**: elige la terminal para `Abrir en terminal` y `Alt+T`, o introduce un comando propio;
+  `Configuración > General > Terminal predeterminada`
+- **Directorio predeterminado**: elige la carpeta de las pestañas nuevas: la carpeta de usuario, las ubicaciones o una carpeta personalizada;
+  `Configuración > Pestañas > Directorio predeterminado`
+- **Agrupar**: elige la agrupación predeterminada para todas las carpetas;
+  `Configuración > Apariencia de la interfaz > Agrupar`
+- **Vista previa automática**: elige qué tipos de archivo cargan una vista previa en el panel de información al seleccionarlos; los demás muestran el botón `Cargar vista previa`;
+  `Configuración > Apariencia de la interfaz > Panel de información > Vista previa automática`
+- **Límite para archivos grandes**: no cargar automáticamente los PDF ni las imágenes a tamaño completo que superen este tamaño;
+  `Configuración > Apariencia de la interfaz > Panel de información > Límite para archivos grandes`
+- **Fusionar con**: fusiona el efecto de fondo con la interfaz o con un color de relleno a tu elección; se ha añadido el modo `Sobreexponer lineal (añadir)`;
+  `Configuración > Apariencia de la interfaz > Efectos visuales > Fusionar con`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Nuevos atajos de teclado
+
+- **Panel de navegación** (`Alt+Q`): mostrar u ocultar el panel de navegación;
+- **Panel de información** (`Alt+E`): mostrar u ocultar el panel de información;
+- **Moverse entre paneles** (`Ctrl+Left` / `Ctrl+Right`): selecciona el elemento de la misma fila del otro panel y ahora también mueve el foco al panel de navegación;
+- **Cambiar a la pestaña siguiente / anterior** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): cambia entre las pestañas abiertas;
+- **Duplicar la pestaña actual** (`Ctrl+Alt+T`): abre una copia de la pestaña actual;
+- **Abrir una nueva pestaña** (`Ctrl+T`): ahora abre el directorio predeterminado, igual que el botón más de la barra de pestañas, en lugar del directorio actual;
+
+### Nuevos idiomas
+
+- **Armenio** (`Հայերեն`): traducción completa (`Configuración > General > Idioma`);
+
+### Mejoras de UX
+
+#### Tablero
+
+La página del tablero tiene un nuevo diseño con un resumen de los elementos favoritos, etiquetados, frecuentes y vistos recientemente.
+
+- **Barra lateral de etiquetas**: busca, crea, renombra, cambia de color, elimina y reordena etiquetas;
+- **Elementos etiquetados**: filtra por tipo, ordena y alterna entre lista y cuadrícula;
+- **Tarjetas de elementos**: muestran una vista previa, el tamaño y la ruta, y tienen un botón que abre la carpeta contenedora;
+- **Confirmación**: vaciar una lista o eliminar una etiqueta ahora pide confirmación;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Portapapeles
+
+- **Elementos de otras aplicaciones**: los archivos e imágenes copiados en otras aplicaciones tienen ahora su propio widget compacto, que indica la aplicación de origen;
+- **Opciones de transferencia**: pega los elementos uno a uno, pégalos todos o arrástralos a cualquier lugar del navegador;
+- **Lista del portapapeles**: la lista de elementos preparados tiene un nuevo diseño con vistas previas, rutas completas y tamaños de archivo;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Tamaño de las carpetas
+
+El tamaño de las carpetas se calcula más rápido y ya no ralentiza la navegación.
+
+- **Primero las carpetas visibles**: las carpetas en pantalla se calculan primero;
+- **Cálculo en paralelo**: las carpetas grandes se analizan con varios hilos de baja prioridad y los tamaños de las subcarpetas se guardan durante el proceso;
+- **Tamaños parciales**: cuando a un análisis rápido se le acaba el tiempo, el tamaño contado se muestra como mínimo, por ejemplo `14.2 GB+`;
+- **Progreso en vivo**: `Obtener tamaño` muestra cómo crece el tamaño y se puede cancelar en cualquier momento;
+- **Carpetas ilegibles**: las carpetas que no se pueden leer se marcan en lugar de mostrar `0 B`;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Acceso rápido y etiquetas
+
+- **Reordenar**: arrastra las secciones y los elementos del panel de acceso rápido para reordenarlos;
+- **Orden de las etiquetas**: arrastra las etiquetas en el editor para cambiar el orden en que se muestran;
+- **Columna de etiquetas**: muestra tantas etiquetas como quepan en lugar de solo la primera;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Archivos comprimidos
+
+- **Conflictos**: al extraer se pregunta qué hacer con los archivos que ya existen;
+- **Carpeta raíz**: `Extraer aquí` conserva ahora la carpeta raíz del archivo comprimido;
+- **Limpieza**: se eliminan los archivos que deja una extracción fallida;
+
+#### Rutas, terminal y configuración
+
+- **Ruta de usuario**: `~` se convierte en la carpeta de usuario en la barra de direcciones, en las rutas pegadas y en la configuración del directorio predeterminado;
+- **Abrir en terminal**: la terminal predeterminada aparece primero en el menú `Abrir en terminal`, y unas sugerencias explican cómo abrir cualquier terminal como administrador (mantén `Shift`);
+- **Búsqueda en la configuración**: los atajos que coinciden aparecen ahora en los resultados;
+- **Panel de información**: el navegador recuerda si el panel de información está visible;
+- **Unidades de red**: en Windows, al mover a la papelera elementos de ubicaciones sin papelera de reciclaje, se pide confirmación antes de eliminarlos definitivamente;
+- **Recuperación de datos**: la configuración y los espacios de trabajo dañados se restauran desde una copia de seguridad al iniciar, con una notificación;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Mejoras de interfaz
+
+- **Barra de pestañas**: las pestañas están en una barra con borde y muestran iconos de carpeta, unidad o búsqueda; las de la vista dividida muestran ambas carpetas con un separador entre ellas;
+- **Tarjetas de carpetas**: las tarjetas de carpetas en cuadrícula tienen forma de carpeta y un medidor de puntos que muestra el tamaño en una escala de KB a TB; funciona con iconos integrados, del sistema y de extensiones;
+- **Diseño de cuadrícula**: más limpio y con espaciado uniforme;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Corrección de errores
+
+- **Extracción de archivos**: corregido que los archivos se colocaran fuera de sus carpetas cuando el archivo comprimido tiene varios elementos en el nivel superior;
+- **Compresión de archivos**: corregido el fallo al comprimir carpetas con enlaces rotos o enlaces a carpetas;
+- **Reemplazar**: corregido que `Reemplazar` eliminara una carpeta que contiene el elemento que se copia o mueve;
+- **Enlaces**: corregido que al copiar y combinar se siguieran los enlaces en lugar de conservarlos, y que los enlaces rotos no se pudieran copiar, mover, renombrar ni eliminar;
+- **Cancelar**: corregido que al cancelar no se detuviera una copia en mitad de un archivo grande o de una combinación;
+- **Cortar y pegar**: corregido que los elementos cortados se copiaran en lugar de moverse en Linux y macOS;
+- **Nombres de archivo**: corregido que las barras invertidas en los nombres se interpretaran como separadores de ruta en Linux y macOS;
+- **Renombrar**: corregida la imposibilidad de cambiar solo mayúsculas y minúsculas, y que se aceptaran nombres con separadores de ruta;
+- **Elementos movidos**: corregido que los favoritos, las etiquetas, el historial y las pestañas conservaran las rutas antiguas;
+- **Recursos SMB**: corregido el fallo al mover a la papelera en carpetas de red;
+- **Búsqueda rápida**: corregido que se omitieran puntos, guiones, espacios y otros signos de la consulta;
+- **Actualización de directorios**: corregido que los paneles con la misma carpeta dejaran de actualizarse cuando uno cambiaba de carpeta, y el parpadeo del número de elementos y del estado de los enlaces;
+- **Unidades desconectadas**: corregido que la lista de archivos antigua siguiera en pantalla tras desmontar o expulsar una unidad;
+- **Panel activo**: corregido que hacer clic en el área vacía no activara el panel;
+- **Iconos personalizados**: corregido el parpadeo de los iconos en la primera carga;
+- **Unidades de la barra lateral**: corregido que no se abrieran en una pestaña nueva con el botón central;
+- **Cursor de arrastre**: corregido que el cursor se quedara atascado tras arrastrar rápidamente una pestaña o columna;
+- **Estado de la ventana**: corregido el tamaño incorrecto tras la pantalla completa, la maximización y el acoplamiento, y que hacer doble clic en la parte superior no maximizara la ventana;
+- **Compartir en LAN**: corregido que las subidas grandes se mantuvieran en memoria;
+- **Temas (Linux)**: corregido un cierre inesperado al cambiar de tema con la composición desactivada;
+- **Flatpak (Linux)**: corregido un cierre inesperado al iniciar y actualizado el entorno de GNOME obsoleto;
+- **Fechas**: corregidas las fechas vacías cuando la configuración regional del sistema es `C`;
+- **Traducciones**: corregidos textos cortos incorrectos en muchos idiomas;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Resumen:** Integración del portapapeles del sistema con otras aplicaciones, selección por marco, vista dividida vinculada, gestión de enlaces, archivos ZIP protegidos con contraseña, propiedades nativas en Windows, ampliación de las API para extensiones, compatibilidad con el hebreo y mejoras en la navegación.

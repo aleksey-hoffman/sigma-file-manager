@@ -1,5 +1,212 @@
 # Dnevnik sprememb
 
+## [2.3.0] - November 2026
+
+**Povzetek:** Navigacijski panel z drevesom map, možnosti pogleda in združevanje za vsako mapo posebej, razveljavitev operacij z datotekami, prenosna in podpisana različica za Windows, poskusna različica s Chromiumom za Linux, prenovljeni zavihki, kartice map in nadzorna plošča, hitrejši izračun velikosti map, varnejše operacije z datotekami in strožja varnost razširitev.
+
+### Nove funkcije
+
+#### Navigacijski panel
+
+Panel nastavljive širine na levi strani navigatorja. Odpre se z gumbom `Navigacijski panel` v orodni vrstici okna.
+
+- **Drevo**: brskajte po drevesu map vseh pogonov in lokacij, usklajenem z aktivnim podoknom; razširjene nadrejene mape med drsenjem ostanejo pripete na vrhu;
+- **Hitri dostop**: oglejte si in upravljajte priljubljene in označene elemente ob seznamu datotek;
+- **Operacije z datotekami**: mape v drevesu podpirajo kontekstne menije ter vlečenje in spuščanje;
+- **Tipkovnica**: `Ctrl+Left` / `Ctrl+Right` premikata fokus med navigacijskim panelom in podokni z datotekami; v drevesu se s puščičnimi tipkami premikate po razširjenih mapah, `Space` razširi ali strni mapo, `Enter` pa jo hkrati odpre v aktivnem podoknu;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Možnosti map in združevanje
+
+Vsaka mapa si zdaj zapomni svojo postavitev, razvrščanje, združevanje in prikaz skritih elementov. Spremenite jih v novem meniju `Možnosti te mape` ob hitrem iskanju. V razdeljenem pogledu ima vsako podokno svoj meni.
+
+- **Združi**: združite elemente po `Vrsta` ali `Spremenjeno` ali izberite `Brez`; glave skupin so prikazane na seznamu in v mreži;
+- **Skupno razvrščanje**: pri izbiri `Brez` mape niso več vedno nad datotekami, zato razvrščanje po datumu ali velikosti velja za vse elemente;
+- **Privzete možnosti**: z `Nastavi trenutne možnosti kot privzete` uporabite možnosti mape kot privzete, z `Ponastavi na privzete nastavitve` pa odstranite lastne možnosti mape;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Razveljavitev operacij z datotekami
+
+Ko elemente preimenujete, premaknete ali pošljete v koš, se v obvestilu prikaže gumb `Razveljavi`. Razveljavitev premika v koš v sistemu macOS ni na voljo. V obvestilu so prikazane tudi poti zadevnih elementov, pri preimenovanih in premaknjenih pa stara in nova pot.
+
+#### Izbira več obsegov in izbira s tipkovnico
+
+Izberite več skupin datotek, ne da bi izgubili trenutni izbor.
+
+- **Več obsegov**: držite `Ctrl+Shift` in kliknite, da izboru dodate še en obseg;
+- **Izbira s tipkovnico**: držite `Shift` in pritiskajte puščične tipke, da razširite ali skrčite izbor;
+
+#### Podvajanje zavihka
+
+Podvojite zavihek iz njegovega kontekstnega menija ali pritisnite `Ctrl+Alt+T`, da podvojite trenutnega.
+
+#### Ločevanje zavihkov razdeljenega pogleda
+
+Z desno tipko kliknite zavihek razdeljenega pogleda in izberite `Loči zavihke`, da vsako podokno odprete v svojem zavihku.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Prenosna in podpisana različica za Windows
+
+- **Prenosna različica (poskusna)**: zaženite aplikacijo brez namestitve; podatki so v mapi `sigma-file-manager-data` poleg aplikacije. Potrebno je okolje WebView2, ki je vključeno v Windows 11;
+- **Posodobitve prenosne različice**: nova različica se prenese v mapo aplikacije, staro pa zamenjate sami; mapa s podatki se ohrani;
+- **Podpisane različice**: namestitveni program za Windows in prenosna aplikacija sta zdaj digitalno podpisana; brezplačno podpisovanje zagotavlja SignPath.io, potrdilo pa SignPath Foundation;
+
+#### Različica s Chromiumom za Linux
+
+Poskusni AppImage, ki namesto WebKitGTK vključuje Chromium, za sisteme, kjer je običajna različica počasna. Običajne različice za Linux so še vedno na voljo.
+
+- **Zahteve**: potreben je X11 ali XWayland; prenos je večji, približno 175 MB;
+- **Ločene posodobitve**: vsak AppImage se posodablja na svojo različico;
+- **Prenosni podatki**: poleg katerega koli AppImage ustvarite mapo `sigma-file-manager-data`, da bodo podatki shranjeni v njej;
+
+### Razširitve
+
+#### Varnost razširitev
+
+Razširitve so strožje ločene od aplikacije in omrežja.
+
+- **Dostop do omrežja**: koda razširitev se ne more več neposredno povezati z omrežjem; zahteve gredo prek API-ja HTTP in njegovega seznama dovoljenih gostiteljev. Vdelani pogledi lahko še vedno nalagajo oddaljene slike, pisave in sloge;
+- **Strani stranske vrstice**: strani HTML razširitev zdaj tečejo v peskovniku brez dostopa do aplikacije in omrežja;
+- **Dovoljenja**: dovoljenja za ukaze lupine se zdaj preverjajo v zaledju aplikacije glede na manifest nameščene razširitve;
+- **Prenosi**: prenosi razširitev ne morejo več doseči naslovov zasebnih omrežij prek preusmeritev ali sprememb DNS;
+
+### Nove nastavitve
+
+- **Stran ob zagonu**: izberite stran, ki se prikaže ob zagonu aplikacije, ali znova odprite zadnjo;
+  `Nastavitve > Splošno > Stran ob zagonu`
+- **Privzeti terminal**: izberite terminal za `Odpri v terminalu` in `Alt+T` ali vnesite ukaz po meri;
+  `Nastavitve > Splošno > Privzeti terminal`
+- **Privzeta mapa**: izberite mapo za nove zavihke: uporabniško mapo, lokacije ali mapo po meri;
+  `Nastavitve > Zavihki > Privzeta mapa`
+- **Združi**: izberite privzeto združevanje za vse mape;
+  `Nastavitve > Videz uporabniškega vmesnika > Združi`
+- **Samodejni predogled**: izberite vrste datotek, ki ob izbiri naložijo predogled v informacijskem panelu; druge prikažejo gumb `Naloži predogled`;
+  `Nastavitve > Videz uporabniškega vmesnika > Info panel > Samodejni predogled`
+- **Omejitev za velike datoteke**: datoteke PDF in slike v polni velikosti nad to velikostjo se ne naložijo samodejno;
+  `Nastavitve > Videz uporabniškega vmesnika > Info panel > Omejitev za velike datoteke`
+- **Mešaj z**: učinek ozadja mešajte z vmesnikom ali z izbrano barvo polnila; dodan je način `Linearno posvetljevanje (dodaj)`;
+  `Nastavitve > Videz uporabniškega vmesnika > Vizualni učinki > Mešaj z`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Nove bližnjice
+
+- **Navigacijski panel** (`Alt+Q`): prikaže ali skrije navigacijski panel;
+- **Informacijski panel** (`Alt+E`): prikaže ali skrije informacijski panel;
+- **Premikanje med podokni** (`Ctrl+Left` / `Ctrl+Right`): izbere element v isti vrstici drugega podokna in zdaj premakne fokus tudi na navigacijski panel;
+- **Preklopi na naslednji / prejšnji zavihek** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): preklapljanje med odprtimi zavihki;
+- **Podvoji trenutni zavihek** (`Ctrl+Alt+T`): odpre kopijo trenutnega zavihka;
+- **Odpri nov zavihek** (`Ctrl+T`): zdaj odpre privzeto mapo, tako kot gumb plus v vrstici zavihkov, namesto trenutne;
+
+### Novi jeziki
+
+- **Armenščina** (`Հայերեն`): popoln prevod (`Nastavitve > Splošno > Jezik`);
+
+### Izboljšave uporabniške izkušnje
+
+#### Nadzorna plošča
+
+Stran nadzorne plošče ima novo obliko s pregledom priljubljenih, označenih, pogostih in nedavno ogledanih elementov.
+
+- **Stranska vrstica oznak**: iščite, ustvarjajte, preimenujte, prebarvajte, brišite in prerazporejajte oznake;
+- **Označeni elementi**: filtrirajte po vrsti, razvrščajte ter preklapljajte med seznamom in mrežo;
+- **Kartice elementov**: prikazujejo predogled, velikost in pot ter imajo gumb, ki odpre vsebujočo mapo;
+- **Potrditev**: praznjenje seznama in brisanje oznake je zdaj treba potrditi;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Odložišče
+
+- **Elementi iz drugih aplikacij**: datoteke in slike, kopirane v drugih aplikacijah, imajo zdaj svoj kompaktni pripomoček, ki prikazuje izvorno aplikacijo;
+- **Načini prenosa**: prilepite elemente enega za drugim, prilepite vse ali jih povlecite kamor koli v navigatorju;
+- **Seznam odložišča**: seznam pripravljenih elementov ima novo obliko s predogledi, celotnimi potmi in velikostmi datotek;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Velikosti map
+
+Velikosti map se izračunajo hitreje in ne upočasnjujejo več navigacije.
+
+- **Najprej vidne mape**: najprej se izračunajo mape na zaslonu;
+- **Vzporedni izračun**: velike mape pregleda več niti z nizko prioriteto, velikosti podmap pa se sproti shranjujejo;
+- **Delne velikosti**: ko hitremu pregledu zmanjka časa, se prešteta velikost prikaže kot najmanjša vrednost, na primer `14.2 GB+`;
+- **Sprotni napredek**: `Pridobi velikost` prikazuje naraščajočo velikost in ga je mogoče kadar koli preklicati;
+- **Neberljive mape**: mape, ki jih ni mogoče prebrati, so označene, namesto da bi prikazovale `0 B`;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Hitri dostop in oznake
+
+- **Prerazporejanje**: razdelke in elemente v panelu hitrega dostopa prerazporedite z vlečenjem;
+- **Vrstni red oznak**: oznake v urejevalniku povlecite, da spremenite vrstni red prikaza;
+- **Stolpec oznak**: prikaže toliko oznak, kolikor jih je mogoče, namesto samo prve;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Arhivi
+
+- **Spori**: razpakiranje vpraša, kaj storiti z datotekami, ki že obstajajo;
+- **Korenska mapa**: `Razširi sem` zdaj ohrani korensko mapo arhiva;
+- **Čiščenje**: datoteke, ki ostanejo po neuspelem razpakiranju, se odstranijo;
+
+#### Poti, terminal in nastavitve
+
+- **Pot do uporabniške mape**: `~` se razširi v uporabniško mapo v naslovni vrstici, prilepljenih poteh in nastavitvi privzete mape;
+- **Odpri v terminalu**: privzeti terminal je prvi v meniju `Odpri v terminalu`, namigi pa pojasnijo, kako odpreti kateri koli terminal kot skrbnik (držite `Shift`);
+- **Iskanje po nastavitvah**: ujemajoče se bližnjice so zdaj prikazane med rezultati;
+- **Informacijski panel**: navigator si zapomni, ali je informacijski panel prikazan;
+- **Omrežni pogoni**: v sistemu Windows premik v koš z lokacij brez koša pred trajnim izbrisom zahteva potrditev;
+- **Obnovitev podatkov**: poškodovane nastavitve in delovni prostori se ob zagonu obnovijo iz varnostne kopije, o čemer vas obvesti obvestilo;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Izboljšave uporabniškega vmesnika
+
+- **Vrstica zavihkov**: zavihki so v obrobljeni vrstici in prikazujejo ikono mape, pogona ali iskanja; zavihki razdeljenega pogleda prikazujejo obe mapi z ločilom med njima;
+- **Kartice map**: kartice v mreži imajo obliko mape in pikčasti merilnik, ki prikazuje velikost na lestvici od KB do TB; deluje z vgrajenimi in sistemskimi ikonami ter ikonami razširitev;
+- **Mreža**: bolj pregledna postavitev z enotnimi razmiki;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Popravki napak
+
+- **Razpakiranje arhivov**: odpravljeno postavljanje datotek zunaj njihovih map, kadar ima arhiv več elementov na najvišji ravni;
+- **Stiskanje arhivov**: odpravljena napaka pri stiskanju map z okvarjenimi povezavami ali povezavami do map;
+- **Zamenjava**: odpravljeno, da je `Zamenjaj` izbrisal mapo, ki vsebuje kopirani ali premaknjeni element;
+- **Povezave**: odpravljeno, da sta kopiranje in združevanje sledila povezavam, namesto da bi jih ohranila, ter da okvarjenih povezav ni bilo mogoče kopirati, premakniti, preimenovati ali izbrisati;
+- **Preklic**: odpravljeno, da preklic ni ustavil kopiranja sredi velike datoteke ali združevanja;
+- **Izrezovanje in lepljenje**: odpravljeno kopiranje izrezanih elementov namesto premikanja v sistemih Linux in macOS;
+- **Imena datotek**: odpravljeno branje leve poševnice v imenih kot ločila poti v sistemih Linux in macOS;
+- **Preimenovanje**: odpravljena nezmožnost spremembe samo velikih in malih črk v imenu ter sprejemanje imen z ločili poti;
+- **Premaknjeni elementi**: odpravljeno, da so priljubljene, oznake, zgodovina in zavihki ohranili stare poti;
+- **Skupna raba SMB**: odpravljena napaka pri premikanju v koš v omrežnih mapah;
+- **Hitro iskanje**: odpravljeno izpuščanje pik, vezajev, presledkov in drugih ločil iz poizvedbe;
+- **Osveževanje map**: odpravljeno, da se podokna z isto mapo niso več osveževala, ko je eno od njih odprlo drugo mapo, ter utripanje števila elementov in stanja povezav;
+- **Odklopljeni pogoni**: odpravljeno, da je stari seznam datotek ostal na zaslonu po odklopu ali izmetu pogona;
+- **Aktivno podokno**: odpravljeno, da klik na prazno območje ni aktiviral podokna;
+- **Ikone po meri**: odpravljeno utripanje ikon ob prvem nalaganju;
+- **Pogoni v stranski vrstici**: odpravljeno, da se pogoni s srednjim klikom niso odprli v novem zavihku;
+- **Kazalec za vlečenje**: odpravljeno, da se je kazalec zataknil po hitrem vlečenju zavihka ali stolpca;
+- **Stanje okna**: odpravljena napačna velikost okna po celozaslonskem načinu, povečavi in pripenjanju ter dvoklik na vrh okna, ki ga ni povečal;
+- **Skupna raba LAN**: odpravljeno zadrževanje velikih nalaganj v pomnilniku;
+- **Teme (Linux)**: odpravljeno sesutje ob menjavi teme pri izklopljenem sestavljanju slike;
+- **Flatpak (Linux)**: odpravljeno sesutje ob zagonu in posodobljeno zastarelo okolje GNOME;
+- **Datumi**: odpravljeni prazni datumi, kadar je sistemska lokalizacija `C`;
+- **Prevodi**: odpravljene napačne kratke oznake v številnih jezikih;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Povzetek:** Integracija s sistemskim odložiščem, izbiranje z okvirjem, povezani razdeljeni pogled, upravljanje povezav, ZIP-arhivi z geslom, sistemsko okno Lastnosti v sistemu Windows, nove zmožnosti API-jev za razširitve, podpora za hebrejščino in izboljšave navigatorja.

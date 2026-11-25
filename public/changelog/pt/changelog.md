@@ -1,5 +1,236 @@
 # Registro de alterações
 
+## [2.3.0] - November 2026
+
+**Resumo:** Painel de navegação com árvore de pastas, opções de exibição e agrupamento por pasta, desfazer operações de arquivos, versões portátil e assinada para Windows, uma versão experimental com Chromium para Linux, novo design das abas, dos cartões de pastas e do painel inicial, cálculo mais rápido do tamanho das pastas, operações de arquivos mais seguras e maior segurança das extensões.
+
+- [Novos recursos](#novos-recursos)
+  - [Painel de navegação](#painel-de-navegação)
+  - [Opções de pasta e agrupamento](#opções-de-pasta-e-agrupamento)
+  - [Desfazer operações de arquivos](#desfazer-operações-de-arquivos)
+  - [Seleção de vários intervalos e pelo teclado](#seleção-de-vários-intervalos-e-pelo-teclado)
+  - [Duplicar aba](#duplicar-aba)
+  - [Separar abas da visualização dividida](#separar-abas-da-visualização-dividida)
+  - [Versões portátil e assinada para Windows](#versões-portátil-e-assinada-para-windows)
+  - [Versão com Chromium para Linux](#versão-com-chromium-para-linux)
+- [Extensões](#extensões)
+  - [Segurança das extensões](#segurança-das-extensões)
+- [Novas configurações](#novas-configurações)
+- [Novos atalhos](#novos-atalhos)
+- [Novos idiomas](#novos-idiomas)
+- [Melhorias de UX](#melhorias-de-ux)
+  - [Painel inicial](#painel-inicial)
+  - [Área de transferência](#área-de-transferência)
+  - [Tamanho das pastas](#tamanho-das-pastas)
+  - [Acesso rápido e tags](#acesso-rápido-e-tags)
+  - [Arquivos compactados](#arquivos-compactados)
+  - [Caminhos, terminal e configurações](#caminhos-terminal-e-configurações)
+- [Melhorias na interface](#melhorias-na-interface)
+- [Correções de bugs](#correções-de-bugs)
+
+### Novos recursos
+
+#### Painel de navegação
+
+Um painel de largura ajustável no lado esquerdo do navegador. Abra-o com o botão `Painel de navegação` na barra de ferramentas da janela.
+
+- **Árvore**: explore a árvore de pastas de todas as unidades e locais, sincronizada com o painel ativo; as pastas superiores expandidas ficam fixas no topo durante a rolagem;
+- **Acesso rápido**: veja e gerencie seus itens favoritos e marcados ao lado da lista de arquivos;
+- **Operações de arquivos**: as pastas da árvore têm menus de contexto e aceitam arrastar e soltar;
+- **Teclado**: `Ctrl+Left` / `Ctrl+Right` movem o foco entre o painel de navegação e os painéis de arquivos; na árvore, as teclas de seta percorrem as pastas expandidas, `Space` expande ou recolhe uma pasta e `Enter` também a abre no painel ativo;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Opções de pasta e agrupamento
+
+Cada pasta agora lembra seu layout, ordenação, agrupamento e exibição de itens ocultos. Altere-os no novo menu `Opções desta pasta`, ao lado da pesquisa rápida. Na visualização dividida, cada painel tem seu próprio menu.
+
+- **Agrupar**: agrupe os itens por `Tipo` ou `Modificado`, ou escolha `Nenhum`; os cabeçalhos dos grupos aparecem tanto em lista quanto em grade;
+- **Ordenação conjunta**: com `Nenhum`, as pastas não ficam mais acima dos arquivos, então a ordenação por data ou tamanho vale para todos os itens;
+- **Padrões**: use `Definir as opções atuais como predefinição` para tornar padrão as opções de uma pasta, ou `Repor predefinições` para remover as opções próprias da pasta;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Desfazer operações de arquivos
+
+Depois de renomear, mover ou enviar itens para a lixeira, a notificação mostra o botão `Desfazer`. Para a lixeira, isso não está disponível no macOS. A notificação também mostra os caminhos dos itens afetados, com o caminho antigo e o novo dos itens renomeados e movidos.
+
+#### Seleção de vários intervalos e pelo teclado
+
+Selecione vários grupos de arquivos sem perder a seleção atual.
+
+- **Vários intervalos**: mantenha `Ctrl+Shift` pressionado e clique para adicionar outro intervalo à seleção;
+- **Seleção pelo teclado**: mantenha `Shift` pressionado e use as teclas de seta para ampliar ou reduzir a seleção;
+
+#### Duplicar aba
+
+Duplique uma aba pelo menu de contexto ou pressione `Ctrl+Alt+T` para duplicar a atual.
+
+#### Separar abas da visualização dividida
+
+Clique com o botão direito em uma aba da visualização dividida e escolha `Separar guias` para abrir cada painel em sua própria aba.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Versões portátil e assinada para Windows
+
+- **Versão portátil (experimental)**: execute o aplicativo sem instalá-lo; os dados ficam na pasta `sigma-file-manager-data` ao lado do aplicativo. Requer o WebView2, incluído no Windows 11;
+- **Atualizações da versão portátil**: a nova versão é baixada na pasta do aplicativo e você mesmo substitui a antiga; a pasta de dados é mantida;
+- **Versões assinadas**: o instalador para Windows e o aplicativo portátil agora são assinados digitalmente, com assinatura gratuita fornecida pela SignPath.io e certificado da SignPath Foundation;
+
+#### Versão com Chromium para Linux
+
+Um AppImage experimental que inclui o Chromium em vez de usar o WebKitGTK, para sistemas em que a versão normal é lenta. As versões normais para Linux continuam disponíveis.
+
+- **Requisitos**: precisa de X11 ou XWayland; o download é maior, cerca de 175 MB;
+- **Atualizações separadas**: cada AppImage é atualizado para a sua própria versão;
+- **Dados portáteis**: crie uma pasta `sigma-file-manager-data` ao lado de qualquer um dos AppImages para guardar os dados nela;
+
+### Extensões
+
+#### Segurança das extensões
+
+As extensões estão mais isoladas do aplicativo e da rede.
+
+- **Acesso à rede**: o código das extensões não pode mais se conectar diretamente à rede; as solicitações passam pela API HTTP e por sua lista de hosts permitidos. As visualizações incorporadas ainda podem carregar imagens, fontes e estilos remotos;
+- **Páginas da barra lateral**: as páginas HTML das extensões agora são executadas em uma sandbox sem acesso ao aplicativo nem à rede;
+- **Permissões**: as permissões de comandos do shell agora são verificadas no backend do aplicativo com base no manifesto da extensão instalada;
+- **Downloads**: os downloads de extensões não podem mais alcançar endereços de redes privadas por redirecionamentos ou mudanças de DNS;
+
+### Novas configurações
+
+- **Página de inicialização**: escolha a página exibida ao iniciar o aplicativo ou reabra a última;
+  `Configurações > Geral > Página de inicialização`
+- **Terminal padrão**: escolha o terminal para `Abrir no terminal` e `Alt+T`, ou informe um comando personalizado;
+  `Configurações > Geral > Terminal padrão`
+- **Diretório padrão**: escolha a pasta das novas abas: pasta do usuário, locais ou uma pasta personalizada;
+  `Configurações > Abas > Diretório padrão`
+- **Agrupar**: escolha o agrupamento padrão de todas as pastas;
+  `Configurações > Aparência da interface > Agrupar`
+- **Pré-visualização automática**: escolha quais tipos de arquivo carregam uma prévia no painel de informações ao serem selecionados; os demais mostram o botão `Carregar pré-visualização`;
+  `Configurações > Aparência da interface > Painel de informações > Pré-visualização automática`
+- **Limite para arquivos grandes**: não carregar automaticamente PDFs e imagens em tamanho real acima deste tamanho;
+  `Configurações > Aparência da interface > Painel de informações > Limite para arquivos grandes`
+- **Mesclar com**: mescle o efeito de fundo com a interface ou com uma cor de preenchimento à sua escolha; foi adicionado o modo `Subexposição linear (adicionar)`;
+  `Configurações > Aparência da interface > Efeitos visuais > Mesclar com`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Novos atalhos
+
+- **Painel de navegação** (`Alt+Q`): mostrar ou ocultar o painel de navegação;
+- **Painel de informações** (`Alt+E`): mostrar ou ocultar o painel de informações;
+- **Mover entre painéis** (`Ctrl+Left` / `Ctrl+Right`): seleciona o item na mesma linha do outro painel e agora também move o foco para o painel de navegação;
+- **Mudar para a aba seguinte / anterior** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): alterna entre as abas abertas;
+- **Duplicar a aba atual** (`Ctrl+Alt+T`): abre uma cópia da aba atual;
+- **Abrir nova aba** (`Ctrl+T`): agora abre o diretório padrão, como o botão de mais na barra de abas, em vez do diretório atual;
+
+### Novos idiomas
+
+- **Armênio** (`Հայերեն`): tradução completa (`Configurações > Geral > Idioma`);
+
+### Melhorias de UX
+
+#### Painel inicial
+
+A página do painel tem um novo design com uma visão geral dos itens favoritos, marcados, frequentes e vistos recentemente.
+
+- **Barra lateral de tags**: pesquise, crie, renomeie, mude a cor, exclua e reordene tags;
+- **Itens marcados**: filtre por tipo, ordene e alterne entre lista e grade;
+- **Cartões de itens**: mostram prévia, tamanho e caminho, e têm um botão que abre a pasta que contém o item;
+- **Confirmação**: limpar uma lista ou excluir uma tag agora pede confirmação;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Área de transferência
+
+- **Itens de outros aplicativos**: arquivos e imagens copiados em outros aplicativos agora têm um widget compacto próprio, que mostra o aplicativo de origem;
+- **Opções de transferência**: cole os itens um a um, cole todos ou arraste-os para qualquer lugar do navegador;
+- **Lista da área de transferência**: a lista de itens preparados tem um novo design com prévias, caminhos completos e tamanhos dos arquivos;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Tamanho das pastas
+
+O tamanho das pastas é calculado mais rápido e não deixa mais a navegação lenta.
+
+- **Pastas visíveis primeiro**: as pastas na tela são calculadas primeiro;
+- **Cálculo paralelo**: pastas grandes são analisadas por várias threads de baixa prioridade, e os tamanhos das subpastas são salvos durante o processo;
+- **Tamanhos parciais**: quando o tempo de uma análise rápida acaba, o tamanho contado é mostrado como mínimo, por exemplo `14.2 GB+`;
+- **Progresso em tempo real**: `Obter tamanho` mostra o tamanho conforme ele cresce e pode ser cancelado a qualquer momento;
+- **Pastas ilegíveis**: pastas que não podem ser lidas são sinalizadas em vez de mostrar `0 B`;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Acesso rápido e tags
+
+- **Reordenação**: arraste seções e itens no painel de acesso rápido para reordená-los;
+- **Ordem das tags**: arraste as tags no editor para mudar a ordem em que são exibidas;
+- **Coluna de tags**: mostra quantas tags couberem em vez de apenas a primeira;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Arquivos compactados
+
+- **Conflitos**: a extração pergunta o que fazer com arquivos que já existem;
+- **Pasta raiz**: `Extrair aqui` agora mantém a pasta raiz do arquivo compactado;
+- **Limpeza**: arquivos deixados por uma extração com falha são removidos;
+
+#### Caminhos, terminal e configurações
+
+- **Caminho do usuário**: `~` é expandido para a pasta do usuário na barra de endereço, em caminhos colados e na configuração do diretório padrão;
+- **Abrir no terminal**: o terminal padrão aparece primeiro no menu `Abrir no terminal`, e dicas explicam como abrir qualquer terminal como administrador (mantenha `Shift` pressionado);
+- **Pesquisa nas configurações**: os atalhos correspondentes agora aparecem nos resultados;
+- **Painel de informações**: o navegador lembra se o painel de informações está visível;
+- **Unidades de rede**: no Windows, mover para a lixeira itens de locais sem Lixeira pede confirmação antes de excluí-los definitivamente;
+- **Recuperação de dados**: configurações e espaços de trabalho danificados são restaurados de um backup na inicialização, com uma notificação;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Melhorias na interface
+
+- **Barra de abas**: as abas ficam em uma barra com borda e mostram ícones de pasta, unidade ou pesquisa; as abas da visualização dividida mostram as duas pastas com um divisor entre elas;
+- **Cartões de pastas**: na grade, os cartões têm formato de pasta e um medidor de pontos que mostra o tamanho em uma escala de KB a TB; funciona com ícones integrados, do sistema e de extensões;
+- **Layout em grade**: mais limpo e com espaçamento uniforme;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Correções de bugs
+
+- **Extração de arquivos**: corrigida a colocação de arquivos fora de suas pastas quando o arquivo compactado tem vários itens no nível superior;
+- **Compactação de arquivos**: corrigida a falha ao compactar pastas com links quebrados ou links para pastas;
+- **Substituir**: corrigido `Substituir`, que excluía uma pasta que contém o item copiado ou movido;
+- **Links**: corrigido o fato de copiar e mesclar seguirem os links em vez de mantê-los, e de links quebrados não poderem ser copiados, movidos, renomeados ou excluídos;
+- **Cancelamento**: corrigido o cancelamento, que não interrompia uma cópia no meio de um arquivo grande ou de uma mesclagem;
+- **Recortar e colar**: corrigido o fato de itens recortados serem copiados em vez de movidos no Linux e no macOS;
+- **Nomes de arquivos**: corrigida a leitura de barras invertidas nos nomes como separadores de caminho no Linux e no macOS;
+- **Renomear**: corrigida a impossibilidade de mudar apenas maiúsculas e minúsculas de um nome, e a aceitação de nomes com separadores de caminho;
+- **Itens movidos**: corrigido o fato de favoritos, tags, histórico e abas manterem os caminhos antigos;
+- **Compartilhamentos SMB**: corrigida a falha ao mover para a lixeira em pastas de rede;
+- **Pesquisa rápida**: corrigida a remoção de pontos, hifens, espaços e outros sinais da consulta;
+- **Atualização de diretórios**: corrigido o fato de painéis com a mesma pasta pararem de atualizar quando um deles mudava de pasta, e a oscilação da contagem de itens e do estado dos links;
+- **Unidades desconectadas**: corrigida a lista de arquivos antiga que permanecia na tela após desmontar ou ejetar uma unidade;
+- **Painel ativo**: corrigido o clique na área vazia, que não ativava o painel;
+- **Ícones personalizados**: corrigida a oscilação dos ícones no primeiro carregamento;
+- **Unidades na barra lateral**: corrigido o fato de não abrirem em uma nova aba com o botão do meio;
+- **Cursor de arrastar**: corrigido o cursor que ficava preso após arrastar rapidamente uma aba ou coluna;
+- **Estado da janela**: corrigido o tamanho incorreto após tela cheia, maximização e encaixe, e o clique duplo no topo da janela que não a maximizava;
+- **Compartilhamento LAN**: corrigido o fato de envios grandes serem mantidos na memória;
+- **Temas (Linux)**: corrigida uma falha ao mudar o tema com a composição desativada;
+- **Flatpak (Linux)**: corrigida uma falha ao iniciar e atualizado o ambiente GNOME obsoleto;
+- **Datas**: corrigidas datas vazias quando a localidade do sistema é `C`;
+- **Traduções**: corrigidos rótulos curtos incorretos em muitos idiomas;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Resumo:** Integração da área de transferência do sistema com outros aplicativos, seleção por caixa, visualização dividida vinculada, gerenciamento de links, arquivos ZIP protegidos por senha, propriedades nativas no Windows, novas APIs para extensões, suporte ao hebraico e melhorias na navegação.

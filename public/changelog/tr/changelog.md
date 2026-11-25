@@ -1,5 +1,236 @@
 # Değişiklik Günlüğü
 
+## [2.3.0] - November 2026
+
+**Özet:** Klasör ağaçlı gezinme paneli, klasöre özel görünüm seçenekleri ve gruplama, dosya işlemlerini geri alma, Windows için taşınabilir ve imzalı sürümler, Linux için deneysel Chromium sürümü, yenilenen sekmeler, klasör kartları ve gösterge tablosu, daha hızlı klasör boyutu hesaplama, daha güvenli dosya işlemleri ve daha sıkı eklenti güvenliği.
+
+- [Yeni Özellikler](#yeni-özellikler)
+  - [Gezinme Paneli](#gezinme-paneli)
+  - [Klasör Seçenekleri ve Gruplama](#klasör-seçenekleri-ve-gruplama)
+  - [Dosya İşlemlerini Geri Alma](#dosya-i̇şlemlerini-geri-alma)
+  - [Çoklu Aralık ve Klavyeyle Seçim](#çoklu-aralık-ve-klavyeyle-seçim)
+  - [Sekme Çoğaltma](#sekme-çoğaltma)
+  - [Bölünmüş Görünüm Sekmelerini Ayırma](#bölünmüş-görünüm-sekmelerini-ayırma)
+  - [Windows için Taşınabilir ve İmzalı Sürümler](#windows-için-taşınabilir-ve-i̇mzalı-sürümler)
+  - [Linux için Chromium Sürümü](#linux-için-chromium-sürümü)
+- [Eklentiler](#eklentiler)
+  - [Eklenti Güvenliği](#eklenti-güvenliği)
+- [Yeni Ayarlar](#yeni-ayarlar)
+- [Yeni Kısayollar](#yeni-kısayollar)
+- [Yeni Diller](#yeni-diller)
+- [Kullanıcı Deneyimi İyileştirmeleri](#kullanıcı-deneyimi-i̇yileştirmeleri)
+  - [Gösterge Tablosu](#gösterge-tablosu)
+  - [Pano](#pano)
+  - [Klasör Boyutları](#klasör-boyutları)
+  - [Hızlı Erişim ve Etiketler](#hızlı-erişim-ve-etiketler)
+  - [Arşivler](#arşivler)
+  - [Yollar, Terminal ve Ayarlar](#yollar-terminal-ve-ayarlar)
+- [Arayüz İyileştirmeleri](#arayüz-i̇yileştirmeleri)
+- [Hata Düzeltmeleri](#hata-düzeltmeleri)
+
+### Yeni Özellikler
+
+#### Gezinme Paneli
+
+Gezginin sol tarafında, genişliği ayarlanabilen bir panel. Pencere araç çubuğundaki `Gezinme paneli` düğmesiyle açılır.
+
+- **Ağaç**: tüm sürücü ve konumların klasör ağacına etkin bölmeyle eşzamanlı olarak göz atın; genişletilmiş üst klasörler kaydırırken en üstte sabit kalır;
+- **Hızlı erişim**: sık kullanılan ve etiketli öğelerinizi dosya listesinin yanında görün ve yönetin;
+- **Dosya işlemleri**: ağaçtaki klasörler bağlam menülerini ve sürükleyip bırakmayı destekler;
+- **Klavye**: `Ctrl+Left` / `Ctrl+Right` odağı gezinme paneli ile dosya bölmeleri arasında taşır; ağaçta ok tuşları açık klasörler arasında gezinir, `Space` klasörü genişletir veya daraltır, `Enter` ayrıca klasörü etkin bölmede açar;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Klasör Seçenekleri ve Gruplama
+
+Her klasör artık kendi düzenini, sıralamasını, gruplamasını ve gizli öğe ayarını hatırlar. Bunları hızlı aramanın yanındaki yeni `Bu klasörün seçenekleri` menüsünden değiştirin. Bölünmüş görünümde her bölmenin kendi menüsü vardır.
+
+- **Grupla**: öğeleri `Tür` veya `Değiştirilme` ölçütüne göre gruplayın ya da `Hiçbiri` seçin; grup başlıkları hem liste hem ızgara düzeninde gösterilir;
+- **Ortak sıralama**: `Hiçbiri` seçildiğinde klasörler artık dosyaların üstünde tutulmaz; tarihe veya boyuta göre sıralama tüm öğelere uygulanır;
+- **Varsayılanlar**: bir klasörün seçeneklerini varsayılan yapmak için `Geçerli seçenekleri varsayılan yap`, klasörün kendi seçeneklerini kaldırmak için `Varsayılan ayarlara sıfırla` komutunu kullanın;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Dosya İşlemlerini Geri Alma
+
+Öğeleri yeniden adlandırdıktan, taşıdıktan veya çöp kutusuna gönderdikten sonra bildirimde `Geri al` düğmesi gösterilir. Çöp kutusuna göndermeyi geri alma macOS'ta kullanılamaz. Bildirimde etkilenen öğelerin yolları, yeniden adlandırılan ve taşınan öğelerin ise eski ve yeni yolları da gösterilir.
+
+#### Çoklu Aralık ve Klavyeyle Seçim
+
+Geçerli seçimi kaybetmeden birden fazla dosya grubu seçin.
+
+- **Birden fazla aralık**: seçime yeni bir aralık eklemek için `Ctrl+Shift` tuşlarını basılı tutup tıklayın;
+- **Klavyeyle seçim**: seçimi genişletmek veya daraltmak için `Shift` tuşunu basılı tutup ok tuşlarına basın;
+
+#### Sekme Çoğaltma
+
+Bir sekmeyi bağlam menüsünden çoğaltın veya geçerli sekmeyi çoğaltmak için `Ctrl+Alt+T` tuşlarına basın.
+
+#### Bölünmüş Görünüm Sekmelerini Ayırma
+
+Her bölmeyi kendi sekmesinde açmak için bölünmüş görünüm sekmesine sağ tıklayıp `Sekmeleri ayır` seçeneğini kullanın.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Windows için Taşınabilir ve İmzalı Sürümler
+
+- **Taşınabilir sürüm (deneysel)**: uygulamayı kurmadan çalıştırın; veriler uygulamanın yanındaki `sigma-file-manager-data` klasöründe tutulur. Windows 11 ile birlikte gelen WebView2 gereklidir;
+- **Taşınabilir sürüm güncellemeleri**: yeni sürüm uygulama klasörüne indirilir ve eskisini siz değiştirirsiniz; veri klasörünüz korunur;
+- **İmzalı sürümler**: Windows yükleyicisi ve taşınabilir uygulama artık dijital olarak imzalıdır; ücretsiz imzalama SignPath.io, sertifika SignPath Foundation tarafından sağlanır;
+
+#### Linux için Chromium Sürümü
+
+Normal sürümün yavaş çalıştığı sistemler için, WebKitGTK yerine Chromium içeren deneysel bir AppImage. Normal Linux sürümleri kullanılmaya devam eder.
+
+- **Gereksinimler**: X11 veya XWayland gerekir; indirme boyutu daha büyüktür, yaklaşık 175 MB;
+- **Ayrı güncellemeler**: her AppImage kendi sürümüne güncellenir;
+- **Taşınabilir veriler**: verileri orada tutmak için AppImage dosyalarından birinin yanında `sigma-file-manager-data` klasörü oluşturun;
+
+### Eklentiler
+
+#### Eklenti Güvenliği
+
+Eklentiler uygulamadan ve ağdan daha sıkı şekilde yalıtılır.
+
+- **Ağ erişimi**: eklenti kodu artık ağa doğrudan bağlanamaz; istekler HTTP API'sinden ve izin verilen ana makine listesinden geçer. Gömülü görünümler uzak görselleri, yazı tiplerini ve stilleri yüklemeye devam edebilir;
+- **Kenar çubuğu sayfaları**: eklentilerin HTML sayfaları artık uygulamaya ve ağa erişimi olmayan bir korumalı alanda çalışır;
+- **İzinler**: kabuk komutu izinleri artık uygulamanın arka ucunda, yüklü eklentinin bildirim dosyasına göre denetlenir;
+- **İndirmeler**: eklenti indirmeleri artık yönlendirmeler veya DNS değişiklikleri yoluyla özel ağ adreslerine ulaşamaz;
+
+### Yeni Ayarlar
+
+- **Başlangıç sayfası**: uygulama açıldığında gösterilecek sayfayı seçin veya son sayfayı yeniden açın;
+  `Ayarlar > Genel > Başlangıç sayfası`
+- **Varsayılan terminal**: `Terminalde aç` komutu ve `Alt+T` için terminali seçin veya özel bir komut girin;
+  `Ayarlar > Genel > Varsayılan terminal`
+- **Varsayılan dizin**: yeni sekmelerin klasörünü seçin: kullanıcı klasörü, yerler veya özel bir klasör;
+  `Ayarlar > Sekmeler > Varsayılan dizin`
+- **Grupla**: tüm klasörler için varsayılan gruplamayı seçin;
+  `Ayarlar > Arayüz görünümü > Grupla`
+- **Otomatik önizleme**: seçildiğinde bilgi panelinde önizlemesi yüklenecek dosya türlerini belirleyin; diğer türler `Önizlemeyi yükle` düğmesini gösterir;
+  `Ayarlar > Arayüz görünümü > Bilgi paneli > Otomatik önizleme`
+- **Büyük dosya sınırı**: bu boyutun üzerindeki PDF'leri ve tam boyutlu görselleri otomatik olarak yüklemeyin;
+  `Ayarlar > Arayüz görünümü > Bilgi paneli > Büyük dosya sınırı`
+- **Şununla karıştır**: arka plan efektini arayüzle veya seçtiğiniz bir dolgu rengiyle karıştırın; karışım modlarına `Doğrusal soldurma (ekle)` eklendi;
+  `Ayarlar > Arayüz görünümü > Görsel efektler > Şununla karıştır`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Yeni Kısayollar
+
+- **Gezinme paneli** (`Alt+Q`): gezinme panelini gösterin veya gizleyin;
+- **Bilgi paneli** (`Alt+E`): bilgi panelini gösterin veya gizleyin;
+- **Bölmeler arasında geçiş** (`Ctrl+Left` / `Ctrl+Right`): diğer bölmede aynı satırdaki öğeyi seçer ve artık odağı gezinme paneline de taşır;
+- **Sonraki / önceki sekmeye geç** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): açık sekmeler arasında geçiş yapın;
+- **Geçerli sekmeyi çoğalt** (`Ctrl+Alt+T`): geçerli sekmenin bir kopyasını açın;
+- **Yeni sekme aç** (`Ctrl+T`): artık geçerli dizin yerine, sekme çubuğundaki artı düğmesi gibi varsayılan dizini açar;
+
+### Yeni Diller
+
+- **Ermenice** (`Հայերեն`): eksiksiz çeviri (`Ayarlar > Genel > Dil`);
+
+### Kullanıcı Deneyimi İyileştirmeleri
+
+#### Gösterge Tablosu
+
+Gösterge tablosu sayfası sık kullanılanlara eklenen, etiketli, sık açılan ve son görüntülenen öğelerin özetini içeren yeni bir tasarıma sahip.
+
+- **Etiket kenar çubuğu**: etiketleri arayın, oluşturun, yeniden adlandırın, renklendirin, silin ve sıralayın;
+- **Etiketli öğeler**: türe göre filtreleyin, sıralayın, liste ve ızgara düzenleri arasında geçiş yapın;
+- **Öğe kartları**: kartlar önizleme, boyut ve yol gösterir ve içeren klasörü açan bir düğmeye sahiptir;
+- **Onay**: bir listeyi temizlemek veya etiketi silmek artık onay ister;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Pano
+
+- **Diğer uygulamalardan öğeler**: diğer uygulamalarda kopyalanan dosya ve görseller artık kaynak uygulamayı gösteren ayrı, küçük bir bileşende yer alır;
+- **Aktarma seçenekleri**: öğeleri tek tek veya topluca yapıştırın ya da gezginde istediğiniz yere sürükleyin;
+- **Pano listesi**: hazırlanan öğeler listesi önizlemeler, tam yollar ve dosya boyutlarıyla yenilendi;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Klasör Boyutları
+
+Klasör boyutları daha hızlı hesaplanır ve gezinmeyi artık yavaşlatmaz.
+
+- **Önce görünen klasörler**: önce ekrandaki klasörlerin boyutu hesaplanır;
+- **Paralel hesaplama**: büyük klasörler birkaç düşük öncelikli iş parçacığıyla taranır ve alt klasörlerin boyutları bu sırada kaydedilir;
+- **Kısmi boyutlar**: hızlı taramanın süresi dolduğunda sayılan boyut en az değer olarak gösterilir, örneğin `14.2 GB+`;
+- **Canlı ilerleme**: `Boyut al` boyutu büyüdükçe gösterir ve istediğiniz zaman iptal edilebilir;
+- **Okunamayan klasörler**: okunamayan klasörler `0 B` göstermek yerine işaretlenir;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Hızlı Erişim ve Etiketler
+
+- **Yeniden sıralama**: hızlı erişim panelindeki bölümleri ve öğeleri sürükleyerek sıralayın;
+- **Etiket sırası**: gösterilme sırasını değiştirmek için etiketleri etiket düzenleyicide sürükleyin;
+- **Etiket sütunu**: yalnızca ilk etiketi değil, sığan tüm etiketleri gösterir;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Arşivler
+
+- **Çakışmalar**: çıkarma sırasında zaten var olan dosyalarla ne yapılacağı sorulur;
+- **Kök klasör**: `Buraya çıkar` artık arşivin kök klasörünü korur;
+- **Temizlik**: başarısız bir çıkarmadan kalan dosyalar silinir;
+
+#### Yollar, Terminal ve Ayarlar
+
+- **Kullanıcı klasörü yolu**: `~` adres çubuğunda, yapıştırılan yollarda ve varsayılan dizin ayarında kullanıcı klasörüne dönüştürülür;
+- **Terminalde aç**: varsayılan terminal `Terminalde aç` menüsünde ilk sırada gösterilir; ipuçları herhangi bir terminalin yönetici olarak nasıl açılacağını açıklar (`Shift` tuşunu basılı tutun);
+- **Ayar araması**: eşleşen kısayollar artık arama sonuçlarında görünür;
+- **Bilgi paneli**: gezgin, bilgi panelinin görünür olup olmadığını hatırlar;
+- **Ağ sürücüleri**: Windows'ta Geri Dönüşüm Kutusu olmayan konumlardaki öğeler çöp kutusuna gönderilirken kalıcı silmeden önce onay istenir;
+- **Veri kurtarma**: bozulan ayarlar ve çalışma alanları açılışta yedekten geri yüklenir ve bir bildirim gösterilir;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Arayüz İyileştirmeleri
+
+- **Sekme çubuğu**: sekmeler tek bir kenarlıklı çubukta yer alır ve klasör, sürücü veya arama simgesi gösterir; bölünmüş görünüm sekmeleri iki klasörü de aralarında bir ayırıcıyla gösterir;
+- **Klasör kartları**: ızgaradaki klasör kartları klasör biçimindedir ve boyutu KB ile TB arasındaki bir ölçekte gösteren noktalı bir göstergeye sahiptir; yerleşik, sistem ve eklenti simgeleriyle çalışır;
+- **Izgara düzeni**: tutarlı aralıklarla daha temiz düzen;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Hata Düzeltmeleri
+
+- **Arşiv çıkarma**: arşivin en üst düzeyinde birden fazla öğe olduğunda dosyaların klasörlerinin dışına yerleştirilmesi düzeltildi;
+- **Arşiv sıkıştırma**: bozuk bağlantılar veya klasör bağlantıları içeren klasörlerin sıkıştırılamaması düzeltildi;
+- **Değiştir**: `Değiştir` seçeneğinin, kopyalanan veya taşınan öğeyi içeren klasörü silmesi düzeltildi;
+- **Bağlantılar**: kopyalama ve birleştirmenin bağlantıları korumak yerine izlemesi ve bozuk bağlantıların kopyalanamaması, taşınamaması, yeniden adlandırılamaması veya silinememesi düzeltildi;
+- **İptal**: iptalin büyük bir dosyanın kopyalanmasını veya birleştirmeyi ortasında durdurmaması düzeltildi;
+- **Kes ve yapıştır**: Linux ve macOS'ta kesilen öğelerin taşınmak yerine kopyalanması düzeltildi;
+- **Dosya adları**: Linux ve macOS'ta dosya adlarındaki ters eğik çizgilerin yol ayırıcısı olarak okunması düzeltildi;
+- **Yeniden adlandırma**: adın yalnızca büyük/küçük harflerinin değiştirilememesi ve yol ayırıcısı içeren adların kabul edilmesi düzeltildi;
+- **Taşınan öğeler**: sık kullanılanların, etiketlerin, geçmişin ve sekmelerin eski yolları tutması düzeltildi;
+- **SMB paylaşımları**: ağ klasörlerinde çöp kutusuna taşımanın başarısız olması düzeltildi;
+- **Hızlı arama**: nokta, tire, boşluk ve diğer noktalama işaretlerinin aramadan atılması düzeltildi;
+- **Dizin yenileme**: aynı klasörü gösteren bölmelerin, biri başka klasöre geçtiğinde yenilenmemesi ve öğe sayısı ile bağlantı durumunun yanıp sönmesi düzeltildi;
+- **Bağlantısı kesilen sürücüler**: sürücü ayrıldıktan veya çıkarıldıktan sonra eski dosya listesinin ekranda kalması düzeltildi;
+- **Etkin bölme**: boş alana tıklamanın bölmeyi etkinleştirmemesi düzeltildi;
+- **Özel simgeler**: ilk yüklemede simgelerin yanıp sönmesi düzeltildi;
+- **Kenar çubuğu sürücüleri**: orta tıklamayla yeni sekmede açılmamaları düzeltildi;
+- **Tutma imleci**: sekme veya sütun hızla sürüklendikten sonra imlecin takılı kalması düzeltildi;
+- **Pencere durumu**: tam ekran, ekranı kaplama ve yaslama sonrası hatalı pencere boyutu ve pencerenin üstüne çift tıklamanın ekranı kaplamaması düzeltildi;
+- **LAN paylaşımı**: büyük yüklemelerin bellekte tutulması düzeltildi;
+- **Temalar (Linux)**: birleştirme kapalıyken tema değiştirildiğinde oluşan çökme düzeltildi;
+- **Flatpak (Linux)**: açılıştaki çökme düzeltildi ve eski GNOME çalışma ortamı güncellendi;
+- **Tarihler**: sistem yerel ayarı `C` olduğunda tarihlerin boş görünmesi düzeltildi;
+- **Çeviriler**: birçok dildeki yanlış kısa etiketler düzeltildi;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Özet:** Sistem panosu aracılığıyla diğer uygulamalarla entegrasyon, kutu seçimi, bağlı bölünmüş görünüm, bağlantı yönetimi, parola korumalı ZIP arşivleri, Windows'ta yerel Özellikler penceresi, genişletilmiş eklenti API'leri, İbranice dil desteği ve gezginde yapılan iyileştirmeler.

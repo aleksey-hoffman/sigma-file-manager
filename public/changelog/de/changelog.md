@@ -1,5 +1,236 @@
 # Änderungsprotokoll
 
+## [2.3.0] - November 2026
+
+**Zusammenfassung:** Navigationsbereich mit Ordnerbaum, eigene Ansichtsoptionen und Gruppierung pro Ordner, Rückgängigmachen von Dateivorgängen, portable und signierte Windows-Builds, ein experimenteller Chromium-Build für Linux, neu gestaltete Tabs, Ordnerkarten und Dashboard-Seite, schnellere Ordnergrößen, sicherere Dateivorgänge und strengere Sicherheit für Erweiterungen.
+
+- [Neue Funktionen](#neue-funktionen)
+  - [Navigationsbereich](#navigationsbereich)
+  - [Ordneroptionen und Gruppierung](#ordneroptionen-und-gruppierung)
+  - [Dateivorgänge rückgängig machen](#dateivorgänge-rückgängig-machen)
+  - [Mehrfachbereiche und Auswahl per Tastatur](#mehrfachbereiche-und-auswahl-per-tastatur)
+  - [Tab duplizieren](#tab-duplizieren)
+  - [Tabs der geteilten Ansicht trennen](#tabs-der-geteilten-ansicht-trennen)
+  - [Portable und signierte Windows-Builds](#portable-und-signierte-windows-builds)
+  - [Chromium-Build für Linux](#chromium-build-für-linux)
+- [Erweiterungen](#erweiterungen)
+  - [Sicherheit von Erweiterungen](#sicherheit-von-erweiterungen)
+- [Neue Einstellungen](#neue-einstellungen)
+- [Neue Tastenkürzel](#neue-tastenkürzel)
+- [Neue Sprachen](#neue-sprachen)
+- [UX-Verbesserungen](#ux-verbesserungen)
+  - [Dashboard](#dashboard)
+  - [Zwischenablage](#zwischenablage)
+  - [Ordnergrößen](#ordnergrößen)
+  - [Schnellzugriff und Tags](#schnellzugriff-und-tags)
+  - [Archive](#archive)
+  - [Pfade, Terminal und Einstellungen](#pfade-terminal-und-einstellungen)
+- [UI-Verbesserungen](#ui-verbesserungen)
+- [Fehlerbehebungen](#fehlerbehebungen)
+
+### Neue Funktionen
+
+#### Navigationsbereich
+
+Ein in der Breite anpassbarer Bereich auf der linken Seite des Navigators. Er wird mit der Schaltfläche `Navigationsbereich` in der Fenster-Symbolleiste geöffnet.
+
+- **Baum**: den Ordnerbaum aller Laufwerke und Standorte durchsuchen, synchron mit dem aktiven Bereich; aufgeklappte übergeordnete Ordner bleiben beim Scrollen oben angeheftet;
+- **Schnellzugriff**: Favoriten und markierte Elemente neben der Dateiliste sehen und verwalten;
+- **Dateivorgänge**: Ordner im Baum unterstützen Kontextmenüs sowie Ziehen und Ablegen;
+- **Tastatur**: `Ctrl+Left` / `Ctrl+Right` bewegen den Fokus zwischen dem Navigationsbereich und den Dateibereichen; im Baum bewegen die Pfeiltasten durch aufgeklappte Ordner, `Space` klappt einen Ordner auf oder zu, und `Enter` öffnet ihn zusätzlich im aktiven Bereich;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Ordneroptionen und Gruppierung
+
+Jeder Ordner merkt sich nun Layout, Sortierung, Gruppierung und die Anzeige versteckter Elemente. Diese Optionen befinden sich im neuen Menü `Optionen für diesen Ordner` neben der Schnellsuche. In der geteilten Ansicht hat jeder Bereich ein eigenes Menü.
+
+- **Gruppieren**: Elemente nach `Art` oder `Geändert` gruppieren oder `Keiner` wählen; Gruppenüberschriften erscheinen im Listen- und im Rasterlayout;
+- **Gemischte Sortierung**: mit `Keiner` stehen Ordner nicht mehr über den Dateien, sodass die Sortierung nach Datum oder Größe für alle Elemente gilt;
+- **Standardwerte**: mit `Aktuelle Optionen als Standard festlegen` die Optionen eines Ordners zum Standard machen oder mit `Auf Standardeinstellungen zurücksetzen` die eigenen Optionen des Ordners entfernen;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Dateivorgänge rückgängig machen
+
+Nach dem Umbenennen, Verschieben oder Löschen in den Papierkorb zeigt die Benachrichtigung die Schaltfläche `Rückgängig`. Für den Papierkorb ist dies unter macOS nicht verfügbar. Die Benachrichtigung zeigt außerdem die Pfade der betroffenen Elemente, bei umbenannten und verschobenen den alten und den neuen Pfad.
+
+#### Mehrfachbereiche und Auswahl per Tastatur
+
+Mehrere Dateigruppen auswählen, ohne die aktuelle Auswahl zu verlieren.
+
+- **Mehrere Bereiche**: `Ctrl+Shift` gedrückt halten und klicken, um der Auswahl einen weiteren Bereich hinzuzufügen;
+- **Auswahl per Tastatur**: `Shift` gedrückt halten und die Pfeiltasten drücken, um die Auswahl zu erweitern oder zu verkleinern;
+
+#### Tab duplizieren
+
+Einen Tab über sein Kontextmenü duplizieren oder mit `Ctrl+Alt+T` den aktuellen Tab duplizieren.
+
+#### Tabs der geteilten Ansicht trennen
+
+Mit einem Rechtsklick auf einen Tab der geteilten Ansicht und `Tabs trennen` wird jeder Bereich in einem eigenen Tab geöffnet.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Portable und signierte Windows-Builds
+
+- **Portabler Build (experimentell)**: die App ohne Installation ausführen; die Daten liegen im Ordner `sigma-file-manager-data` neben der App. Benötigt die WebView2-Laufzeit, die in Windows 11 enthalten ist;
+- **Portable Updates**: die neue Version wird in den App-Ordner heruntergeladen und die alte selbst ersetzt; der Datenordner bleibt erhalten;
+- **Signierte Builds**: das Windows-Installationsprogramm und die portable App sind jetzt digital signiert; die kostenlose Signierung stellt SignPath.io bereit, das Zertifikat die SignPath Foundation;
+
+#### Chromium-Build für Linux
+
+Ein experimentelles AppImage mit Chromium statt WebKitGTK für Systeme, auf denen der normale Build langsam ist. Die normalen Linux-Builds sind weiterhin verfügbar.
+
+- **Voraussetzungen**: X11 oder XWayland; der Download ist mit etwa 175 MB größer;
+- **Getrennte Updates**: jedes AppImage wird auf seine eigene Version aktualisiert;
+- **Portable Daten**: einen Ordner `sigma-file-manager-data` neben einem der AppImages anlegen, um die Daten dort zu speichern;
+
+### Erweiterungen
+
+#### Sicherheit von Erweiterungen
+
+Erweiterungen sind strenger von der App und vom Netzwerk isoliert.
+
+- **Netzwerkzugriff**: Erweiterungscode kann keine direkten Netzwerkverbindungen mehr aufbauen; Anfragen laufen über die HTTP-API und ihre Liste erlaubter Hosts. Eingebettete Seiten können weiterhin externe Bilder, Schriften und Stile laden;
+- **Seiten der Seitenleiste**: HTML-Seiten von Erweiterungen laufen jetzt in einer Sandbox ohne Zugriff auf App und Netzwerk;
+- **Berechtigungen**: Berechtigungen für Shell-Befehle werden jetzt im App-Backend anhand des Manifests der installierten Erweiterung geprüft;
+- **Downloads**: Downloads von Erweiterungen können private Netzwerkadressen nicht mehr über Weiterleitungen oder DNS-Änderungen erreichen;
+
+### Neue Einstellungen
+
+- **Seite beim Start**: die Seite wählen, die beim Start der App angezeigt wird, oder die letzte Seite öffnen;
+  `Einstellungen > Allgemein > Seite beim Start`
+- **Standardterminal**: das Terminal für `Im Terminal öffnen` und `Alt+T` wählen oder einen eigenen Befehl eingeben;
+  `Einstellungen > Allgemein > Standardterminal`
+- **Standardverzeichnis**: den Ordner für neue Tabs wählen: Benutzerordner, Standorte oder einen eigenen Ordner;
+  `Einstellungen > Tabs > Standardverzeichnis`
+- **Gruppieren**: die Standardgruppierung für alle Ordner wählen;
+  `Einstellungen > Erscheinungsbild > Gruppieren`
+- **Automatische Vorschau**: wählen, welche Dateitypen beim Auswählen eine Vorschau in der Infotafel laden; andere Typen zeigen die Schaltfläche `Vorschau laden`;
+  `Einstellungen > Erscheinungsbild > Infotafel > Automatische Vorschau`
+- **Grenze für große Dateien**: PDFs und Bilder in voller Größe oberhalb dieser Größe nicht automatisch laden;
+  `Einstellungen > Erscheinungsbild > Infotafel > Grenze für große Dateien`
+- **Mischen mit**: den Hintergrundeffekt mit der Oberfläche oder einer Füllfarbe mischen; neu ist der Modus `Linear abwedeln (Hinzufügen)`;
+  `Einstellungen > Erscheinungsbild > Visuelle Effekte > Mischen mit`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Neue Tastenkürzel
+
+- **Navigationsbereich** (`Alt+Q`): Navigationsbereich ein- oder ausblenden;
+- **Infotafel** (`Alt+E`): Infotafel ein- oder ausblenden;
+- **Zwischen Bereichen wechseln** (`Ctrl+Left` / `Ctrl+Right`): wählt das Element in derselben Zeile des anderen Bereichs aus und bewegt den Fokus jetzt auch zum Navigationsbereich;
+- **Zum nächsten / vorherigen Tab wechseln** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): zwischen geöffneten Tabs wechseln;
+- **Aktuellen Tab duplizieren** (`Ctrl+Alt+T`): eine Kopie des aktuellen Tabs öffnen;
+- **Neuen Tab öffnen** (`Ctrl+T`): öffnet jetzt wie die Plus-Schaltfläche in der Tab-Leiste das Standardverzeichnis statt des aktuellen Verzeichnisses;
+
+### Neue Sprachen
+
+- **Armenisch** (`Հայերեն`): vollständige Übersetzung (`Einstellungen > Allgemein > Sprache`);
+
+### UX-Verbesserungen
+
+#### Dashboard
+
+Die Dashboard-Seite hat ein neues Design mit einer Übersicht über Favoriten sowie markierte, häufig verwendete und zuletzt angesehene Elemente.
+
+- **Tag-Seitenleiste**: Tags suchen, erstellen, umbenennen, umfärben, löschen und neu anordnen;
+- **Markierte Elemente**: nach Typ filtern, sortieren und zwischen Listen- und Rasterlayout wechseln;
+- **Elementkarten**: Karten zeigen Vorschau, Größe und Pfad und haben eine Schaltfläche zum Öffnen des übergeordneten Ordners;
+- **Bestätigung**: das Leeren einer Liste und das Löschen eines Tags müssen jetzt bestätigt werden;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Zwischenablage
+
+- **Elemente aus anderen Apps**: in anderen Apps kopierte Dateien und Bilder haben jetzt ein eigenes kompaktes Widget, das die Quell-App anzeigt;
+- **Übertragung**: Elemente einzeln oder alle zusammen einfügen oder an eine beliebige Stelle im Navigator ziehen;
+- **Liste der Zwischenablage**: die Liste der vorbereiteten Elemente hat ein neues Design mit Vorschauen, vollständigen Pfaden und Dateigrößen;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Ordnergrößen
+
+Ordnergrößen werden schneller berechnet und bremsen die Navigation nicht mehr aus.
+
+- **Sichtbare Ordner zuerst**: zuerst wird die Größe der Ordner auf dem Bildschirm berechnet;
+- **Parallele Berechnung**: große Ordner werden von mehreren Threads mit niedriger Priorität durchsucht, und die Größen der Unterordner werden dabei gespeichert;
+- **Teilgrößen**: reicht die Zeit für eine schnelle Berechnung nicht aus, wird die gezählte Größe als Mindestwert angezeigt, zum Beispiel `14.2 GB+`;
+- **Live-Fortschritt**: `Größe ermitteln` zeigt die wachsende Größe an und kann jederzeit abgebrochen werden;
+- **Nicht lesbare Ordner**: Ordner, die nicht gelesen werden können, werden gekennzeichnet, statt `0 B` anzuzeigen;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Schnellzugriff und Tags
+
+- **Neu anordnen**: Abschnitte und Elemente im Schnellzugriff durch Ziehen neu anordnen;
+- **Tag-Reihenfolge**: Tags im Tag-Editor ziehen, um ihre Anzeigereihenfolge zu ändern;
+- **Tag-Spalte**: zeigt so viele Tags an, wie Platz haben, statt nur des ersten;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Archive
+
+- **Konflikte**: beim Entpacken wird gefragt, was mit bereits vorhandenen Dateien geschehen soll;
+- **Stammordner**: `Hier entpacken` behält jetzt den Stammordner des Archivs bei;
+- **Aufräumen**: Dateien eines fehlgeschlagenen Entpackvorgangs werden entfernt;
+
+#### Pfade, Terminal und Einstellungen
+
+- **Pfad zum Benutzerordner**: `~` wird in der Adressleiste, in eingefügten Pfaden und in der Einstellung für das Standardverzeichnis zum Benutzerordner erweitert;
+- **Im Terminal öffnen**: das Standardterminal steht im Menü `Im Terminal öffnen` an erster Stelle, und Hinweise erklären, wie sich jedes Terminal als Administrator öffnen lässt (`Shift` gedrückt halten);
+- **Einstellungssuche**: passende Tastenkürzel erscheinen jetzt in den Suchergebnissen;
+- **Infotafel**: der Navigator merkt sich, ob die Infotafel sichtbar ist;
+- **Netzlaufwerke**: unter Windows wird beim Löschen an Orten ohne Papierkorb vor dem endgültigen Löschen nachgefragt;
+- **Datenwiederherstellung**: beschädigte Einstellungen und Arbeitsbereiche werden beim Start aus einer Sicherung wiederhergestellt, und eine Benachrichtigung weist darauf hin;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### UI-Verbesserungen
+
+- **Tab-Leiste**: Tabs liegen in einer umrandeten Leiste und zeigen Ordner-, Laufwerks- oder Suchsymbole; Tabs der geteilten Ansicht zeigen beide Ordner mit einem Trenner dazwischen;
+- **Ordnerkarten**: Ordnerkarten im Raster haben eine Ordnerform und eine Punktanzeige, die die Ordnergröße auf einer Skala von KB bis TB darstellt; funktioniert mit integrierten Symbolen, Systemsymbolen und Symbolen aus Erweiterungen;
+- **Rasterlayout**: aufgeräumteres Layout mit einheitlichen Abständen;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Fehlerbehebungen
+
+- **Archive entpacken**: behoben, dass Dateien außerhalb ihrer Ordner abgelegt wurden, wenn ein Archiv mehrere Elemente auf oberster Ebene enthält;
+- **Archive erstellen**: behoben, dass das Komprimieren von Ordnern mit defekten Links oder Links auf Ordner fehlschlug;
+- **Ersetzen**: behoben, dass `Ersetzen` einen Ordner löschte, der das kopierte oder verschobene Element enthält;
+- **Links**: behoben, dass beim Kopieren und Zusammenführen Links verfolgt statt beibehalten wurden und dass sich defekte Links nicht kopieren, verschieben, umbenennen oder löschen ließen;
+- **Abbrechen**: behoben, dass das Abbrechen einen Kopiervorgang mitten in einer großen Datei oder beim Zusammenführen nicht stoppte;
+- **Ausschneiden und Einfügen**: behoben, dass ausgeschnittene Elemente unter Linux und macOS kopiert statt verschoben wurden;
+- **Dateinamen**: behoben, dass umgekehrte Schrägstriche in Dateinamen unter Linux und macOS als Pfadtrenner gelesen wurden;
+- **Umbenennen**: behoben, dass sich Namen nicht allein in der Groß- und Kleinschreibung ändern ließen und dass Namen mit Pfadtrennern akzeptiert wurden;
+- **Verschobene Elemente**: behoben, dass Favoriten, Tags, Verlauf und Tabs die alten Pfade verschobener Elemente behielten;
+- **SMB-Freigaben**: behoben, dass das Löschen in den Papierkorb bei Netzwerkordnern fehlschlug;
+- **Schnellsuche**: behoben, dass Punkte, Bindestriche, Leerzeichen und andere Satzzeichen aus der Suchanfrage entfernt wurden;
+- **Verzeichnisaktualisierung**: behoben, dass Bereiche mit demselben Ordner nicht mehr aktualisiert wurden, sobald einer davon wegnavigierte, und dass Elementanzahl und Linkstatus blinkten;
+- **Getrennte Laufwerke**: behoben, dass die alte Dateiliste nach dem Aushängen oder Auswerfen eines Laufwerks sichtbar blieb;
+- **Aktiver Bereich**: behoben, dass ein Klick auf die leere Fläche den Bereich nicht aktivierte;
+- **Benutzerdefinierte Symbole**: behoben, dass Symbole beim ersten Laden aufblitzten;
+- **Laufwerke in der Seitenleiste**: behoben, dass Laufwerke sich nicht per Mittelklick in einem neuen Tab öffneten;
+- **Greifcursor**: behoben, dass der Cursor nach schnellem Ziehen eines Tabs oder einer Spalte hängen blieb;
+- **Fensterzustand**: behoben, dass die Fenstergröße nach Vollbild, Maximieren und Andocken fehlerhaft war und ein Doppelklick auf den oberen Fensterbereich das Fenster nicht maximierte;
+- **LAN-Freigabe**: behoben, dass große Uploads im Arbeitsspeicher gehalten wurden;
+- **Themes (Linux)**: Absturz beim Wechsel des Themes mit deaktiviertem Compositing behoben;
+- **Flatpak (Linux)**: Absturz beim Start behoben und die veraltete GNOME-Laufzeit aktualisiert;
+- **Datumsangaben**: leere Datumsangaben bei der Systemsprache `C` behoben;
+- **Übersetzungen**: falsche kurze Beschriftungen in vielen Sprachen behoben;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Zusammenfassung:** Integration der System-Zwischenablage in andere Apps, Rahmenauswahl, verknüpfte geteilte Ansicht, Link-Verwaltung, passwortgeschützte ZIP-Archive, native Eigenschaften unter Windows, Erweiterungen der Extension-API, Unterstützung für Hebräisch und Verbesserungen am Navigator.

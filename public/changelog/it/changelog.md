@@ -1,5 +1,236 @@
 # Registro delle modifiche
 
+## [2.3.0] - November 2026
+
+**Riepilogo:** Pannello di navigazione con albero delle cartelle, opzioni di visualizzazione e raggruppamento per cartella, annullamento delle operazioni sui file, versioni portatile e firmata per Windows, una versione sperimentale con Chromium per Linux, nuovo design di schede, riquadri delle cartelle e dashboard, calcolo più rapido delle dimensioni delle cartelle, operazioni sui file più sicure e maggiore sicurezza delle estensioni.
+
+- [Nuove funzionalità](#nuove-funzionalità)
+  - [Pannello di navigazione](#pannello-di-navigazione)
+  - [Opzioni delle cartelle e raggruppamento](#opzioni-delle-cartelle-e-raggruppamento)
+  - [Annullamento delle operazioni sui file](#annullamento-delle-operazioni-sui-file)
+  - [Selezione di più intervalli e da tastiera](#selezione-di-più-intervalli-e-da-tastiera)
+  - [Duplica scheda](#duplica-scheda)
+  - [Separare le schede della vista divisa](#separare-le-schede-della-vista-divisa)
+  - [Versioni portatile e firmata per Windows](#versioni-portatile-e-firmata-per-windows)
+  - [Versione con Chromium per Linux](#versione-con-chromium-per-linux)
+- [Estensioni](#estensioni)
+  - [Sicurezza delle estensioni](#sicurezza-delle-estensioni)
+- [Nuove impostazioni](#nuove-impostazioni)
+- [Nuove scorciatoie](#nuove-scorciatoie)
+- [Nuove lingue](#nuove-lingue)
+- [Miglioramenti UX](#miglioramenti-ux)
+  - [Dashboard](#dashboard)
+  - [Appunti](#appunti)
+  - [Dimensioni delle cartelle](#dimensioni-delle-cartelle)
+  - [Accesso rapido e tag](#accesso-rapido-e-tag)
+  - [Archivi](#archivi)
+  - [Percorsi, terminale e impostazioni](#percorsi-terminale-e-impostazioni)
+- [Miglioramenti dell'interfaccia](#miglioramenti-dellinterfaccia)
+- [Correzioni di bug](#correzioni-di-bug)
+
+### Nuove funzionalità
+
+#### Pannello di navigazione
+
+Un pannello di larghezza regolabile sul lato sinistro del navigatore. Si apre con il pulsante `Pannello di navigazione` nella barra degli strumenti della finestra.
+
+- **Albero**: esplora l'albero delle cartelle di tutte le unità e località, sincronizzato con il riquadro attivo; le cartelle superiori espanse restano fissate in alto durante lo scorrimento;
+- **Accesso rapido**: visualizza e gestisci gli elementi preferiti e taggati accanto all'elenco dei file;
+- **Operazioni sui file**: le cartelle dell'albero supportano i menu contestuali e il trascinamento;
+- **Tastiera**: `Ctrl+Left` / `Ctrl+Right` spostano lo stato attivo tra il pannello di navigazione e i riquadri dei file; nell'albero i tasti freccia scorrono le cartelle espanse, `Space` espande o comprime una cartella e `Enter` la apre anche nel riquadro attivo;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Opzioni delle cartelle e raggruppamento
+
+Ogni cartella ora ricorda layout, ordinamento, raggruppamento e visualizzazione degli elementi nascosti. Si modificano nel nuovo menu `Opzioni di questa cartella`, accanto alla ricerca rapida. Nella vista divisa ogni riquadro ha il proprio menu.
+
+- **Raggruppa**: raggruppa gli elementi per `Tipo` o `Modificato`, oppure scegli `Nessuno`; le intestazioni dei gruppi sono visibili sia in elenco sia in griglia;
+- **Ordinamento unico**: con `Nessuno` le cartelle non restano più sopra i file, quindi l'ordinamento per data o dimensione vale per tutti gli elementi;
+- **Valori predefiniti**: usa `Imposta le opzioni attuali come predefinite` per rendere predefinite le opzioni di una cartella, oppure `Reimposta le impostazioni predefinite` per rimuovere le opzioni proprie della cartella;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Annullamento delle operazioni sui file
+
+Dopo aver rinominato, spostato o cestinato elementi, la notifica mostra il pulsante `Annulla operazione`. Per il cestino non è disponibile su macOS. La notifica mostra anche i percorsi degli elementi interessati, con il percorso precedente e quello nuovo degli elementi rinominati o spostati.
+
+#### Selezione di più intervalli e da tastiera
+
+Seleziona più gruppi di file senza perdere la selezione corrente.
+
+- **Più intervalli**: tieni premuto `Ctrl+Shift` e fai clic per aggiungere un altro intervallo alla selezione;
+- **Selezione da tastiera**: tieni premuto `Shift` e premi i tasti freccia per estendere o ridurre la selezione;
+
+#### Duplica scheda
+
+Duplica una scheda dal suo menu contestuale oppure premi `Ctrl+Alt+T` per duplicare quella attuale.
+
+#### Separare le schede della vista divisa
+
+Fai clic con il tasto destro su una scheda della vista divisa e scegli `Separa schede` per aprire ogni riquadro in una scheda propria.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Versioni portatile e firmata per Windows
+
+- **Versione portatile (sperimentale)**: esegui l'app senza installarla; i dati sono conservati nella cartella `sigma-file-manager-data` accanto all'app. Richiede WebView2, incluso in Windows 11;
+- **Aggiornamenti della versione portatile**: la nuova versione viene scaricata nella cartella dell'app e sostituisci tu quella vecchia; la cartella dei dati viene mantenuta;
+- **Versioni firmate**: il programma di installazione per Windows e l'app portatile ora sono firmati digitalmente, con firma gratuita fornita da SignPath.io e certificato di SignPath Foundation;
+
+#### Versione con Chromium per Linux
+
+Un AppImage sperimentale che include Chromium invece di usare WebKitGTK, per i sistemi in cui la versione normale è lenta. Le normali versioni per Linux sono ancora disponibili.
+
+- **Requisiti**: serve X11 o XWayland; il download è più grande, circa 175 MB;
+- **Aggiornamenti separati**: ogni AppImage si aggiorna alla propria versione;
+- **Dati portatili**: crea una cartella `sigma-file-manager-data` accanto a uno degli AppImage per conservarvi i dati;
+
+### Estensioni
+
+#### Sicurezza delle estensioni
+
+Le estensioni sono isolate più rigorosamente dall'app e dalla rete.
+
+- **Accesso alla rete**: il codice delle estensioni non può più connettersi direttamente alla rete; le richieste passano per l'API HTTP e il suo elenco di host consentiti. Le viste incorporate possono ancora caricare immagini, caratteri e stili remoti;
+- **Pagine della barra laterale**: le pagine HTML delle estensioni ora vengono eseguite in una sandbox senza accesso all'app né alla rete;
+- **Permessi**: i permessi per i comandi della shell ora sono verificati nel backend dell'app in base al manifesto dell'estensione installata;
+- **Download**: i download delle estensioni non possono più raggiungere indirizzi di reti private tramite reindirizzamenti o modifiche DNS;
+
+### Nuove impostazioni
+
+- **Pagina di avvio**: scegli la pagina da mostrare all'avvio dell'app oppure riapri l'ultima;
+  `Impostazioni > Generale > Pagina di avvio`
+- **Terminale predefinito**: scegli il terminale per `Apri nel terminale` e `Alt+T`, oppure inserisci un comando personalizzato;
+  `Impostazioni > Generale > Terminale predefinito`
+- **Cartella predefinita**: scegli la cartella per le nuove schede: cartella utente, località o una cartella personalizzata;
+  `Impostazioni > Schede > Cartella predefinita`
+- **Raggruppa**: scegli il raggruppamento predefinito per tutte le cartelle;
+  `Impostazioni > Aspetto dell'interfaccia > Raggruppa`
+- **Anteprima automatica**: scegli quali tipi di file caricano un'anteprima nel pannello informativo quando vengono selezionati; gli altri mostrano il pulsante `Carica anteprima`;
+  `Impostazioni > Aspetto dell'interfaccia > Pannello informativo > Anteprima automatica`
+- **Limite per file grandi**: non caricare automaticamente PDF e immagini a dimensione intera oltre questa dimensione;
+  `Impostazioni > Aspetto dell'interfaccia > Pannello informativo > Limite per file grandi`
+- **Fondi con**: fondi l'effetto di sfondo con l'interfaccia o con un colore di riempimento a scelta; è stata aggiunta la modalità `Scherma lineare (aggiungi)`;
+  `Impostazioni > Aspetto dell'interfaccia > Effetti visivi > Fondi con`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Nuove scorciatoie
+
+- **Pannello di navigazione** (`Alt+Q`): mostra o nasconde il pannello di navigazione;
+- **Pannello informativo** (`Alt+E`): mostra o nasconde il pannello informativo;
+- **Spostarsi tra i riquadri** (`Ctrl+Left` / `Ctrl+Right`): seleziona l'elemento sulla stessa riga dell'altro riquadro e ora sposta lo stato attivo anche sul pannello di navigazione;
+- **Passa alla scheda successiva / precedente** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): passa da una scheda aperta all'altra;
+- **Duplica la scheda attuale** (`Ctrl+Alt+T`): apri una copia della scheda attuale;
+- **Apri una nuova scheda** (`Ctrl+T`): ora apre la cartella predefinita, come il pulsante più nella barra delle schede, invece della cartella attuale;
+
+### Nuove lingue
+
+- **Armeno** (`Հայերեն`): traduzione completa (`Impostazioni > Generale > Lingua`);
+
+### Miglioramenti UX
+
+#### Dashboard
+
+La pagina della dashboard ha un nuovo design con una panoramica degli elementi preferiti, taggati, frequenti e visti di recente.
+
+- **Barra laterale dei tag**: cerca, crea, rinomina, ricolora, elimina e riordina i tag;
+- **Elementi taggati**: filtra per tipo, ordina e passa tra elenco e griglia;
+- **Riquadri degli elementi**: mostrano anteprima, dimensione e percorso e hanno un pulsante che apre la cartella contenitore;
+- **Conferma**: svuotare un elenco o eliminare un tag ora richiede conferma;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Appunti
+
+- **Elementi da altre applicazioni**: i file e le immagini copiati in altre applicazioni ora hanno un proprio widget compatto che mostra l'app di origine;
+- **Opzioni di trasferimento**: incolla gli elementi uno alla volta, incollali tutti o trascinali ovunque nel navigatore;
+- **Elenco degli appunti**: l'elenco degli elementi preparati ha un nuovo design con anteprime, percorsi completi e dimensioni dei file;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Dimensioni delle cartelle
+
+Le dimensioni delle cartelle vengono calcolate più rapidamente e non rallentano più la navigazione.
+
+- **Prima le cartelle visibili**: le cartelle sullo schermo vengono calcolate per prime;
+- **Calcolo parallelo**: le cartelle grandi vengono analizzate da più thread a bassa priorità e le dimensioni delle sottocartelle vengono salvate durante il processo;
+- **Dimensioni parziali**: quando un'analisi rapida esaurisce il tempo, la dimensione contata viene mostrata come minimo, ad esempio `14.2 GB+`;
+- **Avanzamento in tempo reale**: `Ottieni dimensioni` mostra la dimensione mentre cresce e può essere annullato in qualsiasi momento;
+- **Cartelle illeggibili**: le cartelle che non possono essere lette vengono segnalate invece di mostrare `0 B`;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Accesso rapido e tag
+
+- **Riordino**: trascina sezioni ed elementi nel pannello di accesso rapido per riordinarli;
+- **Ordine dei tag**: trascina i tag nell'editor per cambiare l'ordine in cui vengono mostrati;
+- **Colonna dei tag**: mostra tutti i tag che ci stanno invece del solo primo;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Archivi
+
+- **Conflitti**: l'estrazione chiede cosa fare con i file già esistenti;
+- **Cartella radice**: `Estrai qui` ora mantiene la cartella radice dell'archivio;
+- **Pulizia**: i file lasciati da un'estrazione non riuscita vengono rimossi;
+
+#### Percorsi, terminale e impostazioni
+
+- **Percorso utente**: `~` viene espanso nella cartella utente nella barra degli indirizzi, nei percorsi incollati e nell'impostazione della cartella predefinita;
+- **Apri nel terminale**: il terminale predefinito è il primo nel menu `Apri nel terminale`, e i suggerimenti spiegano come aprire qualsiasi terminale come amministratore (tieni premuto `Shift`);
+- **Ricerca nelle impostazioni**: le scorciatoie corrispondenti ora compaiono nei risultati;
+- **Pannello informativo**: il navigatore ricorda se il pannello informativo è visibile;
+- **Unità di rete**: su Windows, spostando nel cestino elementi da posizioni senza Cestino viene chiesta conferma prima dell'eliminazione definitiva;
+- **Recupero dei dati**: le impostazioni e gli spazi di lavoro danneggiati vengono ripristinati da un backup all'avvio, con una notifica;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Miglioramenti dell'interfaccia
+
+- **Barra delle schede**: le schede si trovano in un'unica barra con bordo e mostrano icone di cartella, unità o ricerca; quelle della vista divisa mostrano entrambe le cartelle con un separatore;
+- **Riquadri delle cartelle**: nella griglia hanno la forma di una cartella e un indicatore a punti che mostra la dimensione su una scala da KB a TB; funziona con icone integrate, di sistema e delle estensioni;
+- **Layout a griglia**: più pulito e con spaziatura uniforme;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Correzioni di bug
+
+- **Estrazione archivi**: corretto il posizionamento dei file fuori dalle loro cartelle quando un archivio ha più elementi al primo livello;
+- **Compressione archivi**: corretto l'errore nella compressione di cartelle con collegamenti interrotti o collegamenti a cartelle;
+- **Sostituisci**: corretto `Sostituisci`, che eliminava una cartella contenente l'elemento copiato o spostato;
+- **Collegamenti**: corretto il fatto che copia e unione seguissero i collegamenti invece di mantenerli e che i collegamenti interrotti non si potessero copiare, spostare, rinominare o eliminare;
+- **Annullamento**: corretto il fatto che l'annullamento non fermasse una copia a metà di un file grande o di un'unione;
+- **Taglia e incolla**: corretto il fatto che gli elementi tagliati venissero copiati invece che spostati su Linux e macOS;
+- **Nomi dei file**: corretto il fatto che le barre rovesciate nei nomi venissero lette come separatori di percorso su Linux e macOS;
+- **Rinomina**: corretta l'impossibilità di cambiare solo maiuscole e minuscole di un nome e l'accettazione di nomi con separatori di percorso;
+- **Elementi spostati**: corretto il fatto che preferiti, tag, cronologia e schede mantenessero i vecchi percorsi;
+- **Condivisioni SMB**: corretto l'errore nello spostamento nel cestino per le cartelle di rete;
+- **Ricerca rapida**: corretto il fatto che punti, trattini, spazi e altri segni venissero esclusi dalla ricerca;
+- **Aggiornamento delle cartelle**: corretto il mancato aggiornamento dei riquadri con la stessa cartella quando uno di essi cambiava cartella, e lo sfarfallio del numero di elementi e dello stato dei collegamenti;
+- **Unità scollegate**: corretto il vecchio elenco di file che restava visibile dopo lo smontaggio o l'espulsione di un'unità;
+- **Riquadro attivo**: corretto il clic sull'area vuota che non attivava il riquadro;
+- **Icone personalizzate**: corretto lo sfarfallio delle icone al primo caricamento;
+- **Unità nella barra laterale**: corretta la mancata apertura in una nuova scheda con il clic centrale;
+- **Cursore di trascinamento**: corretto il cursore che restava bloccato dopo il trascinamento rapido di una scheda o colonna;
+- **Stato della finestra**: corretta la dimensione errata dopo schermo intero, ingrandimento e ancoraggio, e il doppio clic sulla parte superiore che non ingrandiva la finestra;
+- **Condivisione LAN**: corretto il fatto che i caricamenti grandi venissero tenuti in memoria;
+- **Temi (Linux)**: corretto un arresto anomalo al cambio di tema con la composizione disattivata;
+- **Flatpak (Linux)**: corretto un arresto anomalo all'avvio e aggiornato l'ambiente GNOME obsoleto;
+- **Date**: corrette le date vuote quando la lingua di sistema è `C`;
+- **Traduzioni**: corrette etichette brevi errate in molte lingue;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Riepilogo:** Integrazione degli appunti di sistema con altre applicazioni, selezione a riquadro, vista divisa collegata, gestione dei collegamenti, archivi ZIP protetti da password, proprietà native su Windows, nuove API per le estensioni, supporto per l'ebraico e miglioramenti alla navigazione.

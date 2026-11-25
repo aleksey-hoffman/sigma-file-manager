@@ -1,5 +1,236 @@
 # Changelog
 
+## [2.3.0] - November 2026
+
+**Summary:** Navigation panel with a folder tree, per-folder view options and grouping, undo for file operations, portable and signed Windows builds, an experimental Chromium build for Linux, redesigned tabs, folder cards and dashboard, faster folder sizes, safer file operations, and stricter extension security.
+
+- [New Features](#new-features)
+  - [Navigation Panel](#navigation-panel)
+  - [Folder Options And Grouping](#folder-options-and-grouping)
+  - [Undo For File Operations](#undo-for-file-operations)
+  - [Multi-Range And Keyboard Selection](#multi-range-and-keyboard-selection)
+  - [Duplicate Tab](#duplicate-tab)
+  - [Separate Split View Tabs](#separate-split-view-tabs)
+  - [Windows Portable And Signed Builds](#windows-portable-and-signed-builds)
+  - [Linux Chromium Build](#linux-chromium-build)
+- [Extensions](#extensions)
+  - [Extension Security](#extension-security)
+- [New Settings](#new-settings)
+- [New Shortcuts](#new-shortcuts)
+- [New Languages](#new-languages)
+- [UX Improvements](#ux-improvements)
+  - [Dashboard](#dashboard)
+  - [Clipboard](#clipboard)
+  - [Folder Sizes](#folder-sizes)
+  - [Quick Access And Tags](#quick-access-and-tags)
+  - [Archives](#archives)
+  - [Paths, Terminal, And Settings](#paths-terminal-and-settings)
+- [UI Improvements](#ui-improvements)
+- [Bug Fixes](#bug-fixes)
+
+### New Features
+
+#### Navigation Panel
+
+A resizable panel on the left side of the navigator. Open it with the `Navigation panel` button in the window toolbar.
+
+- **Tree**: browse the folder tree across all drives and locations, in sync with the active pane; expanded parent folders stay pinned at the top while you scroll;
+- **Quick access**: see and manage your favorite and tagged items next to the file list;
+- **File operations**: tree folders support context menus and drag and drop;
+- **Keyboard**: `Ctrl+Left` / `Ctrl+Right` move focus between the panel and the panes; in the tree, the arrow keys move through open folders, `Space` expands or collapses a folder, and `Enter` also opens it in the active pane;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Folder Options And Grouping
+
+Each folder now remembers its own layout, sorting, grouping, and hidden items setting. Change them in the new `This folder options` menu next to quick search. In split view, each pane has its own menu.
+
+- **Group by**: group items by `Kind` or `Modified`, or choose `None`; group headers are shown in both list and grid layouts;
+- **Mixed sorting**: with `None`, folders are no longer kept above files, so sorting by date or size applies to all items;
+- **Defaults**: use `Set current options as default` to make a folder's options the default, or `Reset to default settings` to remove the folder's own options;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Undo For File Operations
+
+After you rename, move, or trash items, the notification shows an `Undo` button. Undo for trash is not available on macOS. The notification also shows the paths of the affected items, with the old and new paths of renamed and moved ones.
+
+#### Multi-Range And Keyboard Selection
+
+Select several groups of files without losing the current selection.
+
+- **Multiple ranges**: hold `Ctrl+Shift` and click to add another range to the selection;
+- **Keyboard selection**: hold `Shift` and press the arrow keys to extend or shrink the selection;
+
+#### Duplicate Tab
+
+Duplicate a tab from its context menu, or press `Ctrl+Alt+T` to duplicate the current one.
+
+#### Separate Split View Tabs
+
+Right-click a split view tab and choose `Separate tabs` to open each pane in its own tab.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Windows Portable And Signed Builds
+
+- **Portable build (experimental)**: run the app without installing it; data is kept in the `sigma-file-manager-data` folder next to the app. Requires the WebView2 runtime, which is included in Windows 11;
+- **Portable updates**: the new version is downloaded to the app folder, and you replace the old one yourself; your data folder is kept;
+- **Signed builds**: the Windows installer and the portable app are now code-signed, with free signing provided by SignPath.io and a certificate by SignPath Foundation;
+
+#### Linux Chromium Build
+
+An experimental AppImage that bundles Chromium instead of using WebKitGTK, for systems where the regular build is slow. The regular Linux builds are still available.
+
+- **Requirements**: needs X11 or XWayland; the download is larger, about 175 MB;
+- **Separate updates**: each AppImage keeps updating to its own version;
+- **Portable data**: create a `sigma-file-manager-data` folder next to either AppImage to keep its data there;
+
+### Extensions
+
+#### Extension Security
+
+Extensions are isolated more strictly from the app and from the network.
+
+- **Network access**: extension code can no longer connect to the network directly; requests go through the HTTP API and its list of allowed hosts. Embeds can still load remote images, fonts, and styles;
+- **Sidebar pages**: extension HTML pages now run in a sandbox without access to the app or the network;
+- **Permissions**: shell command permissions are now checked in the app backend against the installed extension manifest;
+- **Downloads**: extension downloads can no longer reach private network addresses through redirects or DNS changes;
+
+### New Settings
+
+- **Startup page**: choose the page to show when the app starts, or reopen the last one;
+  `Settings > General > Startup page`
+- **Default terminal**: choose the terminal for `Open in terminal` and `Alt+T`, or enter a custom command;
+  `Settings > General > Default terminal`
+- **Default directory**: choose the folder for new tabs: user home, locations, or a custom folder;
+  `Settings > Tabs > Default directory`
+- **Group by**: choose the default grouping for all folders;
+  `Settings > UI appearance > Group by`
+- **Preview automatically**: choose which file types load a preview in the info panel when selected; other types show a `Load preview` button;
+  `Settings > UI appearance > Info panel > Preview automatically`
+- **Large file limit**: do not automatically preview PDFs and full-size images above this size;
+  `Settings > UI appearance > Info panel > Large file limit`
+- **Blend with**: blend the background effect with the interface or with a fill color of your choice; `Linear dodge (add)` was added to the blend modes;
+  `Settings > UI appearance > Visual effects > Blend with`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### New Shortcuts
+
+- **Navigation panel** (`Alt+Q`): show or hide the navigation panel;
+- **Info panel** (`Alt+E`): show or hide the info panel;
+- **Move between panes** (`Ctrl+Left` / `Ctrl+Right`): selects the item on the same row of the other pane, and now also moves focus to the navigation panel;
+- **Switch to next / previous tab** (`Ctrl+Tab` / `Ctrl+Shift+Tab`): switch between open tabs;
+- **Duplicate current tab** (`Ctrl+Alt+T`): open a copy of the current tab;
+- **Open new tab** (`Ctrl+T`): now opens the default directory, like the plus button in the tab bar, instead of the current directory;
+
+### New Languages
+
+- **Armenian** (`Հայերեն`): full translation (`Settings > General > Language`);
+
+### UX Improvements
+
+#### Dashboard
+
+The dashboard page has a new design with an overview of favorite, tagged, frequent, and recently viewed items.
+
+- **Tag sidebar**: search, create, rename, recolor, delete, and reorder tags;
+- **Tagged items**: filter by type, sort, and switch between list and grid layouts;
+- **Item cards**: cards show a preview, size, and path, and have a button that opens the containing folder;
+- **Confirmation**: clearing a list or deleting a tag now asks for confirmation;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Clipboard
+
+- **Items from other apps**: files and images copied in other apps now have their own compact widget that shows the source app;
+- **Transfer options**: paste items one by one, paste all of them, or drag them anywhere in the navigator;
+- **Clipboard list**: the list of prepared items has a new design with previews, full paths, and file sizes;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Folder Sizes
+
+Folder sizes are calculated faster and no longer slow down navigation.
+
+- **Visible folders first**: folders on screen get their size first;
+- **Parallel calculation**: large folders are scanned by several low-priority threads, and the sizes of child folders are saved along the way;
+- **Partial sizes**: when a quick scan runs out of time, the counted size is shown as a minimum, for example `14.2 GB+`;
+- **Live progress**: `Get size` shows the size as it grows and can be cancelled at any time;
+- **Unreadable folders**: folders that cannot be read are marked instead of showing `0 B`;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Quick Access And Tags
+
+- **Reordering**: drag to reorder sections and items in the quick access panel;
+- **Tag order**: drag tags in the tag editor to change the order in which they are displayed;
+- **Tags column**: shows as many tags as fit instead of only the first one;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Archives
+
+- **Conflicts**: extraction asks what to do with files that already exist;
+- **Root folder**: `Extract here` now keeps the root folder of the archive;
+- **Cleanup**: files left by a failed extraction are removed;
+
+#### Paths, Terminal, And Settings
+
+- **Home path**: `~` is expanded to the home folder in the address bar, in pasted paths, and in the default directory setting;
+- **Open in terminal**: the default terminal is shown first in the `Open in terminal` menu, and hints explain how to open any terminal as administrator (hold `Shift`);
+- **Settings search**: matching shortcuts now appear in the search results;
+- **Info panel**: the navigator remembers whether the info panel is visible;
+- **Network drives**: on Windows, moving items to trash from locations without a Recycle Bin asks before deleting them permanently;
+- **Data recovery**: damaged settings and workspaces are restored from a backup on launch, with a notification;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### UI Improvements
+
+- **Tab bar**: tabs sit in one bordered bar and show folder, drive, or search icons; split view tabs show both folders with a divider between them;
+- **Folder cards**: grid folder cards have a folder shape and a dot meter that shows the folder size on a KB to TB scale; works with built-in, system, and extension icons;
+- **Grid layout**: cleaner layout with consistent spacing;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Bug Fixes
+
+- **Archive extraction**: fixed files being placed outside their folders when an archive has several top-level items;
+- **Archive compression**: fixed compression failing on folders that contain broken links or links to folders;
+- **Replace**: fixed `Replace` deleting a folder that contains the item being copied or moved;
+- **Links**: fixed copying and merging following links instead of keeping them, and broken links that could not be copied, moved, renamed, or deleted;
+- **Cancel**: fixed cancelling not stopping a copy in the middle of a large file or a merge;
+- **Cut and paste**: fixed cut items being copied instead of moved on Linux and macOS;
+- **File names**: fixed backslashes in file names being read as path separators on Linux and macOS;
+- **Rename**: fixed inability to rename items by changing only the letter case, and names with path separators being accepted;
+- **Moved items**: fixed favorites, tags, history, and tabs keeping the old paths of moved items;
+- **SMB shares**: fixed `Move to trash` failing for network folders;
+- **Quick search**: fixed dots, dashes, spaces, and other punctuation being dropped from the query;
+- **Directory refresh**: fixed panes that show the same folder no longer refreshing when one of them navigates away, and item counts and link statuses blinking;
+- **Disconnected drives**: fixed the old file list staying on screen after a drive is unmounted or ejected;
+- **Active pane**: fixed clicking the empty area not activating the pane;
+- **Custom icons**: fixed custom icons flashing on first load;
+- **Sidebar drives**: fixed drives not opening in a new tab with a middle click;
+- **Grab cursor**: fixed the cursor staying stuck after a quick tab or column drag;
+- **Window state**: fixed broken window size after fullscreen, maximize, and snap, and double-clicking the top of the window not maximizing it;
+- **LAN sharing**: fixed large uploads being held in memory;
+- **Themes (Linux)**: fixed a crash when changing the theme with compositing disabled;
+- **Flatpak (Linux)**: fixed a crash on launch and updated the outdated GNOME runtime;
+- **Dates**: fixed empty dates when the system locale is `C`;
+- **Translations**: fixed incorrect short labels in many languages;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Summary:** System clipboard integration with other apps, box selection, linked split view, link handling, password-protected ZIP archives, native Properties on Windows, extension API expansions, Hebrew language support, and navigator polish.

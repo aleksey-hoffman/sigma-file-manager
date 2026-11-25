@@ -1,5 +1,236 @@
 # Journal des modifications
 
+## [2.3.0] - November 2026
+
+**Résumé :** Panneau de navigation avec arborescence, options d'affichage et groupement propres à chaque dossier, annulation des opérations sur les fichiers, versions portable et signée pour Windows, version expérimentale avec Chromium pour Linux, nouveau design des onglets, des cartes de dossiers et du tableau de bord, calcul plus rapide de la taille des dossiers, opérations sur les fichiers plus sûres et sécurité renforcée des extensions.
+
+- [Nouvelles fonctionnalités](#nouvelles-fonctionnalités)
+  - [Panneau de navigation](#panneau-de-navigation)
+  - [Options de dossier et groupement](#options-de-dossier-et-groupement)
+  - [Annulation des opérations sur les fichiers](#annulation-des-opérations-sur-les-fichiers)
+  - [Sélection de plusieurs plages et au clavier](#sélection-de-plusieurs-plages-et-au-clavier)
+  - [Dupliquer un onglet](#dupliquer-un-onglet)
+  - [Séparer les onglets de la vue fractionnée](#séparer-les-onglets-de-la-vue-fractionnée)
+  - [Versions portable et signée pour Windows](#versions-portable-et-signée-pour-windows)
+  - [Version avec Chromium pour Linux](#version-avec-chromium-pour-linux)
+- [Extensions](#extensions)
+  - [Sécurité des extensions](#sécurité-des-extensions)
+- [Nouveaux paramètres](#nouveaux-paramètres)
+- [Nouveaux raccourcis](#nouveaux-raccourcis)
+- [Nouvelles langues](#nouvelles-langues)
+- [Améliorations UX](#améliorations-ux)
+  - [Tableau de bord](#tableau-de-bord)
+  - [Presse-papiers](#presse-papiers)
+  - [Taille des dossiers](#taille-des-dossiers)
+  - [Accès rapide et tags](#accès-rapide-et-tags)
+  - [Archives](#archives)
+  - [Chemins, terminal et paramètres](#chemins-terminal-et-paramètres)
+- [Améliorations de l'interface](#améliorations-de-linterface)
+- [Corrections de bugs](#corrections-de-bugs)
+
+### Nouvelles fonctionnalités
+
+#### Panneau de navigation
+
+Un panneau redimensionnable à gauche du navigateur. Il s'ouvre avec le bouton `Panneau de navigation` de la barre d'outils de la fenêtre.
+
+- **Arbre** : parcourez l'arborescence de tous les lecteurs et emplacements, synchronisée avec le panneau actif ; les dossiers parents dépliés restent épinglés en haut pendant le défilement ;
+- **Accès rapide** : consultez et gérez vos éléments favoris et tagués à côté de la liste de fichiers ;
+- **Opérations sur les fichiers** : les dossiers de l'arbre prennent en charge les menus contextuels et le glisser-déposer ;
+- **Clavier** : `Ctrl+Left` / `Ctrl+Right` déplacent le focus entre le panneau de navigation et les panneaux de fichiers ; dans l'arbre, les touches fléchées parcourent les dossiers dépliés, `Space` déplie ou replie un dossier et `Enter` l'ouvre également dans le panneau actif ;
+
+![navigation-panel](./public/changelog/assets/2.3.0/navigation-panel.webp)
+
+#### Options de dossier et groupement
+
+Chaque dossier mémorise désormais sa disposition, son tri, son groupement et l'affichage des éléments masqués. Modifiez-les dans le nouveau menu `Options de ce dossier`, à côté de la recherche rapide. En vue fractionnée, chaque panneau a son propre menu.
+
+- **Grouper** : groupez les éléments par `Type` ou `Modifié`, ou choisissez `Aucun` ; les en-têtes de groupe s'affichent en liste comme en grille ;
+- **Tri commun** : avec `Aucun`, les dossiers ne restent plus au-dessus des fichiers, et le tri par date ou par taille s'applique à tous les éléments ;
+- **Valeurs par défaut** : utilisez `Définir les options actuelles par défaut` pour faire des options d'un dossier les options par défaut, ou `Rétablir les paramètres par défaut` pour supprimer les options propres au dossier ;
+
+![folder-options](./public/changelog/assets/2.3.0/folder-options.webp)
+
+![group-by](./public/changelog/assets/2.3.0/group-by.webp)
+
+#### Annulation des opérations sur les fichiers
+
+Après un renommage, un déplacement ou une mise à la corbeille, la notification affiche le bouton `Annuler l'opération`. L'annulation de la mise à la corbeille n'est pas disponible sous macOS. La notification indique aussi les chemins des éléments concernés, avec l'ancien et le nouveau chemin des éléments renommés ou déplacés.
+
+#### Sélection de plusieurs plages et au clavier
+
+Sélectionnez plusieurs groupes de fichiers sans perdre la sélection actuelle.
+
+- **Plusieurs plages** : maintenez `Ctrl+Shift` et cliquez pour ajouter une autre plage à la sélection ;
+- **Sélection au clavier** : maintenez `Shift` et appuyez sur les touches fléchées pour étendre ou réduire la sélection ;
+
+#### Dupliquer un onglet
+
+Dupliquez un onglet depuis son menu contextuel, ou appuyez sur `Ctrl+Alt+T` pour dupliquer l'onglet actuel.
+
+#### Séparer les onglets de la vue fractionnée
+
+Faites un clic droit sur un onglet de la vue fractionnée et choisissez `Séparer les onglets` pour ouvrir chaque panneau dans son propre onglet.
+
+![duplicate-and-separate-tabs](./public/changelog/assets/2.3.0/duplicate-and-separate-tabs.webp)
+
+#### Versions portable et signée pour Windows
+
+- **Version portable (expérimentale)** : lancez l'application sans l'installer ; les données sont conservées dans le dossier `sigma-file-manager-data` à côté de l'application. Nécessite WebView2, inclus dans Windows 11 ;
+- **Mises à jour de la version portable** : la nouvelle version est téléchargée dans le dossier de l'application et vous remplacez l'ancienne vous-même ; le dossier de données est conservé ;
+- **Versions signées** : le programme d'installation pour Windows et l'application portable sont désormais signés numériquement, avec une signature gratuite fournie par SignPath.io et un certificat de SignPath Foundation ;
+
+#### Version avec Chromium pour Linux
+
+Un AppImage expérimental qui intègre Chromium au lieu d'utiliser WebKitGTK, pour les systèmes où la version normale est lente. Les versions Linux normales restent disponibles.
+
+- **Prérequis** : nécessite X11 ou XWayland ; le téléchargement est plus volumineux, environ 175 Mo ;
+- **Mises à jour séparées** : chaque AppImage se met à jour vers sa propre version ;
+- **Données portables** : créez un dossier `sigma-file-manager-data` à côté de l'un des AppImage pour y conserver ses données ;
+
+### Extensions
+
+#### Sécurité des extensions
+
+Les extensions sont mieux isolées de l'application et du réseau.
+
+- **Accès au réseau** : le code des extensions ne peut plus se connecter directement au réseau ; les requêtes passent par l'API HTTP et sa liste d'hôtes autorisés. Les vues intégrées peuvent toujours charger des images, des polices et des styles distants ;
+- **Pages de la barre latérale** : les pages HTML des extensions s'exécutent désormais dans un bac à sable, sans accès à l'application ni au réseau ;
+- **Autorisations** : les autorisations des commandes shell sont désormais vérifiées dans le backend de l'application d'après le manifeste de l'extension installée ;
+- **Téléchargements** : les téléchargements d'extensions ne peuvent plus atteindre des adresses de réseaux privés par des redirections ou des changements de DNS ;
+
+### Nouveaux paramètres
+
+- **Page de démarrage** : choisissez la page affichée au lancement de l'application, ou rouvrez la dernière ;
+  `Paramètres > Général > Page de démarrage`
+- **Terminal par défaut** : choisissez le terminal pour `Ouvrir dans le terminal` et `Alt+T`, ou saisissez votre propre commande ;
+  `Paramètres > Général > Terminal par défaut`
+- **Dossier par défaut** : choisissez le dossier des nouveaux onglets : dossier utilisateur, emplacements ou dossier personnalisé ;
+  `Paramètres > Onglets > Dossier par défaut`
+- **Grouper** : choisissez le groupement par défaut de tous les dossiers ;
+  `Paramètres > Apparence de l'interface > Grouper`
+- **Aperçu automatique** : choisissez les types de fichiers dont l'aperçu se charge dans le panneau d'informations dès leur sélection ; les autres affichent le bouton `Charger l'aperçu` ;
+  `Paramètres > Apparence de l'interface > Panneau d'informations > Aperçu automatique`
+- **Limite pour les fichiers volumineux** : ne pas charger automatiquement l'aperçu des PDF et des images en taille réelle au-delà de cette taille ;
+  `Paramètres > Apparence de l'interface > Panneau d'informations > Limite pour les fichiers volumineux`
+- **Fusionner avec** : fusionnez l'effet d'arrière-plan avec l'interface ou avec une couleur de remplissage de votre choix ; le mode `Densité linéaire - (Ajout)` a été ajouté ;
+  `Paramètres > Apparence de l'interface > Effets visuels > Fusionner avec`
+
+![startup-page-setting](./public/changelog/assets/2.3.0/startup-page-setting.webp)
+
+![default-directory-setting](./public/changelog/assets/2.3.0/default-directory-setting.webp)
+
+### Nouveaux raccourcis
+
+- **Panneau de navigation** (`Alt+Q`) : afficher ou masquer le panneau de navigation ;
+- **Panneau d'informations** (`Alt+E`) : afficher ou masquer le panneau d'informations ;
+- **Passer d'un panneau à l'autre** (`Ctrl+Left` / `Ctrl+Right`) : sélectionne l'élément de la même ligne dans l'autre panneau et déplace désormais aussi le focus vers le panneau de navigation ;
+- **Passer à l'onglet suivant / précédent** (`Ctrl+Tab` / `Ctrl+Shift+Tab`) : passer d'un onglet ouvert à l'autre ;
+- **Dupliquer l'onglet actuel** (`Ctrl+Alt+T`) : ouvrir une copie de l'onglet actuel ;
+- **Ouvrir un nouvel onglet** (`Ctrl+T`) : ouvre désormais le dossier par défaut, comme le bouton plus de la barre d'onglets, au lieu du dossier actuel ;
+
+### Nouvelles langues
+
+- **Arménien** (`Հայերեն`) : traduction complète (`Paramètres > Général > Langue`) ;
+
+### Améliorations UX
+
+#### Tableau de bord
+
+La page du tableau de bord a un nouveau design, avec un aperçu des éléments favoris, tagués, fréquents et consultés récemment.
+
+- **Barre latérale des tags** : recherchez, créez, renommez, recolorez, supprimez et réorganisez les tags ;
+- **Éléments tagués** : filtrez par type, triez et passez de la liste à la grille ;
+- **Cartes d'éléments** : elles affichent un aperçu, la taille et le chemin, et un bouton ouvre le dossier parent ;
+- **Confirmation** : vider une liste ou supprimer un tag demande désormais une confirmation ;
+
+![dashboard-tagged](./public/changelog/assets/2.3.0/dashboard-tagged.webp)
+
+![dashboard-tagged-grid](./public/changelog/assets/2.3.0/dashboard-tagged-grid.webp)
+
+#### Presse-papiers
+
+- **Éléments d'autres applications** : les fichiers et images copiés dans d'autres applications ont maintenant leur propre widget compact, qui indique l'application source ;
+- **Options de transfert** : collez les éléments un par un, collez-les tous ou faites-les glisser n'importe où dans le navigateur ;
+- **Liste du presse-papiers** : la liste des éléments préparés a un nouveau design avec aperçus, chemins complets et tailles de fichiers ;
+
+![external-clipboard](./public/changelog/assets/2.3.0/external-clipboard.webp)
+
+#### Taille des dossiers
+
+La taille des dossiers est calculée plus rapidement et ne ralentit plus la navigation.
+
+- **Dossiers visibles d'abord** : les dossiers affichés à l'écran sont calculés en premier ;
+- **Calcul parallèle** : les grands dossiers sont analysés par plusieurs threads à basse priorité, et la taille des sous-dossiers est enregistrée au passage ;
+- **Tailles partielles** : quand une analyse rapide manque de temps, la taille comptée s'affiche comme un minimum, par exemple `14.2 GB+` ;
+- **Progression en direct** : `Obtenir la taille` affiche la taille au fur et à mesure et peut être annulé à tout moment ;
+- **Dossiers illisibles** : les dossiers qui ne peuvent pas être lus sont signalés au lieu d'afficher `0 B` ;
+
+![folder-size](./public/changelog/assets/2.3.0/folder-size.webp)
+
+#### Accès rapide et tags
+
+- **Réorganisation** : faites glisser les sections et les éléments du panneau d'accès rapide pour les réorganiser ;
+- **Ordre des tags** : faites glisser les tags dans l'éditeur pour changer leur ordre d'affichage ;
+- **Colonne des tags** : affiche autant de tags que la place le permet au lieu du premier seulement ;
+
+![quick-access-and-tags](./public/changelog/assets/2.3.0/quick-access-and-tags.webp)
+
+#### Archives
+
+- **Conflits** : l'extraction demande quoi faire des fichiers qui existent déjà ;
+- **Dossier racine** : `Extraire ici` conserve désormais le dossier racine de l'archive ;
+- **Nettoyage** : les fichiers laissés par une extraction échouée sont supprimés ;
+
+#### Chemins, terminal et paramètres
+
+- **Chemin du dossier utilisateur** : `~` est remplacé par le dossier utilisateur dans la barre d'adresse, les chemins collés et le paramètre du dossier par défaut ;
+- **Ouvrir dans le terminal** : le terminal par défaut apparaît en premier dans le menu `Ouvrir dans le terminal`, et des infobulles expliquent comment ouvrir n'importe quel terminal en tant qu'administrateur (maintenez `Shift`) ;
+- **Recherche dans les paramètres** : les raccourcis correspondants apparaissent maintenant dans les résultats ;
+- **Panneau d'informations** : le navigateur mémorise si le panneau d'informations est affiché ;
+- **Lecteurs réseau** : sous Windows, la mise à la corbeille depuis un emplacement sans Corbeille demande une confirmation avant la suppression définitive ;
+- **Récupération des données** : les paramètres et espaces de travail endommagés sont restaurés au lancement à partir d'une sauvegarde, avec une notification ;
+
+![settings-search](./public/changelog/assets/2.3.0/settings-search.webp)
+
+### Améliorations de l'interface
+
+- **Barre d'onglets** : les onglets sont réunis dans une barre bordée et affichent une icône de dossier, de lecteur ou de recherche ; ceux de la vue fractionnée affichent les deux dossiers avec un séparateur ;
+- **Cartes de dossiers** : dans la grille, elles ont la forme d'un dossier et une jauge à points qui indique la taille sur une échelle de KB à TB ; compatible avec les icônes intégrées, du système et des extensions ;
+- **Grille** : disposition plus nette avec un espacement régulier ;
+
+![tab-bar-redesign](./public/changelog/assets/2.3.0/tab-bar-redesign.webp)
+
+![folder-cards](./public/changelog/assets/2.3.0/folder-cards.webp)
+
+### Corrections de bugs
+
+- **Extraction d'archives** : correction des fichiers placés hors de leurs dossiers quand une archive contient plusieurs éléments au premier niveau ;
+- **Compression d'archives** : correction de l'échec de la compression des dossiers contenant des liens rompus ou des liens vers des dossiers ;
+- **Remplacer** : correction de `Remplacer`, qui supprimait un dossier contenant l'élément copié ou déplacé ;
+- **Liens** : correction de la copie et de la fusion, qui suivaient les liens au lieu de les conserver, et des liens rompus impossibles à copier, déplacer, renommer ou supprimer ;
+- **Annulation** : correction de l'annulation, qui n'arrêtait pas une copie au milieu d'un gros fichier ou d'une fusion ;
+- **Couper-coller** : correction des éléments coupés qui étaient copiés au lieu d'être déplacés sous Linux et macOS ;
+- **Noms de fichiers** : correction des barres obliques inverses interprétées comme des séparateurs de chemin sous Linux et macOS ;
+- **Renommage** : correction de l'impossibilité de ne changer que la casse d'un nom, et des noms contenant des séparateurs de chemin qui étaient acceptés ;
+- **Éléments déplacés** : correction des favoris, tags, historique et onglets qui conservaient les anciens chemins ;
+- **Partages SMB** : correction de l'échec de la mise à la corbeille dans les dossiers réseau ;
+- **Recherche rapide** : correction des points, tirets, espaces et autres signes de ponctuation retirés de la requête ;
+- **Actualisation des dossiers** : correction des panneaux affichant le même dossier qui ne s'actualisaient plus quand l'un d'eux changeait de dossier, et du clignotement du nombre d'éléments et de l'état des liens ;
+- **Lecteurs déconnectés** : correction de l'ancienne liste de fichiers qui restait affichée après le démontage ou l'éjection d'un lecteur ;
+- **Panneau actif** : correction du clic sur la zone vide qui n'activait pas le panneau ;
+- **Icônes personnalisées** : correction du clignotement des icônes au premier chargement ;
+- **Lecteurs de la barre latérale** : correction des lecteurs qui ne s'ouvraient pas dans un nouvel onglet avec un clic du milieu ;
+- **Curseur de saisie** : correction du curseur qui restait bloqué après le glissement rapide d'un onglet ou d'une colonne ;
+- **État de la fenêtre** : correction de la taille incorrecte après le plein écran, l'agrandissement et l'ancrage, et du double-clic en haut de la fenêtre qui ne l'agrandissait pas ;
+- **Partage LAN** : correction des gros envois conservés en mémoire ;
+- **Thèmes (Linux)** : correction d'un plantage au changement de thème quand la composition est désactivée ;
+- **Flatpak (Linux)** : correction d'un plantage au lancement et mise à jour de l'environnement GNOME obsolète ;
+- **Dates** : correction des dates vides quand la locale du système est `C` ;
+- **Traductions** : correction de libellés courts incorrects dans de nombreuses langues ;
+
+---
+
 ## [2.2.0] - July 2026
 
 **Résumé :** Intégration du presse-papiers système aux autres applications, sélection par cadre, vue fractionnée liée, gestion des liens, archives ZIP protégées par mot de passe, propriétés natives sous Windows, enrichissement de l'API des extensions, prise en charge de l'hébreu et améliorations du navigateur.
