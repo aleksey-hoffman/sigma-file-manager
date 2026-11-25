@@ -127,13 +127,13 @@ The funding will be used for funding the development of this and my other big pr
   </thead>
   <tbody>
     <tr>
-      <td>Windows | Winget</td>
+      <td>Windows | Winget (⚡update is waiting for approval)</td>
       <td width="320px">
         <code>winget install sfm</code>
       </td>
     </tr>
     <tr>
-      <td>Windows | Microsoft store</td>
+      <td>Windows | Microsoft store (⚡update is waiting for approval)</td>
       <td>
         <!-- <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
           <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
