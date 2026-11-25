@@ -41,6 +41,10 @@ export function createRenameUndo(oldPath: string, newPath: string): UndoAction {
 export function showRenamedToast(oldPath: string, newPath: string) {
   showOperationToast({
     title: i18n.global.t('notifications.renamed'),
+    paths: {
+      sources: [oldPath],
+      destination: newPath,
+    },
     undo: createRenameUndo(oldPath, newPath),
   });
 }

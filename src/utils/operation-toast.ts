@@ -8,6 +8,11 @@ import { i18n } from '@/localization';
 
 export type UndoAction = () => Promise<void>;
 
+export type OperationToastPaths = {
+  sources: string[];
+  destination?: string;
+};
+
 const UNDO_TOAST_DURATION_MS = 8000;
 
 async function runUndo(undo: UndoAction) {
@@ -30,16 +35,18 @@ async function runUndo(undo: UndoAction) {
 export function showOperationToast(options: {
   title: string;
   description?: string;
+  paths?: OperationToastPaths;
   duration?: number;
   undo?: UndoAction | null;
 }) {
-  const { title, description = '', undo } = options;
+  const { title, description = '', paths, undo } = options;
 
   const toastId = toast.custom(markRaw(ToastStatic), {
     componentProps: {
       data: {
         title,
         description,
+        paths,
         ...(undo && {
           actionText: i18n.global.t('notifications.undo'),
           onAction: () => {

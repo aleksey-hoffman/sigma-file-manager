@@ -10,7 +10,8 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import uniqueId from '@/utils/unique-id';
 import { sourceDisplayNameFromPaths } from '@/utils/source-display-name';
-import { showOperationToast, type UndoAction } from '@/utils/operation-toast';
+import { getParentDirectory } from '@/utils/normalize-path';
+import { showOperationToast, type OperationToastPaths, type UndoAction } from '@/utils/operation-toast';
 import type {
   ConflictResolution,
   FileOperationResult,
@@ -68,6 +69,21 @@ function finishedPayloadToResult(payload: CopyMoveJobFinishedPayload): FileOpera
   };
 }
 
+export function getMovedPathsForToast(movedPaths: MovedPathPair[]): OperationToastPaths | undefined {
+  if (movedPaths.length === 0) {
+    return undefined;
+  }
+
+  const [firstMovedPath] = movedPaths;
+
+  return {
+    sources: movedPaths.map(movedPath => movedPath.from),
+    destination: movedPaths.length === 1
+      ? firstMovedPath.to
+      : getParentDirectory(firstMovedPath.to),
+  };
+}
+
 function toastCopyMoveSuccess(
   payload: CopyMoveJobFinishedPayload,
   operationType: 'copy' | 'move' | undefined,
@@ -100,6 +116,7 @@ function toastCopyMoveSuccess(
   showOperationToast({
     title,
     description,
+    paths: isMove ? getMovedPathsForToast(payload.movedPaths ?? []) : undefined,
     duration: 2500,
     undo: isMove ? getUndo?.(payload.movedPaths ?? []) : null,
   });

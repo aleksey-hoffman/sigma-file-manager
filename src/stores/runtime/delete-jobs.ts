@@ -54,6 +54,7 @@ function toastDeleteSuccess(
 
   showOperationToast({
     title: i18n.global.t(titleKey, { totalAmount: deletedCount }),
+    paths: { sources: payload.deletedPaths },
     duration: 2500,
     undo: payload.useTrash ? getUndo?.(payload.deletedPaths) : null,
   });
