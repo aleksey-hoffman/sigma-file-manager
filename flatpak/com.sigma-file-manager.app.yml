@@ -5,6 +5,9 @@ sdk: org.gnome.Sdk
 command: sigma-file-manager
 appstream-compose: false
 
+build-options:
+  libdir: /app/lib
+
 finish-args:
   - --socket=wayland
   - --socket=fallback-x11
