@@ -144,7 +144,7 @@ The funding will be used for funding the development of this and my other big pr
       </td>
     </tr>
     <tr>
-      <td>Windows | Unsigned installable (might see antivirus errors)</td>
+      <td>Windows | Signed installable</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
           Installable (.exe)
