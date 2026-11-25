@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BookmarkIcon, FolderTreeIcon } from '@lucide/vue';
 import { TreeView } from './tree-view';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRestoredChoice } from '@/composables/use-restored-active-tab';
 import QuickAccessList from '@/modules/nav-sidebar/components/quick-access-list.vue';
 
+const QUICK_ACCESS_ITEM_SELECTOR = '.navigation-panel__quick-access :is(button, [role="button"]):not(.quick-access-panel__section-drag-handle)';
 const NAVIGATION_PANEL_VIEWS = ['tree', 'quick-access'] as const;
 
 defineProps<{
@@ -25,21 +26,67 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const activeView = useRestoredChoice('navigator-navigation-panel', NAVIGATION_PANEL_VIEWS, 'tree');
+const panelRef = ref<HTMLElement | null>(null);
+const treeViewRef = ref<InstanceType<typeof TreeView> | null>(null);
 const isTreeViewActive = computed(() => activeView.value === 'tree');
 
 function handleNavigate(path: string) {
   emit('navigate', path);
 }
+
+function getQuickAccessItems(): HTMLElement[] {
+  return [...panelRef.value?.querySelectorAll<HTMLElement>(QUICK_ACCESS_ITEM_SELECTOR) ?? []];
+}
+
+function focusActiveView() {
+  if (isTreeViewActive.value) {
+    treeViewRef.value?.focus();
+    return;
+  }
+
+  getQuickAccessItems()[0]?.focus();
+}
+
+function handleTabsListKeyDown(event: KeyboardEvent) {
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    focusActiveView();
+  }
+}
+
+function handleQuickAccessKeyDown(event: KeyboardEvent) {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+    return;
+  }
+
+  event.preventDefault();
+  const items = getQuickAccessItems();
+  const focusedIndex = items.findIndex(item => item === document.activeElement);
+  items[focusedIndex + (event.key === 'ArrowDown' ? 1 : -1)]?.focus();
+}
+
+defineExpose({
+  focus: focusActiveView,
+  containsFocus() {
+    return panelRef.value?.contains(document.activeElement) ?? false;
+  },
+});
 </script>
 
 <template>
-  <section class="navigation-panel">
+  <section
+    ref="panelRef"
+    class="navigation-panel"
+  >
     <Tabs
       v-model="activeView"
       class="navigation-panel__tabs"
       :unmount-on-hide="false"
     >
-      <TabsList class="navigation-panel__tabs-list">
+      <TabsList
+        class="navigation-panel__tabs-list"
+        @keydown="handleTabsListKeyDown"
+      >
         <TabsTrigger
           value="tree"
           :title="t('navigator.navigationPanelTree')"
@@ -73,6 +120,7 @@ function handleNavigate(path: string) {
         class="navigation-panel__tab-content animate-fade-in"
       >
         <TreeView
+          ref="treeViewRef"
           class="navigation-panel__view"
           :active-path="activePath"
           :updates-paused="updatesPaused"
@@ -85,7 +133,10 @@ function handleNavigate(path: string) {
         value="quick-access"
         class="navigation-panel__tab-content animate-fade-in"
       >
-        <QuickAccessList class="navigation-panel__view" />
+        <QuickAccessList
+          class="navigation-panel__view navigation-panel__quick-access"
+          @keydown="handleQuickAccessKeyDown"
+        />
       </TabsContent>
     </Tabs>
   </section>

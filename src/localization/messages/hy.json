@@ -682,6 +682,8 @@
     "showHideGlobalSearch": "Ցուցադրել / թաքցնել գլոբալ որոնումը",
     "toggleCommandPalette": "Բացել/փակել հրամանների պալիտրան",
     "toggleSplitView": "Միացնել/անջատել կիսված տեսքը",
+    "toggleNavigationPanel": "Ցուցադրել / թաքցնել նավիգացիայի վահանակը",
+    "toggleInfoPanel": "Ցուցադրել / թաքցնել տեղեկատվական վահանակը",
     "createNewDirectoryInTheCurrentDirectory": "Ստեղծել նոր պանակ ընթացիկ պանակում",
     "createNewFileInCurrentDirectory": "Ստեղծել նոր ֆայլ ընթացիկ պանակում",
     "renameSelectedItems": "Վերանվանել ընտրված իրերը",

@@ -22,6 +22,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const columnRef = ref<HTMLElement | null>(null);
+const navigationPanelRef = ref<InstanceType<typeof NavigationPanel> | null>(null);
 const isResizing = ref(false);
 
 const {
@@ -171,12 +172,22 @@ function handleResizeKeyUp(event: KeyboardEvent) {
 onUnmounted(() => {
   stopResize();
 });
+
+defineExpose({
+  focus() {
+    navigationPanelRef.value?.focus();
+  },
+  containsFocus() {
+    return navigationPanelRef.value?.containsFocus() ?? false;
+  },
+});
 </script>
 
 <template>
   <template v-if="compact">
     <NavigationPanel
       v-if="showNavigationPanel"
+      ref="navigationPanelRef"
       class="navigation-panel-frame--compact"
       :active-path="activePath"
       :updates-paused="isNavigationPanelVisibilityAnimating"
@@ -204,6 +215,7 @@ onUnmounted(() => {
       >
         <NavigationPanel
           v-if="showNavigationPanel"
+          ref="navigationPanelRef"
           :active-path="activePath"
           :updates-paused="isNavigationPanelVisibilityAnimating"
           @navigate="handleNavigate"

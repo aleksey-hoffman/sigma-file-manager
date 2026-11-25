@@ -652,6 +652,8 @@
     "focusUnfocusSettingsSearch": "Focalizza / non focalizza ricerca impostazioni",
     "showHideGlobalSearch": "Mostra / nascondi la ricerca globale",
     "toggleSplitView": "Mostra / nascondi vista divisa",
+    "toggleNavigationPanel": "Mostra / nascondi pannello di navigazione",
+    "toggleInfoPanel": "Mostra / nascondi pannello informativo",
     "createNewDirectoryInTheCurrentDirectory": "Crea una nuova cartella nella cartella attuale",
     "createNewFileInCurrentDirectory": "Crea un nuovo file nella cartella attuale",
     "renameSelectedItems": "Rinomina gli elementi selezionati",

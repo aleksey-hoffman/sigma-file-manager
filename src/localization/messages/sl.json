@@ -681,6 +681,8 @@
     "focusUnfocusSettingsSearch": "Fokusiraj / odstraniti fokus iz iskanja nastavitev",
     "showHideGlobalSearch": "Pokaži / skrij globalno iskanje",
     "toggleSplitView": "Preklopi razdeljen pogled",
+    "toggleNavigationPanel": "Pokaži / skrij navigacijski panel",
+    "toggleInfoPanel": "Pokaži / skrij info panel",
     "createNewDirectoryInTheCurrentDirectory": "Ustvari novo mapo v trenutni mapi",
     "createNewFileInCurrentDirectory": "Ustvari novo datoteko v trenutni mapi",
     "renameSelectedItems": "Preimenuj izbrane predmete",

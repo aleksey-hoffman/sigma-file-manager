@@ -67,6 +67,8 @@ import {
   BookmarkIcon,
   ChevronsRightIcon,
   ChevronsLeftIcon,
+  PanelLeftOpenIcon,
+  PanelRightOpenIcon,
 } from '@lucide/vue';
 import type { Component } from 'vue';
 import {
@@ -118,6 +120,8 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   toggleAddressBar: TextSearchIcon,
   openEntry: SearchIcon,
   toggleSplitView: FlipHorizontalIcon,
+  toggleNavigationPanel: PanelLeftOpenIcon,
+  toggleInfoPanel: PanelRightOpenIcon,
   createNewFile: PlusIcon,
   createNewDirectory: FolderClosedIcon,
   copyCurrentDirectoryPath: CopyIcon,

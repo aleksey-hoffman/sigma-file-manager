@@ -79,6 +79,7 @@ import {
   getLinkedPaneNavigationTarget,
   queueLinkedPaneNavigation,
 } from '@/modules/navigator/utils/linked-split-sync';
+import { getNavigatorPaneSwitchTarget } from '@/modules/navigator/utils/navigator-pane-switch';
 import { getPathDisplayName } from '@/utils/normalize-path';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
@@ -219,6 +220,7 @@ const {
 } = useInfoPanelLayout();
 
 const navigationPanelLayout = useNavigationPanelLayout();
+const navigationPanelFrameRef = ref<InstanceType<typeof NavigationPanelFrame> | null>(null);
 provide(navigationPanelLayoutKey, navigationPanelLayout);
 const isSmallScreen = useIsSmallScreen();
 const {
@@ -981,6 +983,10 @@ function hasSelectedItems(): boolean {
 }
 
 async function handleQuickViewShortcut(event?: KeyboardEvent | MouseEvent) {
+  if (isNavigationPanelFocused()) {
+    return false;
+  }
+
   if (
     event instanceof KeyboardEvent
     && event.key === ' '
@@ -1092,29 +1098,62 @@ async function handleOpenTerminalAdminShortcut() {
   await openTerminalWithOptions(true);
 }
 
+function isNavigationPanelFocused(): boolean {
+  return navigationPanelFrameRef.value?.containsFocus() ?? false;
+}
+
+function blurNavigationPanel() {
+  if (isNavigationPanelFocused() && document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+}
+
 function switchToPane(paneIndex: number): boolean {
-  if (!isSplitView.value) return false;
+  const targetTab = workspacesStore.currentTabGroup?.[paneIndex];
+  const targetPane = targetTab ? paneRefsMap.value.get(targetTab.id) : singlePaneRef.value;
 
-  const tabGroup = workspacesStore.currentTabGroup;
+  if (!targetPane) return false;
 
-  if (!tabGroup || !tabGroup[paneIndex]) return false;
+  blurNavigationPanel();
 
-  const targetTab = tabGroup[paneIndex];
-  activateTabPane(targetTab.id);
+  if (targetTab && isSplitView.value) {
+    activateTabPane(targetTab.id);
 
-  paneRefsMap.value.forEach((pane, tabId) => {
-    if (tabId !== targetTab.id) {
-      pane.clearSelection();
-    }
-  });
-
-  const targetPane = paneRefsMap.value.get(targetTab.id);
-
-  if (targetPane?.selectFirstEntry) {
-    targetPane.selectFirstEntry();
+    paneRefsMap.value.forEach((pane, tabId) => {
+      if (tabId !== targetTab.id) {
+        pane.clearSelection();
+      }
+    });
   }
 
+  targetPane.selectFirstEntry?.();
   return true;
+}
+
+function switchToNavigationPanel(): boolean {
+  clearAllSelections();
+  navigationPanelFrameRef.value?.focus();
+  return true;
+}
+
+function switchToAdjacentPane(direction: 'left' | 'right'): boolean {
+  const activePane = getNavigatorPaneRef();
+  const activePaneIndex = workspacesStore.currentTabGroup?.findIndex(
+    tab => paneRefsMap.value.get(tab.id) === activePane,
+  ) ?? 0;
+  const target = getNavigatorPaneSwitchTarget({
+    direction,
+    paneCount: workspacesStore.currentTabGroup?.length ?? 1,
+    activePaneIndex: Math.max(activePaneIndex, 0),
+    isNavigationPanelOpen: navigationPanelLayout.navigationPanelSlideVisible.value,
+    isNavigationPanelFocused: isNavigationPanelFocused(),
+  });
+
+  if (!target) return false;
+
+  return target.kind === 'navigation-panel'
+    ? switchToNavigationPanel()
+    : switchToPane(target.paneIndex);
 }
 
 function hasBlockingDismissalLayersForNavigatorShortcuts(): boolean {
@@ -1167,6 +1206,8 @@ function callActivePaneNavigate(
   method: 'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight',
   event?: KeyboardEvent | MouseEvent,
 ): boolean {
+  if (isNavigationPanelFocused()) return false;
+
   if (hasBlockingDismissalLayersForNavigatorShortcuts()) return false;
 
   if (hasBlockingRekaDismissableLayersForNavigatorShortcuts()) return false;
@@ -1179,6 +1220,12 @@ function callActivePaneNavigate(
   }
 
   return false;
+}
+
+function handleOpenSelectedShortcut(): boolean {
+  if (isNavigationPanelFocused()) return false;
+
+  return callActivePaneMethod('openSelected');
 }
 
 function handleNavigateHistoryBackShortcut(): boolean {
@@ -1249,16 +1296,18 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('navigateDown', event => callActivePaneNavigate('navigateDown', event));
   shortcutsStore.registerHandler('navigateLeft', event => callActivePaneNavigate('navigateLeft', event));
   shortcutsStore.registerHandler('navigateRight', event => callActivePaneNavigate('navigateRight', event));
-  shortcutsStore.registerHandler('openSelected', () => callActivePaneMethod('openSelected'), { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('openSelected', handleOpenSelectedShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('navigateHistoryBack', handleNavigateHistoryBackShortcut);
   shortcutsStore.registerHandler('navigateHistoryForward', handleNavigateHistoryForwardShortcut);
   shortcutsStore.registerHandler('goUpDirectory', handleGoUpDirectoryShortcut);
-  shortcutsStore.registerHandler('switchToLeftPane', () => switchToPane(0));
-  shortcutsStore.registerHandler('switchToRightPane', () => switchToPane(1));
+  shortcutsStore.registerHandler('switchToLeftPane', () => switchToAdjacentPane('left'));
+  shortcutsStore.registerHandler('switchToRightPane', () => switchToAdjacentPane('right'));
   shortcutsStore.registerHandler('toggleSplitView', () => {
     if (globalSearchStore.isOpen) return false;
     handleToggleSplitView();
   });
+  shortcutsStore.registerHandler('toggleNavigationPanel', navigationPanelLayout.toggleNavigationPanel);
+  shortcutsStore.registerHandler('toggleInfoPanel', handleToggleInfoPanel);
 }
 
 onMounted(async () => {
@@ -1314,6 +1363,7 @@ onUnmounted(() => {
         :style="infoPanelTransitionStyle"
       >
         <NavigationPanelFrame
+          ref="navigationPanelFrameRef"
           :active-path="navigationPanelPath"
           @navigate="handleNavigationPanelNavigate"
         />
@@ -1478,6 +1528,7 @@ onUnmounted(() => {
         class="navigator-page__panes-wrapper"
       >
         <NavigationPanelFrame
+          ref="navigationPanelFrameRef"
           compact
           :active-path="navigationPanelPath"
           @navigate="handleNavigationPanelNavigate"

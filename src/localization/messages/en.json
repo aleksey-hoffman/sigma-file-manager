@@ -682,6 +682,8 @@
     "showHideGlobalSearch": "Show / hide global search",
     "toggleCommandPalette": "Open / close command palette",
     "toggleSplitView": "Toggle split view",
+    "toggleNavigationPanel": "Show / hide navigation panel",
+    "toggleInfoPanel": "Show / hide info panel",
     "createNewDirectoryInTheCurrentDirectory": "Create new directory in the current directory",
     "createNewFileInCurrentDirectory": "Create new file in current directory",
     "renameSelectedItems": "Rename selected items",

@@ -243,7 +243,10 @@ async function handleToggleInfoPanelDynamicSize(enabled: boolean) {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {{ t('settings.infoPanel.title') }}
+          <div class="navigator-toolbar-actions__tooltip-row">
+            {{ t('settings.infoPanel.title') }}
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleInfoPanel') }}</ContextMenuShortcut>
+          </div>
         </TooltipContent>
       </Tooltip>
     </div>

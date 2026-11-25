@@ -682,6 +682,8 @@
     "showHideGlobalSearch": "הצג / הסתר חיפוש גלובלי",
     "toggleCommandPalette": "פתח / סגור את לוח הפקודות",
     "toggleSplitView": "החלף תצוגה מפוצלת",
+    "toggleNavigationPanel": "הצג / הסתר חלונית ניווט",
+    "toggleInfoPanel": "הצג / הסתר חלונית מידע",
     "createNewDirectoryInTheCurrentDirectory": "צור תיקייה חדשה בתיקייה הנוכחית",
     "createNewFileInCurrentDirectory": "צור קובץ חדש בתיקייה הנוכחית",
     "renameSelectedItems": "שנה שם לפריטים הנבחרים",

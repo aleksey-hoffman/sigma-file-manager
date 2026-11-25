@@ -681,6 +681,8 @@
     "focusUnfocusSettingsSearch": "Фокусировать/расфокусировать поиск настроек",
     "showHideGlobalSearch": "Показать/скрыть глобальный поиск",
     "toggleSplitView": "Включить / выключить разделённый вид",
+    "toggleNavigationPanel": "Показать / скрыть панель навигации",
+    "toggleInfoPanel": "Показать / скрыть информационную панель",
     "createNewDirectoryInTheCurrentDirectory": "Создать новую папку в текущей папке",
     "createNewFileInCurrentDirectory": "Создать новый файл в текущей папке",
     "renameSelectedItems": "Переименовать выбранные элементы",

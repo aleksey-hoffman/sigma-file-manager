@@ -241,6 +241,34 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'toggleNavigationPanel',
+    labelKey: 'shortcuts.toggleNavigationPanel',
+    defaultKeys: {
+      alt: true,
+      key: 'q',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'toggleInfoPanel',
+    labelKey: 'shortcuts.toggleInfoPanel',
+    defaultKeys: {
+      alt: true,
+      key: 'e',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'createNewFile',
     labelKey: 'shortcuts.createNewFileInCurrentDirectory',
     defaultKeys: {

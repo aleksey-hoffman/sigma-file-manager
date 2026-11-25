@@ -652,6 +652,8 @@
     "focusUnfocusSettingsSearch": "Focus / Unfocus recherche des paramètres",
     "showHideGlobalSearch": "Afficher / masquer la recherche globale",
     "toggleSplitView": "Activer / désactiver la vue partagée",
+    "toggleNavigationPanel": "Afficher / masquer le panneau de navigation",
+    "toggleInfoPanel": "Afficher / masquer le panneau d'informations",
     "createNewDirectoryInTheCurrentDirectory": "Créer un nouveau répertoire dans le répertoire courant",
     "createNewFileInCurrentDirectory": "Créer un nouveau fichier dans le répertoire courant",
     "renameSelectedItems": "Renommer les éléments sélectionnés",

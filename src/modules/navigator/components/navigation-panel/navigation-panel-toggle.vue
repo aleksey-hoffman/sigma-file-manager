@@ -7,14 +7,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { useI18n } from 'vue-i18n';
 import { PanelLeftOpenIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useNavigationPanelLayoutContext } from './composables/use-navigation-panel-layout';
 
 const { showNavigationPanel, toggleNavigationPanel } = useNavigationPanelLayoutContext();
+const shortcutsStore = useShortcutsStore();
 const { t } = useI18n();
 </script>
 
@@ -37,7 +40,10 @@ const { t } = useI18n();
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {{ t('navigator.navigationPanel') }}
+          <div class="navigation-panel-toggle__tooltip-row">
+            {{ t('navigator.navigationPanel') }}
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleNavigationPanel') }}</ContextMenuShortcut>
+          </div>
         </TooltipContent>
       </Tooltip>
     </div>
@@ -54,6 +60,13 @@ const { t } = useI18n();
 .navigation-panel-toggle :deep(.sigma-ui-button) {
   width: 28px;
   height: 28px;
+}
+
+.navigation-panel-toggle__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .navigation-panel-toggle__icon {

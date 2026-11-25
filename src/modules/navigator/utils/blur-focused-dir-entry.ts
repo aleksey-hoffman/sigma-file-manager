@@ -5,7 +5,11 @@
 export function blurFocusedDirEntry() {
   const activeElement = document.activeElement;
 
-  if (activeElement instanceof HTMLElement && activeElement.closest('[data-entry-path]')) {
+  if (
+    activeElement instanceof HTMLElement
+    && activeElement.closest('[data-entry-path]')
+    && !activeElement.closest('.navigation-panel')
+  ) {
     activeElement.blur();
   }
 }

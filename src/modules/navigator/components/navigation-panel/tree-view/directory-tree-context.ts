@@ -9,8 +9,9 @@ import type { DirectoryTreeEntryRow } from './utils/directory-tree';
 export type DirectoryTreeContext = {
   activePath: Ref<string>;
   activate: (row: DirectoryTreeEntryRow) => void;
+  toggle: (row: DirectoryTreeEntryRow) => void;
   handleRowMouseDown: (entry: DirEntry, event: MouseEvent) => void;
-  handleFocusedRowRemoved: () => void;
+  handleFocusedRowRemoved: (key: string) => void;
 };
 
 export const DIRECTORY_TREE_KEY: InjectionKey<DirectoryTreeContext> = Symbol('directory-tree');

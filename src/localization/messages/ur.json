@@ -682,6 +682,8 @@
     "showHideGlobalSearch": "عالمی تلاش دکھائیں / چھپائیں",
     "toggleCommandPalette": "کمانڈ پلیٹ کھولیں / بند کریں",
     "toggleSplitView": "تقسیم شدہ منظر دکھائیں / چھپائیں",
+    "toggleNavigationPanel": "نیویگیشن پینل دکھائیں / چھپائیں",
+    "toggleInfoPanel": "معلوماتی پینل دکھائیں / چھپائیں",
     "createNewDirectoryInTheCurrentDirectory": "موجودہ فولڈر میں نیا فولڈر بنائیں",
     "createNewFileInCurrentDirectory": "موجودہ فولڈر میں نئی فائل بنائیں",
     "renameSelectedItems": "منتخب اشیاء کا نام بدلیں",

@@ -124,6 +124,8 @@ export type ShortcutId
     | 'toggleAddressBar'
     | 'openEntry'
     | 'toggleSplitView'
+    | 'toggleNavigationPanel'
+    | 'toggleInfoPanel'
     | 'createNewFile'
     | 'createNewDirectory'
     | 'copyCurrentDirectoryPath'

@@ -652,6 +652,8 @@
     "focusUnfocusSettingsSearch": "Ayar aramasını odakla / odaktan çıkar",
     "showHideGlobalSearch": "Global aramayı göster / gizle",
     "toggleSplitView": "Bölünmüş görünümü aç / kapat",
+    "toggleNavigationPanel": "Gezinme panelini göster / gizle",
+    "toggleInfoPanel": "Bilgi panelini göster / gizle",
     "createNewDirectoryInTheCurrentDirectory": "Geçerli dizinde yeni dizin oluştur",
     "createNewFileInCurrentDirectory": "Geçerli dizinde yeni dosya oluştur",
     "renameSelectedItems": "Seçili öğeleri yeniden adlandır",

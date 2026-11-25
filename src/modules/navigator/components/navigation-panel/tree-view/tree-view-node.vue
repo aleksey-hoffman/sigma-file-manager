@@ -56,12 +56,23 @@ function activateRow() {
 }
 
 function handleRowKeyDown(event: KeyboardEvent) {
-  if (event.key !== 'Enter' && event.key !== ' ') {
+  if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
     return;
   }
 
+  switch (event.key) {
+    case 'Enter':
+      activateRow();
+      break;
+    case ' ':
+      directoryTree.toggle(props.row);
+      break;
+    default:
+      return;
+  }
+
   event.preventDefault();
-  activateRow();
+  event.stopPropagation();
 }
 
 function handleRowMouseDown(event: MouseEvent) {
@@ -79,7 +90,7 @@ function handleRowMouseDown(event: MouseEvent) {
 
 onBeforeUnmount(() => {
   if (rowRef.value && rowRef.value === document.activeElement) {
-    directoryTree.handleFocusedRowRemoved();
+    directoryTree.handleFocusedRowRemoved(props.row.key);
   }
 });
 </script>

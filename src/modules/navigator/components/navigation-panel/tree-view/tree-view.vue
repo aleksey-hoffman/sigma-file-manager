@@ -157,8 +157,12 @@ function activate(row: DirectoryTreeEntryRow) {
     return;
   }
 
-  toggleExpanded(row.entry.path);
+  toggle(row);
   emit('navigate', row.entry.path);
+}
+
+function toggle(row: DirectoryTreeEntryRow) {
+  toggleExpanded(row.entry.path);
   keepRowInView(row.key).catch((caughtError: unknown) => {
     console.error('Failed to keep directory tree row in view:', caughtError);
   });
@@ -187,10 +191,9 @@ onBeforeUnmount(() => {
 provide(DIRECTORY_TREE_KEY, {
   activePath,
   activate,
+  toggle,
   handleRowMouseDown,
-  handleFocusedRowRemoved: () => {
-    hasFocusWithin.value = false;
-  },
+  handleFocusedRowRemoved,
 });
 
 function setTreeScrollTop(scrollTopPx: number) {
@@ -241,6 +244,19 @@ async function focusRow(index: number) {
   getRowElement(index)?.focus();
 }
 
+// A row that becomes sticky, or stops being sticky, is rendered by another element, which drops its focus.
+function handleFocusedRowRemoved(key: string) {
+  hasFocusWithin.value = false;
+
+  nextTick(() => {
+    if (document.activeElement === document.body) {
+      getRowElement(getRowIndexByKey(key))?.focus({ preventScroll: true });
+    }
+  }).catch((caughtError: unknown) => {
+    console.error('Failed to restore directory tree focus:', caughtError);
+  });
+}
+
 function findEntryRowIndex(startIndex: number, step: 1 | -1): number {
   for (let index = startIndex; index >= 0 && index < treeRows.value.length; index += step) {
     if (treeRows.value[index].kind === 'entry') {
@@ -279,17 +295,23 @@ function getFocusedRowIndex(target: EventTarget | null): number {
   return Number.isInteger(index) && treeRows.value[index]?.kind === 'entry' ? index : -1;
 }
 
+function requestRowFocus(index: number) {
+  focusRow(index).catch((caughtError: unknown) => {
+    console.error('Failed to focus directory tree row:', caughtError);
+  });
+}
+
+function focusInitialRow() {
+  const activeIndex = findActiveRowIndex();
+  requestRowFocus(activeIndex >= 0 ? activeIndex : findEntryRowIndex(0, 1));
+}
+
 function handleTreeFocusIn(event: FocusEvent) {
   hasFocusWithin.value = true;
 
-  if (event.target !== treeContentRef.value) {
-    return;
+  if (event.target === treeContentRef.value) {
+    focusInitialRow();
   }
-
-  const activeIndex = findActiveRowIndex();
-  focusRow(activeIndex >= 0 ? activeIndex : findEntryRowIndex(0, 1)).catch((caughtError: unknown) => {
-    console.error('Failed to focus directory tree row:', caughtError);
-  });
 }
 
 function handleTreeFocusOut(event: FocusEvent) {
@@ -349,9 +371,18 @@ function getNavigationTargetIndex(index: number, key: string, isRightToLeft: boo
 }
 
 function handleTreeKeyDown(event: KeyboardEvent) {
+  if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
+    return;
+  }
+
   const index = getFocusedRowIndex(event.target);
 
   if (index < 0 || !(event.target instanceof HTMLElement)) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusInitialRow();
+    }
+
     return;
   }
 
@@ -365,9 +396,7 @@ function handleTreeKeyDown(event: KeyboardEvent) {
   event.preventDefault();
 
   if (targetIndex >= 0) {
-    focusRow(targetIndex).catch((caughtError: unknown) => {
-      console.error('Failed to focus directory tree row:', caughtError);
-    });
+    requestRowFocus(targetIndex);
   }
 }
 
@@ -392,6 +421,12 @@ watch([
   scrollActivePathIntoView().catch((caughtError: unknown) => {
     console.error('Failed to scroll directory tree:', caughtError);
   });
+});
+
+defineExpose({
+  focus() {
+    treeContentRef.value?.focus({ preventScroll: true });
+  },
 });
 </script>
 
