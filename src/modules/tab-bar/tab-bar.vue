@@ -39,6 +39,7 @@ const shortcutsStore = useShortcutsStore();
 const { userDirectories } = useUserDirectories();
 
 const tabGroupCount = computed(() => workspacesStore.currentWorkspace?.tabGroups?.length ?? 0);
+const lastTabId = computed(() => workspacesStore.currentWorkspace?.tabGroups?.at(-1)?.at(-1)?.id);
 const teleportDisabled = computed(() => !props.teleportTarget);
 const teleportTo = computed(() => props.teleportTarget || 'body');
 const { openNewTabGroup, closeTabGroup, setTabs } = workspacesStore;
@@ -51,9 +52,9 @@ const { fadeWidth, scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHor
   scrollContentRef,
 });
 
-watch(tabGroupCount, (newCount, previousCount) => {
+watch([tabGroupCount, lastTabId], ([newCount, newLastTabId], [previousCount, previousLastTabId]) => {
   nextTick(() => {
-    if (previousCount !== undefined && newCount > previousCount) {
+    if (newCount > previousCount && newLastTabId !== previousLastTabId) {
       scrollTabBarToEnd();
       return;
     }
@@ -63,9 +64,12 @@ watch(tabGroupCount, (newCount, previousCount) => {
 });
 
 watch(
-  () => workspacesStore.currentTabGroup?.[0]?.id,
-  (currentTabId, previousTabId) => {
-    if (!currentTabId || currentTabId === previousTabId) {
+  [
+    () => workspacesStore.currentTabGroup?.[0]?.id,
+    () => workspacesStore.currentTabGroup?.length,
+  ],
+  ([currentTabId]) => {
+    if (!currentTabId) {
       return;
     }
 

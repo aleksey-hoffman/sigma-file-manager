@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Nova guia",
     "duplicateTab": "Duplicar guia",
+    "separateTabs": "Separar guias",
     "closeOtherTabs": "Fechar outras guias",
     "closeDuplicateTabs": "Fechar todos os duplicados",
     "closeAllTabs": "Fechar todas as guias",

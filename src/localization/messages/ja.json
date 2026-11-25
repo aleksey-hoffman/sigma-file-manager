@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "新しいタブ",
     "duplicateTab": "タブを複製",
+    "separateTabs": "タブを分ける",
     "closeOtherTabs": "他のタブを閉じる",
     "closeDuplicateTabs": "すべての重複を閉じる",
     "closeAllTabs": "すべてのタブを閉じる",

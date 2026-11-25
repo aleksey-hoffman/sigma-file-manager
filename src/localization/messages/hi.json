@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "नया टैब",
     "duplicateTab": "टैब डुप्लिकेट करें",
+    "separateTabs": "टैब अलग करें",
     "closeOtherTabs": "अन्य टैब बंद करें",
     "closeDuplicateTabs": "सभी डुप्लिकेट बंद करें",
     "closeAllTabs": "सभी टैब को बंद करें",

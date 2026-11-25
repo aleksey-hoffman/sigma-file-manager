@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Neuer Tab",
     "duplicateTab": "Tab duplizieren",
+    "separateTabs": "Tabs trennen",
     "closeOtherTabs": "Andere Tabs schließen",
     "closeDuplicateTabs": "Alle Duplikate schließen",
     "closeAllTabs": "Alle Tabs schließen",

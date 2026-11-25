@@ -803,6 +803,34 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     tabGroup.push(newTab);
   }
 
+  function separateTabGroup(tabGroup: TabGroup) {
+    const workspace = currentWorkspace.value;
+    const tabGroupIndex = getTabGroupIndex(workspace, tabGroup) ?? -1;
+
+    if (!workspace || tabGroupIndex < 0 || !isTabGroupSplit(tabGroup)) {
+      return;
+    }
+
+    const separatedTabGroups = workspace.tabGroups[tabGroupIndex].map(tab => [tab]);
+    const isCurrentTabGroup = workspace.currentTabGroupIndex === tabGroupIndex;
+    let nextTabGroupIndex = workspace.currentTabGroupIndex;
+
+    if (isCurrentTabGroup) {
+      nextTabGroupIndex += Math.min(workspace.currentTabIndex, separatedTabGroups.length - 1);
+    }
+    else if (workspace.currentTabGroupIndex > tabGroupIndex) {
+      nextTabGroupIndex += separatedTabGroups.length - 1;
+    }
+
+    separatedTabGroups.forEach(adjustSplitViewPanes);
+    workspace.tabGroups.splice(tabGroupIndex, 1, ...separatedTabGroups);
+    setCurrentTabGroupIndex(nextTabGroupIndex);
+
+    if (isCurrentTabGroup) {
+      setCurrentTabIndex(0);
+    }
+  }
+
   function adjustSplitViewPanes(tabGroup: TabGroup) {
     tabGroup.forEach((tab: Tab) => {
       tab.paneWidth = Math.round(100 / (tabGroup.length || 1));
@@ -1056,6 +1084,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     setCurrentTabIndex,
     setTabs,
     toggleSplitView,
+    separateTabGroup,
     setTabFilterQuery,
     setPendingLaunchReveal,
     clearPendingLaunchReveal,

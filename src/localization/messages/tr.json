@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Yeni sekme",
     "duplicateTab": "Sekmeyi çoğalt",
+    "separateTabs": "Sekmeleri ayır",
     "closeOtherTabs": "Diğer sekmeleri kapat",
     "closeDuplicateTabs": "Tüm yinelenenleri kapat",
     "closeAllTabs": "Tüm sekmeleri kapat",

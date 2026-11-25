@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Nouvel onglet",
     "duplicateTab": "Dupliquer l'onglet",
+    "separateTabs": "Séparer les onglets",
     "closeOtherTabs": "Fermer les autres onglets",
     "closeDuplicateTabs": "Fermer tous les doublons",
     "closeAllTabs": "Fermer tous les onglets",

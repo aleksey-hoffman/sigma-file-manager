@@ -306,6 +306,59 @@ describe('workspaces storage duplicate tabs', () => {
     expect(workspacesStore.currentTab?.id).toBe('right-tab');
   });
 
+  it.each([
+    {
+      name: 'keeps the left pane open when it was active',
+      currentTabGroupIndex: 1,
+      currentTabIndex: 0,
+      expectedTabId: 'left-tab',
+    },
+    {
+      name: 'keeps the right pane open when it was active',
+      currentTabGroupIndex: 1,
+      currentTabIndex: 1,
+      expectedTabId: 'right-tab',
+    },
+    {
+      name: 'keeps a tab before the split tab open',
+      currentTabGroupIndex: 0,
+      currentTabIndex: 0,
+      expectedTabId: 'first-tab',
+    },
+    {
+      name: 'keeps a tab after the split tab open',
+      currentTabGroupIndex: 2,
+      currentTabIndex: 0,
+      expectedTabId: 'last-tab',
+    },
+  ])('separates a split tab into two tabs: $name', ({ currentTabGroupIndex, currentTabIndex, expectedTabId }) => {
+    const splitTabGroup = [createTab('left-tab', 'C:/Left'), createTab('right-tab', 'C:/Right')];
+    splitTabGroup.forEach((tab) => {
+      tab.paneWidth = 50;
+    });
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [{
+      ...createWorkspace([
+        [createTab('first-tab', 'C:/First')],
+        splitTabGroup,
+        [createTab('last-tab', 'C:/Last')],
+      ]),
+      currentTabGroupIndex,
+      currentTabIndex,
+    }];
+
+    workspacesStore.separateTabGroup(splitTabGroup);
+
+    expect(workspacesStore.currentWorkspace?.tabGroups.map(tabGroup => tabGroup.map(tab => tab.id))).toEqual([
+      ['first-tab'],
+      ['left-tab'],
+      ['right-tab'],
+      ['last-tab'],
+    ]);
+    expect(workspacesStore.currentTab?.id).toBe(expectedTabId);
+    expect(workspacesStore.tabs.every(tab => tab.paneWidth === 100)).toBe(true);
+  });
+
   it('restores the most recently closed tab group at its previous position', async () => {
     mockDirectoryReadResponses();
 

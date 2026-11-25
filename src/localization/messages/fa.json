@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "برگه جدید",
     "duplicateTab": "تکرار برگه",
+    "separateTabs": "جدا کردن برگه‌ها",
     "closeOtherTabs": "بستن سایر برگه ها",
     "closeDuplicateTabs": "بستن همه تکراری‌ها",
     "closeAllTabs": "بستن همه برگه ها",

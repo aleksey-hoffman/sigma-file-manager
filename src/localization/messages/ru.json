@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Новая вкладка",
     "duplicateTab": "Дублировать вкладку",
+    "separateTabs": "Разделить вкладки",
     "closeOtherTabs": "Закрыть другие вкладки",
     "closeDuplicateTabs": "Закрыть все дубликаты",
     "closeAllTabs": "Закрыть все вкладки",

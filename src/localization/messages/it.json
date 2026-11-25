@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Nuova scheda",
     "duplicateTab": "Duplica scheda",
+    "separateTabs": "Separa schede",
     "closeOtherTabs": "Chiudi altre schede",
     "closeDuplicateTabs": "Chiudi tutti i duplicati",
     "closeAllTabs": "Chiudi tutte le schede",

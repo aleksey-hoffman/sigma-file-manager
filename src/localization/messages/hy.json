@@ -78,6 +78,7 @@
   "tabs": {
     "newTab": "Նոր թաբ",
     "duplicateTab": "Կրկնօրինակել թաբը",
+    "separateTabs": "Առանձնացնել թաբերը",
     "closeOtherTabs": "Փակել այլ թաբերը",
     "closeDuplicateTabs": "Փակել կրկնվող թաբերը",
     "closeAllTabs": "Փակել բոլոր թաբերը",

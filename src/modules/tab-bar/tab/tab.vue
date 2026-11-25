@@ -17,6 +17,7 @@ import {
   HardDriveIcon,
   Layers,
   SearchIcon,
+  UngroupIcon,
   XIcon,
   XLineTopIcon,
 } from '@lucide/vue';
@@ -228,6 +229,10 @@ async function duplicateTab() {
   await workspacesStore.openNewTabGroup(path);
 }
 
+function separateTabs() {
+  workspacesStore.separateTabGroup(props.tabGroup);
+}
+
 function closeOtherTabs() {
   workspacesStore.closeOtherTabGroups(props.tabGroup);
 }
@@ -327,6 +332,16 @@ onBeforeUnmount(() => {
           <DropdownMenuShortcut v-if="shortcutsStore.getShortcutLabel('duplicateCurrentTab')">
             {{ shortcutsStore.getShortcutLabel('duplicateCurrentTab') }}
           </DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          v-if="props.tabGroup.length > 1"
+          @select="separateTabs"
+        >
+          <UngroupIcon
+            class="tab__menu-button-icon"
+            :size="14"
+          />
+          {{ t('tabs.separateTabs') }}
         </DropdownMenuItem>
         <DropdownMenuItem @select="closeOtherTabs">
           <XLineTopIcon
