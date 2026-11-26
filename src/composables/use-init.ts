@@ -314,43 +314,49 @@ export function useInit() {
     logInitTrace(`init started (mainWindow=${isMainWindow})`);
 
     await traceInitStep('platformStore.init', () => platformStore.init());
-    await traceInitStep('pathComparisonVolumeCache.warm', () => warmPathComparisonVolumeCache());
-    await traceInitStep('userPathsStore.init', () => userPathsStore.init());
+    await Promise.all([
+      traceInitStep('pathComparisonVolumeCache.warm', () => warmPathComparisonVolumeCache()),
+      traceInitStep('userPathsStore.init', () => userPathsStore.init()),
+    ]);
     await traceInitStep('userSettingsStore.init', () => userSettingsStore.init());
-
-    const iconThemePreload = traceInitStep(
-      'navigatorIconsStore.preloadConfiguredThemes',
-      () => withTimeout(
-        () => navigatorIconsStore.preloadConfiguredThemes(),
-        'navigator icon theme preload',
-        STARTUP_ICON_THEME_PRELOAD_TIMEOUT_MS,
-      ),
-    ).catch(() => undefined);
 
     let initialLaunchContext: LaunchContext | undefined;
     let openedInitialLaunchTargets = false;
     let loadedInitialTabGroup = false;
 
-    await traceInitStep(
-      'backgroundMediaStore.refreshCustomBackgrounds',
-      () => backgroundMediaStore.refreshCustomBackgrounds({
-        timeoutMs: STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS,
+    const launchContextPromise = isMainWindow
+      ? traceInitStep(
+          'invoke:get_launch_context',
+          () => invoke<LaunchContext>('get_launch_context'),
+        )
+      : Promise.resolve(undefined);
+
+    await Promise.all([
+      traceInitStep(
+        'navigatorIconsStore.preloadConfiguredThemes',
+        () => withTimeout(
+          () => navigatorIconsStore.preloadConfiguredThemes(),
+          'navigator icon theme preload',
+          STARTUP_ICON_THEME_PRELOAD_TIMEOUT_MS,
+        ),
+      ).catch(() => undefined),
+      traceInitStep(
+        'backgroundMediaStore.refreshCustomBackgrounds',
+        () => backgroundMediaStore.refreshCustomBackgrounds({
+          timeoutMs: STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS,
+        }),
+      ),
+      traceInitStep('userStatsStore.init', () => userStatsStore.init()),
+      traceInitStep(
+        'workspacesStore.init',
+        () => workspacesStore.init(undefined, { loadInitialTabGroup: false }),
+      ),
+      launchContextPromise.then((context) => {
+        initialLaunchContext = context;
       }),
-    );
-    await traceInitStep('userStatsStore.init', () => userStatsStore.init());
-    await traceInitStep(
-      'workspacesStore.init',
-      () => workspacesStore.init(undefined, { loadInitialTabGroup: false }),
-    );
+    ]);
 
-    await iconThemePreload;
-
-    if (isMainWindow) {
-      initialLaunchContext = await traceInitStep(
-        'invoke:get_launch_context',
-        () => invoke<LaunchContext>('get_launch_context'),
-      );
-
+    if (isMainWindow && initialLaunchContext) {
       if (initialLaunchContext.hadAbsorbedShellPaths) {
         try {
           await traceInitStep(
