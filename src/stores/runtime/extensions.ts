@@ -523,17 +523,19 @@ export const useExtensionsStore = defineStore('extensions', () => {
   const extensionLoadGeneration = new Map<string, number>();
 
   async function cleanupOrphanedSharedBinaries(orphanedBinaries: SharedBinaryInfo[]): Promise<void> {
-    for (const orphanedBinary of orphanedBinaries) {
-      try {
-        await invoke('remove_shared_binary', {
-          binaryId: orphanedBinary.id,
-          version: getBinaryLookupVersion(orphanedBinary) ?? null,
-        });
-      }
-      catch (error) {
-        console.warn(`Deferred cleanup for orphaned shared binary ${orphanedBinary.id}:`, error);
-      }
-    }
+    await Promise.allSettled(
+      orphanedBinaries.map(async (orphanedBinary) => {
+        try {
+          await invoke('remove_shared_binary', {
+            binaryId: orphanedBinary.id,
+            version: getBinaryLookupVersion(orphanedBinary) ?? null,
+          });
+        }
+        catch (error) {
+          console.warn(`Deferred cleanup for orphaned shared binary ${orphanedBinary.id}:`, error);
+        }
+      }),
+    );
   }
 
   function createExtensionStorageSnapshot(extensionId: string): {
